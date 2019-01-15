@@ -1,0 +1,10 @@
+webpack.config.js
+tsconfig.json
+integration/*.webpack.js
+integration/server.js
+integration/nightwatch/*
+karma.conf.js
+.travis_scripts/*
+dist/*
+bin/*
+*.test.ts

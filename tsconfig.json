@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "sourceMap": true,
+        "noImplicitReturns": true,
+        "noUnusedParameters": true,
+        "noEmitOnError": true,
+        "noUnusedLocals": true,
+        "declaration": false,
+        "jsx": "react",
+        "module": "esNext",
+        "target": "ES5",
+        "baseUrl": ".",
+        "moduleResolution": "node",
+        "pretty": true,
+        "removeComments": false,
+        "lib": ["es6", "dom"]
+    },
+    "include": ["src/**/*", "globals.d.ts"]
+}

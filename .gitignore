@@ -1,0 +1,12 @@
+npm-debug.log
+yarn-error.log
+node_modules
+.DS_Store
+.vscode
+.awcache
+bin/
+dist/
+docs/
+integration/private.key
+integration/projects/*
+integration/certs/*

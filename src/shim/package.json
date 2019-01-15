@@ -1,0 +1,14 @@
+{
+    "name": "@ironcorelabs/ironweb-internal",
+    "author": "IronCore Labs",
+    "description": "IronCore Labs Web SDK",
+    "homepage": "https://github.com/IronCoreLabs/ironweb",
+    "license": "AGPL-3.0-only",
+    "main": "commonjs/shim/index.js",
+    "module": "es/shim/index.js",
+    "jsnext:main": "es/shim/index.js",
+    "types": "ironweb.d.ts",
+    "peerDependencies": {
+        "es6-promise": "^4.0.0"
+    }
+}
