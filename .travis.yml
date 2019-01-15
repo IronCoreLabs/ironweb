@@ -1,24 +1,24 @@
 language: node_js
 node_js:
-    - "8"
+- '8'
 before_install:
-    - npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+- npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
 branches:
-    only:
-        - master
+  only:
+  - master
 notifications:
-    email:
-        on_success: change
-        on_failure: always
+  email:
+    on_success: change
+    on_failure: always
 script:
-    - yarn test
-    - export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH;
-      else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
-    - node ./.travis_scripts/snapshot.js
+- yarn test
+- export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH;
+  else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
+- node ./.travis_scripts/snapshot.js
 env:
-    global:
-        - GIT_PROJECT_NAME="ironweb"
-        # $NPM_TOKEN Allows publishing to NPM on build
-        - secure: CiWRN2pZ7aGPY80QzNP6G149aZfRxcu8MzYItFn3WVH4AQcCz60VIG8m8qXvC0iORxGbSPbI7IuQVrMg0QbxyhOT/ywMT4sCrHRV3LCiykcgresNmm50E+fIgVP50rUaU302xIzQqi+qnCa9/vHyPkO7azHSZ6G9YmP1SCpi4fTrP5+gZFj7ZyVzdTN1eHCI0usCa6KFIUcI23l8x3r+kGMfZLCUYkvM/3darwzzzx1Y9Yvl6r3xaRaq2edBz9s8q4jsK+yNzRs8m+4EqA9yZw/7TX4JbrSWXJaGJgcRavfeXjOq303Dik9zX/K3fZJChMmdJ2JneX41VSSO1AWLjemsBvdwrDpY4zI2w5s/hjXSrcWlkEk/Gv26YpA/kYi5M/OdQRu8ON9LMBzwfk5tHnGKJH2bMKu3MpBsbVlQVgTeDse88z9oWFC2T5iWnrCdHPwwdEr85jNA2VOJezV8OOWJwd3LSVxHc1fKLSwMDINmSlUQC2mFwbEugl6jZo4YcgX7R7k2EhCKQQ9St/nSiBNFuFRcKh+9mkkfF7Bi2S24e1mbh9aehD2obmGSIw0lL8YdQUwExcTxhuZ8u7o9bbpGcsAIDIUUuojpWuhI/nHRR/PF2Oxn/WXFS1WBGXwuxAuJhvLVkuXKpdIiJvnS/DVNvM35a8TIe9HlH54Kyas=
-        # $GIT_ACCESS_TOKEN Allows bumping version on build and pushing back to repo
-        - secure: "QB3hm+c9VTyF6Kibq8yeyPbetnPk8ogfaNKp/O04flqh7uSF9g4ckXFVFGrHRIjTJGApiEq86EyA1aQVtGUzO1kKQ1XuQC5WLePe2TwDdWQzNCdZ/0/h5934/Pd27eW6nn4VaamMo6aYnBWkn3G6QaKAm7fvKzxmMuqUeMa+CoJoIVqgGE8ClXTlZJS633X/UZ0DA5qPf3PGtQKA3dN/qXIIPGcZjegZuk1RUbaBQxD3N97dMMao39pzFwf6ZkXF3rjAwvzyyxVBgVXWsLfr6mDk0dcSIT9EBUphxAVQQP2ZDInsx3E840Js8Pq7bPhyuuscHhjjDwrK9s+1nC6AGs3/gjgf3sabY+NTxezNgho5iXNYmzdHzn5POAzoiyfE+oFasrgikag/NFEaNl90Y5y/ohRhFb4E1U9sPvXlo2VJRiCd4/3pLK3VDhctDBJgGa4X1iLhkw8ihYWcXac87i+/nnm8ePFplZWn6h/PfPQtjwOLSAeo6EX9JdzdyCTXFOyjzbp68ILhPytQTWbMhCNKWLL+/zwdU0a+1wQKoOZkBXvAJQHEnd1rsvjEW82NUoNzG8iG4W651ASb3HphRyXqw2Vh/OT2+yoHW5TANRbkovWpHZLvNwQsYiqRP3L4kR3UuK6G02IFQP/4alz+13cmWZ1mzoB0Pg12hPXLKpw="
+  global:
+  - GIT_PROJECT_NAME="ironweb"
+  # $GIT_ACCESS_TOKEN Allows bumping version on build and pushing back to repo
+  - secure: QB3hm+c9VTyF6Kibq8yeyPbetnPk8ogfaNKp/O04flqh7uSF9g4ckXFVFGrHRIjTJGApiEq86EyA1aQVtGUzO1kKQ1XuQC5WLePe2TwDdWQzNCdZ/0/h5934/Pd27eW6nn4VaamMo6aYnBWkn3G6QaKAm7fvKzxmMuqUeMa+CoJoIVqgGE8ClXTlZJS633X/UZ0DA5qPf3PGtQKA3dN/qXIIPGcZjegZuk1RUbaBQxD3N97dMMao39pzFwf6ZkXF3rjAwvzyyxVBgVXWsLfr6mDk0dcSIT9EBUphxAVQQP2ZDInsx3E840Js8Pq7bPhyuuscHhjjDwrK9s+1nC6AGs3/gjgf3sabY+NTxezNgho5iXNYmzdHzn5POAzoiyfE+oFasrgikag/NFEaNl90Y5y/ohRhFb4E1U9sPvXlo2VJRiCd4/3pLK3VDhctDBJgGa4X1iLhkw8ihYWcXac87i+/nnm8ePFplZWn6h/PfPQtjwOLSAeo6EX9JdzdyCTXFOyjzbp68ILhPytQTWbMhCNKWLL+/zwdU0a+1wQKoOZkBXvAJQHEnd1rsvjEW82NUoNzG8iG4W651ASb3HphRyXqw2Vh/OT2+yoHW5TANRbkovWpHZLvNwQsYiqRP3L4kR3UuK6G02IFQP/4alz+13cmWZ1mzoB0Pg12hPXLKpw=
+  # $NPM_TOKEN Allows publishing to NPM on build
+  - secure: MptxqlMgKVXv6xJ94hGT8oHGdLJ2JilHq8rsIpduqt7GiQSn8Q/bUXJyaod8k9LbGyps6h5tJsmmT0EsGXBmvVXwByfaLKX5ZFiAgU0kA8CM57V/41e/YUB/8YTe1+n8WV/cRXg65hsL/T/Y2LXls+yCfC1u/GnHLxn5VbarTuphk3K1T8psibO5RcAU4tvyIU903eXey9AUGilJK2UDe3vC4S+Tnky3lmdLHgRqcVpPmRZMIs0Bq9x/XxyepRsSGcQVisy9vZ17k9qTg6UYdqOHo1cMX5oZiIFDEKkloyhunD6jO+BJJ+sZ6cckYeiafU5YAKMs8JKtfkc2UKGSzc0Pwi+059YRIxi6jHMyk4NmlUFnR3r/JiLU8LYHZffEVXdzPOVnaRcQjOSK9PEWiny62wgKH/1rgUOV+AfMahaIJkAB+zj3Oy7D4xVWdr4AEStrU+iTw1tFZPwutl9Cw4/A2JeTVzkqibcXb6HG9+84XVRVBwzOXphcq3fSIdqOnR7iSOE9EOQImwdC9iyjAqGVdF8Uu3BI6TmWoO2KEe0GZI3ZH8IQmGPrmo5mSksK3cDoeVH6jE9msOHpS4GDL1/m+lx4Mpfy5J6mE7awCrTBzczxYrZcR7B/d90lX06hFw1q6WKT0Ztz8WBdOyBc0RV1h/u4nld8vKz8PkZDr90=
