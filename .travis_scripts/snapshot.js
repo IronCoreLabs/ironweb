@@ -24,14 +24,14 @@ shell.set("-e");
  * Publish the ironweb shim module. Will do  dry-run unless argument is provided to perform actual publish
  * @param {string}  publishDirectory   Directory from which publish operation should execute. Expected that we're in the root project directory when running this method
  */
-function publishNPMModule(publishDirectory){
+function publishNPMModule(publishDirectory) {
     shell.pushd(publishDirectory);
     shell.exec("npm publish --access restricted");
     shell.popd();
 }
 
 //If we're not on the master branch, don't do anything. We only want to do automatic NPM publishing upon push to master
-if(process.env.BRANCH !== 'master'){
+if (process.env.BRANCH !== "master") {
     shell.echo("\n\nNot on master branch, nothing to do for snapshot build.");
     shell.exit(0);
 }
@@ -39,7 +39,7 @@ if(process.env.BRANCH !== 'master'){
 //Check who performed that most recent commit and bail if it was from Leeroy Travis, e.g. this script. Otherwise we'll get an infinite loop
 //where this version update will trigger another build endlessly.
 const lastCommitAuthor = shell.exec(`git log -n1 --format=format:"%an"`);
-if(lastCommitAuthor.stdout === 'Leeroy Travis'){
+if (lastCommitAuthor.stdout === "Leeroy Travis") {
     shell.echo(`\n\nLatest commit was by Leeroy, we shouldn't do anything.`);
     shell.exit(0);
 }
@@ -48,11 +48,11 @@ if(lastCommitAuthor.stdout === 'Leeroy Travis'){
 shell.cd(`${path.dirname(process.argv[1])}/../`);
 
 //Run the build. This will cause the dist directory to be generated and also modify the package.json to bump it by a patch version
-shell.echo("\n\nRunning build process to generate dist output and bump version...\n")
-shell.exec('node ./.travis_scripts/build.js --bump');
+shell.echo("\n\nRunning build process to generate dist output and bump version...\n");
+shell.exec("node ./.travis_scripts/build.js --bump");
 
 //Get the latest version that was bumped to so that we can use it in our commit messages
-const updatedVersion = require('../package.json').version;
+const updatedVersion = require("../package.json").version;
 
 shell.echo(`\n\nBuild successful, version is now set to ${updatedVersion}`);
 
@@ -60,12 +60,12 @@ shell.echo(`\n\nBuild successful, version is now set to ${updatedVersion}`);
 shell.echo("\n\nSetting up git so Leeroy can commit our version bump back to master\n");
 shell.exec('git config --global user.email "leeroytravis@ironcorelabs.com"');
 shell.exec('git config --global user.name "Leeroy Travis"');
-shell.exec(`git remote add release "https://${process.env.TRAVIS_SECURE_TOKEN_NAME}@github.com/IronCoreLabs/${process.env.GIT_PROJECT_NAME}.git"`);
+shell.exec(`git remote add release "https://${process.env.GIT_ACCESS_TOKEN}@github.com/IronCoreLabs/${process.env.GIT_PROJECT_NAME}.git"`);
 shell.exec(`git fetch release`);
 shell.exec(`git checkout "${process.env.BRANCH}"`);
 
 shell.exec(`git branch --set-upstream-to=release/"$BRANCH"`);
-shell.exec('git status');
+shell.exec("git status");
 shell.echo("\n\nComitting version changes back to repo and tagging release...\n");
 
 //Add the version changes in the package.json file back to git. Then tag as that version within git.
@@ -80,4 +80,4 @@ shell.echo("\n\nPushing frame and shim to NPM as private packages...\n");
 publishNPMModule("./dist/shim");
 publishNPMModule("./dist/frame");
 
-shell.echo("\n\nSnapshot build successful. Pushed priate NPM packages with updated patch version.")
+shell.echo("\n\nSnapshot build successful. Pushed private NPM packages with updated patch version.");
