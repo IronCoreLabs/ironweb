@@ -162,6 +162,10 @@ export class SDKError extends Error {
 }
 
 export const ErrorCodes: {[key: string]: number};
+export const document: Document;
+export const codec: Codec;
+export const user: User;
+export const group: Group;
 
 export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback): Promise<SDKInitializationResult>;
 export function isInitialized(): boolean;
