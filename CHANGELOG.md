@@ -4,6 +4,11 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v1.2.9
+
++ Fixed exported TypeScript types.
++ Upgraded version of RecryptJS (only used for non WebAssembly browsers) to consume Schnorr signing fixes.
+
 ## v1.2.7
 
 + WebAssembly! The IronWeb SDK will use the [Recrypt WASM module](https://github.com/IronCoreLabs/recrypt-wasm-binding) to greatly improve performance of most cryptographic operations. The WebAssembly module will automatically be used if the browser supports it (currently MSEdge, Chrome, Safari, and Firefox). No changes are required to consume this change. All these performance benefits are automatically applied in this new version.
