@@ -112,9 +112,9 @@ export function decryptFromStore(documentID: string) {
 /**
  * Decrypt the provided document given the ID of the document and its data. Returns a Promise which will be resolved once the document has been successfully decrypted.
  * @param {string}      documentID   Unique ID of document to decrypt
- * @param {Base64Bytes} documentData Document data to decrypt
+ * @param {Base64Bytes | Uint8Array} documentData Document data to decrypt
  */
-export function decrypt(documentID: string, documentData: Base64Bytes) {
+export function decrypt(documentID: string, documentData: Base64Bytes | Uint8Array) {
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateID(documentID);
     ShimUtils.validateEncryptedDocument(documentData);
@@ -122,7 +122,7 @@ export function decrypt(documentID: string, documentData: Base64Bytes) {
         type: "DOCUMENT_DECRYPT",
         message: {
             documentID,
-            documentData: Base64.toByteArray(documentData),
+            documentData: typeof documentData === "string" ? Base64.toByteArray(documentData) : documentData,
         },
     };
     return FrameMediator.sendMessage<MT.DocumentDecryptResponse>(payload, [payload.message.documentData])

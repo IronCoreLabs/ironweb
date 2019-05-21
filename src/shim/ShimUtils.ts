@@ -111,19 +111,19 @@ export function validateDocumentData(data: Uint8Array) {
 }
 
 /**
- * Validate that the provided encrypted document is in the proper form, which should be Base64 encoded bytes of the document content and the AES IV prepended. Therefore
- * validate the length is at least 1 more than the IV length.
+ * Validate that the provided encrypted document is in the proper form, which should be Base64 encoded bytes or a Uint8Array of the document content and the AES IV prepended.
+ * Therefore validate the length is at least 1 more than the IV length.
  */
-export function validateEncryptedDocument(documentData: Base64Bytes) {
-    if (typeof documentData !== "string") {
-        throw new Error(`Invalid encrypted document format provided. Expected a string.`);
-    }
+export function validateEncryptedDocument(documentData: Base64Bytes | Uint8Array) {
     let encryptedByteLength: number;
     try {
-        //This will throw if the documentData isn't valid base64
-        encryptedByteLength = byteLength(documentData);
+        //This will throw if the documentData isn't valid base64 or Uint8
+        encryptedByteLength = typeof documentData === "string" ? byteLength(documentData) : documentData.byteLength;
+        if (typeof documentData !== "string" && documentData.constructor.name !== "Uint8Array") {
+            throw new Error("Invalid encrypted document content.");
+        }
     } catch (_) {
-        throw new Error("Invalid encrypted document content. Content length is not a multiple of 4 which is required for base64 bytes.");
+        throw new Error("Invalid encrypted document content. Content length wasn't a multiple of 4 or non-Uint8 bytes were provided.");
     }
     if (encryptedByteLength < CryptoConstants.IV_LENGTH + 1) {
         throw new Error(`Invalid encrypted document content. Length of content does not meet minimum requirements.`);

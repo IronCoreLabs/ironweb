@@ -175,7 +175,6 @@ describe("DocumentSDK", () => {
         it("fails when encrypted document isnt of the right format", () => {
             ShimUtils.setSDKInitialized();
             expect(() => DocumentSDK.decrypt("id", {} as any)).toThrow();
-            expect(() => DocumentSDK.decrypt("id", new Uint8Array(5) as any)).toThrow();
             expect(() => DocumentSDK.decrypt("id", "")).toThrow();
         });
 
@@ -191,6 +190,36 @@ describe("DocumentSDK", () => {
                 })
             );
             DocumentSDK.decrypt("mydoc", encodedDoc)
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        data: new Uint8Array([98, 87]),
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_DECRYPT",
+                            message: {
+                                documentID: "mydoc",
+                                documentData: doc,
+                            },
+                        },
+                        [doc]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("calls decrypt api with bytes and returns response", (done) => {
+            ShimUtils.setSDKInitialized();
+            const doc = new Uint8Array(33);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        data: new Uint8Array([98, 87]),
+                    },
+                })
+            );
+            DocumentSDK.decrypt("mydoc", doc)
                 .then((result: any) => {
                     expect(result).toEqual({
                         data: new Uint8Array([98, 87]),
