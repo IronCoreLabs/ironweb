@@ -556,6 +556,42 @@ describe("DocumentSDK", () => {
                 })
                 .catch((e) => fail(e.message));
         });
+
+        it("returns raw bytes if requested", (done) => {
+            ShimUtils.setSDKInitialized();
+
+            const document = new Uint8Array([100, 111, 99]);
+            const encrypted = new Uint8Array([90, 102, 103]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: encrypted,
+                    },
+                })
+            );
+
+            DocumentSDK.encrypt(document, {encodeResultAsBase64: false})
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        document: encrypted,
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_ENCRYPT",
+                            message: {
+                                documentID: jasmine.any(String),
+                                documentData: document,
+                                documentName: "",
+                                userGrants: [],
+                                groupGrants: [],
+                            },
+                        },
+                        [document]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
     });
 
     describe("updateEncryptedDataInStore", () => {

@@ -13,6 +13,7 @@ export interface DocumentCreateOptions {
     documentID?: string;
     documentName?: string;
     accessList?: DocumentAccessList;
+    encodeResultAsBase64?: boolean;
 }
 export interface GroupCreateOptions {
     groupID?: string;
@@ -58,7 +59,7 @@ export interface DecryptedDocumentResponse extends DocumentMetaResponse {
     data: Uint8Array;
 }
 export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
-    document: Base64Bytes;
+    document: Base64Bytes | Uint8Array;
 }
 export interface DocumentAccessResponse {
     succeeded: Array<{

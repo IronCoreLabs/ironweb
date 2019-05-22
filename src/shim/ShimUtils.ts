@@ -134,7 +134,7 @@ export function validateEncryptedDocument(documentData: Base64Bytes | Uint8Array
         throw new Error(`Invalid encrypted document content. Length of content does not meet minimum requirements.`);
     }
 }
-6;
+
 /**
  * Validate that the provided list of access IDs is valid
  */

@@ -19,7 +19,7 @@ function calculateDocumentCreateOptionsDefault(options?: DocumentCreateOptions) 
     const randomBytes = (window.msCrypto || window.crypto).getRandomValues(new Uint8Array(16));
     const hexID = Array.prototype.map.call(randomBytes, (byte: number) => `00${byte.toString(16)}`.slice(-2)).join("");
     if (!options) {
-        return {documentID: hexID, documentName: "", accessList: {users: [], groups: []}};
+        return {documentID: hexID, documentName: "", accessList: {users: [], groups: []}, encodeResultAsBase64: true};
     }
     return {
         documentID: options.documentID || hexID,
@@ -28,6 +28,7 @@ function calculateDocumentCreateOptionsDefault(options?: DocumentCreateOptions) 
             users: options.accessList && options.accessList.users ? options.accessList.users : [],
             groups: options.accessList && options.accessList.groups ? options.accessList.groups : [],
         },
+        encodeResultAsBase64: options.encodeResultAsBase64 !== undefined ? options.encodeResultAsBase64 : true,
     };
 }
 
@@ -140,6 +141,7 @@ export function decrypt(documentID: string, documentData: Base64Bytes | Uint8Arr
  *                                               document creators ID to this list as that will happen automatically. Contains the following keys:
  *                                                   users: Array - List of user IDs to share document with. Each value in the array should be in the form {id: string}.
  *                                                   groups: Array - List of group IDs to share document with. Each value in the array should be in the form {id: string}.
+ *                                               encodeResultAsBase64: boolean - since this function doesn't return the data directly, this flag is disregarded.
  */
 export function encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions) {
     ShimUtils.checkSDKInitialized();
@@ -181,6 +183,7 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
  *                                               accessList: object - Optional object which allows document to be shared with others upon creation. Contains the following keys:
  *                                                   users: Array - List of user IDs to share document with. Each value in the array should be in the form {id: string}.
  *                                                   groups: Array - List of group IDs to share document with. Each value in the array should be in the form {id: string}.
+ *                                               encodeResultAsBase64: boolean - optional flag determining whether data is returned as a Base64 string or Uint8Array.
  */
 export function encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse> {
     ShimUtils.checkSDKInitialized();
@@ -203,7 +206,7 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
     return FrameMediator.sendMessage<MT.DocumentEncryptResponse>(payload, [payload.message.documentData])
         .map(({message}) => ({
             ...message,
-            document: Base64.fromByteArray(message.document),
+            document: encryptOptions.encodeResultAsBase64 ? Base64.fromByteArray(message.document) : message.document,
         }))
         .toPromise();
 }
