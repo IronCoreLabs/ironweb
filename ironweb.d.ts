@@ -111,7 +111,7 @@ export interface Document {
     list(): Promise<DocumentListResponse>;
     getMetadata(documentID: string): Promise<DocumentMetaResponse>;
     getDocumentIDFromBytes(encryptedDocument: Base64Bytes): Promise<string | null>;
-    decrypt(documentID: string, encryptedDocument: Base64Bytes): Promise<DecryptedDocumentResponse>;
+    decrypt(documentID: string, encryptedDocument: Base64Bytes | Uint8Array): Promise<DecryptedDocumentResponse>;
     decryptFromStore(documentID: string): Promise<DecryptedDocumentResponse>;
     encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse>;
     encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<DocumentIDNameResponse>;

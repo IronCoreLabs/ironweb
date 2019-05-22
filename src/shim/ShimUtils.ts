@@ -116,20 +116,25 @@ export function validateDocumentData(data: Uint8Array) {
  */
 export function validateEncryptedDocument(documentData: Base64Bytes | Uint8Array) {
     let encryptedByteLength: number;
-    if (typeof documentData !== "string" && documentData.constructor.name !== "Uint8Array") {
-        throw new Error("Invalid encrypted document content. Content should be a Base64 string or Uint8Array.");
-    }
-    try {
-        //The byteLength call will throw if the documentData isn't valid base64
-        encryptedByteLength = typeof documentData === "string" ? byteLength(documentData) : documentData.byteLength;
-    } catch (_) {
-        throw new Error("Invalid encrypted document content. Content length is not a multiple of 4.");
+    if (typeof documentData === "string") {
+        try {
+            //The byteLength call will throw if the documentData isn't valid base64
+            encryptedByteLength = byteLength(documentData);
+        } catch (_) {
+            throw new Error("Invalid encrypted document content. Content length is not a multiple of 4 which is required for base64 bytes.");
+        }
+    } else {
+        if (!(documentData instanceof Uint8Array)) {
+            throw new Error("Invalid encrypted document content. Content should be a Base64 string or Uint8Array.");
+        }
+
+        encryptedByteLength = documentData.byteLength;
     }
     if (encryptedByteLength < CryptoConstants.IV_LENGTH + 1) {
         throw new Error(`Invalid encrypted document content. Length of content does not meet minimum requirements.`);
     }
 }
-
+6;
 /**
  * Validate that the provided list of access IDs is valid
  */
