@@ -120,7 +120,7 @@ export function validateEncryptedDocument(documentData: Base64Bytes | Uint8Array
         throw new Error("Invalid encrypted document content. Content should be a Base64 string or Uint8Array.");
     }
     try {
-        //This will throw if the documentData isn't valid base64 or Uint8
+        //The byteLength call will throw if the documentData isn't valid base64
         encryptedByteLength = typeof documentData === "string" ? byteLength(documentData) : documentData.byteLength;
     } catch (_) {
         throw new Error("Invalid encrypted document content. Content length is not a multiple of 4.");
