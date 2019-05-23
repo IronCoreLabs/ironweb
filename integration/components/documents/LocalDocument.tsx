@@ -35,7 +35,7 @@ export default class LocalList extends React.Component<LocalDocumentProps, Local
         logAction(`Retrieving local document ${this.props.document.documentName}...`);
         const encryptedDoc = DocumentDB.getDoc(this.props.document.documentID);
         IronWeb.document
-            .decrypt(encryptedDoc.id, encryptedDoc.content)
+            .decrypt(encryptedDoc.id, IronWeb.codec.base64.toBytes(encryptedDoc.content))
             .then((decryptedDocument) => {
                 const content: DocumentContent<string | string[]> = JSON.parse(IronWeb.codec.utf8.fromBytes(decryptedDocument.data));
                 this.setState({
@@ -76,7 +76,7 @@ export default class LocalList extends React.Component<LocalDocumentProps, Local
         IronWeb.document
             .updateEncryptedData(existingDoc.id, IronWeb.codec.utf8.toBytes(JSON.stringify(newList)))
             .then((encryptedDocument) => {
-                DocumentDB.updateDoc(encryptedDocument.documentID, encryptedDocument.document, encryptedDocument.documentName);
+                DocumentDB.updateDoc(encryptedDocument.documentID, IronWeb.codec.utf8.fromBytes(encryptedDocument.document), encryptedDocument.documentName);
                 logAction(`Successfully updated document ${this.props.document.documentName}`, "success");
                 this.setState({
                     document: newList,
