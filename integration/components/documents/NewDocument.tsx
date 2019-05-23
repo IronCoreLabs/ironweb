@@ -87,7 +87,7 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
         IronWeb.document
             .encrypt(IronWeb.codec.utf8.toBytes(JSON.stringify(document)), documentOptions)
             .then((encryptedDocument) => {
-                DocumentDB.saveDoc(encryptedDocument.documentID, IronWeb.codec.utf8.fromBytes(encryptedDocument.document), encryptedDocument.documentName);
+                DocumentDB.saveDoc(encryptedDocument.documentID, IronWeb.codec.base64.fromBytes(encryptedDocument.document), encryptedDocument.documentName);
                 this.props.onListSelect(encryptedDocument);
             })
             .catch((error: IronWeb.SDKError) => {

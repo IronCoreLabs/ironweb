@@ -76,7 +76,7 @@ export default class LocalList extends React.Component<LocalDocumentProps, Local
         IronWeb.document
             .updateEncryptedData(existingDoc.id, IronWeb.codec.utf8.toBytes(JSON.stringify(newList)))
             .then((encryptedDocument) => {
-                DocumentDB.updateDoc(encryptedDocument.documentID, IronWeb.codec.utf8.fromBytes(encryptedDocument.document), encryptedDocument.documentName);
+                DocumentDB.updateDoc(encryptedDocument.documentID, IronWeb.codec.base64.fromBytes(encryptedDocument.document), encryptedDocument.documentName);
                 logAction(`Successfully updated document ${this.props.document.documentName}`, "success");
                 this.setState({
                     document: newList,
