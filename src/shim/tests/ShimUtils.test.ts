@@ -132,15 +132,16 @@ describe("ShimUtils", () => {
         });
 
         it("fails when data is not of proper length", () => {
-            expect(() => ShimUtils.validateEncryptedDocument("")).toThrow();
-            expect(() => ShimUtils.validateEncryptedDocument("ab")).toThrow();
-            expect(() => ShimUtils.validateEncryptedDocument("abcdefghijklmno")).toThrow();
-            expect(() => ShimUtils.validateEncryptedDocument("dGVzdHRlc3R0ZXN0dGVzdHRlc3R0ZXN")).toThrow();
+            expect(() => ShimUtils.validateEncryptedDocument(new Uint8Array([]))).toThrow();
+            expect(() => ShimUtils.validateEncryptedDocument(new Uint8Array([80, 102]))).toThrow();
+            expect(() => ShimUtils.validateEncryptedDocument(new Uint8Array([55, 11, 78, 102, 11, 1, 2, 3, 100, 98, 33]))).toThrow();
         });
 
         it("does not throw when data looks valid", () => {
-            expect(() => ShimUtils.validateEncryptedDocument("dGVzdHRlc3R0ZXN0ZXN0")).not.toThrow();
-            expect(() => ShimUtils.validateEncryptedDocument("dGVzdHRlc3R0ZXN0dGVzdHRlc3R0ZXN0")).not.toThrow();
+            expect(() => ShimUtils.validateEncryptedDocument(new Uint8Array([55, 11, 78, 102, 11, 1, 2, 3, 100, 98, 33, 290, 118]))).not.toThrow();
+            expect(() =>
+                ShimUtils.validateEncryptedDocument(new Uint8Array([55, 11, 78, 102, 11, 1, 2, 3, 100, 98, 33, 290, 118, 0, 89, 123, 324]))
+            ).not.toThrow();
         });
     });
 

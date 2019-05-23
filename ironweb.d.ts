@@ -1,7 +1,6 @@
 //UMD module global export
 export as namespace ironweb;
 
-type Base64Bytes = string;
 type RFC3339Timestamp = string;
 
 /**
@@ -13,7 +12,6 @@ export interface DocumentCreateOptions {
     documentID?: string;
     documentName?: string;
     accessList?: DocumentAccessList;
-    encodeResultAsBase64?: boolean;
 }
 export interface GroupCreateOptions {
     groupID?: string;
@@ -59,7 +57,7 @@ export interface DecryptedDocumentResponse extends DocumentMetaResponse {
     data: Uint8Array;
 }
 export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
-    document: Base64Bytes | Uint8Array;
+    document: Uint8Array;
 }
 export interface DocumentAccessResponse {
     succeeded: Array<{
@@ -111,8 +109,8 @@ export interface User {
 export interface Document {
     list(): Promise<DocumentListResponse>;
     getMetadata(documentID: string): Promise<DocumentMetaResponse>;
-    getDocumentIDFromBytes(encryptedDocument: Base64Bytes): Promise<string | null>;
-    decrypt(documentID: string, encryptedDocument: Base64Bytes | Uint8Array): Promise<DecryptedDocumentResponse>;
+    getDocumentIDFromBytes(encryptedDocument: Uint8Array): Promise<string | null>;
+    decrypt(documentID: string, encryptedDocument: Uint8Array): Promise<DecryptedDocumentResponse>;
     decryptFromStore(documentID: string): Promise<DecryptedDocumentResponse>;
     encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse>;
     encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<DocumentIDNameResponse>;

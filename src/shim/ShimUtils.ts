@@ -1,6 +1,5 @@
-import {DocumentAccessList, Base64Bytes} from "../../ironweb";
+import {DocumentAccessList} from "../../ironweb";
 import {CryptoConstants, ALLOWED_ID_CHAR_REGEX} from "../Constants";
-import {byteLength} from "base64-js";
 const SECRET_KEY_LOCAL_STORAGE_VERSION = "1";
 let hasInitializedSDK = false;
 
@@ -111,26 +110,15 @@ export function validateDocumentData(data: Uint8Array) {
 }
 
 /**
- * Validate that the provided encrypted document is in the proper form, which should be Base64 encoded bytes or a Uint8Array of the document content and the AES IV prepended.
+ * Validate that the provided encrypted document is in the proper form, which should be a Uint8Array of the document content and the AES IV prepended.
  * Therefore validate the length is at least 1 more than the IV length.
  */
-export function validateEncryptedDocument(documentData: Base64Bytes | Uint8Array) {
-    let encryptedByteLength: number;
-    if (typeof documentData === "string") {
-        try {
-            //The byteLength call will throw if the documentData isn't valid base64
-            encryptedByteLength = byteLength(documentData);
-        } catch (_) {
-            throw new Error("Invalid encrypted document content. Content length is not a multiple of 4 which is required for base64 bytes.");
-        }
-    } else {
-        if (!(documentData instanceof Uint8Array)) {
-            throw new Error("Invalid encrypted document content. Content should be a Base64 string or Uint8Array.");
-        }
-
-        encryptedByteLength = documentData.byteLength;
+export function validateEncryptedDocument(documentData: Uint8Array) {
+    if (!(documentData instanceof Uint8Array)) {
+        throw new Error("Invalid encrypted document content. Content should be a Uint8Array.");
     }
-    if (encryptedByteLength < CryptoConstants.IV_LENGTH + 1) {
+
+    if (documentData.byteLength < CryptoConstants.IV_LENGTH + 1) {
         throw new Error(`Invalid encrypted document content. Length of content does not meet minimum requirements.`);
     }
 }
