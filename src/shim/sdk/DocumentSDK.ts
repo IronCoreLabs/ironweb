@@ -1,10 +1,9 @@
 import * as FrameMediator from "../FrameMediator";
 import * as MT from "../../FrameMessageTypes";
 import * as ShimUtils from "../ShimUtils";
-import * as Base64 from "base64-js";
 import {ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../../Constants";
 import SDKError from "../../lib/SDKError";
-import {DocumentAccessList, DocumentCreateOptions, Base64Bytes, EncryptedDocumentResponse} from "../../../ironweb";
+import {DocumentAccessList, DocumentCreateOptions, EncryptedDocumentResponse} from "../../../ironweb";
 import {utf8} from "./CodecSDK";
 
 const MAX_DOCUMENT_SIZE = 1024 * 2 * 1000; //2MB
@@ -61,25 +60,24 @@ export function getMetadata(documentID: string) {
 /**
  * Attempt to parse the document ID from an encrypted document header. Returns the document ID as a string or null if the provided encrypted
  * document doesn't have an embedded ID.
- * @param {Base64Bytes} documentData Encrypted document in base64 form
+ * @param {Uint8Array} documentData Encrypted document in byte array form
  */
-export function getDocumentIDFromBytes(documentData: Base64Bytes): Promise<string | null> {
+export function getDocumentIDFromBytes(documentData: Uint8Array): Promise<string | null> {
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateEncryptedDocument(documentData);
 
-    const documentBytes = Base64.toByteArray(documentData);
     //Version 1 document, we don't have the document ID as it's not encoded in the header
-    if (documentBytes[0] === 1) {
+    if (documentData[0] === 1) {
         return Promise.resolve(null);
     }
     //Check to see if the document is a version we don't support and reject if so
-    if (documentBytes[0] !== 2) {
+    if (documentData[0] !== 2) {
         return Promise.reject(
             new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE)
         );
     }
-    const headerLength = new DataView(documentBytes.buffer).getUint16(VERSION_HEADER_LENGTH, false);
-    const headerContent = documentBytes.slice(
+    const headerLength = new DataView(documentData.buffer).getUint16(VERSION_HEADER_LENGTH, false);
+    const headerContent = documentData.slice(
         VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH,
         VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerLength
     );
@@ -112,9 +110,9 @@ export function decryptFromStore(documentID: string) {
 /**
  * Decrypt the provided document given the ID of the document and its data. Returns a Promise which will be resolved once the document has been successfully decrypted.
  * @param {string}      documentID   Unique ID of document to decrypt
- * @param {Base64Bytes} documentData Document data to decrypt
+ * @param {Uint8Array}  documentData Document data to decrypt
  */
-export function decrypt(documentID: string, documentData: Base64Bytes) {
+export function decrypt(documentID: string, documentData: Uint8Array) {
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateID(documentID);
     ShimUtils.validateEncryptedDocument(documentData);
@@ -122,7 +120,7 @@ export function decrypt(documentID: string, documentData: Base64Bytes) {
         type: "DOCUMENT_DECRYPT",
         message: {
             documentID,
-            documentData: Base64.toByteArray(documentData),
+            documentData,
         },
     };
     return FrameMediator.sendMessage<MT.DocumentDecryptResponse>(payload, [payload.message.documentData])
@@ -201,10 +199,7 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
         },
     };
     return FrameMediator.sendMessage<MT.DocumentEncryptResponse>(payload, [payload.message.documentData])
-        .map(({message}) => ({
-            ...message,
-            document: Base64.fromByteArray(message.document),
-        }))
+        .map(({message}) => message)
         .toPromise();
 }
 
@@ -256,10 +251,7 @@ export function updateEncryptedData(documentID: string, newDocumentData: Uint8Ar
         },
     };
     return FrameMediator.sendMessage<MT.DocumentUpdateDataResponse>(payload, [payload.message.documentData])
-        .map(({message}) => ({
-            ...message,
-            document: Base64.fromByteArray(message.document),
-        }))
+        .map(({message}) => message)
         .toPromise();
 }
 
