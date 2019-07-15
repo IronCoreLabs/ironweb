@@ -393,7 +393,7 @@ describe("DocumentApi", () => {
                 ({documentID, documentName, document}) => {
                     expect(documentID).toEqual("bar");
                     expect(documentName).toBeUndefined();
-                    expect(document).toEqual(jasmine.any(Uint8Array));
+                    expect(document).toEqual(expect.any(Uint8Array));
 
                     const userKeyList = [
                         {id: "user-55", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
@@ -453,7 +453,7 @@ describe("DocumentApi", () => {
                     expect(DocumentOperations.reEncryptDocument).toHaveBeenCalledWith(
                         new Uint8Array([88, 73, 92]),
                         existingDocument.encryptedSymmetricKey,
-                        jasmine.any(Uint8Array)
+                        expect.any(Uint8Array)
                     );
                     expect(DocumentApiEndpoints.callDocumentMetadataGetApi).toHaveBeenCalledWith("doc key");
                     expect(DocumentApiEndpoints.callDocumentUpdateApi).toHaveBeenCalledWith(

@@ -10,7 +10,7 @@ describe("PolyfillAes", () => {
             PolyfillAes.encryptUserKey(key, derivedKey, salt, iv).engage(
                 () => fail("encrypting users keys should not reject"),
                 (encryptedKey: any) => {
-                    expect(encryptedKey).toEqual(jasmine.any(Uint8Array));
+                    expect(encryptedKey).toEqual(expect.any(Uint8Array));
                     expect(encryptedKey.length).toEqual(92);
 
                     done();

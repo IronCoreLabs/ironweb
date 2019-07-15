@@ -279,7 +279,7 @@ describe("GroupApi", () => {
                     expect(GroupOperations.encryptGroupPrivateKeyToList).toHaveBeenCalledWith(
                         "encryptedPrivKey",
                         [{id: "id1", masterPublicKey: {x: "key1"}}, {id: "id2", masterPublicKey: {x: "key2"}}],
-                        jasmine.any(Uint8Array),
+                        expect.any(Uint8Array),
                         ApiState.signingKeys()
                     );
                 }
@@ -298,7 +298,7 @@ describe("GroupApi", () => {
                 (result: any) => {
                     expect(result).toEqual({
                         succeeded: [],
-                        failed: [{id: "user1", error: jasmine.any(String)}, {id: "user2", error: jasmine.any(String)}],
+                        failed: [{id: "user1", error: expect.any(String)}, {id: "user2", error: expect.any(String)}],
                     });
 
                     expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("33");
@@ -437,7 +437,7 @@ describe("GroupApi", () => {
                     expect(GroupOperations.generateGroupTransformKeyToList).toHaveBeenCalledWith(
                         "encryptedPrivKey",
                         [{id: "id1", masterPublicKey: {x: "key1"}}, {id: "id2", masterPublicKey: {x: "key2"}}],
-                        jasmine.any(Uint8Array),
+                        expect.any(Uint8Array),
                         ApiState.signingKeys()
                     );
 
@@ -458,7 +458,7 @@ describe("GroupApi", () => {
                 (result: any) => {
                     expect(result).toEqual({
                         succeeded: [],
-                        failed: [{id: "user1", error: jasmine.any(String)}, {id: "user2", error: jasmine.any(String)}],
+                        failed: [{id: "user1", error: expect.any(String)}, {id: "user2", error: expect.any(String)}],
                     });
 
                     expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("61");

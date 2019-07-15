@@ -6,7 +6,7 @@ describe("FrameMessenger", () => {
             spyOn(window, "addEventListener");
             new FrameMessenger(() => null);
 
-            expect(window.addEventListener).toHaveBeenCalledWith("message", jasmine.any(Function));
+            expect(window.addEventListener).toHaveBeenCalledWith("message", expect.any(Function));
         });
     });
 
@@ -33,9 +33,9 @@ describe("FrameMessenger", () => {
 
             messenger.setupMessagePort({data: "MESSAGE_PORT_INIT", ports: [fauxPort]} as any);
 
-            expect(window.removeEventListener).toHaveBeenCalledWith("message", jasmine.any(Function));
+            expect(window.removeEventListener).toHaveBeenCalledWith("message", expect.any(Function));
             expect(fauxPort.start).toHaveBeenCalledWith();
-            expect(fauxPort.addEventListener).toHaveBeenCalledWith("message", jasmine.any(Function));
+            expect(fauxPort.addEventListener).toHaveBeenCalledWith("message", expect.any(Function));
         });
     });
 
@@ -45,7 +45,7 @@ describe("FrameMessenger", () => {
             const messenger = new FrameMessenger(callbackMethod);
 
             messenger.processMessageIntoFrame({data: {data: "mock data", replyID: 23}} as any);
-            expect(callbackMethod).toHaveBeenCalledWith("mock data", jasmine.any(Function));
+            expect(callbackMethod).toHaveBeenCalledWith("mock data", expect.any(Function));
             const afterProcess = (callbackMethod as jasmine.Spy).calls.argsFor(0)[1];
             afterProcess("callback data");
         });
@@ -59,7 +59,7 @@ describe("FrameMessenger", () => {
             (messenger as any).messagePort = fauxPort;
 
             messenger.processMessageIntoFrame({data: {data: "mock data", replyID: 23}} as any);
-            expect(callbackMethod).toHaveBeenCalledWith("mock data", jasmine.any(Function));
+            expect(callbackMethod).toHaveBeenCalledWith("mock data", expect.any(Function));
             const afterProcess = (callbackMethod as jasmine.Spy).calls.argsFor(0)[1];
 
             afterProcess("callback data");

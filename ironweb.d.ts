@@ -1,4 +1,5 @@
 //UMD module global export
+//eslint-disable-next-line no-undef
 export as namespace ironweb;
 
 type RFC3339Timestamp = string;
@@ -22,8 +23,8 @@ export interface GroupUpdateOptions {
     groupName: string | null;
 }
 export interface DocumentAccessList {
-    users?: Array<{id: string}>;
-    groups?: Array<{id: string}>;
+    users?: {id: string}[];
+    groups?: {id: string}[];
 }
 
 /**
@@ -31,8 +32,8 @@ export interface DocumentAccessList {
  */
 export type DocumentAssociation = "owner" | "fromUser" | "fromGroup";
 export interface DocumentVisibilityList {
-    users: Array<{id: string}>;
-    groups: Array<{id: string; name?: string}>;
+    users: {id: string}[];
+    groups: {id: string; name?: string}[];
 }
 
 /**
@@ -60,15 +61,15 @@ export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
     document: Uint8Array;
 }
 export interface DocumentAccessResponse {
-    succeeded: Array<{
+    succeeded: {
         id: string;
         type: "user" | "group";
-    }>;
-    failed: Array<{
+    }[];
+    failed: {
         id: string;
         type: "user" | "group";
         error: string;
-    }>;
+    }[];
 }
 
 /**
@@ -91,10 +92,10 @@ export interface GroupDetailResponse extends GroupMetaResponse {
 }
 export interface GroupUserEditResponse {
     succeeded: string[];
-    failed: Array<{
+    failed: {
         id: string;
         error: string;
-    }>;
+    }[];
 }
 
 /**

@@ -86,8 +86,8 @@ function decryptAndFormatDocument(document: EncryptedDocument, documentResponse:
  */
 function missingEntitiesToFailures(
     entityList: string[],
-    successfulList: Array<{userOrGroup: UserOrGroup}>,
-    failureList: Array<{userOrGroup: UserOrGroup}>,
+    successfulList: {userOrGroup: UserOrGroup}[],
+    failureList: {userOrGroup: UserOrGroup}[],
     type: "user" | "group"
 ) {
     const matches = (id: string, {userOrGroup}: {userOrGroup: UserOrGroup}) => userOrGroup.type === type && userOrGroup.id === id;
@@ -110,8 +110,8 @@ function missingEntitiesToFailures(
  * @param {Array} failedIDs    List of failed access changes
  */
 function accessResultToAccessResponse(
-    succeededIDs: Array<{userOrGroup: UserOrGroup}>,
-    failedIDs: Array<{userOrGroup: UserOrGroup; errorMessage: string}>
+    succeededIDs: {userOrGroup: UserOrGroup}[],
+    failedIDs: {userOrGroup: UserOrGroup; errorMessage: string}[]
 ): DocumentAccessResponse {
     return {
         succeeded: succeededIDs.map(({userOrGroup}) => ({

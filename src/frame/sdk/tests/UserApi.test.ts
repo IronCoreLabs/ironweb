@@ -11,7 +11,7 @@ describe("UserApi", () => {
             spyOn(UserApiEndpoints, "callUserCurrentDeviceDelete").and.returnValue(Future.of({id: 33}));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             expect(ApiState.user()).toEqual(TestUtils.getFullUser());
-            spyOn(localStorage, "removeItem");
+            spyOn(Storage.prototype, "removeItem");
             UserApi.deauthorizeDevice().engage(
                 (e) => fail(e.message),
                 (result) => {
@@ -27,7 +27,7 @@ describe("UserApi", () => {
             spyOn(UserApiEndpoints, "callUserCurrentDeviceDelete").and.returnValue(Future.reject("device delete"));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             expect(ApiState.user()).toEqual(TestUtils.getFullUser());
-            spyOn(localStorage, "removeItem");
+            spyOn(Storage.prototype, "removeItem");
             UserApi.deauthorizeDevice().engage(
                 (e) => fail(e.message),
                 (result) => {

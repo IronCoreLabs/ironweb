@@ -117,7 +117,7 @@ describe("UserCrypto", () => {
 
                     expect(Recrypt.generateNewUserKeySet).toHaveBeenCalledWith();
                     expect(Recrypt.generatePasswordDerivedKey).toHaveBeenCalledWith("passcode");
-                    expect(AES.encryptUserKey).toHaveBeenCalledWith(jasmine.any(Uint8Array), "derived key");
+                    expect(AES.encryptUserKey).toHaveBeenCalledWith(expect.any(Uint8Array), "derived key");
                 }
             );
         });
@@ -191,7 +191,7 @@ describe("UserCrypto", () => {
         it("derives current passcode key, decrypts master private key, derives updated user key, and reencrypts master private key", (done) => {
             spyOn(AES, "decryptUserKey").and.returnValue(Future.of("decrypted private key"));
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
-            spyOn(Recrypt, "generatePasswordDerivedKey").and.callThrough();
+            spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
                 (e) => fail(e.message),
@@ -199,8 +199,8 @@ describe("UserCrypto", () => {
                     expect(encryptedKey).toEqual({
                         encryptedPrivateUserKey: "encrypted private key",
                     });
-                    expect(AES.decryptUserKey).toHaveBeenCalledWith(jasmine.any(Uint8Array), jasmine.any(Object));
-                    expect(AES.encryptUserKey).toHaveBeenCalledWith("decrypted private key", jasmine.any(Object));
+                    expect(AES.decryptUserKey).toHaveBeenCalledWith(expect.any(Uint8Array), "derived fixed key");
+                    expect(AES.encryptUserKey).toHaveBeenCalledWith("decrypted private key", "derived fixed key");
                     expect(Recrypt.generatePasswordDerivedKey).toHaveBeenCalledWith("current", new Uint8Array([33]));
                     expect(Recrypt.generatePasswordDerivedKey).toHaveBeenCalledWith("new");
 
@@ -212,6 +212,7 @@ describe("UserCrypto", () => {
         it("fails with expected error code when current passcode is incorrect", (done) => {
             spyOn(AES, "decryptUserKey").and.returnValue(Future.reject(new Error("could not do a decrypt")));
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
+            spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
                 (e) => {
@@ -226,7 +227,7 @@ describe("UserCrypto", () => {
         it("maps error code correctly when generating new user key fails ", (done) => {
             spyOn(AES, "decryptUserKey").and.returnValue(Future.of("decrypted private key"));
             spyOn(AES, "encryptUserKey").and.returnValue(Future.reject(new Error("could not encrypt key")));
-            spyOn(Recrypt, "generatePasswordDerivedKey").and.callThrough();
+            spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
                 (e) => {

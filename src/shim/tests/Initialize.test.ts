@@ -13,7 +13,7 @@ describe("Initialize", () => {
             Initialize.initialize(jwtCallback, jasmine.createSpy("passcodeCallback"))
                 .then(() => fail("resolve should not be called when JWT CB is invalid"))
                 .catch((err: SDKError) => {
-                    expect(err).toEqual(jasmine.any(Error));
+                    expect(err).toEqual(expect.any(Error));
                     expect(err.code).toEqual(ErrorCodes.JWT_FORMAT_FAILURE);
                     done();
                 });
@@ -38,7 +38,7 @@ describe("Initialize", () => {
             Initialize.initialize(jwtCallback, jasmine.createSpy("passcodeCallback"))
                 .then(() => fail("resolve should not be called when JWT CB rejects"))
                 .catch((err: SDKError) => {
-                    expect(err).toEqual(jasmine.any(Error));
+                    expect(err).toEqual(expect.any(Error));
                     expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
                     done();
                 });
@@ -50,7 +50,7 @@ describe("Initialize", () => {
             Initialize.initialize(jwtCallback, jasmine.createSpy("passcodeCallback"))
                 .then(() => fail("resolve should not be called when JWT CB rejects"))
                 .catch((err: SDKError) => {
-                    expect(err).toEqual(jasmine.any(Error));
+                    expect(err).toEqual(expect.any(Error));
                     expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
                     done();
                 });
@@ -70,7 +70,7 @@ describe("Initialize", () => {
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
                 .catch((err: SDKError) => {
-                    expect(err).toEqual(jasmine.any(Error));
+                    expect(err).toEqual(expect.any(Error));
                     expect(err.code).toEqual(ErrorCodes.PASSCODE_FORMAT_FAILURE);
                     done();
                 });
@@ -87,7 +87,7 @@ describe("Initialize", () => {
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
                 .catch((err: SDKError) => {
-                    expect(err).toEqual(jasmine.any(Error));
+                    expect(err).toEqual(expect.any(Error));
                     expect(err.code).toEqual(ErrorCodes.PASSCODE_RETRIEVAL_FAILURE);
                     done();
                 });
@@ -104,7 +104,7 @@ describe("Initialize", () => {
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
                 .catch((err: SDKError) => {
-                    expect(err).toEqual(jasmine.any(Error));
+                    expect(err).toEqual(expect.any(Error));
                     expect(err.code).toEqual(ErrorCodes.PASSCODE_RETRIEVAL_FAILURE);
                     done();
                 });
@@ -118,7 +118,7 @@ describe("Initialize", () => {
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
                 .catch((err: SDKError) => {
-                    expect(err).toEqual(jasmine.any(Error));
+                    expect(err).toEqual(expect.any(Error));
                     expect(err.message).toEqual("forced failure");
                     done();
                 });

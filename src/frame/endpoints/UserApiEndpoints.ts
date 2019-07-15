@@ -35,10 +35,10 @@ type UserVerifyResponseType = ApiUserResponse | undefined;
 type UserCreateResponseType = ApiUserResponse;
 type UserUpdateResponseType = ApiUserResponse;
 export interface UserKeyListResponseType {
-    result: Array<{
+    result: {
         id: string;
         userMasterPublicKey: PublicKey<Base64String>;
-    }>;
+    }[];
 }
 
 /**

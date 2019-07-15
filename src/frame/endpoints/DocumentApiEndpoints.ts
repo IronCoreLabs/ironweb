@@ -19,8 +19,8 @@ export interface DocumentListResponseType {
 }
 export interface DocumentMetaGetResponseType extends DocumentMetaApiResponse {
     visibleTo: {
-        users: Array<{id: string}>;
-        groups: Array<{id: string; name?: string}>;
+        users: {id: string}[];
+        groups: {id: string; name?: string}[];
     };
     encryptedSymmetricKey: TransformedEncryptedMessage;
 }
@@ -37,8 +37,8 @@ export interface DocumentCreateResponseType {
 }
 export type DocumentUpdateResponseType = DocumentGetResponseType;
 export interface DocumentAccessResponseType {
-    succeededIds: Array<{userOrGroup: UserOrGroup}>;
-    failedIds: Array<{userOrGroup: UserOrGroup; errorMessage: string}>;
+    succeededIds: {userOrGroup: UserOrGroup}[];
+    failedIds: {userOrGroup: UserOrGroup; errorMessage: string}[];
 }
 
 interface DocumentCreatePayload {

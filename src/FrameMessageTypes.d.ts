@@ -3,12 +3,10 @@ import {
     DocumentMetaResponse,
     DocumentListResponse as ExposedDocumentListResponse,
     DecryptedDocumentResponse,
-    EncryptedDocumentResponse,
     DocumentAccessResponse,
     GroupMetaResponse,
     GroupDetailResponse,
     GroupListResponse as GroupListResult,
-    GroupCreateOptions,
     GroupUserEditResponse,
 } from "../ironweb";
 

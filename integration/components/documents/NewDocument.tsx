@@ -17,7 +17,7 @@ import Upload from "material-ui/svg-icons/file/file-upload";
 import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
 import {lightGreen200, lightGreen400, orange200, orange400} from "material-ui/styles/colors";
 
-type GrantList = Array<{id: string}>;
+type GrantList = {id: string}[];
 
 interface NewDocumentProps {
     backToList(): void;

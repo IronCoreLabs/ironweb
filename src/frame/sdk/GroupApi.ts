@@ -28,8 +28,8 @@ function isFullGroupResponse(group: GroupApiBasicResponse | GroupApiFullDetailRe
  */
 function mapOperationToSuccessAndFailureList(
     requestedList: string[],
-    succeededIds: Array<{userId: string}>,
-    failedIDs: Array<{userId: string; errorMessage: string}>
+    succeededIds: {userId: string}[],
+    failedIDs: {userId: string; errorMessage: string}[]
 ): GroupUserEditResponse {
     const missingUserList = requestedList
         .filter((id) => {

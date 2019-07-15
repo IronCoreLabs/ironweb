@@ -20,7 +20,7 @@ describe("UserApiEndpoints", () => {
 
         it("calls fetchJSON with expected results", () => {
             UserApiEndpoints.callUserVerifyApi("jwtToken");
-            expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/verify?returnKeys=true", jasmine.any(Number), {}, jasmine.any(Future));
+            expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/verify?returnKeys=true", expect.any(Number), {}, expect.any(Future));
             const authHeader = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[3];
             authHeader.engage(
                 (e: Error) => fail(e),
@@ -33,7 +33,7 @@ describe("UserApiEndpoints", () => {
         it("returns expected result with user exist flag set to false when not a 200", () => {
             UserApiEndpoints.callUserVerifyApi("jwtToken");
 
-            expect(mapSpy).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(mapSpy).toHaveBeenCalledWith(expect.any(Function));
             const mapper = mapSpy.calls.argsFor(0)[0];
             expect(mapper(undefined)).toEqual({
                 user: undefined,
@@ -44,7 +44,7 @@ describe("UserApiEndpoints", () => {
         it("returns expected result with user exist flag set to true when 200 response", () => {
             UserApiEndpoints.callUserVerifyApi("jwtToken");
 
-            expect(mapSpy).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(mapSpy).toHaveBeenCalledWith(expect.any(Function));
             const mapper = mapSpy.calls.argsFor(0)[0];
             expect(mapper({foo: "bar"})).toEqual({
                 user: {foo: "bar"},
@@ -78,24 +78,24 @@ describe("UserApiEndpoints", () => {
                         foo: "bar",
                     });
 
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     const authHeader = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[3];
                     authHeader.engage((e: Error) => fail(e.message), (header: string) => expect(header).toEqual("jwt jwtToken"));
                     expect(JSON.parse(request.body)).toEqual({
-                        userPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
+                        userPublicKey: {x: expect.any(String), y: expect.any(String)},
                         userPrivateKey: "AAAAAAAAAAAAAA==",
                         devices: [
                             {
-                                publicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                signingKey: jasmine.any(String),
+                                publicKey: {x: expect.any(String), y: expect.any(String)},
+                                signingKey: expect.any(String),
                                 transformKey: {
-                                    ephemeralPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    toPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    encryptedTempKey: jasmine.any(String),
-                                    hashedTempKey: jasmine.any(String),
-                                    publicSigningKey: jasmine.any(String),
-                                    signature: jasmine.any(String),
+                                    ephemeralPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    toPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    encryptedTempKey: expect.any(String),
+                                    hashedTempKey: expect.any(String),
+                                    publicSigningKey: expect.any(String),
+                                    signature: expect.any(String),
                                 },
                             },
                         ],
@@ -128,24 +128,24 @@ describe("UserApiEndpoints", () => {
                         foo: "bar",
                     });
 
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     const authHeader = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[3];
                     authHeader.engage((e: Error) => fail(e.message), (header: string) => expect(header).toEqual("jwt jwtToken"));
                     expect(JSON.parse(request.body)).toEqual({
-                        userPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
+                        userPublicKey: {x: expect.any(String), y: expect.any(String)},
                         userPrivateKey: "AAAAAAAAAAAAAAAA",
                         devices: [
                             {
-                                publicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                signingKey: jasmine.any(String),
+                                publicKey: {x: expect.any(String), y: expect.any(String)},
+                                signingKey: expect.any(String),
                                 transformKey: {
-                                    ephemeralPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    toPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    encryptedTempKey: jasmine.any(String),
-                                    hashedTempKey: jasmine.any(String),
-                                    publicSigningKey: jasmine.any(String),
-                                    signature: jasmine.any(String),
+                                    ephemeralPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    toPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    encryptedTempKey: expect.any(String),
+                                    hashedTempKey: expect.any(String),
+                                    publicSigningKey: expect.any(String),
+                                    signature: expect.any(String),
                                 },
                             },
                         ],
@@ -174,7 +174,7 @@ describe("UserApiEndpoints", () => {
                         id: "user-10",
                         foo: "bar",
                     });
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/user-10", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/user-10", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
                         status: 2,
@@ -197,7 +197,7 @@ describe("UserApiEndpoints", () => {
             UserApiEndpoints.callUserUpdateApi(new Uint8Array([98, 103, 110])).engage(
                 (e) => fail(e.message),
                 () => {
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/user-10", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/user-10", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPrivateKey: "Ymdu",
@@ -220,7 +220,7 @@ describe("UserApiEndpoints", () => {
             UserApiEndpoints.callUserUpdateApi(new Uint8Array([98, 103, 110]), 3).engage(
                 (e) => fail(e.message),
                 () => {
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/user-10", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/user-10", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPrivateKey: "Ymdu",
@@ -254,21 +254,21 @@ describe("UserApiEndpoints", () => {
                         devicePublicKey: {x: "", y: ""},
                     });
 
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/devices", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users/devices", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     const authHeader = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[3];
                     authHeader.engage((e: Error) => fail(e.message), (header: string) => expect(header).toEqual("jwt jwt"));
                     expect(JSON.parse(request.body)).toEqual({
                         timestamp: 133353523,
-                        userPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
+                        userPublicKey: {x: expect.any(String), y: expect.any(String)},
                         device: {
                             transformKey: {
-                                ephemeralPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                toPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                encryptedTempKey: jasmine.any(String),
-                                hashedTempKey: jasmine.any(String),
-                                publicSigningKey: jasmine.any(String),
-                                signature: jasmine.any(String),
+                                ephemeralPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                toPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                encryptedTempKey: expect.any(String),
+                                hashedTempKey: expect.any(String),
+                                publicSigningKey: expect.any(String),
+                                signature: expect.any(String),
                             },
                         },
                         signature: "Y2dxXQ==",
@@ -290,9 +290,9 @@ describe("UserApiEndpoints", () => {
                     expect(deleteResult).toEqual({id: 353});
                     expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
                         "users/user-10/devices/current",
-                        jasmine.any(Number),
-                        jasmine.any(Object),
-                        jasmine.any(Future)
+                        expect.any(Number),
+                        expect.any(Object),
+                        expect.any(Future)
                     );
                 }
             );
@@ -316,12 +316,7 @@ describe("UserApiEndpoints", () => {
                         result: [{id: "user-10", userMasterPublicKey: {x: ""}}, {id: "user-20", userMasterPublicKey: {x: ""}}],
                     });
 
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
-                        "users?id=user-10,user-20",
-                        jasmine.any(Number),
-                        jasmine.any(Object),
-                        jasmine.any(Future)
-                    );
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users?id=user-10,user-20", expect.any(Number), expect.any(Object), expect.any(Future));
                 }
             );
         });

@@ -78,7 +78,7 @@ describe("AES", () => {
                 () => fail("document encryption should not fail"),
                 (doc: any) => {
                     expect(doc).toEqual({foo: "bar"});
-                    expect(NativeAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, jasmine.any(Uint8Array));
+                    expect(NativeAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, expect.any(Uint8Array));
                 }
             );
         });
@@ -94,7 +94,7 @@ describe("AES", () => {
                 () => fail("document encryption should not fail"),
                 (doc: any) => {
                     expect(doc).toEqual({foo: "bar"});
-                    expect(PolyfillAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, jasmine.any(Uint8Array));
+                    expect(PolyfillAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, expect.any(Uint8Array));
                 }
             );
         });
@@ -111,8 +111,8 @@ describe("AES", () => {
                 () => fail("document encryption should not fail"),
                 (doc: any) => {
                     expect(doc).toEqual({foo: "bar"});
-                    expect(PolyfillAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, jasmine.any(Uint8Array));
-                    expect(NativeAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, jasmine.any(Uint8Array));
+                    expect(PolyfillAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, expect.any(Uint8Array));
+                    expect(NativeAes.encryptDocument).toHaveBeenCalledWith(document, docSymKey, expect.any(Uint8Array));
                 }
             );
         });
@@ -206,7 +206,7 @@ describe("AES", () => {
                 () => fail("document decryption should not fail"),
                 (decryptedDoc: any) => {
                     expect(decryptedDoc).toEqual({foo: "bar"});
-                    expect(NativeAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, jasmine.any(Uint8Array), jasmine.any(Uint8Array));
+                    expect(NativeAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, expect.any(Uint8Array), expect.any(Uint8Array));
                 }
             );
         });
@@ -225,8 +225,8 @@ describe("AES", () => {
                     expect(PolyfillAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(
                         deviceKey,
                         signingKey,
-                        jasmine.any(Uint8Array),
-                        jasmine.any(Uint8Array)
+                        expect.any(Uint8Array),
+                        expect.any(Uint8Array)
                     );
                 }
             );
@@ -247,10 +247,10 @@ describe("AES", () => {
                     expect(PolyfillAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(
                         deviceKey,
                         signingKey,
-                        jasmine.any(Uint8Array),
-                        jasmine.any(Uint8Array)
+                        expect.any(Uint8Array),
+                        expect.any(Uint8Array)
                     );
-                    expect(NativeAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, jasmine.any(Uint8Array), jasmine.any(Uint8Array));
+                    expect(NativeAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, expect.any(Uint8Array), expect.any(Uint8Array));
                 }
             );
         });

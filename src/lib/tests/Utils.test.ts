@@ -62,12 +62,12 @@ describe("Utils", () => {
             const transformKey = TestUtils.getTransformKey();
 
             expect(Utils.transformKeyToBase64(transformKey) as any).toEqual({
-                ephemeralPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                toPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                encryptedTempKey: jasmine.any(String),
-                hashedTempKey: jasmine.any(String),
-                publicSigningKey: jasmine.any(String),
-                signature: jasmine.any(String),
+                ephemeralPublicKey: {x: expect.any(String), y: expect.any(String)},
+                toPublicKey: {x: expect.any(String), y: expect.any(String)},
+                encryptedTempKey: expect.any(String),
+                hashedTempKey: expect.any(String),
+                publicSigningKey: expect.any(String),
+                signature: expect.any(String),
             });
         });
     });

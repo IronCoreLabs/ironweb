@@ -19,12 +19,12 @@ describe("RecryptJs", () => {
             Recrypt.generateKeyPair().engage(
                 (e) => fail(e),
                 ({publicKey, privateKey}) => {
-                    expect(publicKey.x.length).toBeWithinRange(32, 33);
-                    expect(publicKey.y.length).toBeWithinRange(32, 33);
-                    expect(publicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(publicKey.y).toEqual(jasmine.any(Uint8Array));
-                    expect(privateKey).toEqual(jasmine.any(Uint8Array));
-                    expect(privateKey.length).toBeWithinRange(32, 33);
+                    expect(publicKey.x.length).toBeWithin(32, 33);
+                    expect(publicKey.y.length).toBeWithin(32, 33);
+                    expect(publicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(publicKey.y).toEqual(expect.any(Uint8Array));
+                    expect(privateKey).toEqual(expect.any(Uint8Array));
+                    expect(privateKey.length).toBeWithin(32, 33);
                 }
             );
         });
@@ -35,9 +35,9 @@ describe("RecryptJs", () => {
             Recrypt.generateSigningKeyPair().engage(
                 (e) => fail(e),
                 ({publicKey, privateKey}) => {
-                    expect(publicKey).toEqual(jasmine.any(Uint8Array));
+                    expect(publicKey).toEqual(expect.any(Uint8Array));
                     expect(publicKey.length).toEqual(32);
-                    expect(privateKey).toEqual(jasmine.any(Uint8Array));
+                    expect(privateKey).toEqual(expect.any(Uint8Array));
                     expect(privateKey.length).toEqual(64);
                 }
             );
@@ -62,19 +62,19 @@ describe("RecryptJs", () => {
                 (e) => fail(e),
                 (keys: any) => {
                     expect(Object.keys(keys)).toBeArrayOfSize(3);
-                    expect(keys.userKeys.publicKey.x.length).toBeWithinRange(31, 33);
-                    expect(keys.userKeys.publicKey.y.length).toBeWithinRange(31, 33);
-                    expect(keys.userKeys.publicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.userKeys.publicKey.y).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.userKeys.privateKey).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.userKeys.privateKey.length).toBeWithinRange(31, 33);
+                    expect(keys.userKeys.publicKey.x.length).toBeWithin(31, 33);
+                    expect(keys.userKeys.publicKey.y.length).toBeWithin(31, 33);
+                    expect(keys.userKeys.publicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(keys.userKeys.publicKey.y).toEqual(expect.any(Uint8Array));
+                    expect(keys.userKeys.privateKey).toEqual(expect.any(Uint8Array));
+                    expect(keys.userKeys.privateKey.length).toBeWithin(31, 33);
 
-                    expect(keys.deviceKeys.publicKey.x.length).toBeWithinRange(31, 33);
-                    expect(keys.deviceKeys.publicKey.y.length).toBeWithinRange(31, 33);
-                    expect(keys.deviceKeys.publicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.deviceKeys.publicKey.y).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.deviceKeys.privateKey).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.deviceKeys.privateKey.length).toBeWithinRange(31, 33);
+                    expect(keys.deviceKeys.publicKey.x.length).toBeWithin(31, 33);
+                    expect(keys.deviceKeys.publicKey.y.length).toBeWithin(31, 33);
+                    expect(keys.deviceKeys.publicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(keys.deviceKeys.publicKey.y).toEqual(expect.any(Uint8Array));
+                    expect(keys.deviceKeys.privateKey).toEqual(expect.any(Uint8Array));
+                    expect(keys.deviceKeys.privateKey.length).toBeWithin(31, 33);
 
                     expect(keys.signingKeys.publicKey.length).toEqual(32);
                     expect(keys.signingKeys.privateKey.length).toEqual(64);
@@ -88,16 +88,16 @@ describe("RecryptJs", () => {
             Recrypt.generateGroupKeyPair().engage(
                 (e) => fail(e),
                 (keys) => {
-                    expect(keys.publicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.publicKey.y).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.privateKey).toEqual(jasmine.any(Uint8Array));
-                    expect(keys.plaintext).toEqual(jasmine.any(Uint8Array));
+                    expect(keys.publicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(keys.publicKey.y).toEqual(expect.any(Uint8Array));
+                    expect(keys.privateKey).toEqual(expect.any(Uint8Array));
+                    expect(keys.plaintext).toEqual(expect.any(Uint8Array));
 
-                    expect(keys.publicKey.x.length).toBeWithinRange(31, 33);
-                    expect(keys.publicKey.y.length).toBeWithinRange(31, 33);
+                    expect(keys.publicKey.x.length).toBeWithin(31, 33);
+                    expect(keys.publicKey.y.length).toBeWithin(31, 33);
 
-                    expect(keys.privateKey.length).toBeWithinRange(31, 33);
-                    expect(keys.plaintext.length).toBeWithinRange(383, 385);
+                    expect(keys.privateKey.length).toBeWithin(31, 33);
+                    expect(keys.plaintext.length).toBeWithin(383, 385);
                 }
             );
         });
@@ -130,25 +130,25 @@ describe("RecryptJs", () => {
                     (transformKey) => {
                         expect(transformKey).toBeObject();
 
-                        expect(transformKey.encryptedTempKey).toEqual(jasmine.any(Uint8Array));
+                        expect(transformKey.encryptedTempKey).toEqual(expect.any(Uint8Array));
                         expect(transformKey.encryptedTempKey.length).toEqual(384);
 
-                        expect(transformKey.hashedTempKey).toEqual(jasmine.any(Uint8Array));
+                        expect(transformKey.hashedTempKey).toEqual(expect.any(Uint8Array));
                         expect(transformKey.hashedTempKey.length).toEqual(128);
 
-                        expect(transformKey.ephemeralPublicKey.x).toEqual(jasmine.any(Uint8Array));
-                        expect(transformKey.ephemeralPublicKey.y).toEqual(jasmine.any(Uint8Array));
-                        expect(transformKey.ephemeralPublicKey.x.length).toBeWithinRange(32, 33);
-                        expect(transformKey.ephemeralPublicKey.y.length).toBeWithinRange(32, 33);
+                        expect(transformKey.ephemeralPublicKey.x).toEqual(expect.any(Uint8Array));
+                        expect(transformKey.ephemeralPublicKey.y).toEqual(expect.any(Uint8Array));
+                        expect(transformKey.ephemeralPublicKey.x.length).toBeWithin(32, 33);
+                        expect(transformKey.ephemeralPublicKey.y.length).toBeWithin(32, 33);
 
-                        expect(transformKey.toPublicKey.x).toEqual(jasmine.any(Uint8Array));
-                        expect(transformKey.toPublicKey.y).toEqual(jasmine.any(Uint8Array));
-                        expect(transformKey.toPublicKey.x.length).toBeWithinRange(32, 33);
-                        expect(transformKey.toPublicKey.y.length).toBeWithinRange(32, 33);
+                        expect(transformKey.toPublicKey.x).toEqual(expect.any(Uint8Array));
+                        expect(transformKey.toPublicKey.y).toEqual(expect.any(Uint8Array));
+                        expect(transformKey.toPublicKey.x.length).toBeWithin(32, 33);
+                        expect(transformKey.toPublicKey.y.length).toBeWithin(32, 33);
 
                         expect(transformKey.publicSigningKey).toEqual(signingKeys.publicKey);
 
-                        expect(transformKey.signature).toEqual(jasmine.any(Uint8Array));
+                        expect(transformKey.signature).toEqual(expect.any(Uint8Array));
                         expect(transformKey.signature.length).toEqual(64);
                     }
                 );
@@ -223,22 +223,22 @@ describe("RecryptJs", () => {
                     expect(ts2.publicKey).toEqual(key2.masterPublicKey);
 
                     expect(ts1.transformKey.publicSigningKey).toEqual(signingKeys.publicKey);
-                    expect(ts2.transformKey.signature).toEqual(jasmine.any(Uint8Array));
-                    expect(ts1.transformKey.encryptedTempKey).toEqual(jasmine.any(Uint8Array));
-                    expect(ts1.transformKey.hashedTempKey).toEqual(jasmine.any(Uint8Array));
-                    expect(ts1.transformKey.ephemeralPublicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(ts1.transformKey.ephemeralPublicKey.y).toEqual(jasmine.any(Uint8Array));
-                    expect(ts1.transformKey.toPublicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(ts1.transformKey.toPublicKey.y).toEqual(jasmine.any(Uint8Array));
+                    expect(ts2.transformKey.signature).toEqual(expect.any(Uint8Array));
+                    expect(ts1.transformKey.encryptedTempKey).toEqual(expect.any(Uint8Array));
+                    expect(ts1.transformKey.hashedTempKey).toEqual(expect.any(Uint8Array));
+                    expect(ts1.transformKey.ephemeralPublicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(ts1.transformKey.ephemeralPublicKey.y).toEqual(expect.any(Uint8Array));
+                    expect(ts1.transformKey.toPublicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(ts1.transformKey.toPublicKey.y).toEqual(expect.any(Uint8Array));
 
                     expect(ts1.transformKey.publicSigningKey).toEqual(signingKeys.publicKey);
-                    expect(ts2.transformKey.signature).toEqual(jasmine.any(Uint8Array));
-                    expect(ts2.transformKey.encryptedTempKey).toEqual(jasmine.any(Uint8Array));
-                    expect(ts2.transformKey.hashedTempKey).toEqual(jasmine.any(Uint8Array));
-                    expect(ts2.transformKey.ephemeralPublicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(ts2.transformKey.ephemeralPublicKey.y).toEqual(jasmine.any(Uint8Array));
-                    expect(ts2.transformKey.toPublicKey.x).toEqual(jasmine.any(Uint8Array));
-                    expect(ts2.transformKey.toPublicKey.y).toEqual(jasmine.any(Uint8Array));
+                    expect(ts2.transformKey.signature).toEqual(expect.any(Uint8Array));
+                    expect(ts2.transformKey.encryptedTempKey).toEqual(expect.any(Uint8Array));
+                    expect(ts2.transformKey.hashedTempKey).toEqual(expect.any(Uint8Array));
+                    expect(ts2.transformKey.ephemeralPublicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(ts2.transformKey.ephemeralPublicKey.y).toEqual(expect.any(Uint8Array));
+                    expect(ts2.transformKey.toPublicKey.x).toEqual(expect.any(Uint8Array));
+                    expect(ts2.transformKey.toPublicKey.y).toEqual(expect.any(Uint8Array));
                 }
             );
         });
@@ -250,10 +250,10 @@ describe("RecryptJs", () => {
                 (e) => fail(e),
                 (key: any) => {
                     expect(key).toBeArrayOfSize(2);
-                    expect(key[0]).toEqual(jasmine.any(Uint8Array));
-                    expect(key[0].length).toBeWithinRange(383, 385);
-                    expect(key[1]).toEqual(jasmine.any(Uint8Array));
-                    expect(key[1].length).toBeWithinRange(32, 33);
+                    expect(key[0]).toEqual(expect.any(Uint8Array));
+                    expect(key[0].length).toBeWithin(383, 385);
+                    expect(key[1]).toEqual(expect.any(Uint8Array));
+                    expect(key[1].length).toBeWithin(32, 33);
                 }
             );
         });
@@ -284,11 +284,11 @@ describe("RecryptJs", () => {
             Recrypt.encryptPlaintext(new Uint8Array(384), publicKey, signingKeys).engage(
                 (e) => fail(e.message),
                 (encryptedKey) => {
-                    expect(encryptedKey.ephemeralPublicKey.x).toEqual(jasmine.any(String));
-                    expect(encryptedKey.ephemeralPublicKey.y).toEqual(jasmine.any(String));
-                    expect(encryptedKey.encryptedMessage).toEqual(jasmine.any(String));
-                    expect(encryptedKey.publicSigningKey).toEqual(jasmine.any(String));
-                    expect(encryptedKey.signature).toEqual(jasmine.any(String));
+                    expect(encryptedKey.ephemeralPublicKey.x).toEqual(expect.any(String));
+                    expect(encryptedKey.ephemeralPublicKey.y).toEqual(expect.any(String));
+                    expect(encryptedKey.encryptedMessage).toEqual(expect.any(String));
+                    expect(encryptedKey.publicSigningKey).toEqual(expect.any(String));
+                    expect(encryptedKey.signature).toEqual(expect.any(String));
                 }
             );
         });
@@ -346,21 +346,25 @@ describe("RecryptJs", () => {
                     expect(encryptedKeys).toBeArrayOfSize(2);
 
                     expect(encryptedKeys[0].publicKey).toEqual(user1.masterPublicKey);
-                    expect(encryptedKeys[0].encryptedPlaintext).toHaveNonEmptyString("encryptedMessage");
-                    expect(encryptedKeys[0].encryptedPlaintext).toHaveNonEmptyString("publicSigningKey");
-                    expect(encryptedKeys[0].encryptedPlaintext).toHaveNonEmptyString("signature");
-                    expect(encryptedKeys[0].encryptedPlaintext).toHaveNonEmptyObject("ephemeralPublicKey");
-                    expect(encryptedKeys[0].encryptedPlaintext.ephemeralPublicKey).toHaveNonEmptyString("x");
-                    expect(encryptedKeys[0].encryptedPlaintext.ephemeralPublicKey).toHaveNonEmptyString("y");
+                    expect(encryptedKeys[0].encryptedPlaintext).toContainAllKeys([
+                        "encryptedMessage",
+                        "ephemeralPublicKey",
+                        "authHash",
+                        "publicSigningKey",
+                        "signature",
+                    ]);
+                    expect(encryptedKeys[0].encryptedPlaintext.ephemeralPublicKey).toContainAllKeys(["x", "y"]);
                     expect(encryptedKeys[0].id).toEqual("user1");
 
                     expect(encryptedKeys[1].publicKey).toEqual(user2.masterPublicKey);
-                    expect(encryptedKeys[1].encryptedPlaintext).toHaveNonEmptyString("encryptedMessage");
-                    expect(encryptedKeys[1].encryptedPlaintext).toHaveNonEmptyString("publicSigningKey");
-                    expect(encryptedKeys[1].encryptedPlaintext).toHaveNonEmptyString("signature");
-                    expect(encryptedKeys[1].encryptedPlaintext).toHaveNonEmptyObject("ephemeralPublicKey");
-                    expect(encryptedKeys[1].encryptedPlaintext.ephemeralPublicKey).toHaveNonEmptyString("x");
-                    expect(encryptedKeys[1].encryptedPlaintext.ephemeralPublicKey).toHaveNonEmptyString("y");
+                    expect(encryptedKeys[1].encryptedPlaintext).toContainAllKeys([
+                        "encryptedMessage",
+                        "ephemeralPublicKey",
+                        "authHash",
+                        "publicSigningKey",
+                        "signature",
+                    ]);
+                    expect(encryptedKeys[1].encryptedPlaintext.ephemeralPublicKey).toContainAllKeys(["x", "y"]);
                     expect(encryptedKeys[1].id).toEqual("user2");
                 }
             );
@@ -401,8 +405,8 @@ describe("RecryptJs", () => {
                     (e) => fail(e),
                     ([plaintextResult, symmetricKey]) => {
                         expect(plaintextResult).toEqual(plaintext);
-                        expect(symmetricKey).toEqual(jasmine.any(Uint8Array));
-                        expect(symmetricKey.length).toBeWithinRange(32, 33);
+                        expect(symmetricKey).toEqual(expect.any(Uint8Array));
+                        expect(symmetricKey.length).toBeWithin(32, 33);
                     }
                 );
         });
