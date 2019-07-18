@@ -21,7 +21,7 @@ describe("DocumentCrypto", () => {
                 (decryptedData: any) => {
                     expect(decryptedData).toEqual("decrypted document");
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(symKey, privKey);
-                    expect(AES.decryptDocument).toHaveBeenCalledWith(jasmine.any(Uint8Array), decryptedKey, jasmine.any(Uint8Array));
+                    expect(AES.decryptDocument).toHaveBeenCalledWith(expect.any(Uint8Array), decryptedKey, expect.any(Uint8Array));
                 }
             );
         });

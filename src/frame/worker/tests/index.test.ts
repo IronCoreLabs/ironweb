@@ -43,7 +43,7 @@ describe("worker index", () => {
 
             messenger.processMessageIntoWorker({data: {data: {foo: "bar"}, replyID: 38}} as MessageEvent);
 
-            expect(messenger.onMessageCallback).toHaveBeenCalledWith({foo: "bar"}, jasmine.any(Function));
+            expect(messenger.onMessageCallback).toHaveBeenCalledWith({foo: "bar"}, expect.any(Function));
             const callback = (messenger.onMessageCallback as jasmine.Spy).calls.argsFor(0)[1];
             callback({response: "data"}, [bytes]);
 
@@ -74,7 +74,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
-                expect(result).toEqual({type: jasmine.any(String), message: "new keys"});
+                expect(result).toEqual({type: expect.any(String), message: "new keys"});
                 expect(UserCrypto.generateDeviceAndSigningKeys).toHaveBeenCalledWith("jwt", "passcode", "salt", "user key", "public user key");
                 done();
             });
@@ -90,7 +90,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
-                expect(result).toEqual({type: jasmine.any(String), message: "new keys"});
+                expect(result).toEqual({type: expect.any(String), message: "new keys"});
                 expect(UserCrypto.generateNewUserKeys).toHaveBeenCalledWith("passcode");
                 done();
             });
@@ -109,7 +109,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
-                expect(result).toEqual({type: jasmine.any(String), message: "decrypted keys"});
+                expect(result).toEqual({type: expect.any(String), message: "decrypted keys"});
                 expect(UserCrypto.decryptDeviceAndSigningKeys).toHaveBeenCalledWith("device", "signing", "sym key", "nonce");
                 done();
             });
@@ -173,7 +173,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any, transferList: any) => {
-                expect(result.type).toEqual(jasmine.any(String));
+                expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual(encryptedDoc);
                 expect(transferList).toEqual([encryptedDoc.encryptedDocument.content]);
                 expect(DocumentCrypto.encryptDocument).toHaveBeenCalledWith("document", "list of user public keys", "list of group public keys", "signkeys");
@@ -194,7 +194,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any, transferList: any) => {
-                expect(result.type).toEqual(jasmine.any(String));
+                expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual({decryptedDocument: "decrypted doc"});
                 expect(transferList).toEqual(["decrypted doc"]);
                 expect(DocumentCrypto.decryptDocument).toHaveBeenCalledWith("document", "sym key", "priv key");
@@ -218,7 +218,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any, transferList: any) => {
-                expect(result.type).toEqual(jasmine.any(String));
+                expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual({encryptedDocument: encryptedDoc});
                 expect(transferList).toEqual([encryptedDoc.content]);
                 expect(DocumentCrypto.reEncryptDocument).toHaveBeenCalledWith("document", "sym key", "priv key");
@@ -241,7 +241,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
-                expect(result.type).toEqual(jasmine.any(String));
+                expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("key list");
                 expect(DocumentCrypto.encryptToKeys).toHaveBeenCalledWith("sym key", "user grant list", "group grant list", "priv key", "signkeys");
                 done();
@@ -263,7 +263,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
-                expect(result.type).toEqual(jasmine.any(String));
+                expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("created group");
                 expect(GroupCrypto.createGroup).toHaveBeenCalledWith(new Uint8Array(10), "signkeys", true);
                 done();
@@ -286,7 +286,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
-                expect(result.type).toEqual(jasmine.any(String));
+                expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("added admins");
                 expect(GroupCrypto.addAdminsToGroup).toHaveBeenCalledWith({foo: "bar"}, ["32", "13"], new Uint8Array(32), "signkeys");
                 done();
@@ -309,7 +309,7 @@ describe("worker index", () => {
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
-                expect(result.type).toEqual(jasmine.any(String));
+                expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("added members");
                 expect(GroupCrypto.addMembersToGroup).toHaveBeenCalledWith({foo: "bar"}, ["32", "13"], new Uint8Array(32), "signkeys");
                 done();

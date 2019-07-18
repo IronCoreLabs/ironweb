@@ -296,7 +296,7 @@ describe("DocumentSDK", () => {
                         {
                             type: "DOCUMENT_STORE_ENCRYPT",
                             message: {
-                                documentID: jasmine.any(String),
+                                documentID: expect.any(String),
                                 documentData: document,
                                 documentName: "",
                                 userGrants: [],
@@ -342,7 +342,7 @@ describe("DocumentSDK", () => {
                         {
                             type: "DOCUMENT_STORE_ENCRYPT",
                             message: {
-                                documentID: jasmine.any(String),
+                                documentID: expect.any(String),
                                 documentData: document,
                                 documentName: "my doc",
                                 userGrants: [],
@@ -367,7 +367,7 @@ describe("DocumentSDK", () => {
                         {
                             type: "DOCUMENT_STORE_ENCRYPT",
                             message: {
-                                documentID: jasmine.any(String),
+                                documentID: expect.any(String),
                                 documentData: document,
                                 documentName: "my doc name",
                                 userGrants: ["user-31", "user-55"],
@@ -434,7 +434,7 @@ describe("DocumentSDK", () => {
                         {
                             type: "DOCUMENT_ENCRYPT",
                             message: {
-                                documentID: jasmine.any(String),
+                                documentID: expect.any(String),
                                 documentData: document,
                                 documentName: "",
                                 userGrants: [],
@@ -445,7 +445,7 @@ describe("DocumentSDK", () => {
                     );
                     const messagePayload = (FrameMediator.sendMessage as jasmine.Spy).calls.argsFor(0)[0];
                     expect(messagePayload.message.documentID.length).toEqual(32);
-                    expect(messagePayload.message.documentID.length).toMatch(/[0-9a-fA-F]+/);
+                    expect(messagePayload.message.documentID).toMatch(/[0-9a-fA-F]+/);
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -507,7 +507,7 @@ describe("DocumentSDK", () => {
                         {
                             type: "DOCUMENT_ENCRYPT",
                             message: {
-                                documentID: jasmine.any(String),
+                                documentID: expect.any(String),
                                 documentData: document,
                                 documentName: "my doc name",
                                 userGrants: [],
@@ -545,7 +545,7 @@ describe("DocumentSDK", () => {
                         {
                             type: "DOCUMENT_ENCRYPT",
                             message: {
-                                documentID: jasmine.any(String),
+                                documentID: expect.any(String),
                                 documentData: document,
                                 documentName: "",
                                 userGrants: ["user-31", "user-55"],

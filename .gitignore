@@ -7,6 +7,7 @@ node_modules
 bin/
 dist/
 docs/
+coverage/
 integration/private.key
 integration/projects/*
 integration/certs/*

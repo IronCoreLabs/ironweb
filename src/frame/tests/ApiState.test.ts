@@ -10,7 +10,7 @@ describe("ApiState", () => {
 
             expect(ApiState.user()).toEqual(user);
 
-            expect(ApiState.encryptedUserKey()).toEqual(jasmine.any(Uint8Array));
+            expect(ApiState.encryptedUserKey()).toEqual(expect.any(Uint8Array));
             expect(ApiState.userPublicKey()).toEqual(TestUtils.userPublicBytes);
         });
     });
@@ -62,7 +62,7 @@ describe("ApiState", () => {
         it("returns byte array of encrypted key", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
 
-            expect(ApiState.encryptedUserKey()).toEqual(jasmine.any(Uint8Array));
+            expect(ApiState.encryptedUserKey()).toEqual(expect.any(Uint8Array));
         });
     });
 });

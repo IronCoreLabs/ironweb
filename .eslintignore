@@ -3,6 +3,7 @@ tsconfig.json
 integration/*.webpack.js
 integration/server.js
 integration/nightwatch/*
+webpack/*.js
 karma.conf.js
 .travis_scripts/*
 dist/*

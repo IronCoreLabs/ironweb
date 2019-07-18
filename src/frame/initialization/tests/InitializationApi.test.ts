@@ -52,7 +52,7 @@ describe("InitializationApi", () => {
                     });
 
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
-                        type: jasmine.any(String),
+                        type: expect.any(String),
                         message: {passcode: "passcode"},
                     });
                     expect(UserApiEndpoints.callUserCreateApi).toHaveBeenCalledWith("jwtToken2", userKeys);
@@ -109,7 +109,7 @@ describe("InitializationApi", () => {
                         353253
                     );
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
-                        type: jasmine.any(String),
+                        type: expect.any(String),
                         message: {
                             passcode: "passcode",
                             jwtToken: "jwtToken",
@@ -138,7 +138,7 @@ describe("InitializationApi", () => {
                 (response: any) => {
                     expect(response).toEqual("decrypted keys");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
-                        type: jasmine.any(String),
+                        type: expect.any(String),
                         message: {
                             encryptedDeviceKey,
                             encryptedSigningKey,

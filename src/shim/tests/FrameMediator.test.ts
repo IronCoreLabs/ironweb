@@ -18,9 +18,9 @@ describe("FrameMediator", () => {
             it("creates channel message and passes it down to frame on load", () => {
                 new ShimMessenger(fauxFrame);
 
-                expect(fauxFrame.addEventListener).toHaveBeenCalledWith("load", jasmine.any(Function));
+                expect(fauxFrame.addEventListener).toHaveBeenCalledWith("load", expect.any(Function));
                 fauxFrame.addEventListener.calls.argsFor(0)[1]();
-                expect(fauxFrame.contentWindow.postMessage).toHaveBeenCalledWith("MESSAGE_PORT_INIT", Frame.FRAME_DOMAIN, jasmine.any(Object));
+                expect(fauxFrame.contentWindow.postMessage).toHaveBeenCalledWith("MESSAGE_PORT_INIT", Frame.FRAME_DOMAIN, expect.any(Object));
             });
         });
 
@@ -43,7 +43,7 @@ describe("FrameMediator", () => {
                 expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0}, []);
                 expect(messenger.callbackCount).toEqual(1);
                 expect(messenger.callbacks).toEqual({
-                    0: jasmine.any(Function),
+                    0: expect.any(Function),
                 });
                 messenger.callbacks[0]({engaged: "future"} as any);
             });
@@ -65,7 +65,7 @@ describe("FrameMediator", () => {
 
                 expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0}, ["1", "2"]);
                 expect(messenger.callbacks).toEqual({
-                    0: jasmine.any(Function),
+                    0: expect.any(Function),
                 });
                 messenger.callbacks[0]({engaged: "future"} as any);
             });
@@ -79,7 +79,7 @@ describe("FrameMediator", () => {
 
                 messenger.postMessageToFrame({foo: "bar"} as any).engage(
                     (e) => {
-                        expect(e.message).toEqual(jasmine.any(String));
+                        expect(e.message).toEqual(expect.any(String));
                         done();
                     },
                     () => fail("should fail when postmessage throws an exception")

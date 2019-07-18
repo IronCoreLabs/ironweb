@@ -21,7 +21,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (groups: any) => {
                     expect(groups).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
                 }
             );
         });
@@ -35,9 +35,9 @@ describe("GroupApiEndpoints", () => {
                     expect(groups).toEqual({foo: "bar"});
                     expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
                         "groups?id=group-10,group-20",
-                        jasmine.any(Number),
-                        jasmine.any(Object),
-                        jasmine.any(Future)
+                        expect.any(Number),
+                        expect.any(Object),
+                        expect.any(Future)
                     );
                 }
             );
@@ -50,9 +50,9 @@ describe("GroupApiEndpoints", () => {
                     expect(groups).toEqual({foo: "bar"});
                     expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
                         "groups?id=~%60!%40%23%24%25%5E%26*()-_%3D%2B%5B%7B%5D%7D%3B%3A%3C.%3E%2F%3F,%26%3C%3E",
-                        jasmine.any(Number),
-                        jasmine.any(Object),
-                        jasmine.any(Future)
+                        expect.any(Number),
+                        expect.any(Object),
+                        expect.any(Future)
                     );
                 }
             );
@@ -75,7 +75,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/87", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/87", expect.any(Number), expect.any(Object), expect.any(Future));
                 }
             );
         });
@@ -95,7 +95,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
@@ -126,17 +126,17 @@ describe("GroupApiEndpoints", () => {
                                 },
                                 transformKey: {
                                     ephemeralPublicKey: {
-                                        x: jasmine.any(String),
-                                        y: jasmine.any(String),
+                                        x: expect.any(String),
+                                        y: expect.any(String),
                                     },
                                     toPublicKey: {
-                                        x: jasmine.any(String),
-                                        y: jasmine.any(String),
+                                        x: expect.any(String),
+                                        y: expect.any(String),
                                     },
-                                    encryptedTempKey: jasmine.any(String),
-                                    hashedTempKey: jasmine.any(String),
-                                    publicSigningKey: jasmine.any(String),
-                                    signature: jasmine.any(String),
+                                    encryptedTempKey: expect.any(String),
+                                    hashedTempKey: expect.any(String),
+                                    publicSigningKey: expect.any(String),
+                                    signature: expect.any(String),
                                 },
                             },
                         ],
@@ -157,7 +157,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
@@ -179,12 +179,12 @@ describe("GroupApiEndpoints", () => {
                                 userId: "user-10",
                                 userMasterPublicKey: {x: "upkx", y: "upky"},
                                 transformKey: {
-                                    ephemeralPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    toPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    encryptedTempKey: jasmine.any(String),
-                                    hashedTempKey: jasmine.any(String),
-                                    publicSigningKey: jasmine.any(String),
-                                    signature: jasmine.any(String),
+                                    ephemeralPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    toPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    encryptedTempKey: expect.any(String),
+                                    hashedTempKey: expect.any(String),
+                                    publicSigningKey: expect.any(String),
+                                    signature: expect.any(String),
                                 },
                             },
                         ],
@@ -210,7 +210,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
@@ -245,7 +245,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e.message),
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/23", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/23", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
                         name: "new name",
@@ -259,7 +259,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e.message),
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/%2632", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/%2632", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
@@ -290,7 +290,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/22/admins", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
@@ -324,7 +324,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e.message),
                 (removeResult: any) => {
                     expect(removeResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/22/admins", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
@@ -354,7 +354,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31/users", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object), expect.any(Future));
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
@@ -363,24 +363,24 @@ describe("GroupApiEndpoints", () => {
                                 userId: "37",
                                 userMasterPublicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
                                 transformKey: {
-                                    ephemeralPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    toPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    encryptedTempKey: jasmine.any(String),
-                                    hashedTempKey: jasmine.any(String),
-                                    publicSigningKey: jasmine.any(String),
-                                    signature: jasmine.any(String),
+                                    ephemeralPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    toPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    encryptedTempKey: expect.any(String),
+                                    hashedTempKey: expect.any(String),
+                                    publicSigningKey: expect.any(String),
+                                    signature: expect.any(String),
                                 },
                             },
                             {
                                 userId: "99",
                                 userMasterPublicKey: {x: "secondpublickey", y: "secondpublickeyy"},
                                 transformKey: {
-                                    ephemeralPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    toPublicKey: {x: jasmine.any(String), y: jasmine.any(String)},
-                                    encryptedTempKey: jasmine.any(String),
-                                    hashedTempKey: jasmine.any(String),
-                                    publicSigningKey: jasmine.any(String),
-                                    signature: jasmine.any(String),
+                                    ephemeralPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    toPublicKey: {x: expect.any(String), y: expect.any(String)},
+                                    encryptedTempKey: expect.any(String),
+                                    hashedTempKey: expect.any(String),
+                                    publicSigningKey: expect.any(String),
+                                    signature: expect.any(String),
                                 },
                             },
                         ],
@@ -395,7 +395,7 @@ describe("GroupApiEndpoints", () => {
                     (e) => fail(e),
                     (removeResult: any) => {
                         expect(removeResult).toEqual({foo: "bar"});
-                        expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31/users", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                        expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object), expect.any(Future));
                         const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
 
                         expect(JSON.parse(request.body)).toEqual({
@@ -412,7 +412,7 @@ describe("GroupApiEndpoints", () => {
                     (e) => fail(e),
                     (deleteResult: any) => {
                         expect(deleteResult).toEqual({foo: "bar"});
-                        expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31%2632", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                        expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31%2632", expect.any(Number), expect.any(Object), expect.any(Future));
                         const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                         expect(request.body).toBeUndefined();
                     }

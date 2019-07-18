@@ -3,12 +3,36 @@ import {GenerateRandomBytesFrameRequest, GenerateRandomBytesWorkerResponse} from
 declare function postMessage(message: any): void;
 
 const nativeCrypto: Crypto = (self as any).msCrypto || (self as any).crypto;
-//Listen to messages from the parent window to see if we've gotten back our random bytes
-self.addEventListener("message", handleMainThreadMessage, false);
+
 //A callback counter to keep track of the right callbacks for the right requests
 let messageCounter = 0;
 //Map of callback IDs to callback functions
 const callbacks: {[key: number]: (data: Uint8Array) => void} = {};
+
+/**
+ * Handle response from main thread. Filters out messages to only random byte responses. Looks up the proper callback based on
+ * the ID in the message and invokes the proper callback with the random bytes. Also deletes the Future callback it so we don't expose a memory leak.
+ * @param {MessageEvent} event Parent window message event
+ */
+self.addEventListener(
+    "message",
+    (event: MessageEvent) => {
+        if (!event || !event.data) {
+            return;
+        }
+        const {data, replyID} = event.data as WorkerEvent<GenerateRandomBytesWorkerResponse>;
+        if (data.type === "RANDOM_BYTES_RESPONSE") {
+            //This is the only message type we care about
+            const callback = callbacks[replyID];
+
+            if (callback) {
+                delete callbacks[replyID];
+                callback(data.message.bytes);
+            }
+        }
+    },
+    false
+);
 
 /**
  * Post a message to the main thread asking for the provided size of bytes. Returns a future whose response callback is
@@ -27,27 +51,6 @@ function askMainThreadForBytes(size: number) {
     return new Future<Error, Uint8Array>((_, resolve) => {
         callbacks[message.replyID] = resolve;
     });
-}
-
-/**
- * Handle response from main thread. Filters out messages to only random byte responses. Looks up the proper callback based on
- * the ID in the message and invokes the proper callback with the random bytes. Also deletes the Future callback it so we don't expose a memory leak.
- * @param {MessageEvent} event Parent window message event
- */
-function handleMainThreadMessage(event: MessageEvent) {
-    if (!event || !event.data) {
-        return;
-    }
-    const {data, replyID} = event.data as WorkerEvent<GenerateRandomBytesWorkerResponse>;
-    if (data.type === "RANDOM_BYTES_RESPONSE") {
-        //This is the only message type we care about
-        const callback = callbacks[replyID];
-
-        if (callback) {
-            delete callbacks[replyID];
-            callback(data.message.bytes);
-        }
-    }
 }
 
 /**

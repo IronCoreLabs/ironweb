@@ -133,7 +133,7 @@ describe("WorkerMediator", () => {
                     data: {
                         type: "RANDOM_BYTES_RESPONSE",
                         message: {
-                            bytes: jasmine.any(Uint8Array),
+                            bytes: expect.any(Uint8Array),
                         },
                     },
                 });

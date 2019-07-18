@@ -6,13 +6,13 @@ import * as WorkerMediator from "./WorkerMediator";
 
 const SIGNATURE_VERSION = 1;
 //The identity API will be on the same domain as where the frame is hosted so we can just use relative URLs
-const IRONCORE_ID_API_BASE_URL: string = "/api/1/";
+const IRONCORE_ID_API_BASE_URL = "/api/1/";
 const CLOUDFLARE_RATE_LIMIT_STATUS_CODE = 429; //support.cloudflare.com/hc/en-us/articles/115001635128-Configuring-Rate-Limiting-in-the-Cloudflare-Dashboard#basic
 
-type ApiErrorList = Array<{
+type ApiErrorList = {
     message: string;
     code: number;
-}>;
+}[];
 
 /**
  * Attempt to parse the first error from the response JSON and convert it into an SDK error with the useful API message and

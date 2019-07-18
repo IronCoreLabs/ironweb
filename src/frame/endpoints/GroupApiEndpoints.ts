@@ -21,8 +21,8 @@ interface GroupCreatePayload {
     transformKey?: TransformKey;
 }
 export interface GroupMemberModifyResponseType {
-    succeededIds: Array<{userId: string}>;
-    failedIds: Array<{userId: string; errorMessage: string}>;
+    succeededIds: {userId: string}[];
+    failedIds: {userId: string; errorMessage: string}[];
 }
 
 /**

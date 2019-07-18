@@ -3,7 +3,7 @@ import * as CryptoUtils from "../CryptoUtils";
 describe("CryptoUtils", () => {
     describe("getCryptoSubtleApi", () => {
         it("returns subtle crypto object or undefined", () => {
-            expect(CryptoUtils.getCryptoSubtleApi() instanceof SubtleCrypto).toBeTrue();
+            expect(CryptoUtils.getCryptoSubtleApi()).toBeObject();
         });
     });
 

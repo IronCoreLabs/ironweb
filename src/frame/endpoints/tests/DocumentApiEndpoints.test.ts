@@ -22,7 +22,7 @@ describe("DocumentApiEndpoints", () => {
                 () => fail("Doc list should not reject"),
                 (documents: any) => {
                     expect(documents).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object), expect.any(Future));
                 }
             );
         });
@@ -44,7 +44,7 @@ describe("DocumentApiEndpoints", () => {
                 () => fail("Doc create should not reject"),
                 (documentResult: any) => {
                     expect(documentResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -103,7 +103,7 @@ describe("DocumentApiEndpoints", () => {
                 () => fail("Doc create should not reject"),
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -144,7 +144,7 @@ describe("DocumentApiEndpoints", () => {
                 () => fail("Doc create should not reject"),
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -177,9 +177,9 @@ describe("DocumentApiEndpoints", () => {
 
                     expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
                         "documents/docKey?includeData=true",
-                        jasmine.any(Number),
-                        jasmine.any(Object),
-                        jasmine.any(Future)
+                        expect.any(Number),
+                        expect.any(Object),
+                        expect.any(Future)
                     );
                 }
             );
@@ -192,7 +192,7 @@ describe("DocumentApiEndpoints", () => {
                 () => fail("doc meta get API should not reject"),
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID", expect.any(Number), expect.any(Object), expect.any(Future));
                 }
             );
         });
@@ -206,7 +206,7 @@ describe("DocumentApiEndpoints", () => {
                 () => fail("Doc update should not reject"),
                 (documentResult: any) => {
                     expect(documentResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docKey", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docKey", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -222,7 +222,7 @@ describe("DocumentApiEndpoints", () => {
             DocumentApiEndpoints.callDocumentUpdateApi("docKey", undefined, "new name").engage(
                 () => fail("Doc update should not reject"),
                 () => {
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docKey", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docKey", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -236,7 +236,7 @@ describe("DocumentApiEndpoints", () => {
             DocumentApiEndpoints.callDocumentUpdateApi("docKey", undefined, null).engage(
                 () => fail("Doc update should not reject"),
                 () => {
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docKey", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docKey", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -296,7 +296,7 @@ describe("DocumentApiEndpoints", () => {
                 () => fail("Doc grant should not reject"),
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID/access", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID/access", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -415,7 +415,7 @@ describe("DocumentApiEndpoints", () => {
                 (e) => fail(e.message),
                 (revokeResult: any) => {
                     expect(revokeResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID/access", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID/access", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -430,7 +430,7 @@ describe("DocumentApiEndpoints", () => {
                 (e) => fail(e.message),
                 (revokeResult: any) => {
                     expect(revokeResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID/access", jasmine.any(Number), jasmine.any(Object), jasmine.any(Future));
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("documents/docID/access", expect.any(Number), expect.any(Object), expect.any(Future));
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
@@ -447,9 +447,9 @@ describe("DocumentApiEndpoints", () => {
                     expect(revokeResult).toEqual({foo: "bar"});
                     expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
                         "documents/docID%3F%3D10/access",
-                        jasmine.any(Number),
-                        jasmine.any(Object),
-                        jasmine.any(Future)
+                        expect.any(Number),
+                        expect.any(Object),
+                        expect.any(Future)
                     );
 
                     const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];

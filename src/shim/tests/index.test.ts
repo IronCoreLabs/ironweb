@@ -54,7 +54,7 @@ describe("Init exposed public SDK", () => {
 
     describe("ErrorCodes", () => {
         it("exposes error codes", () => {
-            expect(PublicSdk.ErrorCodes).toBeNonEmptyObject();
+            expect(PublicSdk.ErrorCodes).toBeObject();
         });
     });
 

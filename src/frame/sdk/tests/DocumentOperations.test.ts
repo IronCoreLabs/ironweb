@@ -18,7 +18,7 @@ describe("DocumentOperations", () => {
                     expect(result).toEqual("decrypted doc");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith(
                         {
-                            type: jasmine.any(String),
+                            type: expect.any(String),
                             message: {
                                 document: testDoc,
                                 encryptedSymmetricKey: symKey,
@@ -65,7 +65,7 @@ describe("DocumentOperations", () => {
                     });
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith(
                         {
-                            type: jasmine.any(String),
+                            type: expect.any(String),
                             message: {
                                 document: docToEncrypt,
                                 userKeyList: userList,
@@ -94,7 +94,7 @@ describe("DocumentOperations", () => {
                     expect(result).toEqual("encrypted doc");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith(
                         {
-                            type: jasmine.any(String),
+                            type: expect.any(String),
                             message: {
                                 document: newData,
                                 existingDocumentSymmetricKey: symKey,
@@ -123,7 +123,7 @@ describe("DocumentOperations", () => {
                 (result: any) => {
                     expect(result).toEqual("list of keys");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
-                        type: jasmine.any(String),
+                        type: expect.any(String),
                         message: {
                             userKeyList: userList,
                             groupKeyList: groupList,

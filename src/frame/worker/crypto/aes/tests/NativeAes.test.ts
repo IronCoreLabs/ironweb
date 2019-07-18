@@ -36,7 +36,7 @@ describe("NativeAes", () => {
                     expect(userPrivateKey[45]).toEqual(82);
                     expect(userPrivateKey[46]).toEqual(72);
 
-                    expect(crypto.subtle.encrypt).toHaveBeenCalledWith(jasmine.any(Object), "derivedKey", userKey);
+                    expect(crypto.subtle.encrypt).toHaveBeenCalledWith(expect.any(Object), "derivedKey", userKey);
                     done();
                 }
             );
@@ -56,7 +56,7 @@ describe("NativeAes", () => {
                     expect(decryptedKey[1]).toEqual(70);
                     expect(decryptedKey[2]).toEqual(62);
 
-                    expect(crypto.subtle.decrypt).toHaveBeenCalledWith(jasmine.any(Object), "derivedKey", jasmine.any(Uint8Array));
+                    expect(crypto.subtle.decrypt).toHaveBeenCalledWith(expect.any(Object), "derivedKey", expect.any(Uint8Array));
 
                     done();
                 }
@@ -77,7 +77,7 @@ describe("NativeAes", () => {
                     expect(content).toEqual(new Uint8Array([93, 82, 72]));
 
                     expect(crypto.subtle.importKey).toHaveBeenCalled();
-                    expect(crypto.subtle.encrypt).toHaveBeenCalledWith(jasmine.any(Object), "CryptoKey", doc);
+                    expect(crypto.subtle.encrypt).toHaveBeenCalledWith(expect.any(Object), "CryptoKey", doc);
 
                     done();
                 }
@@ -95,7 +95,7 @@ describe("NativeAes", () => {
                 (decryptedDocument) => {
                     expect(decryptedDocument).toEqual(new Uint8Array([87, 70, 62]));
                     expect(crypto.subtle.importKey).toHaveBeenCalled();
-                    expect(crypto.subtle.decrypt).toHaveBeenCalledWith(jasmine.any(Object), "CryptoKey", doc);
+                    expect(crypto.subtle.decrypt).toHaveBeenCalledWith(expect.any(Object), "CryptoKey", doc);
                     done();
                 }
             );
