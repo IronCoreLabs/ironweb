@@ -1,6 +1,6 @@
 import Future from "futurejs";
 import SDKError from "../lib/SDKError";
-import {ErrorCode} from "../Constants";
+import {ErrorCodes} from "../Constants";
 import * as WMT from "../WorkerMessageTypes";
 import * as WorkerMediator from "./WorkerMediator";
 
@@ -74,7 +74,7 @@ export function fetchJSON<ResponseType>(
             }
             if (response.status === CLOUDFLARE_RATE_LIMIT_STATUS_CODE) {
                 //Map a Cloudflare rate limit response code to a special error code
-                return Future.reject(new SDKError(new Error("Request was rate limited from too many requests."), ErrorCode.REQUEST_RATE_LIMITED));
+                return Future.reject(new SDKError(new Error("Request was rate limited from too many requests."), ErrorCodes.REQUEST_RATE_LIMITED));
             }
             return parseErrorFromFailedResponse(response, failureErrorCode);
         });

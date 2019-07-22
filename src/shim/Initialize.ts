@@ -9,7 +9,7 @@ import {
     CreateUserResponse,
     CreateUserAndDeviceRequest,
 } from "../FrameMessageTypes";
-import {ErrorCode} from "../Constants";
+import {ErrorCodes} from "../Constants";
 import {storeParentWindowSymmetricKey, getParentWindowSymmetricKey, setSDKInitialized} from "./ShimUtils";
 import * as FrameMediator from "./FrameMediator";
 import {SDKInitializationResult, UserCreateResponse} from "ironweb";
@@ -27,12 +27,12 @@ function getJWT(jwtCallback: JWTCallbackToPromise) {
         if (jwtPromise && typeof jwtPromise.then === "function") {
             return jwtPromise;
         }
-        throw new SDKError(new Error("JWT callback did not return a Promise."), ErrorCode.JWT_FORMAT_FAILURE);
+        throw new SDKError(new Error("JWT callback did not return a Promise."), ErrorCodes.JWT_FORMAT_FAILURE);
     }).flatMap((jwt: string) => {
         if (typeof jwt === "string" && jwt.length > 0) {
             return Future.of(jwt);
         }
-        return Future.reject(new SDKError(new Error(`JWT should be a non-zero length string, but instead got '${jwt}'`), ErrorCode.JWT_RETRIEVAL_FAILURE));
+        return Future.reject(new SDKError(new Error(`JWT should be a non-zero length string, but instead got '${jwt}'`), ErrorCodes.JWT_RETRIEVAL_FAILURE));
     });
 }
 
@@ -48,7 +48,7 @@ function invokePasscodeCallback(passcodeCallback: PasscodeCallbackToPromise, doe
         if (passcodePromise && typeof passcodePromise.then === "function") {
             return passcodePromise;
         }
-        throw new SDKError(new Error("Passcode callback did not return a Promise."), ErrorCode.PASSCODE_FORMAT_FAILURE);
+        throw new SDKError(new Error("Passcode callback did not return a Promise."), ErrorCodes.PASSCODE_FORMAT_FAILURE);
     }).flatMap((passcode: string) => {
         if (typeof passcode === "string" && passcode.length > 0) {
             return Future.of(passcode);
@@ -56,7 +56,7 @@ function invokePasscodeCallback(passcodeCallback: PasscodeCallbackToPromise, doe
         return Future.reject(
             new SDKError(
                 new Error(`User provided passcode should be a non-zero length string, but instead got '${passcode}'`),
-                ErrorCode.PASSCODE_RETRIEVAL_FAILURE
+                ErrorCodes.PASSCODE_RETRIEVAL_FAILURE
             )
         );
     });

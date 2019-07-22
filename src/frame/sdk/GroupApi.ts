@@ -3,7 +3,7 @@ import ApiState from "../ApiState";
 import * as GroupOperations from "./GroupOperations";
 import GroupApiEndpoints from "../endpoints/GroupApiEndpoints";
 import UserApiEndpoints from "../endpoints/UserApiEndpoints";
-import {GroupPermissions, ErrorCode} from "../../Constants";
+import {GroupPermissions, ErrorCodes} from "../../Constants";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 
@@ -123,7 +123,7 @@ export function addAdmins(groupID: string, userList: string[]) {
                 return Future.reject(
                     new SDKError(
                         new Error("Current user not allowed to add admins as they are not an admin of the group."),
-                        ErrorCode.GROUP_ADD_ADMINS_NOT_ADMIN_FAILURE
+                        ErrorCodes.GROUP_ADD_ADMINS_NOT_ADMIN_FAILURE
                     )
                 );
             }
@@ -164,7 +164,7 @@ export function addMembers(groupID: string, userList: string[]) {
                 return Future.reject(
                     new SDKError(
                         new Error("Current user not allowed to add members as they are not an admin of the group."),
-                        ErrorCode.GROUP_ADD_MEMBER_NOT_ADMIN_FAILURE
+                        ErrorCodes.GROUP_ADD_MEMBER_NOT_ADMIN_FAILURE
                     )
                 );
             }
@@ -196,7 +196,7 @@ export function removeSelfAsMember(groupID: string) {
     const {id} = ApiState.user();
     return removeMembers(groupID, [id]).flatMap((removeResult) => {
         if (removeResult.failed.length > 0) {
-            return Future.reject(new SDKError(new Error("User could not be removed from group."), ErrorCode.GROUP_REMOVE_SELF_REQUEST_FAILURE));
+            return Future.reject(new SDKError(new Error("User could not be removed from group."), ErrorCodes.GROUP_REMOVE_SELF_REQUEST_FAILURE));
         }
         return Future.of(removeResult.succeeded[0]);
     });

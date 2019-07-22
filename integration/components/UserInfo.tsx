@@ -62,10 +62,10 @@ export default class UserInfo extends React.Component<{}, UserInfoState> {
                 this.setState(
                     {
                         changingPasscode: false,
-                        passcodeError: error.code === IronWeb.ErrorCode.USER_PASSCODE_INCORRECT,
+                        passcodeError: error.code === IronWeb.ErrorCodes.USER_PASSCODE_INCORRECT,
                     },
                     () => {
-                        if (error.code === IronWeb.ErrorCode.USER_PASSCODE_INCORRECT) {
+                        if (error.code === IronWeb.ErrorCodes.USER_PASSCODE_INCORRECT) {
                             this.currentPasscodeInput.getInputNode().value = "";
                             this.newPasscodeInput.getInputNode().value = "";
                             this.currentPasscodeInput.focus();

@@ -1,7 +1,7 @@
 import Future from "futurejs";
 import * as ApiRequest from "../ApiRequest";
 import * as WorkerMediator from "../WorkerMediator";
-import {ErrorCode} from "../../Constants";
+import {ErrorCodes} from "../../Constants";
 import * as TestUtils from "../../tests/TestUtils";
 
 describe("ApiRequest", () => {
@@ -95,7 +95,7 @@ describe("ApiRequest", () => {
             ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
                 (error) => {
                     expect(error.message).toBeString();
-                    expect(error.code).toEqual(ErrorCode.REQUEST_RATE_LIMITED);
+                    expect(error.code).toEqual(ErrorCodes.REQUEST_RATE_LIMITED);
                 },
                 () => fail("success method should not be called when 429 error was recieved")
             );

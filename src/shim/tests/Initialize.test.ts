@@ -1,5 +1,5 @@
 import * as Initialize from "../Initialize";
-import {ErrorCode} from "../../Constants";
+import {ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import Future from "futurejs";
 import * as ShimUtils from "../ShimUtils";
@@ -14,7 +14,7 @@ describe("Initialize", () => {
                 .then(() => fail("resolve should not be called when JWT CB is invalid"))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
-                    expect(err.code).toEqual(ErrorCode.JWT_FORMAT_FAILURE);
+                    expect(err.code).toEqual(ErrorCodes.JWT_FORMAT_FAILURE);
                     done();
                 });
         });
@@ -39,7 +39,7 @@ describe("Initialize", () => {
                 .then(() => fail("resolve should not be called when JWT CB rejects"))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
-                    expect(err.code).toEqual(ErrorCode.JWT_RETRIEVAL_FAILURE);
+                    expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
                     done();
                 });
         });
@@ -51,7 +51,7 @@ describe("Initialize", () => {
                 .then(() => fail("resolve should not be called when JWT CB rejects"))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
-                    expect(err.code).toEqual(ErrorCode.JWT_RETRIEVAL_FAILURE);
+                    expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
                     done();
                 });
         });
@@ -71,7 +71,7 @@ describe("Initialize", () => {
                 .then(() => fail("resolve should not be called when passcode callback "))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
-                    expect(err.code).toEqual(ErrorCode.PASSCODE_FORMAT_FAILURE);
+                    expect(err.code).toEqual(ErrorCodes.PASSCODE_FORMAT_FAILURE);
                     done();
                 });
         });
@@ -88,7 +88,7 @@ describe("Initialize", () => {
                 .then(() => fail("resolve should not be called when passcode callback "))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
-                    expect(err.code).toEqual(ErrorCode.PASSCODE_RETRIEVAL_FAILURE);
+                    expect(err.code).toEqual(ErrorCodes.PASSCODE_RETRIEVAL_FAILURE);
                     done();
                 });
         });
@@ -105,7 +105,7 @@ describe("Initialize", () => {
                 .then(() => fail("resolve should not be called when passcode callback "))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
-                    expect(err.code).toEqual(ErrorCode.PASSCODE_RETRIEVAL_FAILURE);
+                    expect(err.code).toEqual(ErrorCodes.PASSCODE_RETRIEVAL_FAILURE);
                     done();
                 });
         });

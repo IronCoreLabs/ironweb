@@ -52,7 +52,7 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
         IronWeb.group
             .list()
             .then((groups) => this.setState({availableGroups: groups.result}))
-            .catch((error: IronWeb.SDKError) => logAction(`Group list failed: ${error.message}. ErrorCode: ${error.code}`, "error"));
+            .catch((error: IronWeb.SDKError) => logAction(`Group list failed: ${error.message}. Error Code: ${error.code}`, "error"));
     }
 
     createNewList = () => {

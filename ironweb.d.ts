@@ -173,7 +173,7 @@ export class SDKError extends Error {
     rawError: Error;
 }
 
-export const ErrorCode: {[key: string]: number};
+export const ErrorCodes: {[key: string]: number};
 export const document: Document;
 export const codec: Codec;
 export const user: User;

@@ -1,7 +1,7 @@
 import Future from "futurejs";
 import {ErrorResponse, ResponseMessage, RequestMessage} from "../FrameMessageTypes";
 import SDKError from "../lib/SDKError";
-import {Frame, Versions, ErrorCode} from "../Constants";
+import {Frame, Versions, ErrorCodes} from "../Constants";
 import {Promise} from "es6-promise";
 
 interface FrameEvent<T> {
@@ -45,7 +45,7 @@ export class ShimMessenger {
             });
         } catch (_) {
             return Future.reject(
-                new SDKError(new Error("Failure occurred when passing message due to the lack of browser support."), ErrorCode.BROWSER_FRAME_MESSAGE_FAILURE)
+                new SDKError(new Error("Failure occurred when passing message due to the lack of browser support."), ErrorCodes.BROWSER_FRAME_MESSAGE_FAILURE)
             );
         }
     }

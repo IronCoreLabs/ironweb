@@ -2,7 +2,7 @@ import loadRecrypt from "./crypto/recrypt";
 import * as AES from "./crypto/aes";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
-import {ErrorCode} from "../../Constants";
+import {ErrorCodes} from "../../Constants";
 
 /**
  * Decrypt the users private user key by generating a derived key from their passcode.
@@ -14,7 +14,7 @@ function decryptUserMasterPrivateKey(passcode: string, derivedKeySalt: Uint8Arra
     return loadRecrypt()
         .flatMap((Recrypt) => Recrypt.generatePasswordDerivedKey(passcode, derivedKeySalt))
         .flatMap((derivedKey) => AES.decryptUserKey(encryptedPrivateUserKey, derivedKey))
-        .errorMap(() => new SDKError(new Error("User passcode was incorrect."), ErrorCode.USER_PASSCODE_INCORRECT));
+        .errorMap(() => new SDKError(new Error("User passcode was incorrect."), ErrorCodes.USER_PASSCODE_INCORRECT));
 }
 
 /**
@@ -85,7 +85,7 @@ export function generateDeviceAndSigningKeys(
                     });
             })
             //Map error to specific message, but handle case where error happened up above and persist that error code
-            .errorMap((error) => new SDKError(error, ErrorCode.USER_DEVICE_KEY_GENERATION_FAILURE))
+            .errorMap((error) => new SDKError(error, ErrorCodes.USER_DEVICE_KEY_GENERATION_FAILURE))
     );
 }
 
@@ -108,7 +108,7 @@ export const generateNewUserKeys = (passcode: string): Future<SDKError, UserKeys
                 encryptedPrivateKey,
             }))
         )
-        .errorMap((error) => new SDKError(error, ErrorCode.USER_MASTER_KEY_GENERATION_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.USER_MASTER_KEY_GENERATION_FAILURE));
 
 /**
  * Generate and encrypt keys for a new user. Generates user, device, and signing keys and encrypts the user keys with a passcode-derived key
@@ -126,7 +126,7 @@ export function generateNewUserAndDeviceKeys(passcode: string) {
                 })
                 .map(([encryptedDeviceAndSigningKeys, userCreateKeys]) => ({userKeys: userCreateKeys, encryptedDeviceAndSigningKeys}));
         })
-        .errorMap((error) => new SDKError(error, ErrorCode.USER_MASTER_KEY_GENERATION_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.USER_MASTER_KEY_GENERATION_FAILURE));
 }
 
 /**
@@ -153,7 +153,7 @@ export function decryptDeviceAndSigningKeys(encryptedDeviceKey: Uint8Array, encr
                 );
             });
         })
-        .errorMap((error) => new SDKError(error, ErrorCode.USER_DEVICE_KEY_DECRYPTION_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.USER_DEVICE_KEY_DECRYPTION_FAILURE));
 }
 
 /**
@@ -171,7 +171,7 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
                 AES.encryptUserKey(masterPrivateKey, newPasscodeDerivedKey)
             );
         })
-        .errorMap((error) => new SDKError(error, ErrorCode.USER_PASSCODE_CHANGE_FAILURE))
+        .errorMap((error) => new SDKError(error, ErrorCodes.USER_PASSCODE_CHANGE_FAILURE))
         .map((newlyEncryptedPrivateUserKey) => ({encryptedPrivateUserKey: newlyEncryptedPrivateUserKey}));
 }
 
@@ -181,5 +181,5 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
 export function signRequestPayload(segmentID: number, userID: string, signingKeys: SigningKeyPair, signatureVersion: number) {
     return loadRecrypt()
         .map((Recrypt) => Recrypt.createRequestSignature(segmentID, userID, signingKeys, signatureVersion))
-        .errorMap((error) => new SDKError(error, ErrorCode.SIGNATURE_GENERATION_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.SIGNATURE_GENERATION_FAILURE));
 }

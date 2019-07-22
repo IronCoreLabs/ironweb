@@ -38,7 +38,7 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
                 this.setState({availableGroups: groups.result.filter((group) => group.isMember)});
             })
             .catch((error: IronWeb.SDKError) => {
-                logAction(`Group list failed: ${error.message}. ErrorCode: ${error.code}`, "error");
+                logAction(`Group list failed: ${error.message}. Error Code: ${error.code}`, "error");
             });
     }
 

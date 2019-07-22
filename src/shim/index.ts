@@ -1,6 +1,6 @@
 import * as Init from "./Initialize";
 import {SDKInitializationResult, UserCreateResponse} from "../../ironweb";
-import {ErrorCode} from "../Constants";
+import {ErrorCodes} from "../Constants";
 import {checkSDKInitialized} from "./ShimUtils";
 import SDKError from "../lib/SDKError";
 
@@ -19,7 +19,10 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
     // TODO: find out if this is neccessary for user keygen. Assuming it is.
     if (!supportsRandomNumGen()) {
         return Promise.reject(
-            new SDKError(new Error("Request failed due to a lack of browser support for random number generation."), ErrorCode.RANDOM_NUMBER_GENERATION_FAILURE)
+            new SDKError(
+                new Error("Request failed due to a lack of browser support for random number generation."),
+                ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE
+            )
         );
     }
     return Init.createNewUser(jwtCallback, passcode);
@@ -40,7 +43,10 @@ export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: 
     }
     if (!supportsRandomNumGen()) {
         return Promise.reject(
-            new SDKError(new Error("Request failed due to a lack of browser support for random number generation."), ErrorCode.RANDOM_NUMBER_GENERATION_FAILURE)
+            new SDKError(
+                new Error("Request failed due to a lack of browser support for random number generation."),
+                ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE
+            )
         );
     }
     return Init.initialize(jwtCallback, passcodeCallback);
@@ -66,9 +72,9 @@ export * from "./SDK";
 /**
  * List of SDK Error Codes
  */
-export {ErrorCode as ErrorCodes} from "../Constants";
+export {ErrorCodes} from "../Constants";
 
 /**
- * SDK Error which extends normal Error object but adds `code` property which will be one of the ErrorCode from above
+ * SDK Error which extends normal Error object but adds `code` property which will be one of the ErrorCodes from above
  */
 export {default as SDKError} from "../lib/SDKError";

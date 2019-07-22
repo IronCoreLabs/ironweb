@@ -2,7 +2,7 @@ import loadRecrypt from "./crypto/recrypt";
 import * as AES from "./crypto/aes";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
-import {ErrorCode} from "../../Constants";
+import {ErrorCodes} from "../../Constants";
 
 /**
  * Decrypt a document given the document container and the private key needed to decrypt
@@ -14,7 +14,7 @@ export function decryptDocument(document: EncryptedDocument, symmetricKey: Trans
     return loadRecrypt()
         .flatMap((Recrypt) => Recrypt.decryptPlaintext(symmetricKey, myPrivateKey))
         .flatMap(([_, documentSymmetricKey]) => AES.decryptDocument(document.content, documentSymmetricKey, document.iv))
-        .errorMap((error) => new SDKError(error, ErrorCode.DOCUMENT_DECRYPT_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_DECRYPT_FAILURE));
 }
 
 /**
@@ -40,7 +40,7 @@ export function encryptDocument(document: Uint8Array, userKeyList: UserOrGroupPu
                     encryptedDocument,
                 }));
         })
-        .errorMap((error) => new SDKError(error, ErrorCode.DOCUMENT_ENCRYPT_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_ENCRYPT_FAILURE));
 }
 
 /**
@@ -54,7 +54,7 @@ export function reEncryptDocument(newDocumentData: Uint8Array, existingDocumentS
     return loadRecrypt()
         .flatMap((Recrypt) => Recrypt.decryptPlaintext(existingDocumentSymmetricKey, myPrivateKey))
         .flatMap(([_, documentSymmetricKey]) => AES.encryptDocument(newDocumentData, documentSymmetricKey))
-        .errorMap((error) => new SDKError(error, ErrorCode.DOCUMENT_REENCRYPT_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_REENCRYPT_FAILURE));
 }
 
 /**
@@ -85,5 +85,5 @@ export function encryptToKeys(
                 }));
             });
         })
-        .errorMap((error) => new SDKError(error, ErrorCode.DOCUMENT_GRANT_ACCESS_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_GRANT_ACCESS_FAILURE));
 }

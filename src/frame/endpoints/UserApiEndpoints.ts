@@ -3,7 +3,7 @@ import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import Future from "futurejs";
 import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
 import * as ApiRequest from "../ApiRequest";
-import {ErrorCode} from "../../Constants";
+import {ErrorCodes} from "../../Constants";
 import ApiState from "../ApiState";
 import SDKError from "../../lib/SDKError";
 
@@ -16,7 +16,7 @@ export type UserKeys = Readonly<{
 export type RequestMeta = Readonly<{
     url: string;
     options: RequestInit;
-    errorCode: ErrorCode;
+    errorCode: ErrorCodes;
 }>;
 
 export interface UserUpdateKeys {
@@ -69,7 +69,7 @@ function verify(): RequestMeta {
     return {
         url: `users/verify?returnKeys=true`,
         options: {},
-        errorCode: ErrorCode.USER_VERIFY_API_REQUEST_FAILURE,
+        errorCode: ErrorCodes.USER_VERIFY_API_REQUEST_FAILURE,
     };
 }
 
@@ -94,7 +94,7 @@ const userCreate = (keys: UserKeys): RequestMeta => {
             },
             body: JSON.stringify(body),
         },
-        errorCode: ErrorCode.USER_CREATE_REQUEST_FAILURE,
+        errorCode: ErrorCodes.USER_CREATE_REQUEST_FAILURE,
     };
 };
 
@@ -126,7 +126,7 @@ const userCreateWithDevice = (keys: UserCreationKeys): RequestMeta => {
             },
             body: JSON.stringify(body),
         },
-        errorCode: ErrorCode.USER_CREATE_REQUEST_FAILURE,
+        errorCode: ErrorCodes.USER_CREATE_REQUEST_FAILURE,
     };
 };
 
@@ -156,7 +156,7 @@ function userDeviceAdd(userPublicKey: PublicKey<Uint8Array>, transformKey: Trans
                 signature: fromByteArray(signature),
             }),
         },
-        errorCode: ErrorCode.USER_DEVICE_ADD_REQUEST_FAILURE,
+        errorCode: ErrorCodes.USER_DEVICE_ADD_REQUEST_FAILURE,
     };
 }
 
@@ -172,7 +172,7 @@ function deleteCurrentDevice(userID: string): RequestMeta {
                 "Content-Type": "application/json",
             },
         },
-        errorCode: ErrorCode.USER_DEVICE_DELETE_REQUEST_FAILURE,
+        errorCode: ErrorCodes.USER_DEVICE_DELETE_REQUEST_FAILURE,
     };
 }
 
@@ -195,7 +195,7 @@ function userUpdate(userID: string, userPrivateKey?: PrivateKey<Uint8Array>, sta
                 userPrivateKey: userPrivateKey ? fromByteArray(userPrivateKey) : undefined,
             }),
         },
-        errorCode: ErrorCode.USER_UPDATE_REQUEST_FAILURE,
+        errorCode: ErrorCodes.USER_UPDATE_REQUEST_FAILURE,
     };
 }
 
@@ -209,7 +209,7 @@ function userKeyList(userList: string[]): RequestMeta {
         options: {
             method: "GET",
         },
-        errorCode: ErrorCode.USER_KEY_LIST_REQUEST_FAILURE,
+        errorCode: ErrorCodes.USER_KEY_LIST_REQUEST_FAILURE,
     };
 }
 

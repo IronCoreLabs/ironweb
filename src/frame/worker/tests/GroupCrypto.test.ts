@@ -2,7 +2,7 @@ import * as GroupCrypto from "../GroupCrypto";
 import * as Recrypt from "../crypto/recrypt/RecryptWasm";
 import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
-import {ErrorCode} from "../../../Constants";
+import {ErrorCodes} from "../../../Constants";
 
 describe("GroupCrypto", () => {
     describe("createGroup", () => {
@@ -91,7 +91,7 @@ describe("GroupCrypto", () => {
             GroupCrypto.createGroup(TestUtils.getEmptyPublicKey(), signingKeys, false).engage(
                 (error) => {
                     expect(error.message).toEqual("group key gen failure");
-                    expect(error.code).toEqual(ErrorCode.GROUP_KEY_GENERATION_FAILURE);
+                    expect(error.code).toEqual(ErrorCodes.GROUP_KEY_GENERATION_FAILURE);
                 },
                 () => fail("Success should not be invoked when operations fail")
             );
@@ -129,7 +129,7 @@ describe("GroupCrypto", () => {
             GroupCrypto.addAdminsToGroup(groupPrivateKey, userList, adminPrivateKey, signingKeys).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decryption failed");
-                    expect(error.code).toEqual(ErrorCode.GROUP_KEY_DECRYPTION_FAILURE);
+                    expect(error.code).toEqual(ErrorCodes.GROUP_KEY_DECRYPTION_FAILURE);
                 },
                 () => fail("Success should not be invoked when operations fail")
             );
@@ -168,7 +168,7 @@ describe("GroupCrypto", () => {
             GroupCrypto.addMembersToGroup(groupPrivateKey, userList, adminPrivateKey, signingKeys).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decryption failed");
-                    expect(error.code).toEqual(ErrorCode.GROUP_MEMBER_KEY_ENCRYPTION_FAILURE);
+                    expect(error.code).toEqual(ErrorCodes.GROUP_MEMBER_KEY_ENCRYPTION_FAILURE);
                 },
                 () => fail("Success should not be invoked when operations fail")
             );

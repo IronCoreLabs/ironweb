@@ -23,7 +23,7 @@ export const CryptoConstants = {
     NATIVE_DECRYPT_FAILURE_ERROR: "OperationError",
 };
 
-export enum ErrorCode {
+export enum ErrorCodes {
     JWT_FORMAT_FAILURE = 100,
     JWT_RETRIEVAL_FAILURE = 101,
     VERIFY_API_REQUEST_FAILURE = 102,
