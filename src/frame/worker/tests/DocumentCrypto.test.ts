@@ -3,7 +3,7 @@ import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import * as AES from "../crypto/aes";
 import * as Recrypt from "../crypto/recrypt/RecryptWasm";
-import {ErrorCodes} from "../../../Constants";
+import {ErrorCode} from "../../../Constants";
 
 describe("DocumentCrypto", () => {
     describe("decryptDocument", () => {
@@ -32,7 +32,7 @@ describe("DocumentCrypto", () => {
             DocumentCrypto.decryptDocument(TestUtils.getEncryptedDocument(), TestUtils.getTransformedSymmetricKey(), new Uint8Array(32)).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decryption failure");
-                    expect(error.code).toEqual(ErrorCodes.DOCUMENT_DECRYPT_FAILURE);
+                    expect(error.code).toEqual(ErrorCode.DOCUMENT_DECRYPT_FAILURE);
                 },
                 () => fail("success handler should not be invoked when operation fails")
             );
@@ -193,7 +193,7 @@ describe("DocumentCrypto", () => {
             DocumentCrypto.encryptDocument(new Uint8Array(35), [], [], TestUtils.getSigningKeyPair()).engage(
                 (error) => {
                     expect(error.message).toEqual("generate doc key failure");
-                    expect(error.code).toEqual(ErrorCodes.DOCUMENT_ENCRYPT_FAILURE);
+                    expect(error.code).toEqual(ErrorCode.DOCUMENT_ENCRYPT_FAILURE);
                 },
                 () => fail("success handler should not be invoked when operation fails")
             );
@@ -231,7 +231,7 @@ describe("DocumentCrypto", () => {
             DocumentCrypto.reEncryptDocument(new Uint8Array(35), TestUtils.getTransformedSymmetricKey(), new Uint8Array(32)).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decrypt failure");
-                    expect(error.code).toEqual(ErrorCodes.DOCUMENT_REENCRYPT_FAILURE);
+                    expect(error.code).toEqual(ErrorCode.DOCUMENT_REENCRYPT_FAILURE);
                 },
                 () => fail("success handler should not be invoked when operation fails")
             );
@@ -280,7 +280,7 @@ describe("DocumentCrypto", () => {
             DocumentCrypto.encryptToKeys(TestUtils.getTransformedSymmetricKey(), [], [], new Uint8Array(32), TestUtils.getSigningKeyPair()).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decrypt failure");
-                    expect(error.code).toEqual(ErrorCodes.DOCUMENT_GRANT_ACCESS_FAILURE);
+                    expect(error.code).toEqual(ErrorCode.DOCUMENT_GRANT_ACCESS_FAILURE);
                 },
                 () => fail("success handler should not be invoked when operation fails")
             );

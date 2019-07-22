@@ -8,7 +8,7 @@ import {getDeviceAndSigningKeys} from "../FrameUtils";
 import {sliceArrayBuffer} from "../../lib/Utils";
 import SDKError from "../../lib/SDKError";
 
-interface CreateUserResult {
+interface CreateUserAndDeviceResult {
     user: ApiUserResponse;
     keys: UserCreationKeys;
     encryptedLocalKeys: EncryptedLocalKeys;
@@ -22,18 +22,28 @@ export function initializeApi(jwt: string) {
     return UserApiEndpoints.callUserVerifyApi(jwt);
 }
 
-/**
- * Create a new user by generating keys for them and then encrypting and storing them
- * @param  {CallbackToPromise} jwt      Callback to retrieve JWT token
- * @param  {string}            passcode Users passcode
- */
-export function createUser(passcode: string, jwtToken: string): Future<SDKError, CreateUserResult> {
+export const createUser = (passcode: string, jwtToken: string): Future<SDKError, ApiUserResponse> => {
     const payload: WMT.NewUserKeygenWorkerRequest = {
         type: "NEW_USER_KEYGEN",
         message: {passcode},
     };
     return WorkerMediator.sendMessage<WMT.NewUserKeygenWorkerResponse>(payload).flatMap(({message}) => {
-        return UserApiEndpoints.callUserCreateApi(jwtToken, message.userKeys).map((createdUser) => ({
+        return UserApiEndpoints.callUserCreateApi(jwtToken, message);
+    });
+};
+
+/**
+ * Create a new user by generating keys for them and then encrypting and storing them
+ * @param  {CallbackToPromise} jwt      Callback to retrieve JWT token
+ * @param  {string}            passcode Users passcode
+ */
+export function createUserAndDevice(passcode: string, jwtToken: string): Future<SDKError, CreateUserAndDeviceResult> {
+    const payload: WMT.NewUserAndDeviceKeygenWorkerRequest = {
+        type: "NEW_USER_AND_DEVICE_KEYGEN",
+        message: {passcode},
+    };
+    return WorkerMediator.sendMessage<WMT.NewUserAndDeviceKeygenWorkerResponse>(payload).flatMap(({message}) => {
+        return UserApiEndpoints.callUserCreateApiWithDevice(jwtToken, message.userKeys).map((createdUser) => ({
             user: createdUser,
             keys: message.userKeys,
             encryptedLocalKeys: message.encryptedDeviceAndSigningKeys,

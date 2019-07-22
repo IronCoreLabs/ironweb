@@ -1,5 +1,5 @@
 import * as DocumentSDK from "../DocumentSDK";
-import {ErrorCodes} from "../../../Constants";
+import {ErrorCode} from "../../../Constants";
 import * as FrameMediator from "../../FrameMediator";
 import * as ShimUtils from "../../ShimUtils";
 import Future from "futurejs";
@@ -76,7 +76,7 @@ describe("DocumentSDK", () => {
                 .then(() => fail("Should not resolve when document ID is an unsupported version."))
                 .catch((e) => {
                     expect(e.message).toBeString();
-                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                    expect(e.code).toEqual(ErrorCode.DOCUMENT_HEADER_PARSE_FAILURE);
                 });
         });
 
@@ -101,7 +101,7 @@ describe("DocumentSDK", () => {
                 .then(() => fail("Should not succeed when ID cannot be parsed."))
                 .catch((e) => {
                     expect(e.message).toBeString();
-                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                    expect(e.code).toEqual(ErrorCode.DOCUMENT_HEADER_PARSE_FAILURE);
                 });
         });
 
@@ -387,7 +387,7 @@ describe("DocumentSDK", () => {
             DocumentSDK.encryptToStore(document)
                 .then(() => fail("Encrypt to store should reject when data is too large"))
                 .catch((e) => {
-                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED);
+                    expect(e.code).toEqual(ErrorCode.DOCUMENT_MAX_SIZE_EXCEEDED);
                 });
         });
     });
@@ -604,7 +604,7 @@ describe("DocumentSDK", () => {
             DocumentSDK.updateEncryptedDataInStore("mydoc", document)
                 .then(() => fail("Update to store should reject when data is too large"))
                 .catch((e) => {
-                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED);
+                    expect(e.code).toEqual(ErrorCode.DOCUMENT_MAX_SIZE_EXCEEDED);
                 });
         });
     });

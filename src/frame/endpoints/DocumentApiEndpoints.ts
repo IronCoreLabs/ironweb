@@ -1,4 +1,4 @@
-import {ErrorCodes, UserAndGroupTypes} from "../../Constants";
+import {ErrorCode, UserAndGroupTypes} from "../../Constants";
 import {publicKeyToBase64} from "../../lib/Utils";
 import * as ApiRequest from "../ApiRequest";
 import ApiState from "../ApiState";
@@ -83,7 +83,7 @@ function documentList() {
         options: {
             method: "GET",
         },
-        errorCode: ErrorCodes.DOCUMENT_LIST_REQUEST_FAILURE,
+        errorCode: ErrorCode.DOCUMENT_LIST_REQUEST_FAILURE,
     };
 }
 
@@ -99,7 +99,7 @@ function documentGet(documentID: string, includeData: boolean = false) {
         options: {
             method: "GET",
         },
-        errorCode: ErrorCodes.DOCUMENT_GET_REQUEST_FAILURE,
+        errorCode: ErrorCode.DOCUMENT_GET_REQUEST_FAILURE,
     };
 }
 
@@ -132,7 +132,7 @@ function documentCreate(documentID: string, payload: DocumentCreatePayload) {
                 },
             }),
         },
-        errorCode: ErrorCodes.DOCUMENT_CREATE_REQUEST_FAILURE,
+        errorCode: ErrorCode.DOCUMENT_CREATE_REQUEST_FAILURE,
     };
 }
 
@@ -155,7 +155,7 @@ function documentUpdate(documentID: string, document?: Base64String, name?: stri
                 name,
             }),
         },
-        errorCode: ErrorCodes.DOCUMENT_UPDATE_REQUEST_FAILURE,
+        errorCode: ErrorCode.DOCUMENT_UPDATE_REQUEST_FAILURE,
     };
 }
 
@@ -181,7 +181,7 @@ function documentGrant(documentID: string, fromPublicKey: PublicKey<Uint8Array>,
                 to: userGrantList.concat(groupGrantList),
             }),
         },
-        errorCode: ErrorCodes.DOCUMENT_GRANT_ACCESS_REQUEST_FAILURE,
+        errorCode: ErrorCode.DOCUMENT_GRANT_ACCESS_REQUEST_FAILURE,
     };
 }
 
@@ -204,7 +204,7 @@ function documentRevoke(documentID: string, userRevocations: string[], groupRevo
             },
             body: JSON.stringify({userOrGroups: users.concat(groups)}),
         },
-        errorCode: ErrorCodes.DOCUMENT_REVOKE_ACCESS_REQUEST_FAILURE,
+        errorCode: ErrorCode.DOCUMENT_REVOKE_ACCESS_REQUEST_FAILURE,
     };
 }
 

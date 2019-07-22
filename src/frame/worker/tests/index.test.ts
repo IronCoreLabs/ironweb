@@ -96,6 +96,22 @@ describe("worker index", () => {
             });
         });
 
+        it("NEW_USER_AND_DEVICE_KEYGEN", (done) => {
+            spyOn(UserCrypto, "generateNewUserAndDeviceKeys").and.returnValue(Future.of("new keys"));
+            const payload: any = {
+                type: "NEW_USER_AND_DEVICE_KEYGEN",
+                message: {
+                    passcode: "passcode",
+                },
+            };
+
+            messenger.onMessageCallback!(payload, (result: any) => {
+                expect(result).toEqual({type: expect.any(String), message: "new keys"});
+                expect(UserCrypto.generateNewUserAndDeviceKeys).toHaveBeenCalledWith("passcode");
+                done();
+            });
+        });
+
         it("DECRYPT_LOCAL_KEYS", (done) => {
             spyOn(UserCrypto, "decryptDeviceAndSigningKeys").and.returnValue(Future.of("decrypted keys"));
             const payload: any = {

@@ -5,7 +5,7 @@ import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
 import * as GroupOperations from "../GroupOperations";
 import * as TestUtils from "../../../tests/TestUtils";
 import ApiState from "../../ApiState";
-import {ErrorCodes} from "../../../Constants";
+import {ErrorCode} from "../../../Constants";
 
 describe("GroupApi", () => {
     describe("list", () => {
@@ -601,7 +601,7 @@ describe("GroupApi", () => {
 
             GroupApi.removeSelfAsMember("61").engage(
                 (e) => {
-                    expect(e.code).toEqual(ErrorCodes.GROUP_REMOVE_SELF_REQUEST_FAILURE);
+                    expect(e.code).toEqual(ErrorCode.GROUP_REMOVE_SELF_REQUEST_FAILURE);
                     done();
                 },
                 () => fail("Remove self should not succeed if there were any failures")

@@ -1,6 +1,6 @@
 import * as PublicSdk from "../index";
 import * as Init from "../Initialize";
-import {ErrorCodes} from "../../Constants";
+import {ErrorCode} from "../../Constants";
 
 describe("Init exposed public SDK", () => {
     describe("initialize", () => {
@@ -45,16 +45,16 @@ describe("Init exposed public SDK", () => {
                     fail("Initialization should not occur if the client browser does not support random number generation.");
                 })
                 .catch((e) => {
-                    expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
+                    expect(e.code).toEqual(ErrorCode.RANDOM_NUMBER_GENERATION_FAILURE);
                     window.crypto.getRandomValues = origRandomValues;
                     done();
                 });
         });
     });
 
-    describe("ErrorCodes", () => {
+    describe("ErrorCode", () => {
         it("exposes error codes", () => {
-            expect(PublicSdk.ErrorCodes).toBeObject();
+            expect(PublicSdk.ErrorCode).toBeObject();
         });
     });
 

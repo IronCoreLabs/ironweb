@@ -1,7 +1,7 @@
 import * as FrameMediator from "../FrameMediator";
 import * as MT from "../../FrameMessageTypes";
 import * as ShimUtils from "../ShimUtils";
-import {ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../../Constants";
+import {ErrorCode, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import {DocumentAccessList, DocumentCreateOptions, EncryptedDocumentResponse} from "../../../ironweb";
 import {utf8} from "./CodecSDK";
@@ -73,7 +73,7 @@ export function getDocumentIDFromBytes(documentData: Uint8Array): Promise<string
     //Check to see if the document is a version we don't support and reject if so
     if (documentData[0] !== 2) {
         return Promise.reject(
-            new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE)
+            new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCode.DOCUMENT_HEADER_PARSE_FAILURE)
         );
     }
     const headerLength = new DataView(documentData.buffer).getUint16(VERSION_HEADER_LENGTH, false);
@@ -85,7 +85,7 @@ export function getDocumentIDFromBytes(documentData: Uint8Array): Promise<string
         const headerObject: DocumentHeader = JSON.parse(utf8.fromBytes(headerContent));
         return Promise.resolve(headerObject._did_);
     } catch {
-        return Promise.reject(new SDKError(new Error("Unable to parse document header. Header value is corrupted."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE));
+        return Promise.reject(new SDKError(new Error("Unable to parse document header. Header value is corrupted."), ErrorCode.DOCUMENT_HEADER_PARSE_FAILURE));
     }
 }
 
@@ -146,7 +146,7 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
         return Promise.reject(
             new SDKError(
                 new Error(`Document of length ${documentData.length} exceeds maximum allowed byte size of ${MAX_DOCUMENT_SIZE}`),
-                ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED
+                ErrorCode.DOCUMENT_MAX_SIZE_EXCEEDED
             )
         );
     }
@@ -217,7 +217,7 @@ export function updateEncryptedDataInStore(documentID: string, newDocumentData: 
         return Promise.reject(
             new SDKError(
                 new Error(`Document of length ${newDocumentData.length} exceeds maximum allowed byte size of ${MAX_DOCUMENT_SIZE}`),
-                ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED
+                ErrorCode.DOCUMENT_MAX_SIZE_EXCEEDED
             )
         );
     }

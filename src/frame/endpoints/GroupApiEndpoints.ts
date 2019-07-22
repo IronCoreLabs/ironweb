@@ -1,6 +1,6 @@
 import Future from "futurejs";
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
-import {ErrorCodes} from "../../Constants";
+import {ErrorCode} from "../../Constants";
 import {transformKeyToBase64, publicKeyToBase64} from "../../lib/Utils";
 import ApiState from "../ApiState";
 import * as ApiRequest from "../ApiRequest";
@@ -44,7 +44,7 @@ function groupList(groupIDList: string[] = []) {
         options: {
             method: "GET",
         },
-        errorCode: ErrorCodes.GROUP_LIST_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_LIST_REQUEST_FAILURE,
     };
 }
 
@@ -58,7 +58,7 @@ function groupGet(groupID: string) {
         options: {
             method: "GET",
         },
-        errorCode: ErrorCodes.GROUP_GET_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_GET_REQUEST_FAILURE,
     };
 }
 
@@ -103,7 +103,7 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload) {
                 members: memberList,
             }),
         },
-        errorCode: ErrorCodes.GROUP_CREATE_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_CREATE_REQUEST_FAILURE,
     };
 }
 
@@ -124,7 +124,7 @@ function groupUpdate(groupID: string, groupName: string | null) {
                 name: groupName,
             }),
         },
-        errorCode: ErrorCodes.GROUP_UPDATE_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_UPDATE_REQUEST_FAILURE,
     };
 }
 
@@ -151,7 +151,7 @@ function addAdmins(groupID: string, addedAdmins: EncryptedAccessKey[]) {
                 })),
             }),
         },
-        errorCode: ErrorCodes.GROUP_ADD_ADMINS_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_ADD_ADMINS_REQUEST_FAILURE,
     };
 }
 
@@ -172,7 +172,7 @@ function removeAdmins(groupID: string, removedAdmins: string[]) {
                 users: removedAdmins.map((userId) => ({userId})),
             }),
         },
-        errorCode: ErrorCodes.GROUP_REMOVE_ADMINS_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_REMOVE_ADMINS_REQUEST_FAILURE,
     };
 }
 
@@ -197,7 +197,7 @@ function addMembers(groupID: string, addedMembers: TransformKeyGrant[]) {
                 })),
             }),
         },
-        errorCode: ErrorCodes.GROUP_ADD_MEMBERS_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_ADD_MEMBERS_REQUEST_FAILURE,
     };
 }
 
@@ -218,7 +218,7 @@ function removeMembers(groupID: string, removedMembers: string[]) {
                 users: removedMembers.map((userId) => ({userId})),
             }),
         },
-        errorCode: ErrorCodes.GROUP_REMOVE_MEMBERS_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_REMOVE_MEMBERS_REQUEST_FAILURE,
     };
 }
 
@@ -234,7 +234,7 @@ function groupDelete(groupID: string) {
                 "Content-Type": "application/json",
             },
         },
-        errorCode: ErrorCodes.GROUP_DELETE_REQUEST_FAILURE,
+        errorCode: ErrorCode.GROUP_DELETE_REQUEST_FAILURE,
     };
 }
 

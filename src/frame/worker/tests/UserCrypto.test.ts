@@ -2,7 +2,7 @@ import * as UserCrypto from "../UserCrypto";
 import * as AES from "../crypto/aes";
 import * as Recrypt from "../crypto/recrypt/RecryptWasm";
 import Future from "futurejs";
-import {ErrorCodes} from "../../../Constants";
+import {ErrorCode} from "../../../Constants";
 import * as TestUtils from "../../../tests/TestUtils";
 
 describe("UserCrypto", () => {
@@ -62,7 +62,7 @@ describe("UserCrypto", () => {
             UserCrypto.generateDeviceAndSigningKeys("validJWT", "passcode", new Uint8Array(32), new Uint8Array(32), userPublic).engage(
                 (error) => {
                     expect(error.message).toBeString();
-                    expect(error.code).toEqual(ErrorCodes.USER_PASSCODE_INCORRECT);
+                    expect(error.code).toEqual(ErrorCode.USER_PASSCODE_INCORRECT);
                 },
                 () => fail("Success handler should not be called with functions fail")
             );
@@ -79,14 +79,14 @@ describe("UserCrypto", () => {
             UserCrypto.generateDeviceAndSigningKeys("validJWT", "passcode", new Uint8Array(32), new Uint8Array(32), userPublic).engage(
                 (error) => {
                     expect(error.message).toEqual("recrypt key gen failure");
-                    expect(error.code).toEqual(ErrorCodes.USER_DEVICE_KEY_GENERATION_FAILURE);
+                    expect(error.code).toEqual(ErrorCode.USER_DEVICE_KEY_GENERATION_FAILURE);
                 },
                 () => fail("Success handler should not be called with functions fail")
             );
         });
     });
 
-    describe("generateNewUserKeys", () => {
+    describe("generateNewUserAndDeviceKeys", () => {
         it("generates document key and then encrypts key and document", () => {
             const userKeyPair = TestUtils.getEmptyKeyPair();
             const deviceKeys = TestUtils.getEmptyKeyPair();
@@ -101,7 +101,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptDeviceAndSigningKeys").and.returnValue(Future.of("encryptedDeviceAndSigningKeys"));
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("epk"));
 
-            UserCrypto.generateNewUserKeys("passcode").engage(
+            UserCrypto.generateNewUserAndDeviceKeys("passcode").engage(
                 (e) => fail(e),
                 ({userKeys, encryptedDeviceAndSigningKeys}) => {
                     expect(encryptedDeviceAndSigningKeys as any).toEqual("encryptedDeviceAndSigningKeys");
@@ -126,10 +126,10 @@ describe("UserCrypto", () => {
             spyOn(Recrypt, "generateNewUserKeySet").and.returnValue(Future.reject(new Error("recrypt new user key set failure")));
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived key"));
 
-            UserCrypto.generateNewUserKeys("passcode").engage(
+            UserCrypto.generateNewUserAndDeviceKeys("passcode").engage(
                 (error) => {
                     expect(error.message).toEqual("recrypt new user key set failure");
-                    expect(error.code).toEqual(ErrorCodes.USER_MASTER_KEY_GENERATION_FAILURE);
+                    expect(error.code).toEqual(ErrorCode.USER_MASTER_KEY_GENERATION_FAILURE);
                 },
                 () => fail("Should not invoke success when operation fails")
             );
@@ -180,7 +180,7 @@ describe("UserCrypto", () => {
             UserCrypto.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symKey, nonce).engage(
                 (error) => {
                     expect(error.message).toEqual("decrypt key failure");
-                    expect(error.code).toEqual(ErrorCodes.USER_DEVICE_KEY_DECRYPTION_FAILURE);
+                    expect(error.code).toEqual(ErrorCode.USER_DEVICE_KEY_DECRYPTION_FAILURE);
                 },
                 () => fail("Should not invoke success when operation fails")
             );
@@ -216,7 +216,7 @@ describe("UserCrypto", () => {
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
                 (e) => {
-                    expect(e.code).toEqual(ErrorCodes.USER_PASSCODE_INCORRECT);
+                    expect(e.code).toEqual(ErrorCode.USER_PASSCODE_INCORRECT);
                     expect(AES.encryptUserKey).not.toHaveBeenCalled();
                     done();
                 },
@@ -231,7 +231,7 @@ describe("UserCrypto", () => {
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
                 (e) => {
-                    expect(e.code).toEqual(ErrorCodes.USER_PASSCODE_CHANGE_FAILURE);
+                    expect(e.code).toEqual(ErrorCode.USER_PASSCODE_CHANGE_FAILURE);
                     expect(AES.encryptUserKey).toHaveBeenCalled();
                     done();
                 },

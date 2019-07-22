@@ -1,7 +1,7 @@
 import loadRecrypt from "./crypto/recrypt";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
-import {ErrorCodes} from "../../Constants";
+import {ErrorCode} from "../../Constants";
 
 /**
  * Create the keys for a new group. Generates a new keypair for the group and encrypts the value used to generate the
@@ -24,7 +24,7 @@ export function createGroup(userPublicKey: PublicKey<Uint8Array>, signingKeys: S
                 }));
             });
         })
-        .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_KEY_GENERATION_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCode.GROUP_KEY_GENERATION_FAILURE));
 }
 
 /**
@@ -46,7 +46,7 @@ export function addAdminsToGroup(
                 Recrypt.encryptPlaintextToList(plaintext, userKeyList, signingKeys)
             );
         })
-        .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_KEY_DECRYPTION_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCode.GROUP_KEY_DECRYPTION_FAILURE));
 }
 
 /**
@@ -68,5 +68,5 @@ export function addMembersToGroup(
                 Recrypt.generateTransformKeyToList(key, userKeyList, signingKeys)
             );
         })
-        .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_MEMBER_KEY_ENCRYPTION_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCode.GROUP_MEMBER_KEY_ENCRYPTION_FAILURE));
 }

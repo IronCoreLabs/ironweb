@@ -8,7 +8,7 @@ import Future from "futurejs";
 import * as Utils from "../../lib/Utils";
 import {documentToByteParts, combineDocumentParts, encryptedDocumentToBase64} from "../FrameUtils";
 import SDKError from "../../lib/SDKError";
-import {UserAndGroupTypes, ErrorCodes} from "../../Constants";
+import {UserAndGroupTypes, ErrorCode} from "../../Constants";
 
 /**
  * Get a list of user and group keys for the provided users and then also add in the current user to the list of user keys
@@ -32,7 +32,7 @@ function getKeyListsForUsersAndGroups(
                         new Error(
                             `Failed to create document due to unknown users or groups in access list. Missing user IDs: [${missingUsers}]. Missing group IDs: [${missingGroups}]`
                         ),
-                        ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
+                        ErrorCode.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
                     )
                 );
             }
@@ -202,7 +202,7 @@ export function decryptLocalDoc(documentID: string, encryptedDocument: Uint8Arra
     //don't match either of those two versions.
     if (encryptedDocument[0] !== 1 && encryptedDocument[0] !== 2) {
         return Future.reject(
-            new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE)
+            new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCode.DOCUMENT_HEADER_PARSE_FAILURE)
         );
     }
     const documentParts = documentToByteParts(encryptedDocument);

@@ -1,9 +1,18 @@
 import Future from "futurejs";
 import SDKError from "../lib/SDKError";
-import {InitApiRequest, InitApiPasscodeResponse, InitApiSdkResponse, GenerateNewDeviceKeysRequest, CreateUserRequest} from "../FrameMessageTypes";
-import {ErrorCodes} from "../Constants";
+import {
+    InitApiRequest,
+    InitApiPasscodeResponse,
+    InitApiSdkResponse,
+    GenerateNewDeviceKeysRequest,
+    CreateUserRequest,
+    CreateUserResponse,
+    CreateUserAndDeviceRequest,
+} from "../FrameMessageTypes";
+import {ErrorCode} from "../Constants";
 import {storeParentWindowSymmetricKey, getParentWindowSymmetricKey, setSDKInitialized} from "./ShimUtils";
 import * as FrameMediator from "./FrameMediator";
+import {SDKInitializationResult, UserCreateResponse} from "ironweb";
 
 //Store reference to the JWT callback in case we need to invoke it again to create user
 let userJWTCallback: JWTCallbackToPromise;
@@ -18,12 +27,12 @@ function getJWT(jwtCallback: JWTCallbackToPromise) {
         if (jwtPromise && typeof jwtPromise.then === "function") {
             return jwtPromise;
         }
-        throw new SDKError(new Error("JWT callback did not return a Promise."), ErrorCodes.JWT_FORMAT_FAILURE);
+        throw new SDKError(new Error("JWT callback did not return a Promise."), ErrorCode.JWT_FORMAT_FAILURE);
     }).flatMap((jwt: string) => {
         if (typeof jwt === "string" && jwt.length > 0) {
             return Future.of(jwt);
         }
-        return Future.reject(new SDKError(new Error(`JWT should be a non-zero length string, but instead got '${jwt}'`), ErrorCodes.JWT_RETRIEVAL_FAILURE));
+        return Future.reject(new SDKError(new Error(`JWT should be a non-zero length string, but instead got '${jwt}'`), ErrorCode.JWT_RETRIEVAL_FAILURE));
     });
 }
 
@@ -39,7 +48,7 @@ function invokePasscodeCallback(passcodeCallback: PasscodeCallbackToPromise, doe
         if (passcodePromise && typeof passcodePromise.then === "function") {
             return passcodePromise;
         }
-        throw new SDKError(new Error("Passcode callback did not return a Promise."), ErrorCodes.PASSCODE_FORMAT_FAILURE);
+        throw new SDKError(new Error("Passcode callback did not return a Promise."), ErrorCode.PASSCODE_FORMAT_FAILURE);
     }).flatMap((passcode: string) => {
         if (typeof passcode === "string" && passcode.length > 0) {
             return Future.of(passcode);
@@ -47,7 +56,7 @@ function invokePasscodeCallback(passcodeCallback: PasscodeCallbackToPromise, doe
         return Future.reject(
             new SDKError(
                 new Error(`User provided passcode should be a non-zero length string, but instead got '${passcode}'`),
-                ErrorCodes.PASSCODE_RETRIEVAL_FAILURE
+                ErrorCode.PASSCODE_RETRIEVAL_FAILURE
             )
         );
     });
@@ -58,14 +67,14 @@ function invokePasscodeCallback(passcodeCallback: PasscodeCallbackToPromise, doe
  * @param  {boolean} doesUserExist Denotes whether we need to create or update this user
  * @param  {string}  passcode      Users passcode entry
  */
-function setUserPasscode(doesUserExist: boolean, passcode: string) {
+function setUserPasscode(doesUserExist: boolean, passcode: string): Future<Error, SDKInitializationResult> {
     return getJWT(userJWTCallback)
         .flatMap((jwtToken) => {
             const payload = {
-                type: doesUserExist ? "GEN_DEVICE_KEYS" : "CREATE_USER",
+                type: doesUserExist ? "GEN_DEVICE_KEYS" : "CREATE_USER_AND_DEVICE",
                 message: {passcode, jwtToken},
             };
-            return FrameMediator.sendMessage<InitApiSdkResponse>(payload as GenerateNewDeviceKeysRequest | CreateUserRequest);
+            return FrameMediator.sendMessage<InitApiSdkResponse>(payload as GenerateNewDeviceKeysRequest | CreateUserAndDeviceRequest);
         })
         .map((sdkResponse: InitApiSdkResponse) => {
             storeParentWindowSymmetricKey(sdkResponse.message.symmetricKey);
@@ -74,13 +83,23 @@ function setUserPasscode(doesUserExist: boolean, passcode: string) {
         });
 }
 
+// Not sure if this should set the cached userJWTCallback or not, seems like it would be a one off, not repeatedly used/overriding the current user's JWT callback.
+export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> =>
+    getJWT(jwtCallback)
+        .flatMap((jwtToken) => {
+            const payload: CreateUserRequest = {type: "CREATE_USER", message: {passcode, jwtToken}};
+            return FrameMediator.sendMessage<CreateUserResponse>(payload);
+        })
+        .map(({message: {id, ...rest}}) => ({accountId: id, ...rest}))
+        .toPromise();
+
 /**
  * Initialize the API by getting a JWT and verifying the user. Returns either the SDK if the user has their set of
  * device keys, or returns asking for passcode if user needs to be created/updated.
  * @param {JWTCallbackToPromise}      jwtCallback      Method that can be used to retrieve the JWT
  * @param {PasscodeCallbackToPromise} passcodeCallback Method that can be used to get the users escrow passcode
  */
-export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: PasscodeCallbackToPromise) {
+export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: PasscodeCallbackToPromise): Promise<SDKInitializationResult> {
     userJWTCallback = jwtCallback;
     return getJWT(jwtCallback)
         .flatMap((jwtToken) => {
@@ -101,7 +120,7 @@ export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: 
             }
             storeParentWindowSymmetricKey(responsePayload.message.symmetricKey);
             setSDKInitialized();
-            return Future.of({user: responsePayload.message.user});
+            return Future.of<SDKInitializationResult>({user: responsePayload.message.user});
         })
         .toPromise();
 }

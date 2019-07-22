@@ -62,7 +62,7 @@ describe("UserApiEndpoints", () => {
                 })
             );
 
-            UserApiEndpoints.callUserCreateApi("jwtToken", {
+            UserApiEndpoints.callUserCreateApiWithDevice("jwtToken", {
                 userKeys: {
                     ...TestUtils.getEmptyKeyPair(),
                     encryptedPrivateKey: new Uint8Array(10),
@@ -112,7 +112,7 @@ describe("UserApiEndpoints", () => {
                 })
             );
 
-            UserApiEndpoints.callUserCreateApi("jwtToken", {
+            UserApiEndpoints.callUserCreateApiWithDevice("jwtToken", {
                 userKeys: {
                     ...TestUtils.getEmptyKeyPair(),
                     encryptedPrivateKey: new Uint8Array(12),

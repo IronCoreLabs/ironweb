@@ -6,7 +6,7 @@ import DocumentApiEndpoints from "../../endpoints/DocumentApiEndpoints";
 import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
 import GroupApiEndpoints from "../../endpoints/GroupApiEndpoints";
 import ApiState from "../../ApiState";
-import {ErrorCodes} from "../../../Constants";
+import {ErrorCode} from "../../../Constants";
 
 describe("DocumentApi", () => {
     const privateDeviceKey = new Uint8Array([23]);
@@ -117,7 +117,7 @@ describe("DocumentApi", () => {
             DocumentApi.decryptLocalDoc("docID", doc).engage(
                 (e) => {
                     expect(e.message).toBeString();
-                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                    expect(e.code).toEqual(ErrorCode.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
                 () => fail("Should reject when provided document is an unsupported version")
             );
