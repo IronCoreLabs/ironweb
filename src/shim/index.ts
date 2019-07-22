@@ -66,7 +66,7 @@ export * from "./SDK";
 /**
  * List of SDK Error Codes
  */
-export {ErrorCode} from "../Constants";
+export {ErrorCode as ErrorCodes} from "../Constants";
 
 /**
  * SDK Error which extends normal Error object but adds `code` property which will be one of the ErrorCode from above
