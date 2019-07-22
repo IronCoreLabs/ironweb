@@ -182,5 +182,5 @@ export const user: User;
 export const group: Group;
 
 export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback): Promise<SDKInitializationResult>;
-export function createNewUser(): Promise<UserCreateResponse>;
+export function createNewUser(jwtCallback: JWTCallback, passcode: string): Promise<UserCreateResponse>;
 export function isInitialized(): boolean;

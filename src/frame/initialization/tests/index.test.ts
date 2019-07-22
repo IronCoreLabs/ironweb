@@ -9,7 +9,7 @@ import {fromByteArray} from "base64-js";
 
 describe("init index", () => {
     beforeEach(() => {
-        (ApiState as any).apiUser = undefined;
+        ApiState.clearCurrentUser();
     });
     afterEach(() => {
         localStorage.clear();
