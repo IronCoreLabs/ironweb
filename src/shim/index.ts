@@ -12,11 +12,10 @@ function supportsRandomNumGen() {
     return typeof nativeCrypto === "object" && typeof nativeCrypto.getRandomValues === "function";
 }
 
-export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> => {
+export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> {
     if (!jwtCallback || typeof jwtCallback !== "function") {
         throw new Error("You must provide a function which will generate a JWT as the first parameter to 'IronWeb.initialize'.");
     }
-    // TODO: find out if this is neccessary for user keygen. Assuming it is.
     if (!supportsRandomNumGen()) {
         return Promise.reject(
             new SDKError(
@@ -26,7 +25,7 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
         );
     }
     return Init.createNewUser(jwtCallback, passcode);
-};
+}
 
 /**
  * Initialize IronWeb SDK with JWT and Passcode callbacks. This will request the verify API (using the JWT token retrieved from the provided JWT callback) to check if

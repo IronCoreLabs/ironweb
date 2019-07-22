@@ -83,14 +83,13 @@ function setUserPasscode(doesUserExist: boolean, passcode: string): Future<Error
         });
 }
 
-// Not sure if this should set the cached userJWTCallback or not, seems like it would be a one off, not repeatedly used/overriding the current user's JWT callback.
 export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> =>
     getJWT(jwtCallback)
         .flatMap((jwtToken) => {
             const payload: CreateUserRequest = {type: "CREATE_USER", message: {passcode, jwtToken}};
             return FrameMediator.sendMessage<CreateUserResponse>(payload);
         })
-        .map(({message: {id, ...rest}}) => ({accountId: id, ...rest}))
+        .map(({message: {id, segmentId, ...rest}}) => ({accountID: id, segmentID: segmentId, ...rest}))
         .toPromise();
 
 /**

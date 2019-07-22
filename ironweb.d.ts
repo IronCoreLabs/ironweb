@@ -1,3 +1,5 @@
+import {ErrorCodes as EC} from "./src/Constants";
+
 //UMD module global export
 //eslint-disable-next-line no-undef
 export as namespace ironweb;
@@ -101,14 +103,13 @@ export interface GroupUserEditResponse {
 /**
  * User SDK response types
  */
-export interface UserMetaResponse {
-    accountId: string;
-    segmentId: number;
+export interface UserCreateResponse {
+    accountID: string;
+    segmentID: number;
     status: number;
     userMasterPublicKey: PublicKey<Base64String>;
     userPrivateKey: PrivateKey<Base64String>;
 }
-export type UserCreateResponse = UserMetaResponse;
 
 /**
  * SDK Namespaces
@@ -173,12 +174,13 @@ export class SDKError extends Error {
     rawError: Error;
 }
 
-export const ErrorCodes: {[key: string]: number};
+export type ErrorCodes = typeof EC;
+export const ErrorCodes: ErrorCodes;
 export const document: Document;
 export const codec: Codec;
 export const user: User;
 export const group: Group;
 
 export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback): Promise<SDKInitializationResult>;
-export const createNewUser: () => Promise<UserCreateResponse>;
+export function createNewUser(): Promise<UserCreateResponse>;
 export function isInitialized(): boolean;

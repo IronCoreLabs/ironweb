@@ -31,7 +31,7 @@ export interface UserUpdateKeys {
     transformKey: TransformKey;
 }
 
-export type UserCreationKeys = UserUpdateKeys & Readonly<{userKeys: UserKeys}>; // what was this type?
+export type UserCreationKeys = UserUpdateKeys & Readonly<{userKeys: UserKeys}>;
 
 interface UserVerifyProcessedResult {
     user: ApiUserResponse | undefined;
@@ -228,8 +228,6 @@ export default {
 
     /**
      * Invoke user create API with jwt and users keys
-     * @param {string}         jwt          JWT token
-     * @param {UserKeys} keys         Users keys which will have public keys and optionally private keys
      */
     callUserCreateApi(jwt: string, keys: UserKeys): Future<SDKError, UserCreateResponseType> {
         const {url, options, errorCode} = userCreate(keys);
@@ -237,9 +235,7 @@ export default {
     },
 
     /**
-     * Invoke user create API with jwt and users keys
-     * @param {string}         jwt          JWT token
-     * @param {FullKeyPairSet} creationKeys Users keys which will have public keys and optionally private keys
+     * Invoke user create API with jwt and users keys (including a device key set)
      */
     callUserCreateApiWithDevice(jwt: string, creationKeys: UserCreationKeys): Future<SDKError, UserCreateResponseType> {
         const {url, options, errorCode} = userCreateWithDevice(creationKeys);
