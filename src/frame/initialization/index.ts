@@ -77,7 +77,9 @@ export function initialize(jwtToken: string, deviceAndSigningSymmetricKey?: stri
     return InitializationApi.initializeApi(jwtToken).flatMap(({user}) => handleVerifyResult(user, deviceAndSigningSymmetricKey));
 }
 
-// Need a type that makes sense here to return.
+/**
+ * Create a new user given a JWT token to request with and the user's passcode to escrow their keys
+ */
 export const createUser = (jwtToken: string, passcode: string): Future<SDKError, CreateUserResponse> =>
     InitializationApi.createUser(passcode, jwtToken).map((_) => ({
         type: "CREATE_USER_RESPONSE",
@@ -85,7 +87,7 @@ export const createUser = (jwtToken: string, passcode: string): Future<SDKError,
     }));
 
 /**
- * Create a new user given a JWT token to request with and the users passcode to escrow their keys
+ * Create a new user given a JWT token to request with and the users passcode to escrow their keys, as well as a device for the current browser.
  * @param {string} jwtToken Users JWT token to validate create request
  * @param {string} passcode Users passcode to escrow their keys
  */

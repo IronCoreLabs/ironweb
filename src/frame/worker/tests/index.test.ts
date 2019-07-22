@@ -356,5 +356,9 @@ describe("worker index", () => {
                 done();
             });
         });
+
+        it("if you bypass typescript's checks you just get your original message back", () => {
+            messenger.onMessageCallback({type: "UNKNOWN", message: "data"} as any, (result: any) => expect(result).toBe("data"));
+        });
     });
 });

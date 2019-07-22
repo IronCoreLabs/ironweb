@@ -4,26 +4,22 @@ import {fromByteArray, toByteArray} from "base64-js";
 
 /**
  * Convert a string into a ArrayBuffer, specifically a Uint8Array
- * @param  {string}     value String value to convert
- * @return {Uint8Array}       Byte array of data
  */
-export function utf8StringToArrayBuffer(value: string) {
+export function utf8StringToArrayBuffer(value: string): Uint8Array {
     return UTF8.encode(value);
 }
 
 /**
  * Convert a byte array of UTF8 characters into a string
- * @param {Uint8Array} data Byte array to convert
  */
-export function arrayBufferToUtf8String(data: Uint8Array) {
+export function arrayBufferToUtf8String(data: Uint8Array): string {
     return UTF8.decode(data);
 }
 
 /**
  * Convert a public key bytes into public key base64 string
- * @param {PublicKey<Uint8Array>} publicKey Public key to transform
  */
-export function publicKeyToBase64(publicKey: PublicKey<Uint8Array>) {
+export function publicKeyToBase64(publicKey: PublicKey<Uint8Array>): PublicKey<Base64String> {
     return {
         x: fromByteArray(publicKey.x),
         y: fromByteArray(publicKey.y),
@@ -32,9 +28,8 @@ export function publicKeyToBase64(publicKey: PublicKey<Uint8Array>) {
 
 /**
  * Convert a public key base64 string into bytes
- * @param {PublicKey<Base64String>} publicKey Public key to transform
  */
-export function publicKeyToBytes(publicKey: PublicKey<Base64String>) {
+export function publicKeyToBytes(publicKey: PublicKey<Base64String>): PublicKey<Uint8Array> {
     return {
         x: toByteArray(publicKey.x),
         y: toByteArray(publicKey.y),
@@ -43,7 +38,6 @@ export function publicKeyToBytes(publicKey: PublicKey<Base64String>) {
 
 /**
  * Convert TransformKeys in byte array form to base64 form.
- * @param {TransformKey} transformKey Transform Key to convert to base64 strings
  */
 export function transformKeyToBase64(transformKey: TransformKey) {
     return {
@@ -58,10 +52,8 @@ export function transformKeyToBase64(transformKey: TransformKey) {
 
 /**
  * Takes any number of Uint8Arrays and concats them together into a single Uint8Array
- * @param  {...Uint8Array} buffers Buffers to concat
- * @return {Uint8Array}            Concatenated buffer
  */
-export function concatArrayBuffers(...buffers: Uint8Array[]) {
+export function concatArrayBuffers(...buffers: Uint8Array[]): Uint8Array {
     const length = buffers.reduce((count, buffer) => count + buffer.length, 0);
 
     let currentPosition = 0;
@@ -74,11 +66,8 @@ export function concatArrayBuffers(...buffers: Uint8Array[]) {
 
 /**
  * Polyfill since some environments (notably Phantom) don't support ArrayBuffer.slice
- * @param {Uint8Array} buffer Buffer to slice
- * @param {number}     start  Slice start index
- * @param {number}     end    Slice optional end index
  */
-export function sliceArrayBuffer(buffer: Uint8Array, start: number, end?: number) {
+export function sliceArrayBuffer(buffer: Uint8Array, start: number, end?: number): Uint8Array {
     if (typeof buffer.slice === "function") {
         return buffer.slice(start, end);
     }

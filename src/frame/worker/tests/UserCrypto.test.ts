@@ -86,6 +86,43 @@ describe("UserCrypto", () => {
         });
     });
 
+    describe("generateNewUserKeys", () => {
+        it("generates document key and then encrypts key and document", () => {
+            const userKeyPair = TestUtils.getEmptyKeyPair();
+
+            spyOn(Recrypt, "generateKeyPair").and.returnValue(Future.of(userKeyPair));
+            spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived key"));
+            spyOn(AES, "encryptUserKey").and.returnValue(Future.of("epk"));
+
+            UserCrypto.generateNewUserKeys("passcode").engage(
+                (e) => fail(e),
+                (userKeys) => {
+                    expect(userKeys as any).toEqual({
+                        ...userKeyPair,
+                        encryptedPrivateKey: "epk",
+                    });
+
+                    expect(Recrypt.generateKeyPair).toHaveBeenCalledWith();
+                    expect(Recrypt.generatePasswordDerivedKey).toHaveBeenCalledWith("passcode");
+                    expect(AES.encryptUserKey).toHaveBeenCalledWith(expect.any(Uint8Array), "derived key");
+                }
+            );
+        });
+
+        it("converts errors into sdk error with expected error code", () => {
+            spyOn(Recrypt, "generateKeyPair").and.returnValue(Future.reject(new Error("recrypt new user key pair failure")));
+            spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived key"));
+
+            UserCrypto.generateNewUserKeys("passcode").engage(
+                (error) => {
+                    expect(error.message).toEqual("recrypt new user key pair failure");
+                    expect(error.code).toEqual(ErrorCodes.USER_MASTER_KEY_GENERATION_FAILURE);
+                },
+                () => fail("Should not invoke success when operation fails")
+            );
+        });
+    });
+
     describe("generateNewUserAndDeviceKeys", () => {
         it("generates document key and then encrypts key and document", () => {
             const userKeyPair = TestUtils.getEmptyKeyPair();
@@ -258,6 +295,18 @@ describe("UserCrypto", () => {
                     });
                     expect(Recrypt.createRequestSignature).toHaveBeenCalledWith(1, "user-10", TestUtils.getSigningKeyPair(), 33);
                 }
+            );
+        });
+
+        it("maps a recrypt error into an SDKError", () => {
+            spyOn(Recrypt, "createRequestSignature").and.throwError("REEFER MADNESS");
+
+            UserCrypto.signRequestPayload(1, "user-10", TestUtils.getSigningKeyPair(), 33).engage(
+                (e) => {
+                    expect(e.message).toBe("REEFER MADNESS");
+                    expect(e.code).toBe(ErrorCodes.SIGNATURE_GENERATION_FAILURE);
+                },
+                (_) => fail("shouldn't return if recrypt throws")
             );
         });
     });

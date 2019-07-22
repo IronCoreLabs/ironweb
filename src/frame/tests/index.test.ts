@@ -43,6 +43,23 @@ describe("frame index", () => {
             });
         });
 
+        it("CREATE_USER_AND_DEVICE", (done) => {
+            spyOn(Init, "createUserAndDevice").and.returnValue(Future.of("createUserAndDevice"));
+            const payload: MT.CreateUserAndDeviceRequest = {
+                type: "CREATE_USER_AND_DEVICE",
+                message: {
+                    jwtToken: "validJwt",
+                    passcode: "passcode",
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual("createUserAndDevice");
+                expect(Init.createUserAndDevice).toHaveBeenCalledWith("validJwt", "passcode");
+                done();
+            });
+        });
+
         it("GEN_DEVICE_KEYS", (done) => {
             spyOn(Init, "generateUserNewDeviceKeys").and.returnValue(Future.of("generateUserNewDeviceKeys"));
             const payload: MT.GenerateNewDeviceKeysRequest = {
@@ -563,6 +580,10 @@ describe("frame index", () => {
                 });
                 done();
             });
+        });
+
+        it("if you bypass typescript's checks you just get your original message back", () => {
+            messenger.onMessageCallback({type: "UNKNOWN", message: "data"} as any, (result: any) => expect(result).toBe("data"));
         });
     });
 });

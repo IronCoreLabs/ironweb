@@ -94,9 +94,9 @@ type UserKeys = Readonly<{
     privateKey: PrivateKey<Uint8Array>;
     encryptedPrivateKey: Uint8Array;
 }>;
+
 /**
  * Generate and encrypt keys for a new user. Generates user and encrypts the user keys with a passcode-derived key.
- * @param {string} passcode Users passcode
  */
 export const generateNewUserKeys = (passcode: string): Future<SDKError, UserKeys> =>
     loadRecrypt()
@@ -112,7 +112,6 @@ export const generateNewUserKeys = (passcode: string): Future<SDKError, UserKeys
 
 /**
  * Generate and encrypt keys for a new user. Generates user, device, and signing keys and encrypts the user keys with a passcode-derived key
- * @param {string} passcode Users passcode
  */
 export function generateNewUserAndDeviceKeys(passcode: string) {
     return loadRecrypt()

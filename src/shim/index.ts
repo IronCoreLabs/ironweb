@@ -12,9 +12,12 @@ function supportsRandomNumGen() {
     return typeof nativeCrypto === "object" && typeof nativeCrypto.getRandomValues === "function";
 }
 
+/**
+ * Create a new user from the given JWT callback and passcode. Doesn't create any devices for the new user, and doesn't initialize the SDK.
+ */
 export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> {
     if (!jwtCallback || typeof jwtCallback !== "function") {
-        throw new Error("You must provide a function which will generate a JWT as the first parameter to 'IronWeb.initialize'.");
+        throw new Error("You must provide a function which will generate a JWT as the first parameter to 'IronWeb.createNewUser'.");
     }
     if (!supportsRandomNumGen()) {
         return Promise.reject(
@@ -30,8 +33,6 @@ export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: strin
 /**
  * Initialize IronWeb SDK with JWT and Passcode callbacks. This will request the verify API (using the JWT token retrieved from the provided JWT callback) to check if
  * the user exists or not. The Promise this returns will be resolved with the IronWeb SDK object.
- * @param {JWTCallbackToPromise}      jwtCallback      Callback which when invoked will return a Promise which will resolve with a valid JWT token
- * @param {PasscodeCallbackToPromise} passcodeCallback Callback which when invoked will return a Promise which will resolve with the users passcode. Will only be invoked if we need the users passcode as part of initialization.
  */
 export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: PasscodeCallbackToPromise): Promise<SDKInitializationResult> {
     if (!jwtCallback || typeof jwtCallback !== "function") {
