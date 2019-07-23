@@ -31,6 +31,8 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             return Init.initialize(data.message.jwtToken, data.message.symmetricKey).engage(errorHandler, callback);
         case "CREATE_USER":
             return Init.createUser(data.message.jwtToken, data.message.passcode).engage(errorHandler, callback);
+        case "CREATE_USER_AND_DEVICE":
+            return Init.createUserAndDevice(data.message.jwtToken, data.message.passcode).engage(errorHandler, callback);
         case "GEN_DEVICE_KEYS":
             return Init.generateUserNewDeviceKeys(data.message.jwtToken, data.message.passcode).engage(errorHandler, callback);
         case "DEAUTHORIZE_DEVICE":

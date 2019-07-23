@@ -54,7 +54,7 @@ describe("UserApiEndpoints", () => {
     });
 
     describe("callUserCreateApi", () => {
-        it("creates user with full key set and returns saved user object", () => {
+        it("creates user with keys and returns saved user object", () => {
             (ApiRequest.fetchJSON as jasmine.Spy).and.returnValue(
                 Future.of({
                     id: "user-10",
@@ -63,6 +63,39 @@ describe("UserApiEndpoints", () => {
             );
 
             UserApiEndpoints.callUserCreateApi("jwtToken", {
+                ...TestUtils.getEmptyKeyPair(),
+                encryptedPrivateKey: new Uint8Array(10),
+            }).engage(
+                () => fail("reject shouldnt be called with valid user object"),
+                (user: any) => {
+                    expect(user).toEqual({
+                        id: "user-10",
+                        foo: "bar",
+                    });
+
+                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("users", expect.any(Number), expect.any(Object), expect.any(Future));
+                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    const authHeader = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[3];
+                    authHeader.engage((e: Error) => fail(e.message), (header: string) => expect(header).toEqual("jwt jwtToken"));
+                    expect(JSON.parse(request.body)).toEqual({
+                        userPublicKey: {x: expect.any(String), y: expect.any(String)},
+                        userPrivateKey: "AAAAAAAAAAAAAA==",
+                    });
+                }
+            );
+        });
+    });
+
+    describe("callUserCreateApiWithDevice", () => {
+        it("creates user with full key set and returns saved user object", () => {
+            (ApiRequest.fetchJSON as jasmine.Spy).and.returnValue(
+                Future.of({
+                    id: "user-10",
+                    foo: "bar",
+                })
+            );
+
+            UserApiEndpoints.callUserCreateApiWithDevice("jwtToken", {
                 userKeys: {
                     ...TestUtils.getEmptyKeyPair(),
                     encryptedPrivateKey: new Uint8Array(10),
@@ -112,7 +145,7 @@ describe("UserApiEndpoints", () => {
                 })
             );
 
-            UserApiEndpoints.callUserCreateApi("jwtToken", {
+            UserApiEndpoints.callUserCreateApiWithDevice("jwtToken", {
                 userKeys: {
                     ...TestUtils.getEmptyKeyPair(),
                     encryptedPrivateKey: new Uint8Array(12),

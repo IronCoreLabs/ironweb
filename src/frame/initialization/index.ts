@@ -3,7 +3,7 @@ import ApiState from "../ApiState";
 import SDKError from "../../lib/SDKError";
 import Future from "futurejs";
 import {storeDeviceAndSigningKeys, clearDeviceAndSigningKeys} from "../FrameUtils";
-import {InitApiPasscodeResponse, InitApiSdkResponse} from "../../FrameMessageTypes";
+import {InitApiPasscodeResponse, InitApiSdkResponse, CreateUserResponse} from "../../FrameMessageTypes";
 import {fromByteArray} from "base64-js";
 
 /**
@@ -78,12 +78,21 @@ export function initialize(jwtToken: string, deviceAndSigningSymmetricKey?: stri
 }
 
 /**
- * Create a new user given a JWT token to reqeust with and the users passcode to escrow their keys
+ * Create a new user given a JWT token to request with and the user's passcode to escrow their keys
+ */
+export const createUser = (jwtToken: string, passcode: string): Future<SDKError, CreateUserResponse> =>
+    InitializationApi.createUser(passcode, jwtToken).map((_) => ({
+        type: "CREATE_USER_RESPONSE",
+        message: _,
+    }));
+
+/**
+ * Create a new user given a JWT token to request with and the users passcode to escrow their keys, as well as a device for the current browser.
  * @param {string} jwtToken Users JWT token to validate create request
  * @param {string} passcode Users passcode to escrow their keys
  */
-export function createUser(jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> {
-    return InitializationApi.createUser(passcode, jwtToken).map(({user, keys, encryptedLocalKeys}) => {
+export function createUserAndDevice(jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> {
+    return InitializationApi.createUserAndDevice(passcode, jwtToken).map(({user, keys, encryptedLocalKeys}) => {
         const {deviceKeys, signingKeys} = keys;
         ApiState.setCurrentUser(user);
         ApiState.setDeviceAndSigningKeys(deviceKeys, signingKeys);

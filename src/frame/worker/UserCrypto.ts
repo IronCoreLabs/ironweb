@@ -89,11 +89,31 @@ export function generateDeviceAndSigningKeys(
     );
 }
 
+type UserKeys = Readonly<{
+    publicKey: PublicKey<Uint8Array>;
+    privateKey: PrivateKey<Uint8Array>;
+    encryptedPrivateKey: Uint8Array;
+}>;
+
+/**
+ * Generate and encrypt keys for a new user. Generates user and encrypts the user keys with a passcode-derived key.
+ */
+export const generateNewUserKeys = (passcode: string): Future<SDKError, UserKeys> =>
+    loadRecrypt()
+        .flatMap((Recrypt) => Future.gather2(Recrypt.generateKeyPair(), Recrypt.generatePasswordDerivedKey(passcode)))
+        .flatMap(([{publicKey, privateKey}, derivedKey]) =>
+            AES.encryptUserKey(privateKey, derivedKey).map((encryptedPrivateKey) => ({
+                publicKey,
+                privateKey,
+                encryptedPrivateKey,
+            }))
+        )
+        .errorMap((error) => new SDKError(error, ErrorCodes.USER_MASTER_KEY_GENERATION_FAILURE));
+
 /**
  * Generate and encrypt keys for a new user. Generates user, device, and signing keys and encrypts the user keys with a passcode-derived key
- * @param {string} passcode Users passcode
  */
-export function generateNewUserKeys(passcode: string) {
+export function generateNewUserAndDeviceKeys(passcode: string) {
     return loadRecrypt()
         .flatMap((Recrypt) => {
             return Future.gather2(Recrypt.generateNewUserKeySet(), Recrypt.generatePasswordDerivedKey(passcode))

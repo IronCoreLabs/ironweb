@@ -6,6 +6,89 @@ import * as ShimUtils from "../ShimUtils";
 import * as FrameMediator from "../FrameMediator";
 
 describe("Initialize", () => {
+    describe("createNewUser", () => {
+        it("rejects if JWT callback does not return a promise", (done) => {
+            const jwtCallback = () => ({} as any);
+
+            Initialize.createNewUser(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB is invalid"))
+                .catch((err: SDKError) => {
+                    expect(err).toEqual(expect.any(Error));
+                    expect(err.code).toEqual(ErrorCodes.JWT_FORMAT_FAILURE);
+                    done();
+                });
+        });
+
+        it("rejects if JWT promise rejects", (done) => {
+            const jwtCallback = () => {
+                return Promise.reject(new Error("failed promise"));
+            };
+
+            Initialize.createNewUser(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB rejects"))
+                .catch((err: Error) => {
+                    expect(err).toEqual(new Error("failed promise"));
+                    done();
+                });
+        });
+
+        it("rejects if JWT returned is not a string", (done) => {
+            const jwtCallback = () => Promise.resolve({}) as Promise<string>;
+
+            Initialize.createNewUser(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB rejects"))
+                .catch((err: SDKError) => {
+                    expect(err).toEqual(expect.any(Error));
+                    expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
+                    done();
+                });
+        });
+
+        it("rejects if JWT returned is an empty string", (done) => {
+            const jwtCallback = () => Promise.resolve("");
+
+            Initialize.createNewUser(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB rejects"))
+                .catch((err: SDKError) => {
+                    expect(err).toEqual(expect.any(Error));
+                    expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
+                    done();
+                });
+        });
+
+        it("sends message to frame to create new user", (done) => {
+            const jwtCallback = jasmine.createSpy("jwt").and.returnValue(Promise.resolve("validJWT"));
+            spyOn(FrameMediator, "sendMessage").and.callFake(() =>
+                Future.of({message: {id: "1", segmentId: 1, status: 1, userMasterPublicKey: "pubkey", userPrivateKey: "privkey"}})
+            );
+            spyOn(ShimUtils, "storeParentWindowSymmetricKey");
+
+            Initialize.createNewUser(jwtCallback, "passcode")
+                .then((initResult) => {
+                    expect(jwtCallback.calls.count()).toEqual(1);
+                    expect(initResult).toEqual({
+                        accountID: "1",
+                        segmentID: 1,
+                        status: 1,
+                        userMasterPublicKey: "pubkey",
+                        userPrivateKey: "privkey",
+                    });
+
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "CREATE_USER",
+                        message: {
+                            jwtToken: "validJWT",
+                            passcode: "passcode",
+                        },
+                    });
+
+                    expect(ShimUtils.storeParentWindowSymmetricKey).not.toHaveBeenCalled();
+                    done();
+                })
+                .catch((e) => fail(e));
+        });
+    });
+
     describe("jwt failures", () => {
         it("rejects if JWT callback does not return a promise", (done) => {
             const jwtCallback = () => ({} as any);
@@ -160,7 +243,7 @@ describe("Initialize", () => {
                         },
                     });
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
-                        type: "CREATE_USER",
+                        type: "CREATE_USER_AND_DEVICE",
                         message: {
                             passcode: "passcode",
                             jwtToken: "validJWT",

@@ -1,4 +1,4 @@
-import {UserUpdateKeys, UserCreationKeys} from "./frame/endpoints/UserApiEndpoints";
+import {UserUpdateKeys, UserCreationKeys, UserKeys} from "./frame/endpoints/UserApiEndpoints";
 import {TransformKeyGrant} from "./frame/worker/crypto/recrypt";
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 
@@ -10,6 +10,17 @@ export interface NewUserKeygenWorkerRequest {
 }
 export interface NewUserKeygenWorkerResponse {
     type: "NEW_USER_KEYGEN_RESPONSE";
+    message: UserKeys;
+}
+
+export interface NewUserAndDeviceKeygenWorkerRequest {
+    type: "NEW_USER_AND_DEVICE_KEYGEN";
+    message: {
+        passcode: string;
+    };
+}
+export interface NewUserAndDeviceKeygenWorkerResponse {
+    type: "NEW_USER_AND_DEVICE_KEYGEN_RESPONSE";
     message: {
         userKeys: UserCreationKeys;
         encryptedDeviceAndSigningKeys: EncryptedLocalKeys;
@@ -216,6 +227,7 @@ export type RequestMessage =
     | DecryptDocumentWorkerRequest
     | DocumentEncryptToKeysWorkerRequest
     | NewUserKeygenWorkerRequest
+    | NewUserAndDeviceKeygenWorkerRequest
     | DeviceKeygenWorkerRequest
     | ChangeUserPasscodeWorkerRequest
     | GroupCreateWorkerRequest
@@ -230,6 +242,7 @@ export type ResponseMessage =
     | DecryptDocumentWorkerResponse
     | DocumentEncryptToKeysWorkerResponse
     | NewUserKeygenWorkerResponse
+    | NewUserAndDeviceKeygenWorkerResponse
     | DeviceKeygenWorkerResponse
     | DecryptLocalKeysWorkerResponse
     | ChangeUserPasscodeWorkerResponse

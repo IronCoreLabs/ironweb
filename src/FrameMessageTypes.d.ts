@@ -40,6 +40,14 @@ export interface CreateUserRequest {
     type: "CREATE_USER";
     message: {passcode: string; jwtToken: string};
 }
+export interface CreateUserResponse {
+    type: "CREATE_USER_RESPONSE";
+    message: ApiUserResponse;
+}
+export interface CreateUserAndDeviceRequest {
+    type: "CREATE_USER_AND_DEVICE";
+    message: {passcode: string; jwtToken: string};
+}
 export interface GenerateNewDeviceKeysRequest {
     type: "GEN_DEVICE_KEYS";
     message: {passcode: string; jwtToken: string};
@@ -345,6 +353,7 @@ export interface ErrorResponse {
 export type RequestMessage =
     | InitApiRequest
     | CreateUserRequest
+    | CreateUserAndDeviceRequest
     | GenerateNewDeviceKeysRequest
     | DocumentListRequest
     | DocumentMetaGetRequest
@@ -385,6 +394,7 @@ export type ResponseMessage =
     | DocumentGrantResponse
     | DocumentRevokeResponse
     | ChangeUserPasscodeResponse
+    | CreateUserResponse
     | DeauthorizeDeviceResponse
     | GroupListResponse
     | GroupGetResponse

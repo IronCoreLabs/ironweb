@@ -79,6 +79,10 @@ messenger.onMessage(
                     message.encryptedPrivateUserKey,
                     message.publicUserKey
                 ).engage(errorHandler, (keys) => callback({type: "USER_DEVICE_KEYGEN_RESPONSE", message: keys}));
+            case "NEW_USER_AND_DEVICE_KEYGEN":
+                return UserCrypto.generateNewUserAndDeviceKeys(data.message.passcode).engage(errorHandler, (keys) =>
+                    callback({type: "NEW_USER_AND_DEVICE_KEYGEN_RESPONSE", message: keys})
+                );
             case "NEW_USER_KEYGEN":
                 return UserCrypto.generateNewUserKeys(data.message.passcode).engage(errorHandler, (keys) =>
                     callback({type: "NEW_USER_KEYGEN_RESPONSE", message: keys})

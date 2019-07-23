@@ -4,13 +4,18 @@ import * as TestUtils from "../../../tests/TestUtils";
 import * as FrameUtils from "../../FrameUtils";
 import Future from "futurejs";
 import * as InitializationApi from "../InitializationApi";
+import {publicKeyToBase64} from "../../../lib/Utils";
+import {fromByteArray} from "base64-js";
 
 describe("init index", () => {
-    describe("initialize", () => {
-        afterEach(() => {
-            localStorage.clear();
-        });
+    beforeEach(() => {
+        ApiState.clearCurrentUser();
+    });
+    afterEach(() => {
+        localStorage.clear();
+    });
 
+    describe("initialize", () => {
         it("sets user on state with verify response when users exists", (done) => {
             spyOn(InitializationApi, "initializeApi").and.returnValue(
                 Future.of({
@@ -38,7 +43,6 @@ describe("init index", () => {
         });
 
         it("does not update user state when user does not exist on verify response", (done) => {
-            (ApiState as any).apiUser = undefined; //Clear out user state from prior tests
             spyOn(InitializationApi, "initializeApi").and.returnValue(
                 Future.of({
                     user: undefined,
@@ -62,7 +66,6 @@ describe("init index", () => {
         });
 
         it("clears local device keys when no sym key provided and returns passcode response", (done) => {
-            (ApiState as any).apiUser = undefined; //Clear out user state from prior tests
             spyOn(InitializationApi, "initializeApi").and.returnValue(
                 Future.of({
                     user: TestUtils.getFullUser(),
@@ -91,7 +94,6 @@ describe("init index", () => {
         it("expects passcode response when local keys cannot be found or validated", (done) => {
             spyOn(InitializationApi, "fetchAndValidateLocalKeys").and.returnValue(Future.reject(new Error("failed")));
 
-            (ApiState as any).apiUser = undefined; //Clear out user state from prior tests
             spyOn(InitializationApi, "initializeApi").and.returnValue(
                 Future.of({
                     user: TestUtils.getFullUser(),
@@ -149,6 +151,35 @@ describe("init index", () => {
     });
 
     describe("createUser", () => {
+        it("invokes create user request and does not set API state", () => {
+            const userKeys = TestUtils.getEmptyKeyPair();
+            const apiResponse: ApiUserResponse = {
+                id: "1",
+                segmentId: 1,
+                status: 1,
+                userMasterPublicKey: publicKeyToBase64(userKeys.publicKey),
+                userPrivateKey: fromByteArray(userKeys.privateKey),
+            };
+
+            spyOn(FrameUtils, "storeDeviceAndSigningKeys");
+
+            spyOn(InitializationApi, "createUser").and.returnValue(Future.of(apiResponse));
+
+            Init.createUser("jwt", "passcode").engage(
+                (e) => fail(e),
+                (SDK) => {
+                    expect(SDK).toEqual({
+                        type: "CREATE_USER_RESPONSE",
+                        message: apiResponse,
+                    });
+                    expect(InitializationApi.createUser).toHaveBeenCalledWith("passcode", "jwt");
+                    expect(FrameUtils.storeDeviceAndSigningKeys).not.toHaveBeenCalled();
+                }
+            );
+        });
+    });
+
+    describe("createUserAndDevice", () => {
         it("invokes create user request and sets API state before returning SDK response type", () => {
             const deviceKeys = TestUtils.getEmptyKeyPair();
             const signingKeys = TestUtils.getSigningKeyPair();
@@ -156,7 +187,7 @@ describe("init index", () => {
 
             spyOn(FrameUtils, "storeDeviceAndSigningKeys");
 
-            spyOn(InitializationApi, "createUser").and.returnValue(
+            spyOn(InitializationApi, "createUserAndDevice").and.returnValue(
                 Future.of({
                     user: TestUtils.getFullUser(),
                     keys: {
@@ -177,7 +208,7 @@ describe("init index", () => {
                 })
             );
 
-            Init.createUser("jwt", "passcode").engage(
+            Init.createUserAndDevice("jwt", "passcode").engage(
                 (e) => fail(e),
                 (SDK) => {
                     expect(SDK).toEqual({
@@ -190,7 +221,7 @@ describe("init index", () => {
                             },
                         },
                     });
-                    expect(InitializationApi.createUser).toHaveBeenCalledWith("passcode", "jwt");
+                    expect(InitializationApi.createUserAndDevice).toHaveBeenCalledWith("passcode", "jwt");
                     expect(ApiState.userPublicKey()).toEqual(TestUtils.userPublicBytes);
                     expect(ApiState.deviceKeys()).toEqual(deviceKeys);
                     expect(ApiState.signingKeys()).toEqual(signingKeys);

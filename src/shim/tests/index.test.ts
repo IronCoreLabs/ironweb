@@ -1,6 +1,7 @@
 import * as PublicSdk from "../index";
 import * as Init from "../Initialize";
 import {ErrorCodes} from "../../Constants";
+jest.mock("../ShimUtils");
 
 describe("Init exposed public SDK", () => {
     describe("initialize", () => {
@@ -52,6 +53,46 @@ describe("Init exposed public SDK", () => {
         });
     });
 
+    describe("createNewUser", () => {
+        it("errors if jwt callback is of the wrong type", () => {
+            expect(() => (PublicSdk as any).createNewUser() as any).toThrow();
+            expect(() => (PublicSdk as any).createNewUser(1) as any).toThrow();
+            expect(() => (PublicSdk as any).createNewUser([]) as any).toThrow();
+            expect(() => (PublicSdk as any).createNewUser({}) as any).toThrow();
+        });
+
+        it("calls init api with argument", () => {
+            spyOn(Init, "createNewUser");
+
+            const fetchJWT = () => Promise.resolve("test");
+            const passcode = "pass";
+
+            PublicSdk.createNewUser(fetchJWT, passcode);
+
+            expect(Init.createNewUser).toHaveBeenCalledWith(fetchJWT, passcode);
+        });
+
+        it("should return error code if random number generation is not available in client browser", (done) => {
+            const origRandomValues = window.crypto.getRandomValues;
+            (window.crypto as any).getRandomValues = null;
+
+            spyOn(Init, "createNewUser");
+
+            const fetchJWT = () => Promise.resolve("test");
+            const passcode = "pass";
+
+            PublicSdk.createNewUser(fetchJWT, passcode)
+                .then(() => {
+                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                })
+                .catch((e) => {
+                    expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
+                    window.crypto.getRandomValues = origRandomValues;
+                    done();
+                });
+        });
+    });
+
     describe("ErrorCodes", () => {
         it("exposes error codes", () => {
             expect(PublicSdk.ErrorCodes).toBeObject();
@@ -65,5 +106,16 @@ describe("Init exposed public SDK", () => {
             expect(error.message).toEqual("message");
             expect(error.code).toEqual(1);
         });
+    });
+
+    describe("isInitialized", () => {
+        it("should return false when sdk check throws", () => {
+            const checkSDKInitialized = require("../ShimUtils").checkSDKInitialized;
+            checkSDKInitialized.mockImplementationOnce(() => {
+                throw Error("");
+            });
+            expect(PublicSdk.isInitialized()).toBeFalse();
+        });
+        it("should return true when sdk check doesn't throw", () => expect(PublicSdk.isInitialized()).toBeTrue());
     });
 });

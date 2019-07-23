@@ -24,6 +24,33 @@ describe("InitializationApi", () => {
     describe("createUser", () => {
         it("requests new JWT and derives key if jwt is callback", (done) => {
             const userKeys = TestUtils.getEmptyKeyPair();
+
+            spyOn(WorkerMediator, "sendMessage").and.returnValue(
+                Future.of({
+                    message: userKeys,
+                })
+            );
+            spyOn(UserApiEndpoints, "callUserCreateApi").and.returnValue(Future.of("new user"));
+
+            InitApi.createUser("passcode", "jwtToken2").engage(
+                (e) => fail(e),
+                (userCreationData: any) => {
+                    expect(userCreationData).toEqual("new user");
+
+                    expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
+                        type: expect.any(String),
+                        message: {passcode: "passcode"},
+                    });
+                    expect(UserApiEndpoints.callUserCreateApi).toHaveBeenCalledWith("jwtToken2", userKeys);
+                    done();
+                }
+            );
+        });
+    });
+
+    describe("createUserAndDevice", () => {
+        it("requests new JWT and derives key if jwt is callback", (done) => {
+            const userKeys = TestUtils.getEmptyKeyPair();
             const deviceAndSigning = {
                 deviceKeys: TestUtils.getEmptyKeyPair(),
                 signingKeys: {
@@ -40,9 +67,9 @@ describe("InitializationApi", () => {
                     },
                 })
             );
-            spyOn(UserApiEndpoints, "callUserCreateApi").and.returnValue(Future.of("new user"));
+            spyOn(UserApiEndpoints, "callUserCreateApiWithDevice").and.returnValue(Future.of("new user"));
 
-            InitApi.createUser("passcode", "jwtToken2").engage(
+            InitApi.createUserAndDevice("passcode", "jwtToken2").engage(
                 (e) => fail(e),
                 (userCreationData: any) => {
                     expect(userCreationData).toEqual({
@@ -55,7 +82,7 @@ describe("InitializationApi", () => {
                         type: expect.any(String),
                         message: {passcode: "passcode"},
                     });
-                    expect(UserApiEndpoints.callUserCreateApi).toHaveBeenCalledWith("jwtToken2", userKeys);
+                    expect(UserApiEndpoints.callUserCreateApiWithDevice).toHaveBeenCalledWith("jwtToken2", userKeys);
                     done();
                 }
             );
