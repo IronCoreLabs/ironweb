@@ -93,6 +93,46 @@ describe("Init exposed public SDK", () => {
         });
     });
 
+    describe("createNewDeviceKeys", () => {
+        it("errors if jwt callback is of the wrong type", () => {
+            expect(() => (PublicSdk as any).createNewDeviceKeys() as any).toThrow();
+            expect(() => (PublicSdk as any).createNewDeviceKeys(1) as any).toThrow();
+            expect(() => (PublicSdk as any).createNewDeviceKeys([]) as any).toThrow();
+            expect(() => (PublicSdk as any).createNewDeviceKeys({}) as any).toThrow();
+        });
+
+        it("should return error code if random number generation is not available in client browser", (done) => {
+            const origRandomValues = window.crypto.getRandomValues;
+            (window.crypto as any).getRandomValues = null;
+
+            spyOn(Init, "createUserDeviceKeys");
+
+            const fetchJWT = () => Promise.resolve("test");
+            const passcode = "pass";
+
+            PublicSdk.createNewDeviceKeys(fetchJWT, passcode)
+                .then(() => {
+                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                })
+                .catch((e) => {
+                    expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
+                    window.crypto.getRandomValues = origRandomValues;
+                    done();
+                });
+        });
+
+        it("calls init api with argument", () => {
+            spyOn(Init, "createUserDeviceKeys");
+
+            const fetchJWT = () => Promise.resolve("test");
+            const passcode = "pass";
+
+            PublicSdk.createNewDeviceKeys(fetchJWT, passcode);
+
+            expect(Init.createUserDeviceKeys).toHaveBeenCalledWith(fetchJWT, passcode);
+        });
+    });
+
     describe("ErrorCodes", () => {
         it("exposes error codes", () => {
             expect(PublicSdk.ErrorCodes).toBeObject();

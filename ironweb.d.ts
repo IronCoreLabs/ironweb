@@ -103,12 +103,22 @@ export interface GroupUserEditResponse {
 /**
  * User SDK response types
  */
+export interface PublicKey<T> {
+    x: T;
+    y: T;
+}
+export type PrivateKey<T> = T;
 export interface UserCreateResponse {
     accountID: string;
     segmentID: number;
     status: number;
     userMasterPublicKey: PublicKey<Base64String>;
-    userPrivateKey: PrivateKey<Base64String>;
+}
+export interface DeviceKeys {
+    accountID: string;
+    segmentID: number;
+    deviceKey: PrivateKey<Base64String>;
+    signingKey: PrivateKey<Base64String>;
 }
 
 /**
@@ -183,4 +193,5 @@ export const group: Group;
 
 export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback): Promise<SDKInitializationResult>;
 export function createNewUser(jwtCallback: JWTCallback, passcode: string): Promise<UserCreateResponse>;
+export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceKeys>;
 export function isInitialized(): boolean;

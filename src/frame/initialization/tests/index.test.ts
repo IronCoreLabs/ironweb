@@ -5,6 +5,8 @@ import * as FrameUtils from "../../FrameUtils";
 import Future from "futurejs";
 import * as InitializationApi from "../InitializationApi";
 import {publicKeyToBase64} from "../../../lib/Utils";
+import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
+import {ErrorCodes} from "../../../Constants";
 import {fromByteArray} from "base64-js";
 
 describe("init index", () => {
@@ -280,6 +282,56 @@ describe("init index", () => {
                     expect(ApiState.signingKeys()).toEqual(signingKeys);
 
                     expect(FrameUtils.storeDeviceAndSigningKeys).toHaveBeenCalledWith("user-10", 1, "edk", "esk", "iv");
+                }
+            );
+        });
+    });
+
+    describe("createDetachedUserDevice", () => {
+        it("verifies user and rejects if they dont exist", () => {
+            spyOn(UserApiEndpoints, "callUserVerifyApi").and.returnValue(Future.of({}));
+
+            Init.createDetachedUserDevice("token", "pass").engage(
+                (e) => {
+                    expect(e.code).toEqual(ErrorCodes.USER_NOT_SYNCED_FAILURE);
+                },
+                () => fail("Call should not succeed when user doesnt yet exist.")
+            );
+        });
+
+        it("uses verified user and password to decrypt master key and generates device from it", () => {
+            spyOn(UserApiEndpoints, "callUserVerifyApi").and.returnValue(
+                Future.of({
+                    user: {
+                        id: "mockID",
+                        segmentId: 333,
+                        userPrivateKey: "aaaa",
+                        userMasterPublicKey: TestUtils.getFullUser().userMasterPublicKey,
+                    },
+                })
+            );
+            spyOn(InitializationApi, "generateDeviceAndSigningKeys").and.returnValue(
+                Future.of({
+                    userUpdateKeys: {
+                        deviceKeys: {privateKey: new Uint8Array([98, 81, 130, 199])},
+                        signingKeys: {privateKey: new Uint8Array([58, 101, 98])},
+                    },
+                })
+            );
+
+            Init.createDetachedUserDevice("token", "pass").engage(
+                (e) => fail(e),
+                (result) => {
+                    expect(InitializationApi.generateDeviceAndSigningKeys).toHaveBeenCalledWith("token", "pass", expect.any(Uint8Array), {
+                        x: expect.any(Uint8Array),
+                        y: expect.any(Uint8Array),
+                    });
+                    expect(result).toEqual({
+                        accountID: "mockID",
+                        segmentID: 333,
+                        deviceKey: "YlGCxw==",
+                        signingKey: "OmVi",
+                    });
                 }
             );
         });

@@ -76,6 +76,23 @@ describe("frame index", () => {
                 done();
             });
         });
+
+        it("CREATE_DETATCHED_USER_DEVICE", (done) => {
+            spyOn(Init, "createDetachedUserDevice").and.returnValue(Future.of("createDetachedUserDevice"));
+            const payload: MT.CreateDetachedUserDeviceRequest = {
+                type: "CREATE_DETATCHED_USER_DEVICE",
+                message: {passcode: "pass", jwtToken: "tok"},
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "CREATE_DETATCHED_USER_DEVICE_RESPONSE",
+                    message: "createDetachedUserDevice",
+                });
+                expect(Init.createDetachedUserDevice).toHaveBeenCalledWith("tok", "pass");
+                done();
+            });
+        });
     });
 
     describe("onMessage document tests", () => {

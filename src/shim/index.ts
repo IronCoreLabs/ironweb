@@ -13,6 +13,13 @@ function supportsRandomNumGen() {
 }
 
 /**
+ * Failed Promise for when the users browser can't generate random numbers
+ */
+const randomGenFailure = Promise.reject(
+    new SDKError(new Error("Request failed due to a lack of browser support for random number generation."), ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE)
+);
+
+/**
  * Create a new user from the given JWT callback and passcode. Doesn't create any devices for the new user, and doesn't initialize the SDK.
  */
 export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> {
@@ -20,14 +27,23 @@ export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: strin
         throw new Error("You must provide a function which will generate a JWT as the first parameter to 'IronWeb.createNewUser'.");
     }
     if (!supportsRandomNumGen()) {
-        return Promise.reject(
-            new SDKError(
-                new Error("Request failed due to a lack of browser support for random number generation."),
-                ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE
-            )
-        );
+        return randomGenFailure;
     }
     return Init.createNewUser(jwtCallback, passcode);
+}
+
+/**
+ * Create a detached set of device keys for an existing user. These keys will not be stored in the browser and will just be returned
+ * to the caller to use however they would like.
+ */
+export function createNewDeviceKeys(jwtCallback: JWTCallbackToPromise, passcode: string): Promise<any> {
+    if (!jwtCallback || typeof jwtCallback !== "function") {
+        throw new Error("You must provide a function which will generate a JWT as the first parameter to 'IronWeb.createNewUser'.");
+    }
+    if (!supportsRandomNumGen()) {
+        return randomGenFailure;
+    }
+    return Init.createUserDeviceKeys(jwtCallback, passcode);
 }
 
 /**
@@ -42,12 +58,7 @@ export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: 
         throw new Error("You must provide a function which will generate the users escrow passcode as the second parameter to 'IronWeb.initialize'.");
     }
     if (!supportsRandomNumGen()) {
-        return Promise.reject(
-            new SDKError(
-                new Error("Request failed due to a lack of browser support for random number generation."),
-                ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE
-            )
-        );
+        return randomGenFailure;
     }
     return Init.initialize(jwtCallback, passcodeCallback);
 }
