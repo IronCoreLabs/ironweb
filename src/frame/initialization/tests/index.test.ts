@@ -327,10 +327,10 @@ describe("init index", () => {
                         y: expect.any(Uint8Array),
                     });
                     expect(result).toEqual({
-                        accountID: "mockID",
-                        segmentID: 333,
-                        deviceKey: "YlGCxw==",
-                        signingKey: "OmVi",
+                        accountId: "mockID",
+                        segmentId: 333,
+                        devicePrivateKey: "YlGCxw==",
+                        signingPrivateKey: "OmVi",
                     });
                 }
             );

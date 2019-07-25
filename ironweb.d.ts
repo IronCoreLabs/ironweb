@@ -2,8 +2,8 @@
 //eslint-disable-next-line no-undef
 export as namespace ironweb;
 
-type RFC3339Timestamp = string;
-type Base64String = string;
+export type RFC3339Timestamp = string;
+export type Base64String = string;
 
 /**
  * SDK parameter object shapes
@@ -114,10 +114,10 @@ export interface UserCreateResponse {
     userMasterPublicKey: PublicKey<Base64String>;
 }
 export interface DeviceKeys {
-    accountID: string;
-    segmentID: number;
-    deviceKey: PrivateKey<Base64String>;
-    signingKey: PrivateKey<Base64String>;
+    accountId: string;
+    segmentId: number;
+    devicePrivateKey: PrivateKey<Base64String>;
+    signingPrivateKey: PrivateKey<Base64String>;
 }
 
 /**

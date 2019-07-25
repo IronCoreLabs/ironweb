@@ -8,6 +8,7 @@ import UserApiEndpoints from "../endpoints/UserApiEndpoints";
 import {storeDeviceAndSigningKeys, clearDeviceAndSigningKeys} from "../FrameUtils";
 import {publicKeyToBytes} from "../../lib/Utils";
 import {InitApiPasscodeResponse, InitApiSdkResponse, CreateUserResponse} from "../../FrameMessageTypes";
+import {DeviceKeys} from "ironweb";
 
 /**
  * Build response back to shim for when the SDK has been initialized. Include details about the current user as well as
@@ -131,7 +132,7 @@ export const generateUserNewDeviceKeys = (jwtToken: string, passcode: string): F
  * generating a set of device and signing keys. Only returns the private device and signing key since the associated public key
  * for each can be derived if/when necessary.
  */
-export const createDetachedUserDevice = (jwtToken: string, passcode: string) => {
+export const createDetachedUserDevice = (jwtToken: string, passcode: string): Future<SDKError, DeviceKeys> => {
     return UserApiEndpoints.callUserVerifyApi(jwtToken).flatMap((verifyResult) => {
         if (!verifyResult.user) {
             return Future.reject(
@@ -144,10 +145,10 @@ export const createDetachedUserDevice = (jwtToken: string, passcode: string) => 
         const {id, segmentId, userPrivateKey, userMasterPublicKey} = verifyResult.user;
         return InitializationApi.generateDeviceAndSigningKeys(jwtToken, passcode, toByteArray(userPrivateKey), publicKeyToBytes(userMasterPublicKey)).map(
             ({userUpdateKeys}) => ({
-                accountID: id,
-                segmentID: segmentId,
-                deviceKey: fromByteArray(userUpdateKeys.deviceKeys.privateKey),
-                signingKey: fromByteArray(userUpdateKeys.signingKeys.privateKey),
+                accountId: id,
+                segmentId: segmentId,
+                devicePrivateKey: fromByteArray(userUpdateKeys.deviceKeys.privateKey),
+                signingPrivateKey: fromByteArray(userUpdateKeys.signingKeys.privateKey),
             })
         );
     });
