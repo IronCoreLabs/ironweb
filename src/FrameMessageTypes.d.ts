@@ -8,6 +8,7 @@ import {
     GroupDetailResponse,
     GroupListResponse as GroupListResult,
     GroupUserEditResponse,
+    DeviceKeys,
 } from "../ironweb";
 
 import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
@@ -51,6 +52,14 @@ export interface CreateUserAndDeviceRequest {
 export interface GenerateNewDeviceKeysRequest {
     type: "GEN_DEVICE_KEYS";
     message: {passcode: string; jwtToken: string};
+}
+export interface CreateDetachedUserDeviceRequest {
+    type: "CREATE_DETATCHED_USER_DEVICE";
+    message: {passcode: string; jwtToken: string};
+}
+export interface CreateDetachedUserDeviceResponse {
+    type: "CREATE_DETATCHED_USER_DEVICE_RESPONSE";
+    message: DeviceKeys;
 }
 
 /**
@@ -355,6 +364,7 @@ export type RequestMessage =
     | CreateUserRequest
     | CreateUserAndDeviceRequest
     | GenerateNewDeviceKeysRequest
+    | CreateDetachedUserDeviceRequest
     | DocumentListRequest
     | DocumentMetaGetRequest
     | DocumentStoreDecryptRequest
@@ -395,6 +405,7 @@ export type ResponseMessage =
     | DocumentRevokeResponse
     | ChangeUserPasscodeResponse
     | CreateUserResponse
+    | CreateDetachedUserDeviceResponse
     | DeauthorizeDeviceResponse
     | GroupListResponse
     | GroupGetResponse

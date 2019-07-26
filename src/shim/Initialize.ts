@@ -8,11 +8,13 @@ import {
     CreateUserRequest,
     CreateUserResponse,
     CreateUserAndDeviceRequest,
+    CreateDetachedUserDeviceRequest,
+    CreateDetachedUserDeviceResponse,
 } from "../FrameMessageTypes";
 import {ErrorCodes} from "../Constants";
 import {storeParentWindowSymmetricKey, getParentWindowSymmetricKey, setSDKInitialized} from "./ShimUtils";
 import * as FrameMediator from "./FrameMediator";
-import {SDKInitializationResult, UserCreateResponse} from "ironweb";
+import {SDKInitializationResult, UserCreateResponse, DeviceKeys} from "ironweb";
 
 //Store reference to the JWT callback in case we need to invoke it again to create user
 let userJWTCallback: JWTCallbackToPromise;
@@ -92,7 +94,21 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
             const payload: CreateUserRequest = {type: "CREATE_USER", message: {passcode, jwtToken}};
             return FrameMediator.sendMessage<CreateUserResponse>(payload);
         })
-        .map(({message: {id, segmentId, ...rest}}) => ({accountID: id, segmentID: segmentId, ...rest}))
+        //Rename a few fields and strip out the users private key since it'll probably be confusing that they're getting back an encrypted private key
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .map(({message: {id, segmentId, userPrivateKey, ...rest}}) => ({accountID: id, segmentID: segmentId, ...rest}))
+        .toPromise();
+
+/**
+ * Create a set of device keys that aren't stored in the browser and are returned to the caller.
+ */
+export const createUserDeviceKeys = (jwtCallback: JWTCallbackToPromise, passcode: string): Promise<DeviceKeys> =>
+    getJWT(jwtCallback)
+        .flatMap((jwtToken) => {
+            const payload: CreateDetachedUserDeviceRequest = {type: "CREATE_DETATCHED_USER_DEVICE", message: {passcode, jwtToken}};
+            return FrameMediator.sendMessage<CreateDetachedUserDeviceResponse>(payload);
+        })
+        .map(({message}) => message)
         .toPromise();
 
 /**

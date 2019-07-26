@@ -71,7 +71,6 @@ describe("Initialize", () => {
                         segmentID: 1,
                         status: 1,
                         userMasterPublicKey: "pubkey",
-                        userPrivateKey: "privkey",
                     });
 
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
@@ -83,6 +82,93 @@ describe("Initialize", () => {
                     });
 
                     expect(ShimUtils.storeParentWindowSymmetricKey).not.toHaveBeenCalled();
+                    done();
+                })
+                .catch((e) => fail(e));
+        });
+    });
+
+    describe("createUserDeviceKeys", () => {
+        it("rejects if JWT callback does not return a promise", (done) => {
+            const jwtCallback = () => ({} as any);
+
+            Initialize.createUserDeviceKeys(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB is invalid"))
+                .catch((err: SDKError) => {
+                    expect(err).toEqual(expect.any(Error));
+                    expect(err.code).toEqual(ErrorCodes.JWT_FORMAT_FAILURE);
+                    done();
+                });
+        });
+
+        it("rejects if JWT promise rejects", (done) => {
+            const jwtCallback = () => {
+                return Promise.reject(new Error("failed promise"));
+            };
+
+            Initialize.createUserDeviceKeys(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB rejects"))
+                .catch((err: Error) => {
+                    expect(err).toEqual(new Error("failed promise"));
+                    done();
+                });
+        });
+
+        it("rejects if JWT returned is not a string", (done) => {
+            const jwtCallback = () => Promise.resolve({}) as Promise<string>;
+
+            Initialize.createUserDeviceKeys(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB rejects"))
+                .catch((err: SDKError) => {
+                    expect(err).toEqual(expect.any(Error));
+                    expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
+                    done();
+                });
+        });
+
+        it("rejects if JWT returned is an empty string", (done) => {
+            const jwtCallback = () => Promise.resolve("");
+
+            Initialize.createUserDeviceKeys(jwtCallback, "passcode")
+                .then(() => fail("resolve should not be called when JWT CB rejects"))
+                .catch((err: SDKError) => {
+                    expect(err).toEqual(expect.any(Error));
+                    expect(err.code).toEqual(ErrorCodes.JWT_RETRIEVAL_FAILURE);
+                    done();
+                });
+        });
+
+        it("sends message to frame to create new user devices", (done) => {
+            const jwtCallback = jasmine.createSpy("jwt").and.returnValue(Promise.resolve("validJWT"));
+            spyOn(FrameMediator, "sendMessage").and.returnValue(
+                Future.of({
+                    type: "CREATE_DETATCHED_USER_DEVICE_RESPONSE",
+                    message: {
+                        accountID: "abc",
+                        segmentID: 11,
+                        deviceKey: "devPriv",
+                        signingKey: "sigPriv",
+                    },
+                })
+            );
+
+            Initialize.createUserDeviceKeys(jwtCallback, "passcode")
+                .then((deviceResult) => {
+                    expect(jwtCallback.calls.count()).toEqual(1);
+                    expect(deviceResult).toEqual({
+                        accountID: "abc",
+                        segmentID: 11,
+                        deviceKey: "devPriv",
+                        signingKey: "sigPriv",
+                    });
+
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "CREATE_DETATCHED_USER_DEVICE",
+                        message: {
+                            jwtToken: "validJWT",
+                            passcode: "passcode",
+                        },
+                    });
                     done();
                 })
                 .catch((e) => fail(e));

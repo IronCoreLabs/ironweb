@@ -1,5 +1,5 @@
 import * as React from "react";
-import {SDKError, initialize} from "../../src/shim";
+import * as IronWeb from "../../src/shim";
 import RaisedButton from "material-ui/RaisedButton";
 import {Tabs, Tab} from "material-ui/Tabs";
 import TextField from "material-ui/TextField";
@@ -78,13 +78,13 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
 
     initialize = () => {
         logAction(`Calling SDK Init`);
-        initialize(this.generateJWT, this.getUsersPasscode)
+        IronWeb.initialize(this.generateJWT, this.getUsersPasscode)
             .then((initializedResult) => {
                 document.cookie = `integrationDemo=${JSON.stringify({id: window.User.id, name: window.User.name})};`;
                 logAction(`Init complete. Initialized user ${initializedResult.user.id} who has status ${initializedResult.user.status}`, "success");
                 this.props.onComplete();
             })
-            .catch((error: SDKError) => {
+            .catch((error: IronWeb.SDKError) => {
                 logAction(`Initialize error: ${error.message}. Error Code: ${error.code}`, "error");
             });
     };
@@ -92,7 +92,6 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
     getPasscodeInput() {
         return (
             <TextField
-                key="apiPasscode"
                 id="api-passcode"
                 autoFocus
                 type="text"
@@ -103,6 +102,26 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
             />
         );
     }
+
+    createUser = () => {
+        logAction(`Creating user manually without device...`);
+        IronWeb.createNewUser(this.generateJWT, this.state.passcode)
+            .then((res) => {
+                logAction(`User manually created`, "success");
+                logAction(JSON.stringify(res));
+            })
+            .catch((e) => logAction(`Failed to create user: '${e.message}'`, "error"));
+    };
+
+    createDevice = () => {
+        logAction(`Creating device manually...`);
+        IronWeb.createNewDeviceKeys(this.generateJWT, this.state.passcode)
+            .then((res) => {
+                logAction(`User device manually created`, "success");
+                logAction(JSON.stringify(res));
+            })
+            .catch((e) => logAction(`Failed to create user device: '${e.message}'`, "error"));
+    };
 
     getInitUIElement() {
         if (this.state.showSetPasscode) {
@@ -117,8 +136,17 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
     render() {
         return (
             <Tabs style={{width: "350px"}} className="initialize-api">
-                <Tab label="Initialize">
+                <Tab label="Initialize" onActive={() => this.setState({passcode: ""})}>
                     <div style={tabStyle}>{this.getInitUIElement()}</div>
+                </Tab>
+                <Tab label="Manual" onActive={() => this.setState({passcode: ""})}>
+                    <div style={{...tabStyle}}>
+                        {this.getPasscodeInput()}
+                        <RaisedButton className="initialize-create-user" secondary onClick={this.createUser} label="Create User" />
+                        <br />
+                        <br />
+                        <RaisedButton className="initialize-create-device" secondary onClick={this.createDevice} label="Create Device" />
+                    </div>
                 </Tab>
             </Tabs>
         );

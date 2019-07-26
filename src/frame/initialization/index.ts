@@ -1,27 +1,29 @@
+import Future from "futurejs";
+import {fromByteArray, toByteArray} from "base64-js";
 import * as InitializationApi from "./InitializationApi";
 import ApiState from "../ApiState";
+import {ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
-import Future from "futurejs";
+import UserApiEndpoints from "../endpoints/UserApiEndpoints";
 import {storeDeviceAndSigningKeys, clearDeviceAndSigningKeys} from "../FrameUtils";
+import {publicKeyToBytes} from "../../lib/Utils";
 import {InitApiPasscodeResponse, InitApiSdkResponse, CreateUserResponse} from "../../FrameMessageTypes";
-import {fromByteArray} from "base64-js";
+import {DeviceKeys} from "ironweb";
 
 /**
  * Build response back to shim for when the SDK has been initialized. Include details about the current user as well as
  * the users optional device symmetric key to store in shim local storage.
  */
-function buildSDKInitCompleteResponse(user: ApiUserResponse, deviceSymmetricKey?: Uint8Array): InitApiSdkResponse {
-    return {
-        type: "FULL_SDK_RESPONSE",
-        message: {
-            user: {
-                id: user.id,
-                status: user.status,
-            },
-            symmetricKey: deviceSymmetricKey ? fromByteArray(deviceSymmetricKey) : undefined,
+const buildSDKInitCompleteResponse = (user: ApiUserResponse, deviceSymmetricKey?: Uint8Array): InitApiSdkResponse => ({
+    type: "FULL_SDK_RESPONSE",
+    message: {
+        user: {
+            id: user.id,
+            status: user.status,
         },
-    };
-}
+        symmetricKey: deviceSymmetricKey ? fromByteArray(deviceSymmetricKey) : undefined,
+    },
+});
 
 /**
  * Handle result of verify call. If user exists, we attempt to lookup their private device/signing keys in local storage and generate their
@@ -29,10 +31,10 @@ function buildSDKInitCompleteResponse(user: ApiUserResponse, deviceSymmetricKey?
  * @param  {undefined|ApiUserResponse} user                         User response from verify endpoint
  * @param  {string}                    deviceAndSigningSymmetricKey Optional symmetric key that is used to decrypt the users device and signing keys
  */
-function handleVerifyResult(
+const handleVerifyResult = (
     user: undefined | ApiUserResponse,
     deviceAndSigningSymmetricKey?: string
-): Future<SDKError, InitApiPasscodeResponse | InitApiSdkResponse> {
+): Future<SDKError, InitApiPasscodeResponse | InitApiSdkResponse> => {
     const needsPasscode: InitApiPasscodeResponse = {
         type: "INIT_PASSCODE_REQUIRED",
         message: {doesUserExist: user !== undefined},
@@ -66,16 +68,15 @@ function handleVerifyResult(
         );
     }
     return needsPasscodeFuture;
-}
+};
 
 /**
  * Initialize the API by providing a JWT callback to Promise method
  * @param {CallbackToPromise} jwtCallback                  Method which when invoked will return a Promise which will be resolved with a JWT token
  * @param {string}            deviceAndSigningSymmetricKey Optional symmetric key that is used to decrypt the users device and signing keys
  */
-export function initialize(jwtToken: string, deviceAndSigningSymmetricKey?: string) {
-    return InitializationApi.initializeApi(jwtToken).flatMap(({user}) => handleVerifyResult(user, deviceAndSigningSymmetricKey));
-}
+export const initialize = (jwtToken: string, deviceAndSigningSymmetricKey?: string) =>
+    InitializationApi.initializeApi(jwtToken).flatMap(({user}) => handleVerifyResult(user, deviceAndSigningSymmetricKey));
 
 /**
  * Create a new user given a JWT token to request with and the user's passcode to escrow their keys
@@ -91,8 +92,8 @@ export const createUser = (jwtToken: string, passcode: string): Future<SDKError,
  * @param {string} jwtToken Users JWT token to validate create request
  * @param {string} passcode Users passcode to escrow their keys
  */
-export function createUserAndDevice(jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> {
-    return InitializationApi.createUserAndDevice(passcode, jwtToken).map(({user, keys, encryptedLocalKeys}) => {
+export const createUserAndDevice = (jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> =>
+    InitializationApi.createUserAndDevice(passcode, jwtToken).map(({user, keys, encryptedLocalKeys}) => {
         const {deviceKeys, signingKeys} = keys;
         ApiState.setCurrentUser(user);
         ApiState.setDeviceAndSigningKeys(deviceKeys, signingKeys);
@@ -105,14 +106,13 @@ export function createUserAndDevice(jwtToken: string, passcode: string): Future<
         );
         return buildSDKInitCompleteResponse(user, encryptedLocalKeys.symmetricKey);
     });
-}
 
 /**
  * Generate new device keys for an existing user
  * @param {string} jwtToken Users JWT token to validate device add request
  * @param {string} passcode Users passcode so we can decrypt their private user key to generate a transform key
  */
-export function generateUserNewDeviceKeys(jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> {
+export const generateUserNewDeviceKeys = (jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> => {
     const {id, segmentId} = ApiState.user();
     return InitializationApi.generateDeviceAndSigningKeys(jwtToken, passcode, ApiState.encryptedUserKey(), ApiState.userPublicKey()).map(
         ({userUpdateKeys, encryptedLocalKeys}) => {
@@ -121,4 +121,30 @@ export function generateUserNewDeviceKeys(jwtToken: string, passcode: string): F
             return buildSDKInitCompleteResponse(ApiState.user(), encryptedLocalKeys.symmetricKey);
         }
     );
-}
+};
+
+/**
+ * Create a set of device keys for an existing user given a valid JWT and their passcode. Validates that the user exists before
+ * generating a set of device and signing keys. Only returns the private device and signing key since the associated public key
+ * for each can be derived if/when necessary.
+ */
+export const createDetachedUserDevice = (jwtToken: string, passcode: string): Future<SDKError, DeviceKeys> =>
+    UserApiEndpoints.callUserVerifyApi(jwtToken).flatMap((verifyResult) => {
+        if (!verifyResult.user) {
+            return Future.reject(
+                new SDKError(
+                    new Error("Cannot generate a device as the user specified in the provided JWT does not yet exist."),
+                    ErrorCodes.USER_NOT_SYNCED_FAILURE
+                )
+            );
+        }
+        const {id, segmentId, userPrivateKey, userMasterPublicKey} = verifyResult.user;
+        return InitializationApi.generateDeviceAndSigningKeys(jwtToken, passcode, toByteArray(userPrivateKey), publicKeyToBytes(userMasterPublicKey)).map(
+            ({userUpdateKeys}) => ({
+                accountId: id,
+                segmentId: segmentId,
+                devicePrivateKey: fromByteArray(userUpdateKeys.deviceKeys.privateKey),
+                signingPrivateKey: fromByteArray(userUpdateKeys.signingKeys.privateKey),
+            })
+        );
+    });

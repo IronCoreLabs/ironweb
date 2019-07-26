@@ -35,6 +35,10 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             return Init.createUserAndDevice(data.message.jwtToken, data.message.passcode).engage(errorHandler, callback);
         case "GEN_DEVICE_KEYS":
             return Init.generateUserNewDeviceKeys(data.message.jwtToken, data.message.passcode).engage(errorHandler, callback);
+        case "CREATE_DETATCHED_USER_DEVICE":
+            return Init.createDetachedUserDevice(data.message.jwtToken, data.message.passcode).engage(errorHandler, (result) =>
+                callback({type: "CREATE_DETATCHED_USER_DEVICE_RESPONSE", message: result})
+            );
         case "DEAUTHORIZE_DEVICE":
             return UserApi.deauthorizeDevice().engage(errorHandler, (result) => callback({type: "DEAUTHORIZE_DEVICE_RESPONSE", message: result}));
         case "CHANGE_USER_PASSCODE":
