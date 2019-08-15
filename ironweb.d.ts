@@ -58,6 +58,9 @@ export interface DocumentMetaResponse extends DocumentAssociationResponse {
 export interface DecryptedDocumentResponse extends DocumentMetaResponse {
     data: Uint8Array;
 }
+export interface DecryptedUnmanagedDocumentResponse {
+    data: Uint8Array;
+}
 export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
     document: Uint8Array;
 }
@@ -218,6 +221,7 @@ export interface ErrorCodes {
     DOCUMENT_MAX_SIZE_EXCEEDED: 310;
     DOCUMENT_CREATE_WITH_ACCESS_FAILURE: 311;
     DOCUMENT_HEADER_PARSE_FAILURE: 312;
+    DOCUMENT_TRANSFORM_REQUEST_FAILURE: 313;
     GROUP_LIST_REQUEST_FAILURE: 400;
     GROUP_GET_REQUEST_FAILURE: 401;
     GROUP_CREATE_REQUEST_FAILURE: 402;

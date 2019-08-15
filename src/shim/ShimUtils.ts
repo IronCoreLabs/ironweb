@@ -124,6 +124,19 @@ export function validateEncryptedDocument(documentData: Uint8Array) {
 }
 
 /**
+ * Validate that the provided encrypted document is in the proper form, which should be a Uint8Array and be non empty.
+ */
+export function validateEncryptedDeks(edeks: Uint8Array) {
+    if (!(edeks instanceof Uint8Array)) {
+        throw new Error("Invalid encrypted deks. Edeks should be a Uint8Array.");
+    }
+
+    if (edeks.byteLength <= 0) {
+        throw new Error(`Invalid encrypted deks. Length does not meet minimum requirements.`);
+    }
+}
+
+/**
  * Validate that the provided list of access IDs is valid
  */
 export function validateAccessList(accessList: DocumentAccessList) {

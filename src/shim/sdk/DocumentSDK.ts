@@ -324,3 +324,26 @@ export function revokeAccess(documentID: string, revokeList: DocumentAccessList)
         .map(({message}) => message)
         .toPromise();
 }
+
+export const advanced = {
+    /**
+     * Decrypt the provided document given the edeks of the document and its data. Returns a Promise which will be resolved once the document has been successfully decrypted.
+     * @param {Uint8Array}  edeks        The encrypted deks for the documentData.
+     * @param {Uint8Array}  documentData Document data to decrypt
+     */
+    decryptUnmanaged: (edeks: Uint8Array, documentData: Uint8Array) => {
+        ShimUtils.checkSDKInitialized();
+        ShimUtils.validateEncryptedDeks(edeks);
+        ShimUtils.validateEncryptedDocument(documentData);
+        const payload: MT.DocumentUnmanagedDecryptRequest = {
+            type: "DOCUMENT_UNMANAGED_DECRYPT",
+            message: {
+                edeks,
+                documentData,
+            },
+        };
+        return FrameMediator.sendMessage<MT.DocumentUnmanagedDecryptResponse>(payload, [payload.message.documentData])
+            .map(({message}) => message)
+            .toPromise();
+    },
+};

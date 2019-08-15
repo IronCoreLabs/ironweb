@@ -1,6 +1,7 @@
 import * as Init from "./initialization";
 import * as UserApi from "./sdk/UserApi";
 import * as DocumentApi from "./sdk/DocumentApi";
+import * as DocumentAdvancedApi from "./sdk/DocumentAdvancedApi";
 import * as GroupApi from "./sdk/GroupApi";
 import SDKError from "../lib/SDKError";
 import FrameMessenger from "./FrameMessenger";
@@ -58,6 +59,10 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
         case "DOCUMENT_DECRYPT":
             return DocumentApi.decryptLocalDoc(data.message.documentID, data.message.documentData).engage(errorHandler, (documentData) =>
                 callback({type: "DOCUMENT_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
+            );
+        case "DOCUMENT_UNMANAGED_DECRYPT":
+            return DocumentAdvancedApi.decryptLocalDoc(data.message.edeks, data.message.documentData).engage(errorHandler, (documentData) =>
+                callback({type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
             );
         case "DOCUMENT_STORE_ENCRYPT":
             return DocumentApi.encryptToStore(
