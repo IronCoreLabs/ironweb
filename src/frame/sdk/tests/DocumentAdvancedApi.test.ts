@@ -23,7 +23,7 @@ describe("DocumentApi", () => {
                     expect(e.message).toBeString();
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
-                () => fail("Should reject when provided document is an unsupported version")
+                () => fail("Should reject when edeks is an empty array")
             );
         });
 
