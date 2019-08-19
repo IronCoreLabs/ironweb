@@ -905,7 +905,9 @@ describe("DocumentSDK", () => {
 
         it("calls decrypt api with bytes and returns response", (done) => {
             ShimUtils.setSDKInitialized();
-            const doc = new Uint8Array(33);
+            const headerJSON = UTF8.encode(JSON.stringify({_did_: "353"}));
+            //Make provided length one less character that the actual length
+            const doc = concatArrayBuffers(new Uint8Array([2, 0, headerJSON.length]), headerJSON);
             (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
                 Future.of({
                     message: {
@@ -918,6 +920,7 @@ describe("DocumentSDK", () => {
                 .then((result: any) => {
                     expect(result).toEqual({
                         data: new Uint8Array([98, 87]),
+                        documentID: "353",
                     });
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
                         {

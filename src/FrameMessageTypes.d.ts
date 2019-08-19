@@ -9,7 +9,6 @@ import {
     GroupListResponse as GroupListResult,
     GroupUserEditResponse,
     DeviceKeys,
-    DecryptedUnmanagedDocumentResponse,
 } from "../ironweb";
 
 import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
