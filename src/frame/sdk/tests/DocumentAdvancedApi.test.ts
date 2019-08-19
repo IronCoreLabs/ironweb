@@ -6,7 +6,7 @@ import ApiState from "../../ApiState";
 import {ErrorCodes} from "../../../Constants";
 import EncryptedDekEndpoints from "../../endpoints/EncryptedDekEndpoints";
 
-describe("DocumentApi", () => {
+describe("DocumentAdvancedApi", () => {
     const privateDeviceKey = new Uint8Array([23]);
     const publicDeviceKey = TestUtils.getEmptyPublicKey();
     beforeEach(() => {
@@ -14,11 +14,11 @@ describe("DocumentApi", () => {
         ApiState.setDeviceAndSigningKeys({publicKey: publicDeviceKey, privateKey: privateDeviceKey}, TestUtils.getSigningKeyPair());
     });
 
-    describe("decryptLocalDoc", () => {
+    describe("decryptWithProvidedEdeks", () => {
         it("rejects if edeks is an empty array", () => {
             const edeks = new Uint8Array([]);
             const eDoc = new Uint8Array([2, 35, 52, 13, 63, 23, 63, 34]);
-            DocumentAdvancedApi.decryptLocalDoc(edeks, eDoc).engage(
+            DocumentAdvancedApi.decryptWithProvidedEdeks(edeks, eDoc).engage(
                 (e) => {
                     expect(e.message).toBeString();
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
@@ -37,7 +37,7 @@ describe("DocumentApi", () => {
             );
             spyOn(DocumentOperations, "decryptDocument").and.returnValue(Future.of(decryptedBytes));
 
-            DocumentAdvancedApi.decryptLocalDoc(edeks, eDoc).engage(
+            DocumentAdvancedApi.decryptWithProvidedEdeks(edeks, eDoc).engage(
                 (e) => fail(e.message),
                 ({data}) => {
                     expect(data).toEqual(decryptedBytes);

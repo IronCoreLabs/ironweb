@@ -933,35 +933,5 @@ describe("DocumentSDK", () => {
                 })
                 .catch((e) => fail(e.message));
         });
-
-        it("passes through content byte arrays", (done) => {
-            ShimUtils.setSDKInitialized();
-            const doc = new Uint8Array(25);
-
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
-                    message: {
-                        data: new Uint8Array([98, 87]),
-                    },
-                })
-            );
-
-            DocumentSDK.advanced
-                .decryptUnmanaged(nonEmptyEdeks, doc)
-                .then(() => {
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_UNMANAGED_DECRYPT",
-                            message: {
-                                edeks: nonEmptyEdeks,
-                                documentData: doc,
-                            },
-                        },
-                        [doc]
-                    );
-                    done();
-                })
-                .catch((e) => fail(e.message));
-        });
     });
 });

@@ -59,6 +59,7 @@ export interface DecryptedDocumentResponse extends DocumentMetaResponse {
     data: Uint8Array;
 }
 export interface DecryptedUnmanagedDocumentResponse {
+    documentID: string;
     data: Uint8Array;
 }
 export interface EncryptedDocumentResponse extends DocumentIDNameResponse {

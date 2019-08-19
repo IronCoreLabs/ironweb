@@ -5,6 +5,7 @@ import {ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../.
 import SDKError from "../../lib/SDKError";
 import {DocumentAccessList, DocumentCreateOptions, EncryptedDocumentResponse} from "../../../ironweb";
 import {utf8} from "./CodecSDK";
+import Future from "futurejs";
 
 const MAX_DOCUMENT_SIZE = 1024 * 2 * 1000; //2MB
 
@@ -335,15 +336,21 @@ export const advanced = {
         ShimUtils.checkSDKInitialized();
         ShimUtils.validateEncryptedDeks(edeks);
         ShimUtils.validateEncryptedDocument(documentData);
-        const payload: MT.DocumentUnmanagedDecryptRequest = {
-            type: "DOCUMENT_UNMANAGED_DECRYPT",
-            message: {
-                edeks,
-                documentData,
-            },
-        };
-        return FrameMediator.sendMessage<MT.DocumentUnmanagedDecryptResponse>(payload, [payload.message.documentData])
-            .map(({message}) => message)
+        return Future.tryP(() => getDocumentIDFromBytes(documentData))
+            .flatMap((documentId) => {
+                const payload: MT.DocumentUnmanagedDecryptRequest = {
+                    type: "DOCUMENT_UNMANAGED_DECRYPT",
+                    message: {
+                        edeks,
+                        documentData,
+                    },
+                };
+                return FrameMediator.sendMessage<MT.DocumentUnmanagedDecryptResponse>(payload, [payload.message.documentData]).map(({message}) => ({
+                    data: message.data,
+                    //There is no way to create a version 1 document with unmanaged edeks so this is safe.
+                    documentID: documentId!,
+                }));
+            })
             .toPromise();
     },
 };

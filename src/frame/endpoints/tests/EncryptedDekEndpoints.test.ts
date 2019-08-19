@@ -4,9 +4,7 @@ import * as TestUtils from "../../../tests/TestUtils";
 import ApiState from "../../ApiState";
 import EncryptedDekEndpoints from "../EncryptedDekEndpoints";
 
-
-
-describe("DocumentApiEndpoints", () => {
+describe("EncryptedDekEndpoints", () => {
     beforeEach(() => {
         spyOn(ApiRequest, "fetchJSON").and.returnValue(
             Future.of({
@@ -19,7 +17,7 @@ describe("DocumentApiEndpoints", () => {
 
     describe("callEncryptedDekTransformApi", () => {
         it("sends the right data to the api", () => {
-            const edeks = new Uint8Array([100, 200,300]);
+            const edeks = new Uint8Array([100, 200, 300]);
 
             EncryptedDekEndpoints.callEncryptedDekTransformApi(edeks).engage(
                 () => fail("edeks/transform should not reject"),

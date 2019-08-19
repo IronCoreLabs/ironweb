@@ -121,7 +121,7 @@ export interface DocumentUnmanagedDecryptRequest {
 }
 export interface DocumentUnmanagedDecryptResponse {
     type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE";
-    message: DecryptedUnmanagedDocumentResponse;
+    message: {data: Uint8Array};
 }
 
 /* Create/Encrypt */
