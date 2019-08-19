@@ -1,6 +1,8 @@
 import {ErrorCodes} from "../../Constants";
 import * as ApiRequest from "../ApiRequest";
 import ApiState from "../ApiState";
+import Future from "futurejs";
+import {SDKError} from "../../shim";
 
 interface EncryptedDekTransformResponse {
     encryptedSymmetricKey: TransformedEncryptedMessage;
@@ -36,6 +38,6 @@ export default {
      */
     callEncryptedDekTransformApi(encryptedDeks: Uint8Array): Future<SDKError, EncryptedDekTransformResponse> {
         const {url, options, errorCode} = encryptedDekTransform(encryptedDeks);
-        return ApiRequest.fetchJSON<EncryptedDekTransformResponse>(url, errorCode, options, getSignatureHeader());
+        return ApiRequest.fetchJSON(url, errorCode, options, getSignatureHeader());
     },
 };
