@@ -61,7 +61,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 callback({type: "DOCUMENT_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
             );
         case "DOCUMENT_UNMANAGED_DECRYPT":
-            return DocumentAdvancedApi.decryptWithProvidedEdeks(data.message.edeks, data.message.documentData).engage(errorHandler, (documentData) =>
+            return DocumentAdvancedApi.decryptWithProvidedEdeks(data.message.documentData, data.message.edeks).engage(errorHandler, (documentData) =>
                 callback({type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
             );
         case "DOCUMENT_STORE_ENCRYPT":
