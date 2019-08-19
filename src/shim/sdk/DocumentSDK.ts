@@ -3,7 +3,7 @@ import * as MT from "../../FrameMessageTypes";
 import * as ShimUtils from "../ShimUtils";
 import {ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../../Constants";
 import SDKError from "../../lib/SDKError";
-import {DocumentAccessList, DocumentCreateOptions, EncryptedDocumentResponse} from "../../../ironweb";
+import {DocumentAccessList, DocumentCreateOptions, EncryptedDocumentResponse, DecryptedUnmanagedDocumentResponse} from "../../../ironweb";
 import {utf8} from "./CodecSDK";
 import Future from "futurejs";
 
@@ -332,7 +332,7 @@ export const advanced = {
      * @param {Uint8Array}  documentData Document data to decrypt
      * @param {Uint8Array}  edeks        The encrypted deks for the documentData.
      */
-    decryptUnmanaged: (documentData: Uint8Array, edeks: Uint8Array): Promise<{data: Uint8Array; documentID: string}> => {
+    decryptUnmanaged: (documentData: Uint8Array, edeks: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse> => {
         ShimUtils.checkSDKInitialized();
         ShimUtils.validateEncryptedDeks(edeks);
         ShimUtils.validateEncryptedDocument(documentData);
@@ -349,6 +349,7 @@ export const advanced = {
                     data: message.data,
                     //There is no way to create a version 1 document with unmanaged edeks so this is safe.
                     documentID: documentId!,
+                    accessVia: message.accessVia,
                 }));
             })
             .toPromise();

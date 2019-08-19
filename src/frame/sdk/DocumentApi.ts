@@ -1,4 +1,11 @@
-import {DocumentIDNameResponse, DocumentMetaResponse, DocumentListResponse, DecryptedDocumentResponse, DocumentAccessResponse} from "../../../ironweb";
+import {
+    DocumentIDNameResponse,
+    DocumentMetaResponse,
+    DocumentListResponse,
+    DecryptedDocumentResponse,
+    DocumentAccessResponse,
+    UserOrGroup,
+} from "../../../ironweb";
 import * as DocumentOperations from "./DocumentOperations";
 import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetResponseType} from "../endpoints/DocumentApiEndpoints";
 import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";

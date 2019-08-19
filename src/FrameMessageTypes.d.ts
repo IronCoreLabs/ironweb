@@ -9,6 +9,7 @@ import {
     GroupListResponse as GroupListResult,
     GroupUserEditResponse,
     DeviceKeys,
+    UserOrGroup,
 } from "../ironweb";
 
 import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
@@ -120,7 +121,10 @@ export interface DocumentUnmanagedDecryptRequest {
 }
 export interface DocumentUnmanagedDecryptResponse {
     type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE";
-    message: {data: Uint8Array};
+    message: {
+        data: Uint8Array;
+        accessVia: UserOrGroup;
+    };
 }
 
 /* Create/Encrypt */

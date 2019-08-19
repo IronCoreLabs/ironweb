@@ -3,9 +3,11 @@ import * as ApiRequest from "../ApiRequest";
 import ApiState from "../ApiState";
 import Future from "futurejs";
 import {SDKError} from "../../shim";
+import {UserOrGroup} from "ironweb";
 
 interface EncryptedDekTransformResponse {
     encryptedSymmetricKey: TransformedEncryptedMessage;
+    userOrGroup: UserOrGroup;
 }
 
 /**

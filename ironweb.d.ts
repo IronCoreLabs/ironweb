@@ -61,15 +61,13 @@ export interface DecryptedDocumentResponse extends DocumentMetaResponse {
 export interface DecryptedUnmanagedDocumentResponse {
     documentID: string;
     data: Uint8Array;
+    accessVia: UserOrGroup;
 }
 export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
     document: Uint8Array;
 }
 export interface DocumentAccessResponse {
-    succeeded: {
-        id: string;
-        type: "user" | "group";
-    }[];
+    succeeded: UserOrGroup[];
     failed: {
         id: string;
         type: "user" | "group";
@@ -188,6 +186,11 @@ export class SDKError extends Error {
     constructor(error: Error, code: number);
     code: number;
     rawError: Error;
+}
+
+export interface UserOrGroup {
+    type: "user" | "group";
+    id: string;
 }
 
 //Unfortunately dupliated here, to be fixed in #20

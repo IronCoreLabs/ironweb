@@ -110,11 +110,6 @@ interface ApiUserResponse {
     userMasterPublicKey: PublicKey<Base64String>;
     userPrivateKey: PrivateKey<Base64String>;
 }
-interface UserOrGroup {
-    type: "user" | "group";
-    id: string;
-    masterPublicKey: PublicKey<string>;
-}
 interface UserOrGroupPublicKey {
     id: string;
     masterPublicKey: PublicKey<Base64String>;
