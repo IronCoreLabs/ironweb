@@ -10,7 +10,7 @@ interface DecryptedUnmanagedDocumentResponse {
     data: Uint8Array;
 }
 /**
- * Retrieves sharing/meta information for the provided document ID. Then decrypts the provided data using the current users key and returns formatted doc structure.
+ * Retrieves sharing/meta information for the provided document ID. Then decrypts the provided data using the current user's key and returns formatted doc structure.
  * @param {string}     documentID        Unique lookup key of document to decrypt
  * @param {Uint8Array} encryptedDocument Data of document to decrypt
  */
