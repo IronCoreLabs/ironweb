@@ -332,7 +332,7 @@ export const advanced = {
      * @param {Uint8Array}  edeks        The encrypted deks for the documentData.
      * @param {Uint8Array}  documentData Document data to decrypt
      */
-    decryptUnmanaged: (edeks: Uint8Array, documentData: Uint8Array) => {
+    decryptUnmanaged: (edeks: Uint8Array, documentData: Uint8Array): Promise<{data: Uint8Array; documentID: string}> => {
         ShimUtils.checkSDKInitialized();
         ShimUtils.validateEncryptedDeks(edeks);
         ShimUtils.validateEncryptedDocument(documentData);

@@ -34,7 +34,7 @@ export default {
      * Invokes the Encrypted DEK transform API
      * @param {Uint8Array}  edeks  The edeks to send to the server. A transformed one will be returned assuming the logged in user has access.
      */
-    callEncryptedDekTransformApi(encryptedDeks: Uint8Array) {
+    callEncryptedDekTransformApi(encryptedDeks: Uint8Array): Future<SDKError, EncryptedDekTransformResponse> {
         const {url, options, errorCode} = encryptedDekTransform(encryptedDeks);
         return ApiRequest.fetchJSON<EncryptedDekTransformResponse>(url, errorCode, options, getSignatureHeader());
     },
