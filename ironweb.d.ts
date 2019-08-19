@@ -145,6 +145,9 @@ export interface Document {
     updateName(documentID: string, name: string | null): Promise<DocumentIDNameResponse>;
     grantAccess(documentID: string, grantList: DocumentAccessList): Promise<DocumentAccessResponse>;
     revokeAccess(documentID: string, revokeList: DocumentAccessList): Promise<DocumentAccessResponse>;
+    advanced: {
+        decryptUnmanaged(edeks: Uint8Array, data: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
+    };
 }
 
 export interface Group {

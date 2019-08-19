@@ -3,7 +3,6 @@ import * as ApiRequest from "../ApiRequest";
 import ApiState from "../ApiState";
 
 interface EncryptedDekTransformResponse {
-    userOrGroup: UserOrGroup; //TODO Wrong
     encryptedSymmetricKey: TransformedEncryptedMessage;
 }
 

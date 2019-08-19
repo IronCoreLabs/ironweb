@@ -888,4 +888,80 @@ describe("DocumentSDK", () => {
                 .catch((e) => fail(e.message));
         });
     });
+    describe("advanced.decryptUnmanaged", () => {
+        const nonEmptyEdeks = new Uint8Array([100]);
+        it("fails when encrypted document isnt of the right format", () => {
+            ShimUtils.setSDKInitialized();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged(nonEmptyEdeks, {} as any)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged(nonEmptyEdeks, "" as any)).toThrow();
+        });
+
+        it("fails when edeks arent of the right format", () => {
+            const doc = new Uint8Array(Array.prototype.fill(0, 0, 100));
+            ShimUtils.setSDKInitialized();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged({} as any, doc)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged(new Uint8Array(), doc)).toThrow();
+        });
+
+        it("calls decrypt api with bytes and returns response", (done) => {
+            ShimUtils.setSDKInitialized();
+            const doc = new Uint8Array(33);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        data: new Uint8Array([98, 87]),
+                    },
+                })
+            );
+            DocumentSDK.advanced
+                .decryptUnmanaged(nonEmptyEdeks, doc)
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        data: new Uint8Array([98, 87]),
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_DECRYPT",
+                            message: {
+                                edeks: nonEmptyEdeks,
+                                documentData: doc,
+                            },
+                        },
+                        [doc]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("passes through content byte arrays", (done) => {
+            ShimUtils.setSDKInitialized();
+            const doc = new Uint8Array(25);
+
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        data: new Uint8Array([98, 87]),
+                    },
+                })
+            );
+
+            DocumentSDK.advanced
+                .decryptUnmanaged(nonEmptyEdeks, doc)
+                .then(() => {
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_DECRYPT",
+                            message: {
+                                edeks: nonEmptyEdeks,
+                                documentData: doc,
+                            },
+                        },
+                        [doc]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+    });
 });

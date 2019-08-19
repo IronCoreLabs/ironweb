@@ -15,7 +15,6 @@ interface DecryptedUnmanagedDocumentResponse {
  * @param {Uint8Array} encryptedDocument Data of document to decrypt
  */
 export function decryptLocalDoc(edeks: Uint8Array, encryptedDocument: Uint8Array): Future<SDKError, DecryptedUnmanagedDocumentResponse> {
-    //TODO
     //Early verification to check that the bytes we got appear to be an IronCore encrypted document. We have two versions so reject early if the bytes provided
     //don't match either of those two versions.
     if (encryptedDocument[0] !== 1 && encryptedDocument[0] !== 2) {
