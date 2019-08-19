@@ -147,7 +147,7 @@ export interface Document {
     grantAccess(documentID: string, grantList: DocumentAccessList): Promise<DocumentAccessResponse>;
     revokeAccess(documentID: string, revokeList: DocumentAccessList): Promise<DocumentAccessResponse>;
     advanced: {
-        decryptUnmanaged(edeks: Uint8Array, data: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
+        decryptUnmanaged(data: Uint8Array, edeks: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
     };
 }
 

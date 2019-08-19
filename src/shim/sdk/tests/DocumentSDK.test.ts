@@ -892,15 +892,15 @@ describe("DocumentSDK", () => {
         const nonEmptyEdeks = new Uint8Array([100]);
         it("fails when encrypted document isnt of the right format", () => {
             ShimUtils.setSDKInitialized();
-            expect(() => DocumentSDK.advanced.decryptUnmanaged(nonEmptyEdeks, {} as any)).toThrow();
-            expect(() => DocumentSDK.advanced.decryptUnmanaged(nonEmptyEdeks, "" as any)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged({} as any, nonEmptyEdeks)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged("" as any, nonEmptyEdeks)).toThrow();
         });
 
         it("fails when edeks arent of the right format", () => {
             const doc = new Uint8Array(Array.prototype.fill(0, 0, 100));
             ShimUtils.setSDKInitialized();
-            expect(() => DocumentSDK.advanced.decryptUnmanaged({} as any, doc)).toThrow();
-            expect(() => DocumentSDK.advanced.decryptUnmanaged(new Uint8Array(), doc)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged(doc, {} as any)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged(doc, new Uint8Array())).toThrow();
         });
 
         it("calls decrypt api with bytes and returns response", (done) => {
@@ -916,7 +916,7 @@ describe("DocumentSDK", () => {
                 })
             );
             DocumentSDK.advanced
-                .decryptUnmanaged(nonEmptyEdeks, doc)
+                .decryptUnmanaged(doc, nonEmptyEdeks)
                 .then((result: any) => {
                     expect(result).toEqual({
                         data: new Uint8Array([98, 87]),

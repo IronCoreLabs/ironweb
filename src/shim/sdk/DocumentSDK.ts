@@ -329,10 +329,10 @@ export function revokeAccess(documentID: string, revokeList: DocumentAccessList)
 export const advanced = {
     /**
      * Decrypt the provided document given the edeks of the document and its data. Returns a Promise which will be resolved once the document has been successfully decrypted.
-     * @param {Uint8Array}  edeks        The encrypted deks for the documentData.
      * @param {Uint8Array}  documentData Document data to decrypt
+     * @param {Uint8Array}  edeks        The encrypted deks for the documentData.
      */
-    decryptUnmanaged: (edeks: Uint8Array, documentData: Uint8Array): Promise<{data: Uint8Array; documentID: string}> => {
+    decryptUnmanaged: (documentData: Uint8Array, edeks: Uint8Array): Promise<{data: Uint8Array; documentID: string}> => {
         ShimUtils.checkSDKInitialized();
         ShimUtils.validateEncryptedDeks(edeks);
         ShimUtils.validateEncryptedDocument(documentData);
