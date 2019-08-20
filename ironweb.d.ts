@@ -58,6 +58,10 @@ export interface DocumentMetaResponse extends DocumentAssociationResponse {
 export interface DecryptedDocumentResponse extends DocumentMetaResponse {
     data: Uint8Array;
 }
+export interface UserOrGroup {
+    type: "user" | "group";
+    id: string;
+}
 export interface DecryptedUnmanagedDocumentResponse {
     documentID: string;
     data: Uint8Array;
@@ -68,11 +72,7 @@ export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
 }
 export interface DocumentAccessResponse {
     succeeded: UserOrGroup[];
-    failed: {
-        id: string;
-        type: "user" | "group";
-        error: string;
-    }[];
+    failed: (UserOrGroup & {error: string})[];
 }
 
 /**
@@ -186,11 +186,6 @@ export class SDKError extends Error {
     constructor(error: Error, code: number);
     code: number;
     rawError: Error;
-}
-
-export interface UserOrGroup {
-    type: "user" | "group";
-    id: string;
 }
 
 //Unfortunately dupliated here, to be fixed in #20
