@@ -58,19 +58,21 @@ export interface DocumentMetaResponse extends DocumentAssociationResponse {
 export interface DecryptedDocumentResponse extends DocumentMetaResponse {
     data: Uint8Array;
 }
+export interface UserOrGroup {
+    type: "user" | "group";
+    id: string;
+}
+export interface DecryptedUnmanagedDocumentResponse {
+    documentID: string;
+    data: Uint8Array;
+    accessVia: UserOrGroup;
+}
 export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
     document: Uint8Array;
 }
 export interface DocumentAccessResponse {
-    succeeded: {
-        id: string;
-        type: "user" | "group";
-    }[];
-    failed: {
-        id: string;
-        type: "user" | "group";
-        error: string;
-    }[];
+    succeeded: UserOrGroup[];
+    failed: (UserOrGroup & {error: string})[];
 }
 
 /**
@@ -142,6 +144,9 @@ export interface Document {
     updateName(documentID: string, name: string | null): Promise<DocumentIDNameResponse>;
     grantAccess(documentID: string, grantList: DocumentAccessList): Promise<DocumentAccessResponse>;
     revokeAccess(documentID: string, revokeList: DocumentAccessList): Promise<DocumentAccessResponse>;
+    advanced: {
+        decryptUnmanaged(data: Uint8Array, edeks: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
+    };
 }
 
 export interface Group {
@@ -218,6 +223,7 @@ export interface ErrorCodes {
     DOCUMENT_MAX_SIZE_EXCEEDED: 310;
     DOCUMENT_CREATE_WITH_ACCESS_FAILURE: 311;
     DOCUMENT_HEADER_PARSE_FAILURE: 312;
+    DOCUMENT_TRANSFORM_REQUEST_FAILURE: 313;
     GROUP_LIST_REQUEST_FAILURE: 400;
     GROUP_GET_REQUEST_FAILURE: 401;
     GROUP_CREATE_REQUEST_FAILURE: 402;

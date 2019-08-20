@@ -2,7 +2,7 @@ import {ErrorCodes, UserAndGroupTypes} from "../../Constants";
 import {publicKeyToBase64} from "../../lib/Utils";
 import * as ApiRequest from "../ApiRequest";
 import ApiState from "../ApiState";
-import {DocumentAssociation} from "../../../ironweb";
+import {DocumentAssociation, UserOrGroup} from "../../../ironweb";
 
 interface DocumentMetaApiResponse {
     id: string;

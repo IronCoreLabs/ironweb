@@ -9,6 +9,7 @@ import {
     GroupListResponse as GroupListResult,
     GroupUserEditResponse,
     DeviceKeys,
+    UserOrGroup,
 } from "../ironweb";
 
 import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
@@ -92,6 +93,7 @@ export interface DocumentStoreDecryptRequest {
         documentID: string;
     };
 }
+
 export interface DocumentStoreDecryptResponse {
     type: "DOCUMENT_STORE_DECRYPT_RESPONSE";
     message: DecryptedDocumentResponse;
@@ -104,9 +106,25 @@ export interface DocumentDecryptRequest {
         documentData: Uint8Array;
     };
 }
+
 export interface DocumentDecryptResponse {
     type: "DOCUMENT_DECRYPT_RESPONSE";
     message: DecryptedDocumentResponse;
+}
+
+export interface DocumentUnmanagedDecryptRequest {
+    type: "DOCUMENT_UNMANAGED_DECRYPT";
+    message: {
+        edeks: Uint8Array;
+        documentData: Uint8Array;
+    };
+}
+export interface DocumentUnmanagedDecryptResponse {
+    type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE";
+    message: {
+        data: Uint8Array;
+        accessVia: UserOrGroup;
+    };
 }
 
 /* Create/Encrypt */
@@ -387,7 +405,8 @@ export type RequestMessage =
     | GroupRemoveSelfAsMemberRequest
     | GroupDeleteRequest
     | ChangeUserPasscode
-    | DeauthorizeDevice;
+    | DeauthorizeDevice
+    | DocumentUnmanagedDecryptRequest;
 
 export type ResponseMessage =
     | InitApiPasscodeResponse
@@ -417,4 +436,5 @@ export type ResponseMessage =
     | GroupRemoveMemberResponse
     | GroupRemoveSelfAsMemberResponse
     | GroupDeleteResponse
-    | ErrorResponse;
+    | ErrorResponse
+    | DocumentUnmanagedDecryptResponse;

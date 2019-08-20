@@ -888,4 +888,53 @@ describe("DocumentSDK", () => {
                 .catch((e) => fail(e.message));
         });
     });
+    describe("advanced.decryptUnmanaged", () => {
+        const nonEmptyEdeks = new Uint8Array([100]);
+        it("fails when encrypted document isnt of the right format", () => {
+            ShimUtils.setSDKInitialized();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged({} as any, nonEmptyEdeks)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged("" as any, nonEmptyEdeks)).toThrow();
+        });
+
+        it("fails when edeks arent of the right format", () => {
+            const doc = new Uint8Array(Array.prototype.fill(0, 0, 100));
+            ShimUtils.setSDKInitialized();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged(doc, {} as any)).toThrow();
+            expect(() => DocumentSDK.advanced.decryptUnmanaged(doc, new Uint8Array())).toThrow();
+        });
+
+        it("calls decrypt api with bytes and returns response", (done) => {
+            ShimUtils.setSDKInitialized();
+            const headerJSON = UTF8.encode(JSON.stringify({_did_: "353"}));
+            //Make provided length one less character that the actual length
+            const doc = concatArrayBuffers(new Uint8Array([2, 0, headerJSON.length]), headerJSON);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        data: new Uint8Array([98, 87]),
+                    },
+                })
+            );
+            DocumentSDK.advanced
+                .decryptUnmanaged(doc, nonEmptyEdeks)
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        data: new Uint8Array([98, 87]),
+                        documentID: "353",
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_DECRYPT",
+                            message: {
+                                edeks: nonEmptyEdeks,
+                                documentData: doc,
+                            },
+                        },
+                        [doc]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+    });
 });
