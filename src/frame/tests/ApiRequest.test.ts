@@ -49,7 +49,21 @@ describe("ApiRequest", () => {
             const fetchFuture = ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture);
             fetchFuture.engage(jasmine.createSpy("fetchFailure"), jasmine.createSpy("fetchSuccess"));
 
-            expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {method: "POST", headers: {Authorization: "auth jwt"}});
+            expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
+                method: "POST",
+                headers: {Authorization: "auth jwt", "Content-Type": "application/json"},
+            });
+        });
+
+        it("invokes window.fetch with octet-stream content type if body is bytes", () => {
+            const fetchFuture = ApiRequest.fetchJSON("api/method", -1, {method: "POST", body: new Uint8Array([])}, authHeaderFuture);
+            fetchFuture.engage(jasmine.createSpy("fetchFailure"), jasmine.createSpy("fetchSuccess"));
+
+            expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
+                method: "POST",
+                headers: {Authorization: "auth jwt", "Content-Type": "application/octet-stream"},
+                body: new Uint8Array([]),
+            });
         });
 
         it("converts failed request to SDK error", (done) => {

@@ -58,8 +58,9 @@ export function fetchJSON<ResponseType>(
 ): Future<SDKError, ResponseType> {
     return authorizationHeader
         .flatMap((authHeader) => {
+            const contentType = options.body instanceof Uint8Array ? "application/octet-stream" : "application/json";
             //Once we have the auth header, add it into the options headers field
-            options.headers = {...options.headers, Authorization: authHeader};
+            options.headers = {...options.headers, Authorization: authHeader, "Content-Type": contentType};
             return Future.tryP(() => fetch(`${IRONCORE_ID_API_BASE_URL}${url}`, options));
         })
         .errorMap((error) => new SDKError(error, failureErrorCode))
