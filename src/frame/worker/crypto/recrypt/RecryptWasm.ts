@@ -1,14 +1,14 @@
 //Polyfill TextEncoder/TextDecoder for MSEdge
-import "fast-text-encoding";
-import Future from "futurejs";
 import * as Recrypt from "@ironcorelabs/recrypt-wasm-binding";
 import {fromByteArray, toByteArray} from "base64-js";
-import {TransformKeyGrant} from "./index";
+import "fast-text-encoding";
+import Future from "futurejs";
 import {CryptoConstants} from "../../../../Constants";
-const {SALT_LENGTH, PBKDF2_ITERATIONS} = CryptoConstants;
-import {publicKeyToBytes, publicKeyToBase64, utf8StringToArrayBuffer, concatArrayBuffers} from "../../../../lib/Utils";
+import {concatArrayBuffers, publicKeyToBase64, publicKeyToBytes, utf8StringToArrayBuffer} from "../../../../lib/Utils";
 import {generateRandomBytes, getCryptoSubtleApi} from "../CryptoUtils";
 import * as PBKDF2 from "../pbkdf2/native";
+import {TransformKeyGrant} from "./index";
+const {SALT_LENGTH, PBKDF2_ITERATIONS} = CryptoConstants;
 
 type Plaintext = Uint8Array;
 let RecryptApi: Recrypt.Api256;
@@ -17,43 +17,39 @@ let RecryptApi: Recrypt.Api256;
  * Convert the components of an encrypted symmetric key into base64 strings for submission to the API
  * @param {EncryptedValue} encryptedValue Encrypted value to transform
  */
-function encryptedValueToBase64(encryptedValue: Recrypt.EncryptedValue): PREEncryptedMessage {
-    return {
-        encryptedMessage: fromByteArray(encryptedValue.encryptedMessage),
-        ephemeralPublicKey: publicKeyToBase64(encryptedValue.ephemeralPublicKey),
-        authHash: fromByteArray(encryptedValue.authHash),
-        publicSigningKey: fromByteArray(encryptedValue.publicSigningKey),
-        signature: fromByteArray(encryptedValue.signature),
-    };
-}
+const encryptedValueToBase64 = (encryptedValue: Recrypt.EncryptedValue): PREEncryptedMessage => ({
+    encryptedMessage: fromByteArray(encryptedValue.encryptedMessage),
+    ephemeralPublicKey: publicKeyToBase64(encryptedValue.ephemeralPublicKey),
+    authHash: fromByteArray(encryptedValue.authHash),
+    publicSigningKey: fromByteArray(encryptedValue.publicSigningKey),
+    signature: fromByteArray(encryptedValue.signature),
+});
 
 /**
  * Convert the parts of an encrypted plaintext string representation into a EncryptedValue that is expected
  * by the PRE library.
  * @param {TransformedEncryptedMessage} encryptedKey Symmetric key object to convert from string to bytes
  */
-function transformedPlaintextToEncryptedValue(encryptedKey: TransformedEncryptedMessage): Recrypt.EncryptedValue {
-    return {
-        encryptedMessage: toByteArray(encryptedKey.encryptedMessage),
-        ephemeralPublicKey: publicKeyToBytes(encryptedKey.ephemeralPublicKey),
-        publicSigningKey: toByteArray(encryptedKey.publicSigningKey),
-        authHash: toByteArray(encryptedKey.authHash),
-        signature: toByteArray(encryptedKey.signature),
-        transformBlocks: encryptedKey.transformBlocks.map((transformBlock) => ({
-            encryptedTempKey: toByteArray(transformBlock.encryptedTempKey),
-            publicKey: publicKeyToBytes(transformBlock.publicKey),
-            randomTransformEncryptedTempKey: toByteArray(transformBlock.randomTransformEncryptedTempKey),
-            randomTransformPublicKey: publicKeyToBytes(transformBlock.randomTransformPublicKey),
-        })),
-    };
-}
+const transformedPlaintextToEncryptedValue = (encryptedKey: TransformedEncryptedMessage): Recrypt.EncryptedValue => ({
+    encryptedMessage: toByteArray(encryptedKey.encryptedMessage),
+    ephemeralPublicKey: publicKeyToBytes(encryptedKey.ephemeralPublicKey),
+    publicSigningKey: toByteArray(encryptedKey.publicSigningKey),
+    authHash: toByteArray(encryptedKey.authHash),
+    signature: toByteArray(encryptedKey.signature),
+    transformBlocks: encryptedKey.transformBlocks.map((transformBlock) => ({
+        encryptedTempKey: toByteArray(transformBlock.encryptedTempKey),
+        publicKey: publicKeyToBytes(transformBlock.publicKey),
+        randomTransformEncryptedTempKey: toByteArray(transformBlock.randomTransformEncryptedTempKey),
+        randomTransformPublicKey: publicKeyToBytes(transformBlock.randomTransformPublicKey),
+    })),
+});
 
 /**
  * Use PBKDF2 with SHA-256 to derive a key from the provided password. We'll either use the provided salt or generate a new salt
  * depending on whether we're deriving a new key or verifying an existing key. Uses the WebCrypto API if available or otherwise
  * falls back to a WASM function for MSEdge.
  */
-export function generatePasswordDerivedKey(password: string, saltUsedDuringPriorDerivation?: Uint8Array) {
+export const generatePasswordDerivedKey = (password: string, saltUsedDuringPriorDerivation?: Uint8Array) => {
     const saltGeneration = saltUsedDuringPriorDerivation ? Future.of(saltUsedDuringPriorDerivation) : generateRandomBytes(SALT_LENGTH);
     return saltGeneration.flatMap((salt) => {
         const passwordBytes = utf8StringToArrayBuffer(password);
@@ -63,57 +59,51 @@ export function generatePasswordDerivedKey(password: string, saltUsedDuringPrior
         const derivedKey = Recrypt.pbkdf2SHA256(salt, passwordBytes, PBKDF2_ITERATIONS());
         return Future.of({key: derivedKey, salt});
     });
-}
+};
 
 /**
  * Create an instance of the WASM API class. This is delayed so that, if necessary, we can inject a random seed
  * into the WASM module prior to creating an instance. This will allow the WASM module to work propertly within
  * MS Edge.
  */
-export function instantiateApi(seed?: Uint8Array) {
+export const instantiateApi = (seed?: Uint8Array) => {
     if (seed) {
         Recrypt.setRandomSeed(seed);
     }
     RecryptApi = new Recrypt.Api256();
-}
+};
 
 /**
  * Generate a new Recrypt public/private key pair
  */
-export function generateKeyPair(): Future<Error, KeyPair> {
-    return Future.tryF(() => RecryptApi.generateKeyPair());
-}
+export const generateKeyPair = (): Future<Error, KeyPair> => Future.tryF(() => RecryptApi.generateKeyPair());
 
 /**
  * Generate a new ed25519 signing key pair
  */
-export function generateSigningKeyPair(): Future<Error, SigningKeyPair> {
-    return Future.tryF(() => RecryptApi.generateEd25519KeyPair());
-}
+export const generateSigningKeyPair = (): Future<Error, SigningKeyPair> => Future.tryF(() => RecryptApi.generateEd25519KeyPair());
 
 /**
  * Extract the signing public key from it's associated private key.
  */
-export function getPublicSigningKeyFromPrivate(privateSigningKey: PrivateKey<Uint8Array>) {
-    return Future.tryF(() => RecryptApi.computeEd25519PublicKey(privateSigningKey));
-}
+export const getPublicSigningKeyFromPrivate = (privateSigningKey: PrivateKey<Uint8Array>) =>
+    Future.tryF(() => RecryptApi.computeEd25519PublicKey(privateSigningKey));
 
 /**
  * Generate a set of user, device, and signing keys for new user creation
  */
-export function generateNewUserKeySet(): Future<Error, KeyPairSet> {
-    return Future.tryF(() => ({
+export const generateNewUserKeySet = (): Future<Error, KeyPairSet> =>
+    Future.tryF(() => ({
         userKeys: RecryptApi.generateKeyPair(),
         deviceKeys: RecryptApi.generateKeyPair(),
         signingKeys: RecryptApi.generateEd25519KeyPair(),
     }));
-}
 
 /**
  * Generate a three-tuple of a new group private/public key and plaintext
  */
-export function generateGroupKeyPair() {
-    return Future.tryF(() => {
+export const generateGroupKeyPair = () =>
+    Future.tryF(() => {
         const plaintext = RecryptApi.generatePlaintext();
         const privateKey = RecryptApi.hash256(plaintext);
         return {
@@ -122,14 +112,11 @@ export function generateGroupKeyPair() {
             publicKey: RecryptApi.computePublicKey(privateKey),
         };
     });
-}
 
 /**
  * Given a PRE private key, derive the public key
  */
-export function derivePublicKey(privateKey: PrivateKey<Uint8Array>) {
-    return Future.tryF(() => RecryptApi.computePublicKey(privateKey));
-}
+export const derivePublicKey = (privateKey: PrivateKey<Uint8Array>) => Future.tryF(() => RecryptApi.computePublicKey(privateKey));
 
 /**
  * Generate a new transform key from the provided private key to the provided public key
@@ -137,9 +124,8 @@ export function derivePublicKey(privateKey: PrivateKey<Uint8Array>) {
  * @param {PublicKey<Uint8Array>}  toPublicKey    Public key to generate a transform to
  * @param {SigningKeyPair}         signingKeys    Current users signing keys used to sign transform key
  */
-export function generateTransformKey(fromPrivateKey: PrivateKey<Uint8Array>, toPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair) {
-    return Future.tryF(() => RecryptApi.generateTransformKey(fromPrivateKey, toPublicKey, signingKeys.privateKey));
-}
+export const generateTransformKey = (fromPrivateKey: PrivateKey<Uint8Array>, toPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair) =>
+    Future.tryF(() => RecryptApi.generateTransformKey(fromPrivateKey, toPublicKey, signingKeys.privateKey));
 
 /**
  * Generate a new transform key from the provided private key to each of the provided public keys
@@ -147,11 +133,11 @@ export function generateTransformKey(fromPrivateKey: PrivateKey<Uint8Array>, toP
  * @param {UserOrGroupPublicKey[]} publicKeyList  List of public keys to generate a transform to
  * @param {SigningKeyPair}         signingKeys    Current users signing k eys used to sign transform keys
  */
-export function generateTransformKeyToList(
+export const generateTransformKeyToList = (
     fromPrivateKey: Uint8Array,
     publicKeyList: UserOrGroupPublicKey[],
     signingKeys: SigningKeyPair
-): Future<Error, TransformKeyGrant[]> {
+): Future<Error, TransformKeyGrant[]> => {
     if (!publicKeyList.length) {
         return Future.of<TransformKeyGrant[]>([]);
     }
@@ -163,17 +149,16 @@ export function generateTransformKeyToList(
         }));
     });
     return Future.all(transformKeyFutures);
-}
+};
 
 /**
  * Generate a new document PRE symmetric key
  */
-export function generateDocumentKey() {
-    return Future.tryF(() => {
+export const generateDocumentKey = () =>
+    Future.tryF(() => {
         const plaintext = RecryptApi.generatePlaintext();
         return [plaintext, RecryptApi.hash256(plaintext)];
     });
-}
 
 /**
  * Encrypt the provided plaintext to the public key provided
@@ -181,9 +166,8 @@ export function generateDocumentKey() {
  * @param {PublicKey<Uint8Array>} userPublicKey Public key to encrypt to
  * @param {SigningKeyPair}        signingKeys   Current users signing keys used to sign transform key
  */
-export function encryptPlaintext(plaintext: Plaintext, userPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair): Future<Error, PREEncryptedMessage> {
-    return Future.tryF(() => encryptedValueToBase64(RecryptApi.encrypt(plaintext, userPublicKey, signingKeys.privateKey)));
-}
+export const encryptPlaintext = (plaintext: Plaintext, userPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair): Future<Error, PREEncryptedMessage> =>
+    Future.tryF(() => encryptedValueToBase64(RecryptApi.encrypt(plaintext, userPublicKey, signingKeys.privateKey)));
 
 /**
  * Encrypt the provided plaintext to each of the public keys provided in the list
@@ -191,11 +175,11 @@ export function encryptPlaintext(plaintext: Plaintext, userPublicKey: PublicKey<
  * @param {UserPublicKeyResponse[]} keyList     List of public keys (either user or group) who we will encrypt the document to using their public key
  * @param {SigningKeyPair}          signingKeys Current users signing keys used to sign transform key
  */
-export function encryptPlaintextToList(
+export const encryptPlaintextToList = (
     plaintext: Plaintext,
     keyList: UserOrGroupPublicKey[],
     signingKeys: SigningKeyPair
-): Future<Error, EncryptedAccessKey[]> {
+): Future<Error, EncryptedAccessKey[]> => {
     if (!keyList.length) {
         return Future.of<EncryptedAccessKey[]>([]);
     }
@@ -207,25 +191,24 @@ export function encryptPlaintextToList(
         }));
     });
     return Future.all(encryptKeyFutures);
-}
+};
 
 /**
  * Decrypt a PRE encrypted plaintext using the provided private key
  * @param {TransformedEncryptedMessage} encryptedPlaintext Encrypted plaintext key to decrypt
  * @param {PrivateKey<Uint8Array>}      userPrivateKey     Users private key to decrypt
  */
-export function decryptPlaintext(encryptedPlaintext: TransformedEncryptedMessage, userPrivateKey: PrivateKey<Uint8Array>) {
-    return Future.tryF(() => {
+export const decryptPlaintext = (encryptedPlaintext: TransformedEncryptedMessage, userPrivateKey: PrivateKey<Uint8Array>) =>
+    Future.tryF(() => {
         const decryptedPlaintext = RecryptApi.decrypt(transformedPlaintextToEncryptedValue(encryptedPlaintext), userPrivateKey);
         return [decryptedPlaintext, RecryptApi.hash256(decryptedPlaintext)];
     });
-}
 
 /**
  * Create a message signature of the current time, segment ID, user ID, and public signing key. Encode that as a base64 string and sign it
  * using ed25519.
  */
-export function createRequestSignature(segmentID: number, userID: string, signingKeys: SigningKeyPair, signatureVersion: number): MessageSignature {
+export const createRequestSignature = (segmentID: number, userID: string, signingKeys: SigningKeyPair, signatureVersion: number): MessageSignature => {
     const payload = utf8StringToArrayBuffer(
         JSON.stringify({
             ts: Date.now(),
@@ -239,7 +222,7 @@ export function createRequestSignature(segmentID: number, userID: string, signin
         message: fromByteArray(payload),
         signature: fromByteArray(RecryptApi.ed25519Sign(signingKeys.privateKey, payload)),
     };
-}
+};
 
 /**
  * Generate a signature to be used as part of a device add operation
@@ -247,7 +230,7 @@ export function createRequestSignature(segmentID: number, userID: string, signin
  * @param {KeyPair}      userMasterKeyPair Users public/private master keys
  * @param {TransformKey} deviceTransform   Device transform key
  */
-export function generateDeviceAddSignature(jwtToken: string, userMasterKeyPair: KeyPair, deviceTransform: Recrypt.TransformKey) {
+export const generateDeviceAddSignature = (jwtToken: string, userMasterKeyPair: KeyPair, deviceTransform: Recrypt.TransformKey) => {
     const ts = Date.now();
     return Future.tryF(() => {
         const signatureMessage = concatArrayBuffers(
@@ -262,4 +245,4 @@ export function generateDeviceAddSignature(jwtToken: string, userMasterKeyPair: 
             signature: RecryptApi.schnorrSign(userMasterKeyPair.privateKey, userMasterKeyPair.publicKey, signatureMessage),
         };
     });
-}
+};

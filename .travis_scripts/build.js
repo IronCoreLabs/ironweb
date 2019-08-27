@@ -84,7 +84,7 @@ let recryptShim = fs.readFileSync("./src/frame/worker/crypto/recrypt/index.ts", 
 recryptShim = recryptShim
     //Add in an import to include the RecryptWasm file synchronously so that we can return it in the file later to keep the types consistent
     .replace(/(import\sFuture\sfrom\s[^;]*;)/, `$1\n${addedWasmInclude}`)
-    .replace(/const\srecrypt:\sPromise[^\n]*/, "isWebAssemblySupported;")
+    .replace(/const\srecrypt:\sPromise[^\n]*/, "")
     //Now we have to replace all of the dynamic Promise import lines and replace them with references to the two functions they call so that we don't get
     //the TS "unused function" errors on compile.
     .replace(/\s+[:?]\simport[^\n]*/g, "")

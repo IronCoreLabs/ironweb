@@ -1,12 +1,8 @@
-import Future from "futurejs";
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
+import Future from "futurejs";
 import {generateRandomBytes, getCryptoSubtleApi} from "../CryptoUtils";
 
 const WASM_RAND_SEED_LENGTH = 32;
-
-//TypeScript doesn't yet add WebAssembly types, so we need to mock out this object so we can detect at runtime whether support
-//for it exists.
-declare const WebAssembly: any;
 
 export interface TransformKeyGrant {
     transformKey: TransformKey;
@@ -15,20 +11,10 @@ export interface TransformKeyGrant {
 }
 
 /**
- * Determine if this browser supports WebAssembly so we know which Recrypt module to load.
+ * Create a Promise to dynamically import the Recrypt WASM library. We kick off this Promise as soon as possible so that hopefully the
+ * library is fully loaded by the time we attempt to make a call into the library.
  */
-function isWebAssemblySupported() {
-    return typeof WebAssembly === "object" && WebAssembly && typeof WebAssembly.instantiate === "function";
-}
-
-/**
- * Create a Promise to dynamically import the appropriate Recrypt library depending on WebAssembly support. We kick
- * off this Promise as soon as possible so that hopefully the library is fully loaded by the time we attempt to make
- * a call into the library.
- */
-const recrypt: Promise<typeof import("./RecryptWasm")> = isWebAssemblySupported()
-    ? import(/* webpackChunkName:"recryptwasm" */ "./RecryptWasm")
-    : import(/* webpackChunkName:"recryptjs" */ "./RecryptJs");
+const recrypt: Promise<typeof import("./RecryptWasm")> = import(/* webpackChunkName:"recryptwasm" */ "./RecryptWasm");
 
 /**
  * MS Edge can't generate random numbers in a WebWorker and therefore we have to manually pass in a seed to the WASM
