@@ -4,6 +4,20 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v3.0.5
+
+### Breaking Changes
+
+- Removed support for browsers which don't support WebAssembly. This primarily means that support for IE has been removed. Performance in IE was always bad enough that it made the library nearly unusable. In addition, because of support for WebCrypto within IE it was less secure than other browsers.
+
+### Other Changes
+
+- Added a top level `createNewUser` method which can be called prior to SDK initialization. This method takes a callback to a valid JWT and the users escrow password as arguments. This method will create a new identity for the user ID specified in the JWT but it _will not_ generate a new device key for that user.
+
+- Added a top level `createNewDeviceKeys` method which can be called prior to SDK initialization. This method takes a callback to a valid JWT and the users existing escrow password as arguments. This method will genreate a new set of device keys (encryption and signing) for the user ID specified in the JWT. The full key set will be returned once the Promise this method returns resolves.
+
+- Added a new document namespace `sdk.document.advanced` which allows encrypting/decrypting documents while also returning the encrypted document encryption keys (EDEK) instead of having them stored within the IronCore service. Currently only supports a method for decrypting unmanaged documents.
+
 ## v2.0.1
 
 ### Breaking Changes
