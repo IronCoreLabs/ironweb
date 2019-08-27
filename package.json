@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@ironcorelabs/recrypt-wasm-binding": "^0.4.1",
-    "@ironcorelabs/recryptjs": "2.1.0",
     "@stablelib/ed25519": "0.10.7",
     "@stablelib/utf8": "0.10.1",
     "base64-js": "1.3.0",

@@ -151,11 +151,6 @@
   resolved "https://registry.yarnpkg.com/@ironcorelabs/recrypt-wasm-binding/-/recrypt-wasm-binding-0.4.3.tgz#b2c5d6b02702bf9813fcc4a83dfa7973e58cc449"
   integrity sha512-ady/fpAGYVRbQ8mm0vNbWGiRbgOxEIiKqAf6mPklEiuQr1Dqiwt/blpvs5M+Gm6dph0xEdYmKi42fZEeE0LLdQ==
 
-"@ironcorelabs/recryptjs@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@ironcorelabs/recryptjs/-/recryptjs-2.1.0.tgz#6b09b3710666efcf7d25196fa45db385d0610e20"
-  integrity sha512-bwTA66eUOAqvRCUNOgmexBHqrnrWMNJY/5C2OZdiqsi/C3BXvJcbUe6Nqs86V2duOZwMcYOUTz8xz+nqNK31uw==
-
 "@jest/console@^24.7.1":
   version "24.7.1"
   resolved "https://registry.yarnpkg.com/@jest/console/-/console-24.7.1.tgz#32a9e42535a97aedfe037e725bd67e954b459545"

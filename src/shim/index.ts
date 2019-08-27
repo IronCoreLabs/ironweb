@@ -1,8 +1,8 @@
-import * as Init from "./Initialize";
 import {SDKInitializationResult, UserCreateResponse} from "../../ironweb";
 import {ErrorCodes} from "../Constants";
-import {checkSDKInitialized} from "./ShimUtils";
 import SDKError from "../lib/SDKError";
+import * as Init from "./Initialize";
+import {checkSDKInitialized} from "./ShimUtils";
 
 /**
  * Checks bowser functionality to ensure random number generation is supported.
@@ -11,6 +11,19 @@ function supportsRandomNumGen() {
     const nativeCrypto: Crypto = window.msCrypto || window.crypto;
     return typeof nativeCrypto === "object" && typeof nativeCrypto.getRandomValues === "function";
 }
+
+/**
+ * Determine if this browser supports WebAssembly so we know which Recrypt module to load.
+ */
+function isWebAssemblySupported() {
+    return typeof WebAssembly === "object" && WebAssembly && typeof WebAssembly.instantiate === "function";
+}
+
+/**
+ * Failed Promise for when the users browser doesn't support WebAssembly (IE11 or lower)
+ */
+const webAssemblyFailure = () =>
+    Promise.reject(new SDKError(new Error("Request failed due to a lack of browser support for WebAssembly."), ErrorCodes.WEBASSEMBLY_SUPPORT_FAILURE));
 
 /**
  * Failed Promise for when the users browser can't generate random numbers
@@ -30,6 +43,9 @@ export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: strin
     if (!supportsRandomNumGen()) {
         return randomGenFailure();
     }
+    if (!isWebAssemblySupported()) {
+        return webAssemblyFailure();
+    }
     return Init.createNewUser(jwtCallback, passcode);
 }
 
@@ -43,6 +59,9 @@ export function createNewDeviceKeys(jwtCallback: JWTCallbackToPromise, passcode:
     }
     if (!supportsRandomNumGen()) {
         return randomGenFailure();
+    }
+    if (!isWebAssemblySupported()) {
+        return webAssemblyFailure();
     }
     return Init.createUserDeviceKeys(jwtCallback, passcode);
 }
@@ -60,6 +79,9 @@ export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: 
     }
     if (!supportsRandomNumGen()) {
         return randomGenFailure();
+    }
+    if (!isWebAssemblySupported()) {
+        return webAssemblyFailure();
     }
     return Init.initialize(jwtCallback, passcodeCallback);
 }
@@ -79,14 +101,12 @@ export function isInitialized() {
 /*
  * Export all SDK methods at the top level
  */
-export * from "./SDK";
-
 /**
  * List of SDK Error Codes
  */
 export {ErrorCodes} from "../Constants";
-
 /**
  * SDK Error which extends normal Error object but adds `code` property which will be one of the ErrorCodes from above
  */
 export {default as SDKError} from "../lib/SDKError";
+export * from "./SDK";
