@@ -142,6 +142,17 @@ describe("FrameUtils", () => {
                 content: new Uint8Array([92, 103]),
             });
         });
+
+        it("converts bytes into byte parts with offset", () => {
+            // prettier-ignore
+            const bytes = new Uint8Array([0, 0, 0 ,0, 2, 0, 30, 123, 34, 95, 100, 105, 100, 95, 34, 58, 34, 109, 121, 100, 111, 99, 73, 68, 34, 44, 34, 95, 115, 105, 100, 95, 34, 58, 51, 50, 125, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 92, 103, 0, 0, 0, 0]);
+            //Create an array that has 4 bytes out of view in the front and 4 out of view at the end.
+            const doc = new Uint8Array(bytes.buffer, 4, bytes.byteLength - 8);
+            expect(FrameUtils.documentToByteParts(doc)).toEqual({
+                iv: new Uint8Array([30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140]),
+                content: new Uint8Array([92, 103]),
+            });
+        });
     });
 
     describe("combineDocumentParts", () => {
