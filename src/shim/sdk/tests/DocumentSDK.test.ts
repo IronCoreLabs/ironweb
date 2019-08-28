@@ -126,7 +126,6 @@ describe("DocumentSDK", () => {
             const doc = new Uint8Array(buffer, 4);
             DocumentSDK.getDocumentIDFromBytes(doc)
                 .then((result) => {
-                    console.log("After");
                     expect(result).toEqual("353");
                 })
                 .catch((e) => fail(e.message));
