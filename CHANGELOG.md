@@ -4,6 +4,18 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v3.0.7
+
+### Other Changes
+
+- Fix bug where the `FrameUtils.documentToByteParts` would error if the `document` had a `byteOffset` which was non-zero.
+
+## v3.0.6
+
+### Other Changes
+
+- Fix bug where the `DocumentSDK.getDocumentIdFromBytes` would error if the documentData had a `byteOffset` which was non-zero.
+
 ## v3.0.5
 
 ### Breaking Changes
