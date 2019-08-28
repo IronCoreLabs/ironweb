@@ -117,6 +117,19 @@ describe("DocumentSDK", () => {
                 })
                 .catch((e) => fail(e.message));
         });
+
+        it("parses document ID and returns value when the array is different from the buffer", () => {
+            ShimUtils.setSDKInitialized();
+            const headerJSON = UTF8.encode(JSON.stringify({_did_: "353"}));
+            const buffer = concatArrayBuffers(new Uint8Array([0, 0, 0, 0, 2, 0, headerJSON.length]), headerJSON).buffer;
+            //Make the doc a view with offset 4 to get rid of the 4 zeros on the front.
+            const doc = new Uint8Array(buffer, 4);
+            DocumentSDK.getDocumentIDFromBytes(doc)
+                .then((result) => {
+                    expect(result).toEqual("353");
+                })
+                .catch((e) => fail(e.message));
+        });
     });
 
     describe("decryptFromStore", () => {
