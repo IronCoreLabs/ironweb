@@ -97,7 +97,7 @@ export function documentToByteParts(document: Uint8Array | string): EncryptedDoc
         };
     }
     //Get the header byte length (represented as two bytes) out as big endian so we can get the length of the JSON encoded header
-    const headerLength = new DataView(encryptedDocumentBytes.buffer).getUint16(VERSION_HEADER_LENGTH, false);
+    const headerLength = new DataView(encryptedDocumentBytes.buffer).getUint16(encryptedDocumentBytes.byteOffset + VERSION_HEADER_LENGTH, false);
     const fullLeadingBytesLength = VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerLength;
 
     return {
