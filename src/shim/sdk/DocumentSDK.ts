@@ -77,7 +77,7 @@ export function getDocumentIDFromBytes(documentData: Uint8Array): Promise<string
             new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE)
         );
     }
-    const headerLength = new DataView(documentData.buffer).getUint16(VERSION_HEADER_LENGTH, false);
+    const headerLength = new DataView(documentData.buffer).getUint16(documentData.byteOffset + VERSION_HEADER_LENGTH, false);
     const headerContent = documentData.slice(
         VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH,
         VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerLength
