@@ -314,6 +314,32 @@ describe("DocumentSDK", () => {
                                 documentName: "",
                                 userGrants: [],
                                 groupGrants: [],
+                                grantToAuthor: true,
+                            },
+                        },
+                        [document]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("uses grauntToAuthor from options if provided", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            DocumentSDK.encryptToStore(document, {grantToAuthor: false})
+                .then((result: any) => {
+                    expect(result).toEqual("messageResponse");
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_STORE_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                documentName: "",
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: false,
                             },
                         },
                         [document]
@@ -337,6 +363,7 @@ describe("DocumentSDK", () => {
                                 documentName: "",
                                 userGrants: [],
                                 groupGrants: [],
+                                grantToAuthor: true,
                             },
                         },
                         [document]
@@ -360,6 +387,7 @@ describe("DocumentSDK", () => {
                                 documentName: "my doc",
                                 userGrants: [],
                                 groupGrants: [],
+                                grantToAuthor: true,
                             },
                         },
                         [document]
@@ -385,6 +413,7 @@ describe("DocumentSDK", () => {
                                 documentName: "my doc name",
                                 userGrants: ["user-31", "user-55"],
                                 groupGrants: ["group-1", "group-2", "group-3"],
+                                grantToAuthor: true,
                             },
                         },
                         [document]
@@ -452,6 +481,7 @@ describe("DocumentSDK", () => {
                                 documentName: "",
                                 userGrants: [],
                                 groupGrants: [],
+                                grantToAuthor: true,
                             },
                         },
                         [document]
@@ -459,6 +489,42 @@ describe("DocumentSDK", () => {
                     const messagePayload = (FrameMediator.sendMessage as jasmine.Spy).calls.argsFor(0)[0];
                     expect(messagePayload.message.documentID.length).toEqual(32);
                     expect(messagePayload.message.documentID).toMatch(/[0-9a-fA-F]+/);
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("uses grantToAuthor from options object", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            const encryptedDoc = new Uint8Array([90, 102, 103]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: encryptedDoc,
+                    },
+                })
+            );
+
+            DocumentSDK.encrypt(document, {grantToAuthor: false})
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        document: encryptedDoc,
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                documentName: "",
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: false,
+                            },
+                        },
+                        [document]
+                    );
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -490,6 +556,7 @@ describe("DocumentSDK", () => {
                                 documentName: "",
                                 userGrants: [],
                                 groupGrants: [],
+                                grantToAuthor: true,
                             },
                         },
                         [document]
@@ -525,6 +592,7 @@ describe("DocumentSDK", () => {
                                 documentName: "my doc name",
                                 userGrants: [],
                                 groupGrants: [],
+                                grantToAuthor: true,
                             },
                         },
                         [document]
@@ -563,6 +631,7 @@ describe("DocumentSDK", () => {
                                 documentName: "",
                                 userGrants: ["user-31", "user-55"],
                                 groupGrants: ["group-1", "group-2", "group-3"],
+                                grantToAuthor: true,
                             },
                         },
                         [document]

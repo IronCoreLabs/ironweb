@@ -19,7 +19,7 @@ function calculateDocumentCreateOptionsDefault(options?: DocumentCreateOptions) 
     const randomBytes = (window.msCrypto || window.crypto).getRandomValues(new Uint8Array(16));
     const hexID = Array.prototype.map.call(randomBytes, (byte: number) => `00${byte.toString(16)}`.slice(-2)).join("");
     if (!options) {
-        return {documentID: hexID, documentName: "", accessList: {users: [], groups: []}};
+        return {documentID: hexID, documentName: "", accessList: {users: [], groups: [], grantToAuthor: true}};
     }
     return {
         documentID: options.documentID || hexID,
@@ -27,6 +27,7 @@ function calculateDocumentCreateOptionsDefault(options?: DocumentCreateOptions) 
         accessList: {
             users: options.accessList && options.accessList.users ? options.accessList.users : [],
             groups: options.accessList && options.accessList.groups ? options.accessList.groups : [],
+            grantToAuthor: options.grantToAuthor !== false,
         },
     };
 }
@@ -139,6 +140,7 @@ export function decrypt(documentID: string, documentData: Uint8Array) {
  *                                               document creators ID to this list as that will happen automatically. Contains the following keys:
  *                                                   users: Array - List of user IDs to share document with. Each value in the array should be in the form {id: string}.
  *                                                   groups: Array - List of group IDs to share document with. Each value in the array should be in the form {id: string}.
+ * TODO
  */
 export function encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions) {
     ShimUtils.checkSDKInitialized();
@@ -164,6 +166,7 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
             documentName: encryptOptions.documentName,
             userGrants,
             groupGrants,
+            grantToAuthor: encryptOptions.accessList.grantToAuthor,
         },
     };
     return FrameMediator.sendMessage<MT.DocumentStoreEncryptResponse>(payload, [payload.message.documentData])
@@ -197,6 +200,7 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
             documentName: encryptOptions.documentName,
             userGrants,
             groupGrants,
+            grantToAuthor: encryptOptions.accessList.grantToAuthor,
         },
     };
     return FrameMediator.sendMessage<MT.DocumentEncryptResponse>(payload, [payload.message.documentData])

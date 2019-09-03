@@ -136,6 +136,7 @@ export interface DocumentStoreEncryptRequest {
         documentName: string;
         userGrants: string[];
         groupGrants: string[];
+        grantToAuthor: boolean;
     };
 }
 export interface DocumentStoreEncryptResponse {
@@ -151,6 +152,7 @@ export interface DocumentEncryptRequest {
         documentName: string;
         userGrants: string[];
         groupGrants: string[];
+        grantToAuthor: boolean;
     };
 }
 export interface DocumentEncryptResponse {

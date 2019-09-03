@@ -70,7 +70,8 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.documentData,
                 data.message.documentName,
                 data.message.userGrants,
-                data.message.groupGrants
+                data.message.groupGrants,
+                data.message.grantToAuthor
             ).engage(errorHandler, (documentMeta) => callback({type: "DOCUMENT_STORE_ENCRYPT_RESPONSE", message: documentMeta}));
         case "DOCUMENT_ENCRYPT":
             return DocumentApi.encryptLocalDocument(
@@ -78,7 +79,8 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.documentData,
                 data.message.documentName,
                 data.message.userGrants,
-                data.message.groupGrants
+                data.message.groupGrants,
+                data.message.grantToAuthor
             ).engage(errorHandler, (encryptedDoc) => callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedDoc}, [encryptedDoc.document]));
         case "DOCUMENT_STORE_UPDATE_DATA":
             return DocumentApi.updateToStore(data.message.documentID, data.message.documentData).engage(errorHandler, (documentMeta) =>
