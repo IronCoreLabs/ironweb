@@ -140,7 +140,7 @@ export function decrypt(documentID: string, documentData: Uint8Array) {
  *                                               document creators ID to this list as that will happen automatically. Contains the following keys:
  *                                                   users: Array - List of user IDs to share document with. Each value in the array should be in the form {id: string}.
  *                                                   groups: Array - List of group IDs to share document with. Each value in the array should be in the form {id: string}.
- * TODO
+ *                                                   grantToAuthor: boolean - Should the create grant access to the logged in user. Defaults to true.
  */
 export function encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions) {
     ShimUtils.checkSDKInitialized();
@@ -183,6 +183,7 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
  *                                               accessList: object - Optional object which allows document to be shared with others upon creation. Contains the following keys:
  *                                                   users: Array - List of user IDs to share document with. Each value in the array should be in the form {id: string}.
  *                                                   groups: Array - List of group IDs to share document with. Each value in the array should be in the form {id: string}.
+ *                                                   grantToAuthor: boolean - Should the create grant access to the logged in user. Defaults to true.
  */
 export function encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse> {
     ShimUtils.checkSDKInitialized();
