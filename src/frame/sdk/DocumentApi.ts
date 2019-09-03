@@ -55,7 +55,7 @@ function getKeyListsForUsersAndGroups(
             //Add in the current user to the list of users iff we were told to grantToAuthor.
             const maybeCurrentUser = grantToAuthor ? [{id: ApiState.user().id, userMasterPublicKey: Utils.publicKeyToBase64(ApiState.userPublicKey())}] : [];
             return Future.of({
-                userKeys: {result: userKeys.result.concat(maybeCurrentUser)},
+                userKeys: {result: [...userKeys.result, ...maybeCurrentUser],
                 groupKeys,
             });
         }
