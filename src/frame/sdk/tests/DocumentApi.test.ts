@@ -414,6 +414,57 @@ describe("DocumentApi", () => {
             );
         });
 
+        it("encrypts to list of users and groups provided, but not the calling user", (done) => {
+            const encryptedDocument = TestUtils.getEncryptedDocument();
+            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
+
+            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
+                Future.of({
+                    result: [{id: "user-33", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                })
+            );
+            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
+                Future.of({
+                    result: [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                })
+            );
+            spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
+                Future.of({
+                    userAccessKeys: [{id: "user-33", key: encryptedSymKey}],
+                    groupAccessKeys: [{id: "group-20", key: encryptedSymKey}],
+                    encryptedDocument,
+                })
+            );
+            spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar"}));
+
+            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-33"], ["group-20"], false).engage(
+                (e) => fail(e.message),
+                ({documentID, documentName, document}) => {
+                    expect(documentID).toEqual("bar");
+                    expect(documentName).toBeUndefined();
+                    expect(document).toEqual(expect.any(Uint8Array));
+
+                    const userKeyList = [{id: "user-33", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+                    const groupKeyList = [{id: "group-20", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+
+                    expect(DocumentOperations.encryptNewDocumentToList).toHaveBeenCalledWith(
+                        new Uint8Array([88, 73, 92]),
+                        userKeyList,
+                        groupKeyList,
+                        ApiState.signingKeys()
+                    );
+                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
+                        "doc key",
+                        null,
+                        [{id: "user-33", key: encryptedSymKey}],
+                        [{id: "group-20", key: encryptedSymKey}],
+                        ""
+                    );
+                    done();
+                }
+            );
+        });
+
         it("fails if any of the users or groups cannot be found", (done) => {
             spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
                 Future.of({
