@@ -198,6 +198,7 @@ describe("frame index", () => {
                     documentData: new Uint8Array([92, 99, 103]),
                     userGrants: "list of user ids",
                     groupGrants: "list of group ids",
+                    grantToAuthor: true,
                 },
             };
 
@@ -211,7 +212,8 @@ describe("frame index", () => {
                     new Uint8Array([92, 99, 103]),
                     "fooey",
                     "list of user ids",
-                    "list of group ids"
+                    "list of group ids",
+                    true
                 );
                 done();
             });
@@ -228,6 +230,7 @@ describe("frame index", () => {
                     documentName: "given name",
                     userGrants: "list of user ids",
                     groupGrants: "list of group ids",
+                    grantToAuthor: true,
                 },
             };
 
@@ -242,7 +245,8 @@ describe("frame index", () => {
                     new Uint8Array([36]),
                     "given name",
                     "list of user ids",
-                    "list of group ids"
+                    "list of group ids",
+                    true
                 );
                 done();
             });

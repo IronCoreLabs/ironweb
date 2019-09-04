@@ -161,7 +161,7 @@ describe("DocumentApi", () => {
             );
             spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar", name: "my doc", created: "1", updated: "2"}));
 
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", [], []).engage(
+            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", [], [], true).engage(
                 (e) => fail(e.message),
                 (data: any) => {
                     expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
@@ -204,7 +204,7 @@ describe("DocumentApi", () => {
                 })
             );
 
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), docName, [], []).engage(
+            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), docName, [], [], true).engage(
                 (e) => fail(e.message),
                 (data: any) => {
                     expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
@@ -246,7 +246,7 @@ describe("DocumentApi", () => {
             );
             spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar", name: "my doc", created: "1", updated: "2"}));
 
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["user-33"]).engage(
+            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["user-33"], true).engage(
                 (e) => fail(e.message),
                 (data: any) => {
                     expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
@@ -287,7 +287,7 @@ describe("DocumentApi", () => {
                 })
             );
 
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["group-20"]).engage(
+            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["group-20"], true).engage(
                 (e) => {
                     expect(e.message).toBeString();
                     expect(e.message).toContain("[user-55]");
@@ -312,7 +312,7 @@ describe("DocumentApi", () => {
             );
             spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar"}));
 
-            DocumentApi.encryptLocalDocument("mydocID", new Uint8Array([]), "", [], []).engage(
+            DocumentApi.encryptLocalDocument("mydocID", new Uint8Array([]), "", [], [], true).engage(
                 (e) => fail(e.message),
                 ({document, documentID, documentName}) => {
                     expect(documentID).toEqual("bar");
@@ -351,7 +351,7 @@ describe("DocumentApi", () => {
             );
             spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "mydocID", name: docName}));
 
-            DocumentApi.encryptLocalDocument("mydocID", new Uint8Array([]), docName, [], []).engage(
+            DocumentApi.encryptLocalDocument("mydocID", new Uint8Array([]), docName, [], [], true).engage(
                 (e) => fail(e.message),
                 ({document, documentID, documentName}) => {
                     expect(documentID).toEqual("mydocID");
@@ -388,7 +388,7 @@ describe("DocumentApi", () => {
             );
             spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar"}));
 
-            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["user-33"]).engage(
+            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["user-33"], true).engage(
                 (e) => fail(e.message),
                 ({documentID, documentName, document}) => {
                     expect(documentID).toEqual("bar");
@@ -414,6 +414,57 @@ describe("DocumentApi", () => {
             );
         });
 
+        it("encrypts to list of users and groups provided, but not the calling user", (done) => {
+            const encryptedDocument = TestUtils.getEncryptedDocument();
+            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
+
+            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
+                Future.of({
+                    result: [{id: "user-33", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                })
+            );
+            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
+                Future.of({
+                    result: [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                })
+            );
+            spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
+                Future.of({
+                    userAccessKeys: [{id: "user-33", key: encryptedSymKey}],
+                    groupAccessKeys: [{id: "group-20", key: encryptedSymKey}],
+                    encryptedDocument,
+                })
+            );
+            spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar"}));
+
+            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-33"], ["group-20"], false).engage(
+                (e) => fail(e.message),
+                ({documentID, documentName, document}) => {
+                    expect(documentID).toEqual("bar");
+                    expect(documentName).toBeUndefined();
+                    expect(document).toEqual(expect.any(Uint8Array));
+
+                    const userKeyList = [{id: "user-33", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+                    const groupKeyList = [{id: "group-20", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+
+                    expect(DocumentOperations.encryptNewDocumentToList).toHaveBeenCalledWith(
+                        new Uint8Array([88, 73, 92]),
+                        userKeyList,
+                        groupKeyList,
+                        ApiState.signingKeys()
+                    );
+                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
+                        "doc key",
+                        null,
+                        [{id: "user-33", key: encryptedSymKey}],
+                        [{id: "group-20", key: encryptedSymKey}],
+                        ""
+                    );
+                    done();
+                }
+            );
+        });
+
         it("fails if any of the users or groups cannot be found", (done) => {
             spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
                 Future.of({
@@ -426,13 +477,35 @@ describe("DocumentApi", () => {
                 })
             );
 
-            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-33"], ["group-20", "group-33"]).engage(
+            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-33"], ["group-20", "group-33"], true).engage(
                 (e) => {
                     expect(e.message).toBeString();
                     expect(e.message).toContain("[group-33]");
                     done();
                 },
                 () => fail("Should not call create when any user or group could not be found")
+            );
+        });
+
+        it("fails if there is no one to encrypt to.", (done) => {
+            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
+                Future.of({
+                    result: [],
+                })
+            );
+            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
+                Future.of({
+                    result: [],
+                })
+            );
+
+            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", [], [], false).engage(
+                (e) => {
+                    expect(e.message).toBeString();
+                    expect(e.message).toBe("Failed to create document due to no users or groups to share with.");
+                    done();
+                },
+                () => fail("Should not call create when no users or groups could be found")
             );
         });
     });

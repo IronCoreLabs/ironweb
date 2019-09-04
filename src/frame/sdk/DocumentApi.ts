@@ -21,10 +21,12 @@ import {UserAndGroupTypes, ErrorCodes} from "../../Constants";
  * Get a list of user and group keys for the provided users and then also add in the current user to the list of user keys
  * @param {string[]} userGrants  List of users to get public keys for
  * @param {string[]} groupGrants List of groups to get public keys for
+ * @param {boolean}  grantToAuthor If the logged in user should be included in the list of users to encrypt to.
  */
 function getKeyListsForUsersAndGroups(
     userGrants: string[],
-    groupGrants: string[]
+    groupGrants: string[],
+    grantToAuthor: boolean
 ): Future<SDKError, {userKeys: UserKeyListResponseType; groupKeys: GroupListResponseType}> {
     return Future.gather2(UserApiEndpoints.callUserKeyListApi(userGrants), GroupApiEndpoints.callGroupKeyListApi(groupGrants)).flatMap(
         ([userKeys, groupKeys]) => {
@@ -42,10 +44,18 @@ function getKeyListsForUsersAndGroups(
                         ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
                     )
                 );
+            } else if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor) {
+                return Future.reject(
+                    new SDKError(
+                        new Error(`Failed to create document due to no users or groups to share with.`),
+                        ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
+                    )
+                );
             }
-            //Add in the current user to the list of users as we always encrypt new documents to the author directly
+            //Add in the current user to the list of users iff we were told to grantToAuthor.
+            const maybeCurrentUser = grantToAuthor ? [{id: ApiState.user().id, userMasterPublicKey: Utils.publicKeyToBase64(ApiState.userPublicKey())}] : [];
             return Future.of({
-                userKeys: {result: [...userKeys.result, {id: ApiState.user().id, userMasterPublicKey: Utils.publicKeyToBase64(ApiState.userPublicKey())}]},
+                userKeys: {result: [...userKeys.result, ...maybeCurrentUser]},
                 groupKeys,
             });
         }
@@ -229,9 +239,10 @@ export function encryptToStore(
     document: Uint8Array,
     documentName: string,
     userGrants: string[],
-    groupGrants: string[]
+    groupGrants: string[],
+    grantToAuthor: boolean
 ): Future<SDKError, DocumentIDNameResponse> {
-    return getKeyListsForUsersAndGroups(userGrants, groupGrants)
+    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor)
         .flatMap(({userKeys, groupKeys}) => {
             const [userPublicKeys, groupPublicKeys] = normalizeUserAndGroupPublicKeyList(userKeys, groupKeys);
             return DocumentOperations.encryptNewDocumentToList(document, userPublicKeys, groupPublicKeys, ApiState.signingKeys());
@@ -256,8 +267,15 @@ export function encryptToStore(
  * @param {string[]}   userGrants   List of user IDs to grant access
  * @param {string[]}   groupGrants  List of group IDs to grant access
  */
-export function encryptLocalDocument(documentID: string, document: Uint8Array, documentName: string, userGrants: string[], groupGrants: string[]) {
-    return getKeyListsForUsersAndGroups(userGrants, groupGrants)
+export function encryptLocalDocument(
+    documentID: string,
+    document: Uint8Array,
+    documentName: string,
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean
+) {
+    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor)
         .flatMap(({userKeys, groupKeys}) => {
             const [userPublicKeys, groupPublicKeys] = normalizeUserAndGroupPublicKeyList(userKeys, groupKeys);
             return DocumentOperations.encryptNewDocumentToList(document, userPublicKeys, groupPublicKeys, ApiState.signingKeys());
