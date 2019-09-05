@@ -21,14 +21,14 @@ function getSignatureHeader() {
 }
 
 /**
- * Transform one of the edeks for the logged in user.
- * @param {Uint8Array} edeks The encrypted deks to send.
+ * Create the policy apply request based on the `policy`.
+ * @param policy The policy to be applied.
  */
-export function applyPolicy(req: Policy) {
-    const classification = req.classification !== undefined ? [`classification=${encodeURIComponent(req.classification)}`] : [];
-    const category = req.category !== undefined ? [`category=${encodeURIComponent(req.category)}`] : [];
-    const dataSubject = req.dataSubject !== undefined ? [`dataSubject=${encodeURIComponent(req.dataSubject)}`] : [];
-    const id = req.substituteId !== undefined ? [`id=${encodeURIComponent(req.substituteId)}`] : [];
+export function applyPolicy(policy: Policy) {
+    const classification = policy.classification !== undefined ? [`classification=${encodeURIComponent(policy.classification)}`] : [];
+    const category = policy.category !== undefined ? [`category=${encodeURIComponent(policy.category)}`] : [];
+    const dataSubject = policy.dataSubject !== undefined ? [`dataSubject=${encodeURIComponent(policy.dataSubject)}`] : [];
+    const id = policy.substituteId !== undefined ? [`id=${encodeURIComponent(policy.substituteId)}`] : [];
 
     const params = [...classification, ...category, ...dataSubject, ...id].join(`&`);
     return {

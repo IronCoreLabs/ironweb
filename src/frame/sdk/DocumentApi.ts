@@ -73,7 +73,7 @@ function normalizeUserAndGroupPublicKeyList(userKeys: UserKeyListResponseType, g
  * @param {string[]} userGrants  List of users to get public keys for
  * @param {string[]} groupGrants List of groups to get public keys for
  * @param {boolean}  grantToAuthor If the logged in user should be included in the list of users to encrypt to.
- * @param COLT:
+ * @param {Policy}   policy An optional policy which will be used to lookup users and groups in addition to the explicit userGrants and groupGrants.
  */
 function getKeyListsForUsersAndGroups(
     userGrants: string[],
@@ -278,8 +278,8 @@ export function decryptLocalDoc(documentID: string, encryptedDocument: Uint8Arra
  * @param {string}     documentName  Optional name of the document
  * @param {string[]}   userGrants    List of user IDs to grant access
  * @param {string[]}   groupGrants   List of group IDs to grant access
- * @param {boolean}    grantToAuthor COLT: Do this
- * @param {Policy}     policy COLT:Do this
+ * @param {boolean}    grantToAuthor If the document should be encrypted to the current user or not.
+ * @param {Policy}     policy        An optional policy which will be used to resolve the groups and users that should be shared with in addition to the userGrants and groupGrants.
  */
 export function encryptToStore(
     documentID: string,
@@ -311,8 +311,8 @@ export function encryptToStore(
  * @param {string}     documentName  Optional name of the document
  * @param {string[]}   userGrants    List of user IDs to grant access
  * @param {string[]}   groupGrants   List of group IDs to grant access
- * @param {boolean}    grantToAuthor COLT: Do this
- * @param {Policy}     policy        COLT:Do this
+ * @param {boolean}    grantToAuthor If the document should be encrypted to the current user or not.
+ * @param {Policy}     policy        An optional policy which will be used to resolve the groups and users that should be shared with in addition to the userGrants and groupGrants.
  */
 export function encryptLocalDocument(
     documentID: string,
