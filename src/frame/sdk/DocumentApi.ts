@@ -36,8 +36,8 @@ function createErrorForInvalidUsersOrGroups(
 ) {
     const existingUserIDs = userKeys.result.map(({id}) => id);
     const existingGroupIDs = groupKeys.result.map(({id}) => id);
-    const missingPolicyUsers = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "user").map((user) => user.id);
-    const missingPolicyGroups = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "group").map((group) => group.id);
+    const missingPolicyUsers = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "user").map(({id}) => id);
+    const missingPolicyGroups = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "group").map(({id}) => id);
     const missingUsersString = userGrants
         .filter((userID) => existingUserIDs.indexOf(userID) === -1)
         .concat(missingPolicyUsers)

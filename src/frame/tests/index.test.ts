@@ -232,7 +232,7 @@ describe("frame index", () => {
                     userGrants: "list of user ids",
                     groupGrants: "list of group ids",
                     grantToAuthor: true,
-                    undefined,
+                    policy: undefined,
                 },
             };
 
