@@ -1,14 +1,14 @@
-import * as Init from "./initialization";
-import * as UserApi from "./sdk/UserApi";
-import * as DocumentApi from "./sdk/DocumentApi";
-import * as DocumentAdvancedApi from "./sdk/DocumentAdvancedApi";
-import * as GroupApi from "./sdk/GroupApi";
-import SDKError from "../lib/SDKError";
-import FrameMessenger from "./FrameMessenger";
-import {RequestMessage, ResponseMessage, ErrorResponse} from "../FrameMessageTypes";
 //Polyfill Promises and fetch for browsers which don't support them
 import "es6-promise/auto";
 import "whatwg-fetch";
+import {ErrorResponse, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
+import SDKError from "../lib/SDKError";
+import FrameMessenger from "./FrameMessenger";
+import * as Init from "./initialization";
+import * as DocumentAdvancedApi from "./sdk/DocumentAdvancedApi";
+import * as DocumentApi from "./sdk/DocumentApi";
+import * as GroupApi from "./sdk/GroupApi";
+import * as UserApi from "./sdk/UserApi";
 
 /**
  * Generic method to convert SDK error messages down into the message/code parts for transfer back to the parent window
@@ -71,7 +71,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.documentName,
                 data.message.userGrants,
                 data.message.groupGrants,
-                data.message.grantToAuthor
+                data.message.grantToAuthor !== false
             ).engage(errorHandler, (documentMeta) => callback({type: "DOCUMENT_STORE_ENCRYPT_RESPONSE", message: documentMeta}));
         case "DOCUMENT_ENCRYPT":
             return DocumentApi.encryptLocalDocument(
@@ -80,7 +80,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.documentName,
                 data.message.userGrants,
                 data.message.groupGrants,
-                data.message.grantToAuthor
+                data.message.grantToAuthor !== false
             ).engage(errorHandler, (encryptedDoc) => callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedDoc}, [encryptedDoc.document]));
         case "DOCUMENT_STORE_UPDATE_DATA":
             return DocumentApi.updateToStore(data.message.documentID, data.message.documentData).engage(errorHandler, (documentMeta) =>
