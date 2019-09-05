@@ -1,9 +1,9 @@
+import Future from "futurejs";
+import {Policy, UserOrGroup} from "ironweb";
 import {ErrorCodes} from "../../Constants";
+import {SDKError} from "../../shim";
 import * as ApiRequest from "../ApiRequest";
 import ApiState from "../ApiState";
-import Future from "futurejs";
-import {SDKError} from "../../shim";
-import {UserOrGroup, Policy} from "ironweb";
 
 export type UserOrGroupWithKey = UserOrGroup & {masterPublicKey: PublicKey<string>};
 
@@ -24,7 +24,7 @@ function getSignatureHeader() {
  * Create the policy apply request based on the `policy`.
  * @param policy The policy to be applied.
  */
-export function applyPolicy(policy: Policy) {
+const applyPolicy = (policy: Policy) => {
     const category = policy.category ? [`category=${encodeURIComponent(policy.category)}`] : [];
     const sensitivity = policy.sensitivity ? [`sensitivity=${encodeURIComponent(policy.sensitivity)}`] : [];
     const dataSubject = policy.dataSubject ? [`dataSubject=${encodeURIComponent(policy.dataSubject)}`] : [];
@@ -38,7 +38,7 @@ export function applyPolicy(policy: Policy) {
         },
         errorCode: ErrorCodes.POLICY_APPLY_REQUEST_FAILURE,
     };
-}
+};
 
 export default {
     /**
