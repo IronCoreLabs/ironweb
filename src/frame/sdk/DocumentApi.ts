@@ -21,11 +21,6 @@ import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoin
 
 /**
  * Create the error strings for missing users/groups.
- * @param userKeys The response from UserList
- * @param groupKeys The response from GroupList
- * @param invalidPolicyUsersAndGroups The invalid groups/users from policy application.
- * @param userGrants The list of all the user grants.
- * @param groupGrants The list of all the group grants.
  */
 function createErrorForInvalidUsersOrGroups(
     userKeys: UserKeyListResponseType,

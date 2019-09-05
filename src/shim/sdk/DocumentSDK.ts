@@ -186,6 +186,8 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
  *                                                   users: Array - List of user IDs to share document with. Each value in the array should be in the form {id: string}.
  *                                                   groups: Array - List of group IDs to share document with. Each value in the array should be in the form {id: string}.
  *                                                   grantToAuthor: boolean - Should the create grant access to the logged in user. Defaults to true.
+ *                                                   policy: Policy - The policy (or data label) to be applied to this data. This policy will be applied to get users and groups
+ *                                                                    to share with in addition to the ones being explicitly granted access.
  */
 export function encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse> {
     ShimUtils.checkSDKInitialized();
