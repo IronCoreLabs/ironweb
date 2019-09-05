@@ -25,12 +25,12 @@ function getSignatureHeader() {
  * @param policy The policy to be applied.
  */
 export function applyPolicy(policy: Policy) {
-    const classification = policy.classification !== undefined ? [`classification=${encodeURIComponent(policy.classification)}`] : [];
-    const category = policy.category !== undefined ? [`category=${encodeURIComponent(policy.category)}`] : [];
-    const dataSubject = policy.dataSubject !== undefined ? [`dataSubject=${encodeURIComponent(policy.dataSubject)}`] : [];
-    const id = policy.substituteId !== undefined ? [`id=${encodeURIComponent(policy.substituteId)}`] : [];
+    const category = policy.category ? [`category=${encodeURIComponent(policy.category)}`] : [];
+    const sensitivity = policy.sensitivity ? [`sensitivity=${encodeURIComponent(policy.sensitivity)}`] : [];
+    const dataSubject = policy.dataSubject ? [`dataSubject=${encodeURIComponent(policy.dataSubject)}`] : [];
+    const substituteId = policy.substituteUser ? [`substituteId=${encodeURIComponent(policy.substituteUser)}`] : [];
 
-    const params = [...classification, ...category, ...dataSubject, ...id].join(`&`);
+    const params = [...sensitivity, ...category, ...dataSubject, ...substituteId].join(`&`);
     return {
         url: `policies?${params}`,
         options: {

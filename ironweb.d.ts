@@ -21,10 +21,10 @@ export interface DocumentCreateOptions {
  * A policy which can be used to determine the users and groups to share with.
  */
 export interface Policy {
-    classification?: string;
     category?: string;
+    sensitivity?: string;
     dataSubject?: string;
-    substituteId?: string;
+    substituteUser?: string;
 }
 export interface GroupCreateOptions {
     groupID?: string;

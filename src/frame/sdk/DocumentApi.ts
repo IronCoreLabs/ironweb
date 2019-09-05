@@ -103,7 +103,9 @@ function getKeyListsForUsersAndGroups(
                     ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
                 )
             );
-        } else if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor && policyResults.usersAndGroups.length === 0) {
+        }
+
+        if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor && policyResults.usersAndGroups.length === 0) {
             return Future.reject(
                 new SDKError(new Error(`Failed to create document due to no users or groups to share with.`), ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE)
             );

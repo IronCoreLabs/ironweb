@@ -199,6 +199,7 @@ describe("frame index", () => {
                     userGrants: "list of user ids",
                     groupGrants: "list of group ids",
                     grantToAuthor: true,
+                    policy: {category: "foo"},
                 },
             };
 
@@ -214,7 +215,7 @@ describe("frame index", () => {
                     "list of user ids",
                     "list of group ids",
                     true,
-                    undefined
+                    {category: "foo"}
                 );
                 done();
             });

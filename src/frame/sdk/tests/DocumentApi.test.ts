@@ -539,7 +539,8 @@ describe("DocumentApi", () => {
 
             DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", [], [], false, undefined).engage(
                 (e) => {
-                    console.log(e);
+                    expect(e.message).toBeString();
+                    expect(e.message).toContain("[user-33]");
                     done();
                 },
                 (_) => fail("This should not succeed.")
