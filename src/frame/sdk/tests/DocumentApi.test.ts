@@ -7,6 +7,7 @@ import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
 import GroupApiEndpoints from "../../endpoints/GroupApiEndpoints";
 import ApiState from "../../ApiState";
 import {ErrorCodes} from "../../../Constants";
+import PolicyApiEndpoints from "../../endpoints/PolicyApiEndpoints";
 
 describe("DocumentApi", () => {
     const privateDeviceKey = new Uint8Array([23]);
@@ -462,6 +463,86 @@ describe("DocumentApi", () => {
                     );
                     done();
                 }
+            );
+        });
+
+        it("encrypts to users and groups from a policy", (done) => {
+            const encryptedDocument = TestUtils.getEncryptedDocument();
+            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
+            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
+            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(Future.of({result: []}));
+            spyOn(PolicyApiEndpoints, "callApplyPolicyApi").and.returnValue(
+                Future.of({
+                    usersAndGroups: [
+                        {id: "group-20", type: "group", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                        {id: "user-33", type: "user", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                    ],
+                    invalidUsersAndGroups: [],
+                })
+            );
+            spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
+                Future.of({
+                    userAccessKeys: [{id: "user-33", key: encryptedSymKey}],
+                    groupAccessKeys: [{id: "group-20", key: encryptedSymKey}],
+                    encryptedDocument,
+                })
+            );
+            spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar"}));
+
+            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", [], [], false, undefined).engage(
+                (e) => fail(e.message),
+                ({documentID, documentName, document}) => {
+                    expect(documentID).toEqual("bar");
+                    expect(documentName).toBeUndefined();
+                    expect(document).toEqual(expect.any(Uint8Array));
+
+                    const userKeyList = [{id: "user-33", type: "user", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+                    const groupKeyList = [{id: "group-20", type: "group", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+
+                    expect(DocumentOperations.encryptNewDocumentToList).toHaveBeenCalledWith(
+                        new Uint8Array([88, 73, 92]),
+                        userKeyList,
+                        groupKeyList,
+                        ApiState.signingKeys()
+                    );
+                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
+                        "doc key",
+                        null,
+                        [{id: "user-33", key: encryptedSymKey}],
+                        [{id: "group-20", key: encryptedSymKey}],
+                        ""
+                    );
+                    done();
+                }
+            );
+        });
+
+        it("fails if the policy has invalid users or groups", (done) => {
+            const encryptedDocument = TestUtils.getEncryptedDocument();
+            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
+            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
+            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(Future.of({result: []}));
+            spyOn(PolicyApiEndpoints, "callApplyPolicyApi").and.returnValue(
+                Future.of({
+                    usersAndGroups: [{id: "group-20", type: "group", masterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                    invalidUsersAndGroups: [{id: "user-33", type: "user"}],
+                })
+            );
+            spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
+                Future.of({
+                    userAccessKeys: [{id: "user-33", key: encryptedSymKey}],
+                    groupAccessKeys: [{id: "group-20", key: encryptedSymKey}],
+                    encryptedDocument,
+                })
+            );
+            spyOn(DocumentApiEndpoints, "callDocumentCreateApi").and.returnValue(Future.of({id: "bar"}));
+
+            DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", [], [], false, undefined).engage(
+                (e) => {
+                    console.log(e);
+                    done();
+                },
+                (_) => fail("This should not succeed.")
             );
         });
 

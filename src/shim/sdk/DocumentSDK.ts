@@ -29,6 +29,7 @@ function calculateDocumentCreateOptionsDefault(options?: DocumentCreateOptions) 
             groups: options.accessList && options.accessList.groups ? options.accessList.groups : [],
             grantToAuthor: options.grantToAuthor !== false,
         },
+        policy: options.policy,
     };
 }
 
@@ -167,6 +168,7 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
             userGrants,
             groupGrants,
             grantToAuthor: encryptOptions.accessList.grantToAuthor,
+            policy: encryptOptions.policy,
         },
     };
     return FrameMediator.sendMessage<MT.DocumentStoreEncryptResponse>(payload, [payload.message.documentData])
@@ -202,6 +204,7 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
             userGrants,
             groupGrants,
             grantToAuthor: encryptOptions.accessList.grantToAuthor,
+            policy: encryptOptions.policy,
         },
     };
     return FrameMediator.sendMessage<MT.DocumentEncryptResponse>(payload, [payload.message.documentData])

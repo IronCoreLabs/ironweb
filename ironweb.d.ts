@@ -15,6 +15,16 @@ export interface DocumentCreateOptions {
     documentName?: string;
     accessList?: DocumentAccessList;
     grantToAuthor?: boolean;
+    policy?: Policy;
+}
+/**
+ * A policy which can be used to determine the users and groups to share with.
+ */
+export interface Policy {
+    classification?: string;
+    category?: string;
+    dataSubject?: string;
+    substituteId?: string;
 }
 export interface GroupCreateOptions {
     groupID?: string;

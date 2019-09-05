@@ -5,6 +5,7 @@ import {
     DecryptedDocumentResponse,
     DocumentAccessResponse,
     UserOrGroup,
+    Policy,
 } from "../../../ironweb";
 import * as DocumentOperations from "./DocumentOperations";
 import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetResponseType} from "../endpoints/DocumentApiEndpoints";
@@ -16,50 +17,43 @@ import * as Utils from "../../lib/Utils";
 import {documentToByteParts, combineDocumentParts, encryptedDocumentToBase64} from "../FrameUtils";
 import SDKError from "../../lib/SDKError";
 import {UserAndGroupTypes, ErrorCodes} from "../../Constants";
+import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoints";
 
 /**
- * Get a list of user and group keys for the provided users and then also add in the current user to the list of user keys
- * @param {string[]} userGrants  List of users to get public keys for
- * @param {string[]} groupGrants List of groups to get public keys for
- * @param {boolean}  grantToAuthor If the logged in user should be included in the list of users to encrypt to.
+ * Create the error strings for missing users/groups.
+ * @param userKeys The response from UserList
+ * @param groupKeys The response from GroupList
+ * @param invalidPolicyUsersAndGroups The invalid groups/users from policy application.
+ * @param userGrants The list of all the user grants.
+ * @param groupGrants The list of all the group grants.
  */
-function getKeyListsForUsersAndGroups(
+function createErrorForInvalidUsersOrGroups(
+    userKeys: UserKeyListResponseType,
+    groupKeys: GroupListResponseType,
+    invalidPolicyUsersAndGroups: UserOrGroup[],
     userGrants: string[],
-    groupGrants: string[],
-    grantToAuthor: boolean
-): Future<SDKError, {userKeys: UserKeyListResponseType; groupKeys: GroupListResponseType}> {
-    return Future.gather2(UserApiEndpoints.callUserKeyListApi(userGrants), GroupApiEndpoints.callGroupKeyListApi(groupGrants)).flatMap(
-        ([userKeys, groupKeys]) => {
-            if (userKeys.result.length !== userGrants.length || groupKeys.result.length !== groupGrants.length) {
-                //One of the user or groups in the list here doesn't exist. Fail the create call.
-                const existingUserIDs = userKeys.result.map(({id}) => id);
-                const existingGroupIDs = groupKeys.result.map(({id}) => id);
-                const missingUsers = userGrants.filter((userID) => existingUserIDs.indexOf(userID) === -1).join(",");
-                const missingGroups = groupGrants.filter((groupID) => existingGroupIDs.indexOf(groupID) === -1).join(",");
-                return Future.reject(
-                    new SDKError(
-                        new Error(
-                            `Failed to create document due to unknown users or groups in access list. Missing user IDs: [${missingUsers}]. Missing group IDs: [${missingGroups}]`
-                        ),
-                        ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
-                    )
-                );
-            } else if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor) {
-                return Future.reject(
-                    new SDKError(
-                        new Error(`Failed to create document due to no users or groups to share with.`),
-                        ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
-                    )
-                );
-            }
-            //Add in the current user to the list of users iff we were told to grantToAuthor.
-            const maybeCurrentUser = grantToAuthor ? [{id: ApiState.user().id, userMasterPublicKey: Utils.publicKeyToBase64(ApiState.userPublicKey())}] : [];
-            return Future.of({
-                userKeys: {result: [...userKeys.result, ...maybeCurrentUser]},
-                groupKeys,
-            });
-        }
-    );
+    groupGrants: string[]
+) {
+    const existingUserIDs = userKeys.result.map(({id}) => id);
+    const existingGroupIDs = groupKeys.result.map(({id}) => id);
+    const missingPolicyUsers = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "user").map((user) => user.id);
+    const missingPolicyGroups = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "group").map((group) => group.id);
+    const missingUsersString = userGrants
+        .filter((userID) => existingUserIDs.indexOf(userID) === -1)
+        .concat(missingPolicyUsers)
+        .join(",");
+    const missingGroupsString = groupGrants
+        .filter((groupID) => existingGroupIDs.indexOf(groupID) === -1)
+        .concat(missingPolicyGroups)
+        .join(",");
+    return {missingUsersString, missingGroupsString};
+}
+
+/**
+ * Take the result of applying a policy and split the users and groups into 2 separate lists.
+ */
+function normalizePolicyApply(usersOrGroups: UserOrGroupWithKey[]) {
+    return [usersOrGroups.filter((userOrGroup) => userOrGroup.type == "user"), usersOrGroups.filter((userOrGroup) => userOrGroup.type == "group")];
 }
 
 /**
@@ -72,6 +66,57 @@ function normalizeUserAndGroupPublicKeyList(userKeys: UserKeyListResponseType, g
         userKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})),
         groupKeys.result.map((group) => ({id: group.id, masterPublicKey: group.groupMasterPublicKey})),
     ];
+}
+
+/**
+ * Get a list of user and group keys for the provided users and then also add in the current user to the list of user keys
+ * @param {string[]} userGrants  List of users to get public keys for
+ * @param {string[]} groupGrants List of groups to get public keys for
+ * @param {boolean}  grantToAuthor If the logged in user should be included in the list of users to encrypt to.
+ * @param COLT:
+ */
+function getKeyListsForUsersAndGroups(
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean,
+    policy?: Policy
+): Future<SDKError, {userKeys: UserOrGroupPublicKey[]; groupKeys: UserOrGroupPublicKey[]}> {
+    return Future.gather3(
+        UserApiEndpoints.callUserKeyListApi(userGrants),
+        GroupApiEndpoints.callGroupKeyListApi(groupGrants),
+        PolicyEndpoints.callApplyPolicyApi(policy)
+    ).flatMap(([userKeys, groupKeys, policyResults]) => {
+        if (userKeys.result.length !== userGrants.length || groupKeys.result.length !== groupGrants.length || policyResults.invalidUsersAndGroups.length > 0) {
+            //One of the user or groups in the list here doesn't exist. Fail the create call.
+            const {missingUsersString, missingGroupsString} = createErrorForInvalidUsersOrGroups(
+                userKeys,
+                groupKeys,
+                policyResults.invalidUsersAndGroups,
+                userGrants,
+                groupGrants
+            );
+            return Future.reject(
+                new SDKError(
+                    new Error(
+                        `Failed to create document due to unknown users or groups in access list. Missing user IDs: [${missingUsersString}]. Missing group IDs: [${missingGroupsString}]`
+                    ),
+                    ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
+                )
+            );
+        } else if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor && policyResults.usersAndGroups.length === 0) {
+            return Future.reject(
+                new SDKError(new Error(`Failed to create document due to no users or groups to share with.`), ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE)
+            );
+        }
+        //Add in the current user to the list of users iff we were told to grantToAuthor.
+        const maybeCurrentUser = grantToAuthor ? [{id: ApiState.user().id, masterPublicKey: Utils.publicKeyToBase64(ApiState.userPublicKey())}] : [];
+        const [policyUsers, policyGroups] = normalizePolicyApply(policyResults.usersAndGroups);
+        const [finalUserKeys, finalGroupKeys] = normalizeUserAndGroupPublicKeyList(userKeys, groupKeys);
+        return Future.of({
+            userKeys: [...finalUserKeys, ...policyUsers, ...maybeCurrentUser],
+            groupKeys: [...finalGroupKeys, ...policyGroups],
+        });
+    });
 }
 
 /**
@@ -228,11 +273,13 @@ export function decryptLocalDoc(documentID: string, encryptedDocument: Uint8Arra
 
 /**
  * Encrypt the provided document to the current user with the provided ID and store it within IronCores document store
- * @param {string}     documentID   Unique lookup key to use for document
- * @param {Uint8Array} document     Document data to store
- * @param {string}     documentName Optional name of the document
- * @param {string[]}   userGrants   List of user IDs to grant access
- * @param {string[]}   groupGrants  List of group IDs to grant access
+ * @param {string}     documentID    Unique lookup key to use for document
+ * @param {Uint8Array} document      Document data to store
+ * @param {string}     documentName  Optional name of the document
+ * @param {string[]}   userGrants    List of user IDs to grant access
+ * @param {string[]}   groupGrants   List of group IDs to grant access
+ * @param {boolean}    grantToAuthor COLT: Do this
+ * @param {Policy}     policy COLT:Do this
  */
 export function encryptToStore(
     documentID: string,
@@ -240,13 +287,11 @@ export function encryptToStore(
     documentName: string,
     userGrants: string[],
     groupGrants: string[],
-    grantToAuthor: boolean
+    grantToAuthor: boolean,
+    policy?: Policy
 ): Future<SDKError, DocumentIDNameResponse> {
-    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor)
-        .flatMap(({userKeys, groupKeys}) => {
-            const [userPublicKeys, groupPublicKeys] = normalizeUserAndGroupPublicKeyList(userKeys, groupKeys);
-            return DocumentOperations.encryptNewDocumentToList(document, userPublicKeys, groupPublicKeys, ApiState.signingKeys());
-        })
+    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy)
+        .flatMap(({userKeys, groupKeys}) => DocumentOperations.encryptNewDocumentToList(document, userKeys, groupKeys, ApiState.signingKeys()))
         .flatMap(({userAccessKeys, groupAccessKeys, encryptedDocument}) => {
             return DocumentApiEndpoints.callDocumentCreateApi(
                 documentID,
@@ -261,11 +306,13 @@ export function encryptToStore(
 
 /**
  * Encrypt the provided document to the current user with the provided ID, store the sharing/meta info about the document, and return the encrypted document package.
- * @param {string}     documentID   Unique ID of document to create
- * @param {Uint8Array} document     Document content to encrypt
- * @param {string}     documentName Optional name of the document
- * @param {string[]}   userGrants   List of user IDs to grant access
- * @param {string[]}   groupGrants  List of group IDs to grant access
+ * @param {string}     documentID    Unique ID of document to create
+ * @param {Uint8Array} document      Document content to encrypt
+ * @param {string}     documentName  Optional name of the document
+ * @param {string[]}   userGrants    List of user IDs to grant access
+ * @param {string[]}   groupGrants   List of group IDs to grant access
+ * @param {boolean}    grantToAuthor COLT: Do this
+ * @param {Policy}     policy        COLT:Do this
  */
 export function encryptLocalDocument(
     documentID: string,
@@ -273,13 +320,11 @@ export function encryptLocalDocument(
     documentName: string,
     userGrants: string[],
     groupGrants: string[],
-    grantToAuthor: boolean
+    grantToAuthor: boolean,
+    policy?: Policy
 ) {
-    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor)
-        .flatMap(({userKeys, groupKeys}) => {
-            const [userPublicKeys, groupPublicKeys] = normalizeUserAndGroupPublicKeyList(userKeys, groupKeys);
-            return DocumentOperations.encryptNewDocumentToList(document, userPublicKeys, groupPublicKeys, ApiState.signingKeys());
-        })
+    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy)
+        .flatMap(({userKeys, groupKeys}) => DocumentOperations.encryptNewDocumentToList(document, userKeys, groupKeys, ApiState.signingKeys()))
         .flatMap(({userAccessKeys, groupAccessKeys, encryptedDocument}) => {
             return DocumentApiEndpoints.callDocumentCreateApi(documentID, null, userAccessKeys, groupAccessKeys, documentName).map((createdDocument) => ({
                 createdDocument,
