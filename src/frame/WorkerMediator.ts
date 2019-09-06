@@ -1,13 +1,13 @@
 import Future from "futurejs";
-import {RequestMessage, ResponseMessage, ErrorResponse, GenerateRandomBytesFrameRequest, GenerateRandomBytesWorkerResponse} from "../WorkerMessageTypes";
 import SDKError from "../lib/SDKError";
+import {ErrorResponse, GenerateRandomBytesFrameRequest, GenerateRandomBytesWorkerResponse, RequestMessage, ResponseMessage} from "../WorkerMessageTypes";
 import worker from "./WorkerLoader";
 
 const nativeCrypto: Crypto = (window as any).msCrypto || window.crypto;
 
 class WorkerMessenger {
     readonly worker: Worker;
-    callbackCount: number = 0;
+    callbackCount = 0;
     callbacks: {[key: string]: (data: ResponseMessage) => void} = {};
     constructor(workerInstance: Worker) {
         this.worker = workerInstance;

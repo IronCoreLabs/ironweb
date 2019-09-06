@@ -1,11 +1,11 @@
+import Future from "futurejs";
 import {messenger} from "../";
+import * as MT from "../../FrameMessageTypes";
+import SDKError from "../../lib/SDKError";
+import * as Init from "../initialization";
 import * as DocumentApi from "../sdk/DocumentApi";
 import * as GroupApi from "../sdk/GroupApi";
 import * as UserApi from "../sdk/UserApi";
-import * as Init from "../initialization";
-import Future from "futurejs";
-import SDKError from "../../lib/SDKError";
-import * as MT from "../../FrameMessageTypes";
 
 describe("frame index", () => {
     describe("onMessage init tests", () => {
@@ -221,6 +221,61 @@ describe("frame index", () => {
             });
         });
 
+        it("DOCUMENT_STORE_ENCRYPT grantToAuthor missing", (done) => {
+            spyOn(DocumentApi, "encryptToStore").and.returnValue(Future.of("encryptToStore"));
+            const payload: any = {
+                type: "DOCUMENT_STORE_ENCRYPT",
+                message: {
+                    documentID: "my doc",
+                    documentName: "fooey",
+                    documentData: new Uint8Array([92, 99, 103]),
+                    userGrants: "list of user ids",
+                    groupGrants: "list of group ids",
+                },
+            };
+
+            messenger.onMessageCallback(payload, () => {
+                expect(DocumentApi.encryptToStore).toHaveBeenCalledWith(
+                    "my doc",
+                    new Uint8Array([92, 99, 103]),
+                    "fooey",
+                    "list of user ids",
+                    "list of group ids",
+                    true,
+                    undefined
+                );
+                done();
+            });
+        });
+
+        it("DOCUMENT_STORE_ENCRYPT grantToAuthor false", (done) => {
+            spyOn(DocumentApi, "encryptToStore").and.returnValue(Future.of("encryptToStore"));
+            const payload: any = {
+                type: "DOCUMENT_STORE_ENCRYPT",
+                message: {
+                    documentID: "my doc",
+                    documentName: "fooey",
+                    documentData: new Uint8Array([92, 99, 103]),
+                    userGrants: "list of user ids",
+                    groupGrants: "list of group ids",
+                    grantToAuthor: false,
+                },
+            };
+
+            messenger.onMessageCallback(payload, () => {
+                expect(DocumentApi.encryptToStore).toHaveBeenCalledWith(
+                    "my doc",
+                    new Uint8Array([92, 99, 103]),
+                    "fooey",
+                    "list of user ids",
+                    "list of group ids",
+                    false,
+                    undefined
+                );
+                done();
+            });
+        });
+
         it("DOCUMENT_ENCRYPT", (done) => {
             const documentData = new Uint8Array(28);
             spyOn(DocumentApi, "encryptLocalDocument").and.returnValue(Future.of({document: documentData}));
@@ -250,6 +305,63 @@ describe("frame index", () => {
                     "list of user ids",
                     "list of group ids",
                     true,
+                    undefined
+                );
+                done();
+            });
+        });
+
+        it("DOCUMENT_ENCRYPT grantToAuthor missing", (done) => {
+            const documentData = new Uint8Array(28);
+            spyOn(DocumentApi, "encryptLocalDocument").and.returnValue(Future.of({document: documentData}));
+            const payload: any = {
+                type: "DOCUMENT_ENCRYPT",
+                message: {
+                    documentID: "my doc",
+                    documentData: new Uint8Array([36]),
+                    documentName: "given name",
+                    userGrants: "list of user ids",
+                    groupGrants: "list of group ids",
+                },
+            };
+
+            messenger.onMessageCallback(payload, () => {
+                expect(DocumentApi.encryptLocalDocument).toHaveBeenCalledWith(
+                    "my doc",
+                    new Uint8Array([36]),
+                    "given name",
+                    "list of user ids",
+                    "list of group ids",
+                    true,
+                    undefined
+                );
+                done();
+            });
+        });
+
+        it("DOCUMENT_ENCRYPT grantToAuthor is false", (done) => {
+            const documentData = new Uint8Array(28);
+            spyOn(DocumentApi, "encryptLocalDocument").and.returnValue(Future.of({document: documentData}));
+            const payload: any = {
+                type: "DOCUMENT_ENCRYPT",
+                message: {
+                    documentID: "my doc",
+                    documentData: new Uint8Array([36]),
+                    documentName: "given name",
+                    userGrants: "list of user ids",
+                    groupGrants: "list of group ids",
+                    grantToAuthor: false,
+                },
+            };
+
+            messenger.onMessageCallback(payload, () => {
+                expect(DocumentApi.encryptLocalDocument).toHaveBeenCalledWith(
+                    "my doc",
+                    new Uint8Array([36]),
+                    "given name",
+                    "list of user ids",
+                    "list of group ids",
+                    false,
                     undefined
                 );
                 done();

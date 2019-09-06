@@ -1,5 +1,5 @@
 import {DocumentAccessList} from "../../ironweb";
-import {CryptoConstants, ALLOWED_ID_CHAR_REGEX} from "../Constants";
+import {ALLOWED_ID_CHAR_REGEX, CryptoConstants} from "../Constants";
 const SECRET_KEY_LOCAL_STORAGE_VERSION = "1";
 let hasInitializedSDK = false;
 
@@ -76,7 +76,7 @@ export function clearParentWindowSymmetricKey() {
  * @param {string[]} list             List of strings to dedupe
  * @param {boolean}  clearEmptyValues Whether we should also filter out all falsy values from the array
  */
-export function dedupeArray(list: string[], clearEmptyValues: boolean = false) {
+export function dedupeArray(list: string[], clearEmptyValues = false) {
     const seenList: {[key: string]: boolean} = {};
 
     return list.filter((item) => {
