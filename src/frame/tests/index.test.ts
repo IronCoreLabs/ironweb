@@ -199,6 +199,7 @@ describe("frame index", () => {
                     userGrants: "list of user ids",
                     groupGrants: "list of group ids",
                     grantToAuthor: true,
+                    policy: {category: "foo"},
                 },
             };
 
@@ -213,7 +214,8 @@ describe("frame index", () => {
                     "fooey",
                     "list of user ids",
                     "list of group ids",
-                    true
+                    true,
+                    {category: "foo"}
                 );
                 done();
             });
@@ -239,7 +241,8 @@ describe("frame index", () => {
                     "fooey",
                     "list of user ids",
                     "list of group ids",
-                    true
+                    true,
+                    undefined
                 );
                 done();
             });
@@ -266,7 +269,8 @@ describe("frame index", () => {
                     "fooey",
                     "list of user ids",
                     "list of group ids",
-                    false
+                    false,
+                    undefined
                 );
                 done();
             });
@@ -284,6 +288,7 @@ describe("frame index", () => {
                     userGrants: "list of user ids",
                     groupGrants: "list of group ids",
                     grantToAuthor: true,
+                    policy: undefined,
                 },
             };
 
@@ -299,7 +304,8 @@ describe("frame index", () => {
                     "given name",
                     "list of user ids",
                     "list of group ids",
-                    true
+                    true,
+                    undefined
                 );
                 done();
             });
@@ -326,7 +332,8 @@ describe("frame index", () => {
                     "given name",
                     "list of user ids",
                     "list of group ids",
-                    true
+                    true,
+                    undefined
                 );
                 done();
             });
@@ -354,7 +361,8 @@ describe("frame index", () => {
                     "given name",
                     "list of user ids",
                     "list of group ids",
-                    false
+                    false,
+                    undefined
                 );
                 done();
             });

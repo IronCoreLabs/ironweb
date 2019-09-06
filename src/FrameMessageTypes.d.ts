@@ -10,6 +10,7 @@ import {
     GroupUserEditResponse,
     DeviceKeys,
     UserOrGroup,
+    Policy,
 } from "../ironweb";
 
 import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
@@ -137,6 +138,7 @@ export interface DocumentStoreEncryptRequest {
         userGrants: string[];
         groupGrants: string[];
         grantToAuthor: boolean;
+        policy?: Policy;
     };
 }
 export interface DocumentStoreEncryptResponse {
@@ -153,6 +155,7 @@ export interface DocumentEncryptRequest {
         userGrants: string[];
         groupGrants: string[];
         grantToAuthor: boolean;
+        policy?: Policy;
     };
 }
 export interface DocumentEncryptResponse {
