@@ -1,8 +1,8 @@
-import Future from "futurejs";
-import {ErrorResponse, ResponseMessage, RequestMessage} from "../FrameMessageTypes";
-import SDKError from "../lib/SDKError";
-import {Frame, Versions, ErrorCodes} from "../Constants";
 import {Promise} from "es6-promise";
+import Future from "futurejs";
+import {ErrorCodes, Frame, Versions} from "../Constants";
+import {ErrorResponse, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
+import SDKError from "../lib/SDKError";
 
 interface FrameEvent<T> {
     replyID: number;
@@ -15,7 +15,7 @@ interface FrameEvent<T> {
  */
 export class ShimMessenger {
     readonly messagePort: MessagePort;
-    callbackCount: number = 0;
+    callbackCount = 0;
     callbacks: {[key: string]: (data: ResponseMessage) => void} = {};
 
     constructor(iFrameWindow: HTMLIFrameElement) {

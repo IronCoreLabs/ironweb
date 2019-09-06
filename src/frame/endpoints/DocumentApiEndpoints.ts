@@ -1,8 +1,8 @@
+import {DocumentAssociation, UserOrGroup} from "../../../ironweb";
 import {ErrorCodes, UserAndGroupTypes} from "../../Constants";
 import {publicKeyToBase64} from "../../lib/Utils";
 import * as ApiRequest from "../ApiRequest";
 import ApiState from "../ApiState";
-import {DocumentAssociation, UserOrGroup} from "../../../ironweb";
 
 interface DocumentMetaApiResponse {
     id: string;
@@ -93,7 +93,7 @@ function documentList() {
  * @param {string}           documentID     ID of document
  * @param {boolean}          includeData    Whether to get content of document. If false only meta data of document will be returned.
  */
-function documentGet(documentID: string, includeData: boolean = false) {
+function documentGet(documentID: string, includeData = false) {
     return {
         url: `documents/${encodeURIComponent(documentID)}${includeData ? "?includeData=true" : ""}`,
         options: {
