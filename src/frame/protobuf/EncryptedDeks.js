@@ -1,14 +1,14 @@
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
-import {roots, util, Writer} from "protobufjs/minimal";
+import * as $protobuf from "protobufjs/minimal";
 
 // Common aliases
-const $Writer = Writer,
-    $util = util;
+const $Writer = $protobuf.Writer, $util = $protobuf.util;
 
 // Exported root namespace
-const $root = roots["default"] || (roots["default"] = {});
+const $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
 
-export const ironcorelabs = ($root.ironcorelabs = (() => {
+export const ironcorelabs = $root.ironcorelabs = (() => {
+
     /**
      * Namespace ironcorelabs.
      * @exports ironcorelabs
@@ -17,6 +17,7 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
     const ironcorelabs = {};
 
     ironcorelabs.proto = (function() {
+
         /**
          * Namespace proto.
          * @memberof ironcorelabs
@@ -25,6 +26,7 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
         const proto = {};
 
         proto.PublicKey = (function() {
+
             /**
              * Properties of a PublicKey.
              * @memberof ironcorelabs.proto
@@ -43,7 +45,9 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              */
             function PublicKey(properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i) if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
             }
 
             /**
@@ -72,9 +76,12 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              * @returns {$protobuf.Writer} Writer
              */
             PublicKey.encode = function encode(message, writer) {
-                if (!writer) writer = $Writer.create();
-                if (message.x != null && message.hasOwnProperty("x")) writer.uint32(/* id 1, wireType 2 =*/ 10).bytes(message.x);
-                if (message.y != null && message.hasOwnProperty("y")) writer.uint32(/* id 2, wireType 2 =*/ 18).bytes(message.y);
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.x != null && message.hasOwnProperty("x"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.x);
+                if (message.y != null && message.hasOwnProperty("y"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).bytes(message.y);
                 return writer;
             };
 
@@ -95,6 +102,7 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
         })();
 
         proto.UserOrGroup = (function() {
+
             /**
              * Properties of a UserOrGroup.
              * @memberof ironcorelabs.proto
@@ -114,7 +122,9 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              */
             function UserOrGroup(properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i) if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
             }
 
             /**
@@ -151,8 +161,8 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              * @instance
              */
             Object.defineProperty(UserOrGroup.prototype, "UserOrGroupId", {
-                get: $util.oneOfGetter(($oneOfFields = ["userId", "groupId"])),
-                set: $util.oneOfSetter($oneOfFields),
+                get: $util.oneOfGetter($oneOfFields = ["userId", "groupId"]),
+                set: $util.oneOfSetter($oneOfFields)
             });
 
             /**
@@ -165,11 +175,14 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              * @returns {$protobuf.Writer} Writer
              */
             UserOrGroup.encode = function encode(message, writer) {
-                if (!writer) writer = $Writer.create();
-                if (message.userId != null && message.hasOwnProperty("userId")) writer.uint32(/* id 1, wireType 2 =*/ 10).string(message.userId);
-                if (message.groupId != null && message.hasOwnProperty("groupId")) writer.uint32(/* id 2, wireType 2 =*/ 18).string(message.groupId);
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.userId != null && message.hasOwnProperty("userId"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.userId);
+                if (message.groupId != null && message.hasOwnProperty("groupId"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.groupId);
                 if (message.masterPublicKey != null && message.hasOwnProperty("masterPublicKey"))
-                    $root.ironcorelabs.proto.PublicKey.encode(message.masterPublicKey, writer.uint32(/* id 3, wireType 2 =*/ 26).fork()).ldelim();
+                    $root.ironcorelabs.proto.PublicKey.encode(message.masterPublicKey, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
                 return writer;
             };
 
@@ -190,6 +203,7 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
         })();
 
         proto.EncryptedDekData = (function() {
+
             /**
              * Properties of an EncryptedDekData.
              * @memberof ironcorelabs.proto
@@ -211,7 +225,9 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              */
             function EncryptedDekData(properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i) if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
             }
 
             /**
@@ -264,15 +280,18 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              * @returns {$protobuf.Writer} Writer
              */
             EncryptedDekData.encode = function encode(message, writer) {
-                if (!writer) writer = $Writer.create();
+                if (!writer)
+                    writer = $Writer.create();
                 if (message.encryptedBytes != null && message.hasOwnProperty("encryptedBytes"))
-                    writer.uint32(/* id 1, wireType 2 =*/ 10).bytes(message.encryptedBytes);
+                    writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.encryptedBytes);
                 if (message.ephemeralPublicKey != null && message.hasOwnProperty("ephemeralPublicKey"))
-                    $root.ironcorelabs.proto.PublicKey.encode(message.ephemeralPublicKey, writer.uint32(/* id 2, wireType 2 =*/ 18).fork()).ldelim();
-                if (message.signature != null && message.hasOwnProperty("signature")) writer.uint32(/* id 3, wireType 2 =*/ 26).bytes(message.signature);
-                if (message.authHash != null && message.hasOwnProperty("authHash")) writer.uint32(/* id 4, wireType 2 =*/ 34).bytes(message.authHash);
+                    $root.ironcorelabs.proto.PublicKey.encode(message.ephemeralPublicKey, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                if (message.signature != null && message.hasOwnProperty("signature"))
+                    writer.uint32(/* id 3, wireType 2 =*/26).bytes(message.signature);
+                if (message.authHash != null && message.hasOwnProperty("authHash"))
+                    writer.uint32(/* id 4, wireType 2 =*/34).bytes(message.authHash);
                 if (message.publicSigningKey != null && message.hasOwnProperty("publicSigningKey"))
-                    writer.uint32(/* id 5, wireType 2 =*/ 42).bytes(message.publicSigningKey);
+                    writer.uint32(/* id 5, wireType 2 =*/42).bytes(message.publicSigningKey);
                 return writer;
             };
 
@@ -293,6 +312,7 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
         })();
 
         proto.EncryptedDek = (function() {
+
             /**
              * Properties of an EncryptedDek.
              * @memberof ironcorelabs.proto
@@ -311,7 +331,9 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              */
             function EncryptedDek(properties) {
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i) if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
             }
 
             /**
@@ -340,11 +362,12 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              * @returns {$protobuf.Writer} Writer
              */
             EncryptedDek.encode = function encode(message, writer) {
-                if (!writer) writer = $Writer.create();
+                if (!writer)
+                    writer = $Writer.create();
                 if (message.userOrGroup != null && message.hasOwnProperty("userOrGroup"))
-                    $root.ironcorelabs.proto.UserOrGroup.encode(message.userOrGroup, writer.uint32(/* id 1, wireType 2 =*/ 10).fork()).ldelim();
+                    $root.ironcorelabs.proto.UserOrGroup.encode(message.userOrGroup, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                 if (message.encryptedDekData != null && message.hasOwnProperty("encryptedDekData"))
-                    $root.ironcorelabs.proto.EncryptedDekData.encode(message.encryptedDekData, writer.uint32(/* id 2, wireType 2 =*/ 18).fork()).ldelim();
+                    $root.ironcorelabs.proto.EncryptedDekData.encode(message.encryptedDekData, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                 return writer;
             };
 
@@ -365,6 +388,7 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
         })();
 
         proto.EncryptedDeks = (function() {
+
             /**
              * Properties of an EncryptedDeks.
              * @memberof ironcorelabs.proto
@@ -385,7 +409,9 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
             function EncryptedDeks(properties) {
                 this.edeks = [];
                 if (properties)
-                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i) if (properties[keys[i]] != null) this[keys[i]] = properties[keys[i]];
+                    for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
             }
 
             /**
@@ -422,12 +448,15 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
              * @returns {$protobuf.Writer} Writer
              */
             EncryptedDeks.encode = function encode(message, writer) {
-                if (!writer) writer = $Writer.create();
+                if (!writer)
+                    writer = $Writer.create();
                 if (message.edeks != null && message.edeks.length)
                     for (let i = 0; i < message.edeks.length; ++i)
-                        $root.ironcorelabs.proto.EncryptedDek.encode(message.edeks[i], writer.uint32(/* id 1, wireType 2 =*/ 10).fork()).ldelim();
-                if (message.documentId != null && message.hasOwnProperty("documentId")) writer.uint32(/* id 2, wireType 2 =*/ 18).string(message.documentId);
-                if (message.segmentId != null && message.hasOwnProperty("segmentId")) writer.uint32(/* id 3, wireType 0 =*/ 24).int32(message.segmentId);
+                        $root.ironcorelabs.proto.EncryptedDek.encode(message.edeks[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                if (message.documentId != null && message.hasOwnProperty("documentId"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.documentId);
+                if (message.segmentId != null && message.hasOwnProperty("segmentId"))
+                    writer.uint32(/* id 3, wireType 0 =*/24).int32(message.segmentId);
                 return writer;
             };
 
@@ -451,6 +480,6 @@ export const ironcorelabs = ($root.ironcorelabs = (() => {
     })();
 
     return ironcorelabs;
-})());
+})();
 
-export {$root as default};
+export { $root as default };
