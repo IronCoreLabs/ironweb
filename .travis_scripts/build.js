@@ -114,13 +114,13 @@ shell.mkdir("-p", "./dist/frame/");
 const newReleaseVersion = getUpdatedReleaseVersion(mainPackage.version);
 mainPackage.version = newReleaseVersion;
 if (shouldBumpVersion) {
-    fs.writeFileSync("./package.json", JSON.stringify(mainPackage, null, 2));
+    fs.writeFileSync("./package.json", JSON.stringify(mainPackage, null, 4));
 }
 
 //Copy in version and dependencies from main package.json and place those as frame deps
 framePackage.dependencies = mainPackage.dependencies;
 framePackage.version = newReleaseVersion;
-fs.writeFileSync("./dist/frame/package.json", JSON.stringify(framePackage, null, 2));
+fs.writeFileSync("./dist/frame/package.json", JSON.stringify(framePackage, null, 4));
 
 //Copy the version, Readme, and peerDependencies from the main package.json and place those as shim deps
 shimPackage.dependencies = mainPackage.peerDependencies;
