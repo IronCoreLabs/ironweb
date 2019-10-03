@@ -168,6 +168,25 @@ export interface DocumentEncryptResponse {
         updated: string;
     };
 }
+export interface DocumentUnmanagedEncryptRequest {
+    type: "DOCUMENT_UNMANAGED_ENCRYPT";
+    message: {
+        documentID: string;
+        documentData: Uint8Array;
+        userGrants: string[];
+        groupGrants: string[];
+        grantToAuthor: boolean;
+        policy?: Policy;
+    };
+}
+export interface DocumentUnmanagedEncryptResponse {
+    type: "DOCUMENT_UNMANAGED_ENCRYPT_RESPONSE";
+    message: {
+        documentID: string;
+        edeks: Uint8Array;
+        document: Uint8Array;
+    };
+}
 
 /* Update/reencrypt */
 export interface DocumentStoreUpdateDataRequest {
@@ -411,7 +430,8 @@ export type RequestMessage =
     | GroupDeleteRequest
     | ChangeUserPasscode
     | DeauthorizeDevice
-    | DocumentUnmanagedDecryptRequest;
+    | DocumentUnmanagedDecryptRequest
+    | DocumentUnmanagedEncryptRequest;
 
 export type ResponseMessage =
     | InitApiPasscodeResponse
@@ -442,4 +462,5 @@ export type ResponseMessage =
     | GroupRemoveSelfAsMemberResponse
     | GroupDeleteResponse
     | ErrorResponse
-    | DocumentUnmanagedDecryptResponse;
+    | DocumentUnmanagedDecryptResponse
+    | DocumentUnmanagedEncryptResponse;

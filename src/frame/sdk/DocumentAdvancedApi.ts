@@ -1,11 +1,13 @@
 import * as DocumentOperations from "./DocumentOperations";
 import ApiState from "../ApiState";
 import Future from "futurejs";
-import {documentToByteParts} from "../FrameUtils";
+import {documentToByteParts, combineDocumentParts} from "../FrameUtils";
 import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
 import EncryptedDekEndpoints from "../endpoints/EncryptedDekEndpoints";
-import {UserOrGroup} from "ironweb";
+import {UserOrGroup, Policy} from "ironweb";
+import {getKeyListsForUsersAndGroups} from "./DocumentApi";
+import * as Protobuf from "../protobuf/index";
 
 interface UnmanagedDecryptResult {
     data: Uint8Array;
@@ -33,4 +35,19 @@ export function decryptWithProvidedEdeks(encryptedDocument: Uint8Array, edeks: U
             accessVia: transformResponse.userOrGroup,
         }));
     });
+}
+
+/**
+ * COLT:
+ */
+export function encrypt(documentID: string, document: Uint8Array, userGrants: string[], groupGrants: string[], grantToAuthor: boolean, policy?: Policy) {
+    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy)
+        .flatMap(({userKeys, groupKeys}) => DocumentOperations.encryptNewDocumentToList(document, userKeys, groupKeys, ApiState.signingKeys()))
+        .map(({userAccessKeys, groupAccessKeys, encryptedDocument}) => {
+            return {
+                edeks: Protobuf.encodeEdeks(ApiState.user().segmentId, documentID, userAccessKeys, groupAccessKeys),
+                document: combineDocumentParts(documentID, ApiState.user().segmentId, encryptedDocument),
+                documentID,
+            };
+        });
 }

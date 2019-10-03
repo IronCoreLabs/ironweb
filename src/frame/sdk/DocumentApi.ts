@@ -70,7 +70,7 @@ function normalizeUserAndGroupPublicKeyList(userKeys: UserKeyListResponseType, g
  * @param {boolean}  grantToAuthor If the logged in user should be included in the list of users to encrypt to.
  * @param {Policy}   policy An optional policy which will be used to lookup users and groups in addition to the explicit userGrants and groupGrants.
  */
-function getKeyListsForUsersAndGroups(
+export function getKeyListsForUsersAndGroups(
     userGrants: string[],
     groupGrants: string[],
     grantToAuthor: boolean,

@@ -6,6 +6,7 @@ import InitializeApi from "./InitializeApi";
 import TabWrapper from "./TabWrapper";
 import UserInfo from "./UserInfo";
 import StatusConsole from "./StatusConsole";
+import * as IronWeb from "../../src/shim";
 
 const containerStyle: React.CSSProperties = {
     height: "100%",
@@ -37,6 +38,16 @@ export default class TodoApp extends React.Component<{}, TodoAppState> {
     }
 
     initializeComplete = () => {
+        console.log("Starting");
+        IronWeb.document.advanced
+            .encryptUnmanaged(new Uint8Array([1, 2, 3]))
+            .then((encrypted) => {
+                console.log(encrypted.document);
+                return IronWeb.document.advanced.decryptUnmanaged(encrypted.document, encrypted.edeks);
+            })
+            .then((end) => {
+                console.log(end);
+            });
         this.setState({initComplete: true});
     };
 

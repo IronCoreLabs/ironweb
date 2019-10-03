@@ -5,6 +5,8 @@ import Future from "futurejs";
 import ApiState from "../../ApiState";
 import {ErrorCodes} from "../../../Constants";
 import EncryptedDekEndpoints from "../../endpoints/EncryptedDekEndpoints";
+import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
+import GroupApiEndpoints from "../../endpoints/GroupApiEndpoints";
 
 describe("DocumentAdvancedApi", () => {
     const privateDeviceKey = new Uint8Array([23]);
@@ -41,6 +43,64 @@ describe("DocumentAdvancedApi", () => {
                 (e) => fail(e.message),
                 ({data}) => {
                     expect(data).toEqual(decryptedBytes);
+                }
+            );
+        });
+    });
+
+    describe("encrypt", () => {
+        it("encrypts to list of users and groups provided one", (done) => {
+            const encryptedDocument = TestUtils.getEncryptedDocument();
+            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
+
+            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
+                Future.of({
+                    result: [
+                        {id: "user-55", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                        {id: "user-33", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                    ],
+                })
+            );
+            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
+                Future.of({
+                    result: [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                })
+            );
+            spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
+                Future.of({
+                    userAccessKeys: [{id: "user-10", key: encryptedSymKey}],
+                    groupAccessKeys: [],
+                    encryptedDocument,
+                })
+            );
+
+            DocumentAdvancedApi.encrypt("doc key", new Uint8Array([88, 73, 92]), ["user-55", "user-33"], ["user-33"], true).engage(
+                (e) => fail(e.message),
+                ({edeks, document, documentID}) => {
+                    const userKeyList = [
+                        {id: "user-55", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                        {id: "user-33", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                        {id: "user-10", masterPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString}},
+                    ];
+                    const groupKeyList = [{id: "group-20", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+
+                    expect(DocumentOperations.encryptNewDocumentToList).toHaveBeenCalledWith(
+                        new Uint8Array([88, 73, 92]),
+                        userKeyList,
+                        groupKeyList,
+                        ApiState.signingKeys()
+                    );
+                    // expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
+                    //     "doc key",
+                    //     "AgAdeyJfZGlkXyI6ImRvYyBrZXkiLCJfc2lkXyI6MX1ub25jZWJhc2U=",
+                    //     [{id: "user-10", key: encryptedSymKey}],
+                    //     [],
+                    //     ""
+                    // );
+                    expect(documentID).toEqual("doc key");
+                    expect(edeks).toEqual("");
+                    expect(document).toEqual(document);
+                    done();
                 }
             );
         });

@@ -3,7 +3,13 @@ import * as MT from "../../FrameMessageTypes";
 import * as ShimUtils from "../ShimUtils";
 import {ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../../Constants";
 import SDKError from "../../lib/SDKError";
-import {DocumentAccessList, DocumentCreateOptions, EncryptedDocumentResponse, DecryptedUnmanagedDocumentResponse} from "../../../ironweb";
+import {
+    DocumentAccessList,
+    DocumentCreateOptions,
+    EncryptedDocumentResponse,
+    DecryptedUnmanagedDocumentResponse,
+    EncryptedUnmanagedDocumentResponse,
+} from "../../../ironweb";
 import {utf8} from "./CodecSDK";
 import Future from "futurejs";
 
@@ -362,6 +368,30 @@ export const advanced = {
                     accessVia: message.accessVia,
                 }));
             })
+            .toPromise();
+    },
+
+    encryptUnmanaged: (documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedUnmanagedDocumentResponse> => {
+        ShimUtils.checkSDKInitialized();
+        ShimUtils.validateDocumentData(documentData);
+        const encryptOptions = calculateDocumentCreateOptionsDefault(options);
+        if (encryptOptions.documentID) {
+            ShimUtils.validateID(encryptOptions.documentID);
+        }
+        const [userGrants, groupGrants] = ShimUtils.dedupeAccessLists(encryptOptions.accessList);
+        const payload: MT.DocumentUnmanagedEncryptRequest = {
+            type: "DOCUMENT_UNMANAGED_ENCRYPT",
+            message: {
+                documentData,
+                documentID: encryptOptions.documentID,
+                userGrants,
+                groupGrants,
+                grantToAuthor: encryptOptions.accessList.grantToAuthor,
+                policy: encryptOptions.policy,
+            },
+        };
+        return FrameMediator.sendMessage<MT.DocumentUnmanagedEncryptResponse>(payload, [payload.message.documentData])
+            .map(({message}) => message)
             .toPromise();
     },
 };
