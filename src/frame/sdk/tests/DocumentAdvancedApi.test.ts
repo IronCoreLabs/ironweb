@@ -18,6 +18,18 @@ describe("DocumentAdvancedApi", () => {
     });
 
     describe("decryptWithProvidedEdeks", () => {
+        it("rejects if not a known document header version", () => {
+            const edeks = new Uint8Array([]);
+            const eDoc = new Uint8Array([99, 35, 235]);
+            DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
+                (e) => {
+                    expect(e.message).toBeString();
+                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                },
+                () => fail("Should reject when document is not one of ours")
+            );
+        });
+
         it("rejects if edeks is an empty array", () => {
             const edeks = new Uint8Array([]);
             const eDoc = new Uint8Array([2, 35, 52, 13, 63, 23, 63, 34]);
@@ -26,7 +38,7 @@ describe("DocumentAdvancedApi", () => {
                     expect(e.message).toBeString();
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
-                () => fail("Should reject when edeks is an empty array")
+                () => fail("Should reject when document header is invalid")
             );
         });
 

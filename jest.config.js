@@ -23,5 +23,6 @@ module.exports = {
         },
     },
     testPathIgnorePatterns: ["/node_modules/", "/nightwatch/"],
+    coveragePathIgnorePatterns: ["EncryptedDeks.js"],
     setupFilesAfterEnv: ["./src/tests/jestSetup.ts"],
 };
