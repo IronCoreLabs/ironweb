@@ -9,6 +9,7 @@ module.exports = {
             lines: 93,
         },
     },
+    preset: "ts-jest/presets/js-with-ts",
     transform: {
         "^.+\\.tsx?$": "ts-jest",
     },

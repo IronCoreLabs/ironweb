@@ -1,12 +1,13 @@
-import * as DocumentAdvancedApi from "../DocumentAdvancedApi";
-import * as TestUtils from "../../../tests/TestUtils";
-import * as DocumentOperations from "../DocumentOperations";
 import Future from "futurejs";
-import ApiState from "../../ApiState";
 import {ErrorCodes} from "../../../Constants";
+import * as TestUtils from "../../../tests/TestUtils";
+import ApiState from "../../ApiState";
 import EncryptedDekEndpoints from "../../endpoints/EncryptedDekEndpoints";
-import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
 import GroupApiEndpoints from "../../endpoints/GroupApiEndpoints";
+import PolicyApiEndpoints from "../../endpoints/PolicyApiEndpoints";
+import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
+import * as DocumentAdvancedApi from "../DocumentAdvancedApi";
+import * as DocumentOperations from "../DocumentOperations";
 
 describe("DocumentAdvancedApi", () => {
     const privateDeviceKey = new Uint8Array([23]);
@@ -52,37 +53,56 @@ describe("DocumentAdvancedApi", () => {
         it("encrypts to list of users and groups provided one", (done) => {
             const encryptedDocument = TestUtils.getEncryptedDocument();
             const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
+            const returnedUserKeys = [
+                {id: "user-55", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user-33", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
+            const returnedGroupKeys = [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}];
 
             spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
                 Future.of({
-                    result: [
-                        {id: "user-55", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                        {id: "user-33", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                    ],
+                    result: returnedUserKeys,
                 })
             );
             spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
                 Future.of({
-                    result: [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                    result: returnedGroupKeys,
+                })
+            );
+            spyOn(PolicyApiEndpoints, "callApplyPolicyApi").and.returnValue(
+                Future.of({
+                    usersAndGroups: [
+                        {id: "group-policy", type: "group", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                        {id: "user-policy", type: "user", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                    ],
+                    invalidUsersAndGroups: [],
                 })
             );
             spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
                 Future.of({
-                    userAccessKeys: [{id: "user-10", key: encryptedSymKey}],
-                    groupAccessKeys: [],
+                    userAccessKeys: [{id: "user-10", encryptedPlaintext: encryptedSymKey, publicKey: TestUtils.getEmptyPublicKeyString()}],
+                    groupAccessKeys: [{id: "group-10", encryptedPlaintext: encryptedSymKey, publicKey: TestUtils.getEmptyPublicKeyString()}],
                     encryptedDocument,
                 })
             );
 
-            DocumentAdvancedApi.encrypt("doc key", new Uint8Array([88, 73, 92]), ["user-55", "user-33"], ["user-33"], true).engage(
+            DocumentAdvancedApi.encrypt("doc key", new Uint8Array([88, 73, 92]), ["user-55", "user-33"], ["group-20"], true, {}).engage(
                 (e) => fail(e.message),
                 ({edeks, document, documentID}) => {
                     const userKeyList = [
                         {id: "user-55", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
                         {id: "user-33", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                        {id: "user-policy", masterPublicKey: TestUtils.getEmptyPublicKeyString(), type: "user"},
                         {id: "user-10", masterPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString}},
                     ];
-                    const groupKeyList = [{id: "group-20", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+                    const groupKeyList = [
+                        {id: "group-20", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                        {id: "group-policy", masterPublicKey: TestUtils.getEmptyPublicKeyString(), type: "group"},
+                    ];
+
+                    expect(documentID).toEqual("doc key");
+                    expect(edeks).toEqual(expect.any(Uint8Array));
+                    expect(document).toEqual(expect.any(Uint8Array));
 
                     expect(DocumentOperations.encryptNewDocumentToList).toHaveBeenCalledWith(
                         new Uint8Array([88, 73, 92]),
@@ -90,16 +110,9 @@ describe("DocumentAdvancedApi", () => {
                         groupKeyList,
                         ApiState.signingKeys()
                     );
-                    // expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
-                    //     "doc key",
-                    //     "AgAdeyJfZGlkXyI6ImRvYyBrZXkiLCJfc2lkXyI6MX1ub25jZWJhc2U=",
-                    //     [{id: "user-10", key: encryptedSymKey}],
-                    //     [],
-                    //     ""
-                    // );
-                    expect(documentID).toEqual("doc key");
-                    expect(edeks).toEqual("");
-                    expect(document).toEqual(document);
+                    expect(PolicyApiEndpoints.callApplyPolicyApi).toHaveBeenCalledWith({});
+                    expect(GroupApiEndpoints.callGroupKeyListApi).toHaveBeenCalledWith(["group-20"]);
+                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user-55", "user-33"]);
                     done();
                 }
             );

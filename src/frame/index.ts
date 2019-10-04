@@ -84,7 +84,6 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.documentName,
                 data.message.userGrants,
                 data.message.groupGrants,
-
                 //Explcitly check against false because earlier versions of the shim won't pass this argument to updated
                 //versions of the frame. We want to coerce all falsey values to make this option true and only set this
                 //to false when directly passed false.
@@ -97,11 +96,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.documentData,
                 data.message.userGrants,
                 data.message.groupGrants,
-
-                //Explcitly check against false because earlier versions of the shim won't pass this argument to updated
-                //versions of the frame. We want to coerce all falsey values to make this option true and only set this
-                //to false when directly passed false.
-                data.message.grantToAuthor !== false,
+                data.message.grantToAuthor,
                 data.message.policy
             ).engage(errorHandler, (encryptedDoc) => callback({type: "DOCUMENT_UNMANAGED_ENCRYPT_RESPONSE", message: encryptedDoc}, [encryptedDoc.document]));
         case "DOCUMENT_STORE_UPDATE_DATA":

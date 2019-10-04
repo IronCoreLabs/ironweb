@@ -1,23 +1,23 @@
+import Future from "futurejs";
 import {
-    DocumentIDNameResponse,
-    DocumentMetaResponse,
-    DocumentListResponse,
     DecryptedDocumentResponse,
     DocumentAccessResponse,
-    UserOrGroup,
+    DocumentIDNameResponse,
+    DocumentListResponse,
+    DocumentMetaResponse,
     Policy,
+    UserOrGroup,
 } from "../../../ironweb";
-import * as DocumentOperations from "./DocumentOperations";
-import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetResponseType} from "../endpoints/DocumentApiEndpoints";
-import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
-import GroupApiEndpoints, {GroupListResponseType} from "../endpoints/GroupApiEndpoints";
-import ApiState from "../ApiState";
-import Future from "futurejs";
-import * as Utils from "../../lib/Utils";
-import {documentToByteParts, combineDocumentParts, encryptedDocumentToBase64} from "../FrameUtils";
+import {ErrorCodes, UserAndGroupTypes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
-import {UserAndGroupTypes, ErrorCodes} from "../../Constants";
+import * as Utils from "../../lib/Utils";
+import ApiState from "../ApiState";
+import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetResponseType} from "../endpoints/DocumentApiEndpoints";
+import GroupApiEndpoints, {GroupListResponseType} from "../endpoints/GroupApiEndpoints";
 import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoints";
+import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
+import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64} from "../FrameUtils";
+import * as DocumentOperations from "./DocumentOperations";
 
 /**
  * Create the error strings for missing users/groups.
@@ -61,59 +61,6 @@ function normalizeUserAndGroupPublicKeyList(userKeys: UserKeyListResponseType, g
         userKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})),
         groupKeys.result.map((group) => ({id: group.id, masterPublicKey: group.groupMasterPublicKey})),
     ];
-}
-
-/**
- * Get a list of user and group keys for the provided users and then also add in the current user to the list of user keys
- * @param {string[]} userGrants  List of users to get public keys for
- * @param {string[]} groupGrants List of groups to get public keys for
- * @param {boolean}  grantToAuthor If the logged in user should be included in the list of users to encrypt to.
- * @param {Policy}   policy An optional policy which will be used to lookup users and groups in addition to the explicit userGrants and groupGrants.
- */
-export function getKeyListsForUsersAndGroups(
-    userGrants: string[],
-    groupGrants: string[],
-    grantToAuthor: boolean,
-    policy?: Policy
-): Future<SDKError, {userKeys: UserOrGroupPublicKey[]; groupKeys: UserOrGroupPublicKey[]}> {
-    return Future.gather3(
-        UserApiEndpoints.callUserKeyListApi(userGrants),
-        GroupApiEndpoints.callGroupKeyListApi(groupGrants),
-        PolicyEndpoints.callApplyPolicyApi(policy)
-    ).flatMap(([userKeys, groupKeys, policyResults]) => {
-        if (userKeys.result.length !== userGrants.length || groupKeys.result.length !== groupGrants.length || policyResults.invalidUsersAndGroups.length > 0) {
-            //One of the user or groups in the list here doesn't exist. Fail the create call.
-            const {missingUsersString, missingGroupsString} = createErrorForInvalidUsersOrGroups(
-                userKeys,
-                groupKeys,
-                policyResults.invalidUsersAndGroups,
-                userGrants,
-                groupGrants
-            );
-            return Future.reject(
-                new SDKError(
-                    new Error(
-                        `Failed to create document due to unknown users or groups in access list. Missing user IDs: [${missingUsersString}]. Missing group IDs: [${missingGroupsString}]`
-                    ),
-                    ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
-                )
-            );
-        }
-
-        if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor && policyResults.usersAndGroups.length === 0) {
-            return Future.reject(
-                new SDKError(new Error(`Failed to create document due to no users or groups to share with.`), ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE)
-            );
-        }
-        //Add in the current user to the list of users iff we were told to grantToAuthor.
-        const maybeCurrentUser = grantToAuthor ? [{id: ApiState.user().id, masterPublicKey: Utils.publicKeyToBase64(ApiState.userPublicKey())}] : [];
-        const [policyUsers, policyGroups] = normalizePolicyApply(policyResults.usersAndGroups);
-        const [finalUserKeys, finalGroupKeys] = normalizeUserAndGroupPublicKeyList(userKeys, groupKeys);
-        return Future.of({
-            userKeys: [...finalUserKeys, ...policyUsers, ...maybeCurrentUser],
-            groupKeys: [...finalGroupKeys, ...policyGroups],
-        });
-    });
 }
 
 /**
@@ -209,6 +156,59 @@ function accessResponseToSDKResult(accessChangeResult: DocumentAccessResponseTyp
     const mappedResults = accessResultToAccessResponse(accessChangeResult.succeededIds, accessChangeResult.failedIds);
     mappedResults.failed = mappedResults.failed.concat(missingUsers).concat(missingGroups);
     return mappedResults;
+}
+
+/**
+ * Get a list of user and group keys for the provided users and then also add in the current user to the list of user keys
+ * @param {string[]} userGrants  List of users to get public keys for
+ * @param {string[]} groupGrants List of groups to get public keys for
+ * @param {boolean}  grantToAuthor If the logged in user should be included in the list of users to encrypt to.
+ * @param {Policy}   policy An optional policy which will be used to lookup users and groups in addition to the explicit userGrants and groupGrants.
+ */
+export function getKeyListsForUsersAndGroups(
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean,
+    policy?: Policy
+): Future<SDKError, {userKeys: UserOrGroupPublicKey[]; groupKeys: UserOrGroupPublicKey[]}> {
+    return Future.gather3(
+        UserApiEndpoints.callUserKeyListApi(userGrants),
+        GroupApiEndpoints.callGroupKeyListApi(groupGrants),
+        PolicyEndpoints.callApplyPolicyApi(policy)
+    ).flatMap(([userKeys, groupKeys, policyResults]) => {
+        if (userKeys.result.length !== userGrants.length || groupKeys.result.length !== groupGrants.length || policyResults.invalidUsersAndGroups.length > 0) {
+            //One of the user or groups in the list here doesn't exist. Fail the create call.
+            const {missingUsersString, missingGroupsString} = createErrorForInvalidUsersOrGroups(
+                userKeys,
+                groupKeys,
+                policyResults.invalidUsersAndGroups,
+                userGrants,
+                groupGrants
+            );
+            return Future.reject(
+                new SDKError(
+                    new Error(
+                        `Failed to create document due to unknown users or groups in access list. Missing user IDs: [${missingUsersString}]. Missing group IDs: [${missingGroupsString}]`
+                    ),
+                    ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE
+                )
+            );
+        }
+
+        if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor && policyResults.usersAndGroups.length === 0) {
+            return Future.reject(
+                new SDKError(new Error(`Failed to create document due to no users or groups to share with.`), ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE)
+            );
+        }
+        //Add in the current user to the list of users iff we were told to grantToAuthor.
+        const maybeCurrentUser = grantToAuthor ? [{id: ApiState.user().id, masterPublicKey: Utils.publicKeyToBase64(ApiState.userPublicKey())}] : [];
+        const [policyUsers, policyGroups] = normalizePolicyApply(policyResults.usersAndGroups);
+        const [finalUserKeys, finalGroupKeys] = normalizeUserAndGroupPublicKeyList(userKeys, groupKeys);
+        return Future.of({
+            userKeys: [...finalUserKeys, ...policyUsers, ...maybeCurrentUser],
+            groupKeys: [...finalGroupKeys, ...policyGroups],
+        });
+    });
 }
 
 /**

@@ -1,30 +1,34 @@
-import {ironcorelabs} from "./EncryptedDeks";
-import {publicKeyToBytes} from "../../lib/Utils";
 import {toByteArray} from "base64-js";
-const protoEdeks = ironcorelabs.proto.EncryptedDeks;
-const protoEdek = ironcorelabs.proto.EncryptedDek;
-const protoPublicKey = ironcorelabs.proto.PublicKey;
-const protoUserOrGroup = ironcorelabs.proto.UserOrGroup;
-const protoEncryptedDekData = ironcorelabs.proto.EncryptedDekData;
+import {publicKeyToBytes} from "../../lib/Utils";
+import {ironcorelabs} from "./EncryptedDeks";
+const {
+    EncryptedDeks: PBEDeks,
+    EncryptedDek: PBEDek,
+    PublicKey: PBPublicKey,
+    UserOrGroup: PBUserOrGroup,
+    EncryptedDekData: PBEncryptedDekData,
+} = ironcorelabs.proto;
 
 /**
- * TODO
+ * Take the provided PublicKey and encode it into a protobuf PublicKey
  */
-export const encodeEdeks = (segmentId: number, documentId: string, userKeys: EncryptedAccessKey[], groupKeys: EncryptedAccessKey[]): Uint8Array => {
-    const userDeks = userKeys.map(convertEncryptedAccessKey("userId"));
-    const groupDeks = groupKeys.map(convertEncryptedAccessKey("groupId"));
-    const edeks = [...groupDeks, ...userDeks];
-    return protoEdeks.encode(new protoEdeks({edeks, segmentId, documentId})).finish();
-};
+const convertPublicKey = (key: PublicKey<string>) => new PBPublicKey(publicKeyToBytes(key));
 
-const convertEncryptedAccessKey = (userOrGroup2: "userId" | "groupId") => (key: EncryptedAccessKey) => {
-    const userOrGroup = convertUserOrGroup(userOrGroup2, key.id, key.publicKey);
+/**
+ * Encode the provided EncryptedAccessKey to protobuf depending on whether the key is for a user or a group.
+ */
+const convertEncryptedAccessKey = (userOrGroup: "userId" | "groupId") => (key: EncryptedAccessKey) => {
+    const masterPublicKey = convertPublicKey(key.publicKey);
+    const userOrGroupPB = new PBUserOrGroup(userOrGroup === "userId" ? {userId: key.id, masterPublicKey} : {groupId: key.id, masterPublicKey});
     const encryptedDekData = convertEncryptedMessage(key.encryptedPlaintext);
-    return new protoEdek({userOrGroup, encryptedDekData});
+    return new PBEDek({userOrGroup: userOrGroupPB, encryptedDekData});
 };
 
+/**
+ * Create a new EDEK data protobuf encoding from the provided Recrypt encrypted message.
+ */
 const convertEncryptedMessage = (encryptedPlaintext: PREEncryptedMessage) =>
-    new protoEncryptedDekData({
+    new PBEncryptedDekData({
         encryptedBytes: toByteArray(encryptedPlaintext.encryptedMessage),
         ephemeralPublicKey: convertPublicKey(encryptedPlaintext.ephemeralPublicKey),
         signature: toByteArray(encryptedPlaintext.signature),
@@ -32,17 +36,11 @@ const convertEncryptedMessage = (encryptedPlaintext: PREEncryptedMessage) =>
         publicSigningKey: toByteArray(encryptedPlaintext.publicSigningKey),
     });
 
-const convertUserOrGroup = (userOrGroup: "userId" | "groupId", id: string, publicKey: PublicKey<string>) => {
-    const masterPublicKey = convertPublicKey(publicKey);
-    //TODO I'm sure this could be better, Ernie and Murph help.
-    if (userOrGroup === "userId") {
-        return new protoUserOrGroup({userId: id, masterPublicKey});
-    } else {
-        return new protoUserOrGroup({groupId: id, masterPublicKey});
-    }
-};
-
-const convertPublicKey = (key: PublicKey<string>) => {
-    const bytesKey = publicKeyToBytes(key);
-    return new protoPublicKey({x: bytesKey.x, y: bytesKey.y});
+/**
+ * Take the provided information and encode it into our EDEK protobuf structure.
+ */
+export const encodeEdeks = (segmentId: number, documentId: string, userKeys: EncryptedAccessKey[], groupKeys: EncryptedAccessKey[]): Uint8Array => {
+    const userDeks = userKeys.map(convertEncryptedAccessKey("userId"));
+    const groupDeks = groupKeys.map(convertEncryptedAccessKey("groupId"));
+    return PBEDeks.encode(new PBEDeks({edeks: [...groupDeks, ...userDeks], segmentId, documentId})).finish();
 };

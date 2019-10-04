@@ -1,17 +1,17 @@
-import * as FrameMediator from "../FrameMediator";
-import * as MT from "../../FrameMessageTypes";
-import * as ShimUtils from "../ShimUtils";
-import {ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../../Constants";
-import SDKError from "../../lib/SDKError";
+import Future from "futurejs";
 import {
+    DecryptedUnmanagedDocumentResponse,
     DocumentAccessList,
     DocumentCreateOptions,
     EncryptedDocumentResponse,
-    DecryptedUnmanagedDocumentResponse,
     EncryptedUnmanagedDocumentResponse,
 } from "../../../ironweb";
+import {ErrorCodes, HEADER_META_LENGTH_LENGTH, VERSION_HEADER_LENGTH} from "../../Constants";
+import * as MT from "../../FrameMessageTypes";
+import SDKError from "../../lib/SDKError";
+import * as FrameMediator from "../FrameMediator";
+import * as ShimUtils from "../ShimUtils";
 import {utf8} from "./CodecSDK";
-import Future from "futurejs";
 
 const MAX_DOCUMENT_SIZE = 1024 * 2 * 1000; //2MB
 
@@ -371,7 +371,7 @@ export const advanced = {
             .toPromise();
     },
 
-    encryptUnmanaged: (documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedUnmanagedDocumentResponse> => {
+    encryptUnmanaged: (documentData: Uint8Array, options?: Omit<DocumentCreateOptions, "documentName">): Promise<EncryptedUnmanagedDocumentResponse> => {
         ShimUtils.checkSDKInitialized();
         ShimUtils.validateDocumentData(documentData);
         const encryptOptions = calculateDocumentCreateOptionsDefault(options);

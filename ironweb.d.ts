@@ -162,7 +162,7 @@ export interface Document {
     revokeAccess(documentID: string, revokeList: DocumentAccessList): Promise<DocumentAccessResponse>;
     advanced: {
         decryptUnmanaged(data: Uint8Array, edeks: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
-        encryptUnmanaged(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedUnmanagedDocumentResponse>;
+        encryptUnmanaged(documentData: Uint8Array, options?: Omit<DocumentCreateOptions, "documentName">): Promise<EncryptedUnmanagedDocumentResponse>;
     };
 }
 
