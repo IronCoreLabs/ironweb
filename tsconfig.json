@@ -10,6 +10,7 @@
         "jsx": "react",
         "module": "esNext",
         "target": "ES5",
+        "allowJs": true,
         "baseUrl": ".",
         "moduleResolution": "node",
         "pretty": true,

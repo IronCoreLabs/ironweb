@@ -81,6 +81,11 @@ export interface DecryptedUnmanagedDocumentResponse {
 export interface EncryptedDocumentResponse extends DocumentIDNameResponse {
     document: Uint8Array;
 }
+export interface EncryptedUnmanagedDocumentResponse {
+    documentID: string;
+    document: Uint8Array;
+    edeks: Uint8Array;
+}
 export interface DocumentAccessResponse {
     succeeded: UserOrGroup[];
     failed: (UserOrGroup & {error: string})[];
@@ -157,6 +162,7 @@ export interface Document {
     revokeAccess(documentID: string, revokeList: DocumentAccessList): Promise<DocumentAccessResponse>;
     advanced: {
         decryptUnmanaged(data: Uint8Array, edeks: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
+        encryptUnmanaged(documentData: Uint8Array, options?: Omit<DocumentCreateOptions, "documentName">): Promise<EncryptedUnmanagedDocumentResponse>;
     };
 }
 

@@ -1,11 +1,17 @@
-import * as FrameMediator from "../FrameMediator";
-import * as MT from "../../FrameMessageTypes";
-import * as ShimUtils from "../ShimUtils";
-import {ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../../Constants";
-import SDKError from "../../lib/SDKError";
-import {DocumentAccessList, DocumentCreateOptions, EncryptedDocumentResponse, DecryptedUnmanagedDocumentResponse} from "../../../ironweb";
-import {utf8} from "./CodecSDK";
 import Future from "futurejs";
+import {
+    DecryptedUnmanagedDocumentResponse,
+    DocumentAccessList,
+    DocumentCreateOptions,
+    EncryptedDocumentResponse,
+    EncryptedUnmanagedDocumentResponse,
+} from "../../../ironweb";
+import {ErrorCodes, HEADER_META_LENGTH_LENGTH, VERSION_HEADER_LENGTH} from "../../Constants";
+import * as MT from "../../FrameMessageTypes";
+import SDKError from "../../lib/SDKError";
+import * as FrameMediator from "../FrameMediator";
+import * as ShimUtils from "../ShimUtils";
+import {utf8} from "./CodecSDK";
 
 const MAX_DOCUMENT_SIZE = 1024 * 2 * 1000; //2MB
 
@@ -336,6 +342,10 @@ export function revokeAccess(documentID: string, revokeList: DocumentAccessList)
         .toPromise();
 }
 
+/**
+ * A collection of methods for advanced encryption/decryption use cases. Currently focused on methods which require the caller to manage the encrypted
+ * DEKs.
+ */
 export const advanced = {
     /**
      * Decrypt the provided document given the edeks of the document and its data. Returns a Promise which will be resolved once the document has been successfully decrypted.
@@ -362,6 +372,36 @@ export const advanced = {
                     accessVia: message.accessVia,
                 }));
             })
+            .toPromise();
+    },
+
+    /**
+     * Encrypt the provided document with various document create options. Does not store any part of the document within IronCore and instead returns
+     * the encrypted DEKs to the caller. These encrypted DEKs must be then be provided as input in order to decrypt the document.
+     * @param {Uint8Array}            documentData Document data to encrypt
+     * @param {DocumentCreateOptions} options Options when creating the document. Allows for encrypting to other users and groups among others.
+     */
+    encryptUnmanaged: (documentData: Uint8Array, options?: Omit<DocumentCreateOptions, "documentName">): Promise<EncryptedUnmanagedDocumentResponse> => {
+        ShimUtils.checkSDKInitialized();
+        ShimUtils.validateDocumentData(documentData);
+        const encryptOptions = calculateDocumentCreateOptionsDefault(options);
+        if (encryptOptions.documentID) {
+            ShimUtils.validateID(encryptOptions.documentID);
+        }
+        const [userGrants, groupGrants] = ShimUtils.dedupeAccessLists(encryptOptions.accessList);
+        const payload: MT.DocumentUnmanagedEncryptRequest = {
+            type: "DOCUMENT_UNMANAGED_ENCRYPT",
+            message: {
+                documentData,
+                documentID: encryptOptions.documentID,
+                userGrants,
+                groupGrants,
+                grantToAuthor: encryptOptions.accessList.grantToAuthor,
+                policy: encryptOptions.policy,
+            },
+        };
+        return FrameMediator.sendMessage<MT.DocumentUnmanagedEncryptResponse>(payload, [payload.message.documentData])
+            .map(({message}) => message)
             .toPromise();
     },
 };

@@ -9,3 +9,4 @@ karma.conf.js
 dist/*
 bin/*
 *.test.ts
+src/frame/protobuf/*

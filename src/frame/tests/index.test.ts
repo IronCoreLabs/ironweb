@@ -3,6 +3,7 @@ import {messenger} from "../";
 import * as MT from "../../FrameMessageTypes";
 import SDKError from "../../lib/SDKError";
 import * as Init from "../initialization";
+import * as DocumentAdvancedApi from "../sdk/DocumentAdvancedApi";
 import * as DocumentApi from "../sdk/DocumentApi";
 import * as GroupApi from "../sdk/GroupApi";
 import * as UserApi from "../sdk/UserApi";
@@ -188,6 +189,25 @@ describe("frame index", () => {
             });
         });
 
+        it("DOCUMENT_UNMANAGED_DECRYPT", (done) => {
+            spyOn(DocumentAdvancedApi, "decryptWithProvidedEdeks").and.returnValue(Future.of("umanagedDecrypt"));
+            const payload: any = {
+                type: "DOCUMENT_UNMANAGED_DECRYPT",
+                message: {
+                    documentData: new Uint8Array([35, 88, 37]),
+                    edeks: "edeks",
+                },
+            };
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE",
+                    message: "umanagedDecrypt",
+                });
+                expect(DocumentAdvancedApi.decryptWithProvidedEdeks).toHaveBeenCalledWith(new Uint8Array([35, 88, 37]), "edeks");
+                done();
+            });
+        });
+
         it("DOCUMENT_STORE_ENCRYPT", (done) => {
             spyOn(DocumentApi, "encryptToStore").and.returnValue(Future.of("encryptToStore"));
             const payload: any = {
@@ -364,6 +384,26 @@ describe("frame index", () => {
                     false,
                     undefined
                 );
+                done();
+            });
+        });
+
+        it("DOCUMENT_UNMANAGED_ENCRYPT", (done) => {
+            spyOn(DocumentAdvancedApi, "encrypt").and.returnValue(Future.of("umanagedEncrypt"));
+            const payload: any = {
+                type: "DOCUMENT_UNMANAGED_ENCRYPT",
+                message: {
+                    documentID: "my doc",
+                    documentData: new Uint8Array([36]),
+                    userGrants: "list of user ids",
+                    groupGrants: "list of group ids",
+                    grantToAuthor: true,
+                    policy: {},
+                },
+            };
+
+            messenger.onMessageCallback(payload, () => {
+                expect(DocumentAdvancedApi.encrypt).toHaveBeenCalledWith("my doc", new Uint8Array([36]), "list of user ids", "list of group ids", true, {});
                 done();
             });
         });

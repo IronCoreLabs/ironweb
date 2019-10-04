@@ -1,8 +1,8 @@
+import RaisedButton from "material-ui/RaisedButton";
+import {Tab, Tabs} from "material-ui/Tabs";
+import TextField from "material-ui/TextField";
 import * as React from "react";
 import * as IronWeb from "../../src/shim";
-import RaisedButton from "material-ui/RaisedButton";
-import {Tabs, Tab} from "material-ui/Tabs";
-import TextField from "material-ui/TextField";
 import {logAction} from "../Logger";
 
 interface InitializeApiProps {
@@ -92,6 +92,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
     getPasscodeInput() {
         return (
             <TextField
+                key="passcode"
                 id="api-passcode"
                 autoFocus
                 type="text"

@@ -1,11 +1,11 @@
-import * as React from "react";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import Paper from "material-ui/Paper";
+import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import * as React from "react";
 import {DocumentIDNameResponse} from "../../ironweb";
 import InitializeApi from "./InitializeApi";
+import StatusConsole from "./StatusConsole";
 import TabWrapper from "./TabWrapper";
 import UserInfo from "./UserInfo";
-import StatusConsole from "./StatusConsole";
 
 const containerStyle: React.CSSProperties = {
     height: "100%",

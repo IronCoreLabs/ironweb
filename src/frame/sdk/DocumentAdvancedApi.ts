@@ -1,11 +1,13 @@
-import * as DocumentOperations from "./DocumentOperations";
-import ApiState from "../ApiState";
 import Future from "futurejs";
-import {documentToByteParts} from "../FrameUtils";
-import SDKError from "../../lib/SDKError";
+import {Policy, UserOrGroup} from "ironweb";
 import {ErrorCodes} from "../../Constants";
+import SDKError from "../../lib/SDKError";
+import ApiState from "../ApiState";
 import EncryptedDekEndpoints from "../endpoints/EncryptedDekEndpoints";
-import {UserOrGroup} from "ironweb";
+import {combineDocumentParts, documentToByteParts} from "../FrameUtils";
+import * as Protobuf from "../protobuf/index";
+import {getKeyListsForUsersAndGroups} from "./DocumentApi";
+import * as DocumentOperations from "./DocumentOperations";
 
 interface UnmanagedDecryptResult {
     data: Uint8Array;
@@ -33,4 +35,20 @@ export function decryptWithProvidedEdeks(encryptedDocument: Uint8Array, edeks: U
             accessVia: transformResponse.userOrGroup,
         }));
     });
+}
+
+/**
+ * Encrypt the provided document but return the EDEKs to the caller instead of storing them within ironcore-id. Only calls to ironcore-id in order to
+ * get a list of public keys for the provided users, groups, or policies.
+ */
+export function encrypt(documentID: string, document: Uint8Array, userGrants: string[], groupGrants: string[], grantToAuthor: boolean, policy?: Policy) {
+    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy)
+        .flatMap(({userKeys, groupKeys}) => DocumentOperations.encryptNewDocumentToList(document, userKeys, groupKeys, ApiState.signingKeys()))
+        .map(({userAccessKeys, groupAccessKeys, encryptedDocument}) => {
+            return {
+                edeks: Protobuf.encodeEdeks(ApiState.user().segmentId, documentID, userAccessKeys, groupAccessKeys),
+                document: combineDocumentParts(documentID, ApiState.user().segmentId, encryptedDocument),
+                documentID,
+            };
+        });
 }

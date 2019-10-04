@@ -9,6 +9,7 @@ module.exports = {
             lines: 93,
         },
     },
+    preset: "ts-jest/presets/js-with-ts",
     transform: {
         "^.+\\.tsx?$": "ts-jest",
     },
@@ -22,5 +23,6 @@ module.exports = {
         },
     },
     testPathIgnorePatterns: ["/node_modules/", "/nightwatch/"],
+    coveragePathIgnorePatterns: ["EncryptedDeks.js"],
     setupFilesAfterEnv: ["./src/tests/jestSetup.ts"],
 };
