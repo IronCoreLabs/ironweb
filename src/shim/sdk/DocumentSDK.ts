@@ -342,6 +342,10 @@ export function revokeAccess(documentID: string, revokeList: DocumentAccessList)
         .toPromise();
 }
 
+/**
+ * A collection of methods for advanced encryption/decryption use cases. Currently focused on methods which require the caller to manage the encrypted
+ * DEKs.
+ */
 export const advanced = {
     /**
      * Decrypt the provided document given the edeks of the document and its data. Returns a Promise which will be resolved once the document has been successfully decrypted.
@@ -371,6 +375,12 @@ export const advanced = {
             .toPromise();
     },
 
+    /**
+     * Encrypt the provided document with various document create options. Does not store any part of the document within IronCore and instead returns
+     * the encrypted DEKs to the caller. These encrypted DEKs must be then be provided as input in order to decrypt the document.
+     * @param {Uint8Array}            documentData Document data to encrypt
+     * @param {DocumentCreateOptions} options Options when creating the document. Allows for encrypting to other users and groups among others.
+     */
     encryptUnmanaged: (documentData: Uint8Array, options?: Omit<DocumentCreateOptions, "documentName">): Promise<EncryptedUnmanagedDocumentResponse> => {
         ShimUtils.checkSDKInitialized();
         ShimUtils.validateDocumentData(documentData);
