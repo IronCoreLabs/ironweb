@@ -31,15 +31,14 @@ export class ShimMessenger {
     /**
      * Post request message to child iFrame
      * @param {RequestMessage} data         RequestMessage to post to child iFrame
-     * @param {Uint8Array[]}  transferList  List of byte arrays to transfer to frame
      */
-    postMessageToFrame(data: RequestMessage, transferList: Uint8Array[] = []): Future<SDKError, ResponseMessage> {
+    postMessageToFrame(data: RequestMessage): Future<SDKError, ResponseMessage> {
         const message: FrameEvent<RequestMessage> = {
             replyID: this.callbackCount++,
             data,
         };
         try {
-            this.messagePort.postMessage(message, transferList.map((int8Array) => int8Array.buffer));
+            this.messagePort.postMessage(message);
             return new Future<SDKError, ResponseMessage>((_, resolve) => {
                 this.callbacks[message.replyID] = resolve;
             });

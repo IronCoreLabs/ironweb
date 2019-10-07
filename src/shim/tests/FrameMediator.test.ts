@@ -40,7 +40,7 @@ describe("FrameMediator", () => {
                     }
                 );
 
-                expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0}, []);
+                expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0});
                 expect(messenger.callbackCount).toEqual(1);
                 expect(messenger.callbacks).toEqual({
                     0: expect.any(Function),
@@ -55,7 +55,7 @@ describe("FrameMediator", () => {
                     postMessage: jasmine.createSpy("postMessage"),
                 };
 
-                messenger.postMessageToFrame({foo: "bar"} as any, [{buffer: "1"}, {buffer: "2"}] as any).engage(
+                messenger.postMessageToFrame({foo: "bar"} as any).engage(
                     (e) => fail(e.message),
                     (result: any) => {
                         expect(result).toEqual({engaged: "future"});
@@ -63,7 +63,7 @@ describe("FrameMediator", () => {
                     }
                 );
 
-                expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0}, ["1", "2"]);
+                expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0});
                 expect(messenger.callbacks).toEqual({
                     0: expect.any(Function),
                 });
