@@ -102,9 +102,9 @@ function isErrorResponse(response: ResponseMessage): response is ErrorResponse {
 /**
  * Post the provided RequestMessage to the SDK frame. Returns a Future which will be resolved with the provided ResponseMessage type, or rejected with an SDKError
  */
-export function sendMessage<T extends ResponseMessage>(payload: RequestMessage, transferList?: Uint8Array[]): Future<Error, T> {
+export function sendMessage<T extends ResponseMessage>(payload: RequestMessage): Future<Error, T> {
     return ensureFrameLoaded()
-        .flatMap(() => messenger.postMessageToFrame(payload, transferList))
+        .flatMap(() => messenger.postMessageToFrame(payload))
         .flatMap((response) => {
             //Handle all error messages generically here. Convert the message details back into an error object and reject the Future
             if (isErrorResponse(response)) {

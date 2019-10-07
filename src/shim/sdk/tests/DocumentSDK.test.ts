@@ -1,11 +1,11 @@
-import * as DocumentSDK from "../DocumentSDK";
+import * as UTF8 from "@stablelib/utf8";
+import * as Base64 from "base64-js";
+import Future from "futurejs";
 import {ErrorCodes} from "../../../Constants";
+import {concatArrayBuffers} from "../../../lib/Utils";
 import * as FrameMediator from "../../FrameMediator";
 import * as ShimUtils from "../../ShimUtils";
-import Future from "futurejs";
-import * as Base64 from "base64-js";
-import * as UTF8 from "@stablelib/utf8";
-import {concatArrayBuffers} from "../../../lib/Utils";
+import * as DocumentSDK from "../DocumentSDK";
 
 describe("DocumentSDK", () => {
     beforeEach(() => {
@@ -206,16 +206,13 @@ describe("DocumentSDK", () => {
                     expect(result).toEqual({
                         data: new Uint8Array([98, 87]),
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_DECRYPT",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: doc,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_DECRYPT",
+                        message: {
+                            documentID: "mydoc",
+                            documentData: doc,
                         },
-                        [doc]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -236,16 +233,13 @@ describe("DocumentSDK", () => {
                     expect(result).toEqual({
                         data: new Uint8Array([98, 87]),
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_DECRYPT",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: doc,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_DECRYPT",
+                        message: {
+                            documentID: "mydoc",
+                            documentData: doc,
                         },
-                        [doc]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -265,16 +259,13 @@ describe("DocumentSDK", () => {
 
             DocumentSDK.decrypt("mydoc", doc)
                 .then(() => {
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_DECRYPT",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: doc,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_DECRYPT",
+                        message: {
+                            documentID: "mydoc",
+                            documentData: doc,
                         },
-                        [doc]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -305,20 +296,17 @@ describe("DocumentSDK", () => {
             DocumentSDK.encryptToStore(document)
                 .then((result: any) => {
                     expect(result).toEqual("messageResponse");
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_STORE_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_STORE_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -330,20 +318,17 @@ describe("DocumentSDK", () => {
             DocumentSDK.encryptToStore(document, {grantToAuthor: false})
                 .then((result: any) => {
                     expect(result).toEqual("messageResponse");
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_STORE_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: false,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_STORE_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: false,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -354,20 +339,17 @@ describe("DocumentSDK", () => {
             const document = new Uint8Array([100, 111, 99]);
             DocumentSDK.encryptToStore(document, {documentID: "provideID"})
                 .then(() => {
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_STORE_ENCRYPT",
-                            message: {
-                                documentID: "provideID",
-                                documentData: document,
-                                documentName: "",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_STORE_ENCRYPT",
+                        message: {
+                            documentID: "provideID",
+                            documentData: document,
+                            documentName: "",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -378,20 +360,17 @@ describe("DocumentSDK", () => {
             const document = new Uint8Array([100, 111, 99]);
             DocumentSDK.encryptToStore(document, {documentName: "my doc"})
                 .then(() => {
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_STORE_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "my doc",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_STORE_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "my doc",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -404,20 +383,17 @@ describe("DocumentSDK", () => {
             const groupList = [{id: "group-1"}, {id: "group-2"}, {id: "group-3"}];
             DocumentSDK.encryptToStore(document, {documentName: "my doc name", accessList: {users: userList, groups: groupList}})
                 .then(() => {
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_STORE_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "my doc name",
-                                userGrants: ["user-31", "user-55"],
-                                groupGrants: ["group-1", "group-2", "group-3"],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_STORE_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "my doc name",
+                            userGrants: ["user-31", "user-55"],
+                            groupGrants: ["group-1", "group-2", "group-3"],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -472,20 +448,17 @@ describe("DocumentSDK", () => {
                         created: "1",
                         updated: "2",
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     const messagePayload = (FrameMediator.sendMessage as jasmine.Spy).calls.argsFor(0)[0];
                     expect(messagePayload.message.documentID.length).toEqual(32);
                     expect(messagePayload.message.documentID).toMatch(/[0-9a-fA-F]+/);
@@ -511,20 +484,17 @@ describe("DocumentSDK", () => {
                     expect(result).toEqual({
                         document: encryptedDoc,
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: false,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: false,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -547,20 +517,17 @@ describe("DocumentSDK", () => {
                     expect(result).toEqual({
                         document: encryptedDoc,
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_ENCRYPT",
-                            message: {
-                                documentID: "providedID",
-                                documentData: document,
-                                documentName: "",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_ENCRYPT",
+                        message: {
+                            documentID: "providedID",
+                            documentData: document,
+                            documentName: "",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -583,20 +550,17 @@ describe("DocumentSDK", () => {
                     expect(result).toEqual({
                         document: encryptedDoc,
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "my doc name",
-                                userGrants: [],
-                                groupGrants: [],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "my doc name",
+                            userGrants: [],
+                            groupGrants: [],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -622,20 +586,17 @@ describe("DocumentSDK", () => {
                     expect(result).toEqual({
                         document: encryptedDoc,
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_ENCRYPT",
-                            message: {
-                                documentID: expect.any(String),
-                                documentData: document,
-                                documentName: "",
-                                userGrants: ["user-31", "user-55"],
-                                groupGrants: ["group-1", "group-2", "group-3"],
-                                grantToAuthor: true,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_ENCRYPT",
+                        message: {
+                            documentID: expect.any(String),
+                            documentData: document,
+                            documentName: "",
+                            userGrants: ["user-31", "user-55"],
+                            groupGrants: ["group-1", "group-2", "group-3"],
+                            grantToAuthor: true,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -665,16 +626,13 @@ describe("DocumentSDK", () => {
             DocumentSDK.updateEncryptedDataInStore("mydoc", document)
                 .then((result: any) => {
                     expect(result).toEqual("messageResponse");
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_STORE_UPDATE_DATA",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: document,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_STORE_UPDATE_DATA",
+                        message: {
+                            documentID: "mydoc",
+                            documentData: document,
                         },
-                        [document]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -723,16 +681,13 @@ describe("DocumentSDK", () => {
                         documentID: "doc-10",
                         document: encryptedDoc,
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_UPDATE_DATA",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: doc,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_UPDATE_DATA",
+                        message: {
+                            documentID: "mydoc",
+                            documentData: doc,
                         },
-                        [doc]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -755,16 +710,13 @@ describe("DocumentSDK", () => {
                     expect(result).toEqual({
                         document: encryptedDoc,
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_UPDATE_DATA",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: doc,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_UPDATE_DATA",
+                        message: {
+                            documentID: "mydoc",
+                            documentData: doc,
                         },
-                        [doc]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -1004,16 +956,13 @@ describe("DocumentSDK", () => {
                         data: new Uint8Array([98, 87]),
                         documentID: "353",
                     });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_UNMANAGED_DECRYPT",
-                            message: {
-                                edeks: nonEmptyEdeks,
-                                documentData: doc,
-                            },
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DOCUMENT_UNMANAGED_DECRYPT",
+                        message: {
+                            edeks: nonEmptyEdeks,
+                            documentData: doc,
                         },
-                        [doc]
-                    );
+                    });
                     done();
                 })
                 .catch((e) => fail(e.message));

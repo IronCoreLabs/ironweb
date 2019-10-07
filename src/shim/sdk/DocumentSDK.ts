@@ -132,7 +132,7 @@ export function decrypt(documentID: string, documentData: Uint8Array) {
             documentData,
         },
     };
-    return FrameMediator.sendMessage<MT.DocumentDecryptResponse>(payload, [payload.message.documentData])
+    return FrameMediator.sendMessage<MT.DocumentDecryptResponse>(payload)
         .map(({message}) => message)
         .toPromise();
 }
@@ -177,7 +177,7 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
             policy: encryptOptions.policy,
         },
     };
-    return FrameMediator.sendMessage<MT.DocumentStoreEncryptResponse>(payload, [payload.message.documentData])
+    return FrameMediator.sendMessage<MT.DocumentStoreEncryptResponse>(payload)
         .map(({message}) => message)
         .toPromise();
 }
@@ -215,7 +215,7 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
             policy: encryptOptions.policy,
         },
     };
-    return FrameMediator.sendMessage<MT.DocumentEncryptResponse>(payload, [payload.message.documentData])
+    return FrameMediator.sendMessage<MT.DocumentEncryptResponse>(payload)
         .map(({message}) => message)
         .toPromise();
 }
@@ -246,7 +246,7 @@ export function updateEncryptedDataInStore(documentID: string, newDocumentData: 
             documentData: newDocumentData,
         },
     };
-    return FrameMediator.sendMessage<MT.DocumentStoreUpdateDataResponse>(payload, [payload.message.documentData])
+    return FrameMediator.sendMessage<MT.DocumentStoreUpdateDataResponse>(payload)
         .map(({message}) => message)
         .toPromise();
 }
@@ -267,7 +267,7 @@ export function updateEncryptedData(documentID: string, newDocumentData: Uint8Ar
             documentData: newDocumentData,
         },
     };
-    return FrameMediator.sendMessage<MT.DocumentUpdateDataResponse>(payload, [payload.message.documentData])
+    return FrameMediator.sendMessage<MT.DocumentUpdateDataResponse>(payload)
         .map(({message}) => message)
         .toPromise();
 }
@@ -365,7 +365,7 @@ export const advanced = {
                         documentData,
                     },
                 };
-                return FrameMediator.sendMessage<MT.DocumentUnmanagedDecryptResponse>(payload, [payload.message.documentData]).map(({message}) => ({
+                return FrameMediator.sendMessage<MT.DocumentUnmanagedDecryptResponse>(payload).map(({message}) => ({
                     data: message.data,
                     //There is no way to create a version 1 document with unmanaged edeks so this is safe.
                     documentID: documentId!,
@@ -400,7 +400,7 @@ export const advanced = {
                 policy: encryptOptions.policy,
             },
         };
-        return FrameMediator.sendMessage<MT.DocumentUnmanagedEncryptResponse>(payload, [payload.message.documentData])
+        return FrameMediator.sendMessage<MT.DocumentUnmanagedEncryptResponse>(payload)
             .map(({message}) => message)
             .toPromise();
     },

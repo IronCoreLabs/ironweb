@@ -1,6 +1,6 @@
 import Future from "futurejs";
-import {sendMessage, messenger, ShimMessenger} from "../FrameMediator";
 import {Frame} from "../../Constants";
+import {messenger, sendMessage, ShimMessenger} from "../FrameMediator";
 
 describe("FrameMediator", () => {
     describe("ShimMessenger", () => {
@@ -123,11 +123,11 @@ describe("FrameMediator", () => {
                     foo: "bar",
                 })
             );
-            sendMessage({payload: "content"} as any, [new Uint8Array(12), new Uint8Array(10)]).engage(
+            sendMessage({payload: "content"} as any).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
-                    expect(messenger.postMessageToFrame).toHaveBeenCalledWith({payload: "content"}, [new Uint8Array(12), new Uint8Array(10)]);
+                    expect(messenger.postMessageToFrame).toHaveBeenCalledWith({payload: "content"});
                 }
             );
         });
