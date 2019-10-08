@@ -129,7 +129,7 @@ export function decrypt(documentID: string, documentData: Uint8Array) {
         type: "DOCUMENT_DECRYPT",
         message: {
             documentID,
-            documentData,
+            documentData: documentData.slice(),
         },
     };
     return FrameMediator.sendMessage<MT.DocumentDecryptResponse>(payload, [payload.message.documentData])
@@ -169,7 +169,7 @@ export function encryptToStore(documentData: Uint8Array, options?: DocumentCreat
         type: "DOCUMENT_STORE_ENCRYPT",
         message: {
             documentID: encryptOptions.documentID,
-            documentData,
+            documentData: documentData.slice(),
             documentName: encryptOptions.documentName,
             userGrants,
             groupGrants,
@@ -206,7 +206,7 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
     const payload: MT.DocumentEncryptRequest = {
         type: "DOCUMENT_ENCRYPT",
         message: {
-            documentData,
+            documentData: documentData.slice(),
             documentID: encryptOptions.documentID,
             documentName: encryptOptions.documentName,
             userGrants,
@@ -243,7 +243,7 @@ export function updateEncryptedDataInStore(documentID: string, newDocumentData: 
         type: "DOCUMENT_STORE_UPDATE_DATA",
         message: {
             documentID,
-            documentData: newDocumentData,
+            documentData: newDocumentData.slice(),
         },
     };
     return FrameMediator.sendMessage<MT.DocumentStoreUpdateDataResponse>(payload, [payload.message.documentData])
@@ -264,7 +264,7 @@ export function updateEncryptedData(documentID: string, newDocumentData: Uint8Ar
         type: "DOCUMENT_UPDATE_DATA",
         message: {
             documentID,
-            documentData: newDocumentData,
+            documentData: newDocumentData.slice(),
         },
     };
     return FrameMediator.sendMessage<MT.DocumentUpdateDataResponse>(payload, [payload.message.documentData])
@@ -362,7 +362,7 @@ export const advanced = {
                     type: "DOCUMENT_UNMANAGED_DECRYPT",
                     message: {
                         edeks,
-                        documentData,
+                        documentData: documentData.slice(),
                     },
                 };
                 return FrameMediator.sendMessage<MT.DocumentUnmanagedDecryptResponse>(payload, [payload.message.documentData]).map(({message}) => ({
@@ -392,7 +392,7 @@ export const advanced = {
         const payload: MT.DocumentUnmanagedEncryptRequest = {
             type: "DOCUMENT_UNMANAGED_ENCRYPT",
             message: {
-                documentData,
+                documentData: documentData.slice(0),
                 documentID: encryptOptions.documentID,
                 userGrants,
                 groupGrants,
