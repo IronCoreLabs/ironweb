@@ -392,7 +392,7 @@ export const advanced = {
         const payload: MT.DocumentUnmanagedEncryptRequest = {
             type: "DOCUMENT_UNMANAGED_ENCRYPT",
             message: {
-                documentData: documentData.slice(0),
+                documentData: documentData.slice(),
                 documentID: encryptOptions.documentID,
                 userGrants,
                 groupGrants,
