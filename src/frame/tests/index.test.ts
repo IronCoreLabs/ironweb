@@ -16,7 +16,7 @@ describe("frame index", () => {
             };
 
             messenger.onMessageCallback(payload, (result) => {
-                expect(result).toBeUndefined();
+                expect(result).toEqual({type: "FRAME_LOADED_CHECK_RESPONSE"});
             });
         });
 

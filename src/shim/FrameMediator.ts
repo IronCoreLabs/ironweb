@@ -70,6 +70,7 @@ export class ShimMessenger {
  * frame load event so we ensure we wait until it's available to call into it.
  */
 const frame = window.document.createElement("iframe");
+export const messenger = new ShimMessenger(frame);
 const frameLoadedPromise = new Promise<any>((resolve, reject) => {
     //The frame "load" even fires even if the frame failed to load (e.g. 404). So once it loads, we want to verify that it is actually
     //responding to messages we pass it. So pass a test message and verify we get a response within a second. If it does, we resolve
@@ -92,8 +93,6 @@ frame.style.top = "-999px";
 frame.style.left = "-999px";
 frame.src = `${Frame.FRAME_DOMAIN}${Frame.FRAME_PATH}?version=${Versions.SDK_VERSION}`;
 window.document.body.appendChild(frame);
-
-export const messenger = new ShimMessenger(frame);
 
 /**
  * Return a simple Future wrapper around existing frame load Promise so that we wait until the iFrame has loaded before we post any messages to it. We
