@@ -1,20 +1,25 @@
 import {
-    DocumentIDNameResponse,
-    DocumentMetaResponse,
-    DocumentListResponse as ExposedDocumentListResponse,
     DecryptedDocumentResponse,
+    DeviceKeys,
     DocumentAccessResponse,
-    GroupMetaResponse,
+    DocumentIDNameResponse,
+    DocumentListResponse as ExposedDocumentListResponse,
+    DocumentMetaResponse,
     GroupDetailResponse,
     GroupListResponse as GroupListResult,
+    GroupMetaResponse,
     GroupUserEditResponse,
-    DeviceKeys,
-    UserOrGroup,
     Policy,
+    UserOrGroup,
 } from "../ironweb";
-
 import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
 
+export interface FrameLoadedRequest {
+    type: "FRAME_LOADED_CHECK";
+}
+export interface FrameLoadedResponse {
+    type: "FRAME_LOADED_CHECK_RESPONSE";
+}
 /*
  * Initialization request/response messages
  */
@@ -402,6 +407,7 @@ export interface ErrorResponse {
 }
 
 export type RequestMessage =
+    | FrameLoadedRequest
     | InitApiRequest
     | CreateUserRequest
     | CreateUserAndDeviceRequest
@@ -434,6 +440,7 @@ export type RequestMessage =
     | DocumentUnmanagedEncryptRequest;
 
 export type ResponseMessage =
+    | FrameLoadedResponse
     | InitApiPasscodeResponse
     | InitApiSdkResponse
     | DocumentListResponse

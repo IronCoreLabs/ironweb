@@ -39,7 +39,7 @@ export class ShimMessenger {
             data,
         };
         try {
-            this.messagePort.postMessage(message, transferList.map((int8Array) => int8Array.buffer));
+            this.messagePort.postMessage(message, transferList.map(({buffer}) => buffer));
             return new Future<SDKError, ResponseMessage>((_, resolve) => {
                 this.callbacks[message.replyID] = resolve;
             });
@@ -70,7 +70,20 @@ export class ShimMessenger {
  * frame load event so we ensure we wait until it's available to call into it.
  */
 const frame = window.document.createElement("iframe");
-const frameLoadedPromise = new Promise<any>((resolve) => frame.addEventListener("load", resolve));
+const frameLoadedPromise = new Promise<any>((resolve, reject) => {
+    //The frame "load" even fires even if the frame failed to load (e.g. 404). So once it loads, we want to verify that it is actually
+    //responding to messages we pass it. So pass a test message and verify we get a response within a second. If it does, we resolve
+    //this Promise for all future messages. If it fails we reject with the appropriate SDK error message.
+    frame.addEventListener("load", () => {
+        const timeout = setTimeout(() => {
+            reject(new SDKError(new Error("Failed to load IronWeb frame."), ErrorCodes.FRAME_LOAD_FAILURE));
+        }, 1000);
+        messenger.postMessageToFrame({type: "FRAME_LOADED_CHECK"}).engage(reject, () => {
+            clearTimeout(timeout);
+            resolve();
+        });
+    });
+});
 frame.height = "0";
 frame.width = "0";
 frame.style.display = "none";
