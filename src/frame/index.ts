@@ -28,6 +28,8 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
     const errorHandler = errorResponse.bind(null, callback);
 
     switch (data.type) {
+        case "FRAME_LOADED_CHECK":
+            return callback({type: "FRAME_LOADED_CHECK_RESPONSE"});
         case "INIT_SDK":
             return Init.initialize(data.message.jwtToken, data.message.symmetricKey).engage(errorHandler, callback);
         case "CREATE_USER":

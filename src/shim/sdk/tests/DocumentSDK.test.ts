@@ -1,11 +1,11 @@
-import * as DocumentSDK from "../DocumentSDK";
+import * as UTF8 from "@stablelib/utf8";
+import * as Base64 from "base64-js";
+import Future from "futurejs";
 import {ErrorCodes} from "../../../Constants";
+import {concatArrayBuffers} from "../../../lib/Utils";
 import * as FrameMediator from "../../FrameMediator";
 import * as ShimUtils from "../../ShimUtils";
-import Future from "futurejs";
-import * as Base64 from "base64-js";
-import * as UTF8 from "@stablelib/utf8";
-import {concatArrayBuffers} from "../../../lib/Utils";
+import * as DocumentSDK from "../DocumentSDK";
 
 describe("DocumentSDK", () => {
     beforeEach(() => {
@@ -246,35 +246,9 @@ describe("DocumentSDK", () => {
                         },
                         [doc]
                     );
-                    done();
-                })
-                .catch((e) => fail(e.message));
-        });
-
-        it("passes through content byte arrays", (done) => {
-            ShimUtils.setSDKInitialized();
-            const doc = new Uint8Array(25);
-
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
-                    message: {
-                        data: new Uint8Array([98, 87]),
-                    },
-                })
-            );
-
-            DocumentSDK.decrypt("mydoc", doc)
-                .then(() => {
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_DECRYPT",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: doc,
-                            },
-                        },
-                        [doc]
-                    );
+                    //Ensure we cloned these bytes before passing them to the frame
+                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    expect(passedDoc).not.toBe(doc);
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -319,6 +293,9 @@ describe("DocumentSDK", () => {
                         },
                         [document]
                     );
+                    //Ensure we cloned these bytes before passing them to the frame
+                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    expect(passedDoc).not.toBe(document);
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -423,6 +400,39 @@ describe("DocumentSDK", () => {
                 .catch((e) => fail(e.message));
         });
 
+        it("passes policy if provided in options", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: new Uint8Array([90, 102, 103]),
+                    },
+                })
+            );
+
+            DocumentSDK.encryptToStore(document, {policy: {}})
+                .then(() => {
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_STORE_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                documentName: "",
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: true,
+                                policy: {},
+                            },
+                        },
+                        [document]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
         it("rejects if size of data is above max limit", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array(2050000);
@@ -489,6 +499,8 @@ describe("DocumentSDK", () => {
                     const messagePayload = (FrameMediator.sendMessage as jasmine.Spy).calls.argsFor(0)[0];
                     expect(messagePayload.message.documentID.length).toEqual(32);
                     expect(messagePayload.message.documentID).toMatch(/[0-9a-fA-F]+/);
+                    //Ensure we cloned these bytes before passing them to the frame
+                    expect(messagePayload.message.documentData).not.toBe(document);
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -640,6 +652,39 @@ describe("DocumentSDK", () => {
                 })
                 .catch((e) => fail(e.message));
         });
+
+        it("passes policy if provided in options", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: new Uint8Array([90, 102, 103]),
+                    },
+                })
+            );
+
+            DocumentSDK.encrypt(document, {policy: {}})
+                .then(() => {
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                documentName: "",
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: true,
+                                policy: {},
+                            },
+                        },
+                        [document]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
     });
 
     describe("updateEncryptedDataInStore", () => {
@@ -675,6 +720,9 @@ describe("DocumentSDK", () => {
                         },
                         [document]
                     );
+                    //Ensure we cloned these bytes before passing them to the frame
+                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    expect(passedDoc).not.toBe(document);
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -733,38 +781,9 @@ describe("DocumentSDK", () => {
                         },
                         [doc]
                     );
-                    done();
-                })
-                .catch((e) => fail(e.message));
-        });
-
-        it("passes document bytes through", (done) => {
-            ShimUtils.setSDKInitialized();
-            const doc = new Uint8Array([35]);
-            const encryptedDoc = new Uint8Array([98, 99, 107]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
-                    message: {
-                        document: encryptedDoc,
-                    },
-                })
-            );
-
-            DocumentSDK.updateEncryptedData("mydoc", doc)
-                .then((result: any) => {
-                    expect(result).toEqual({
-                        document: encryptedDoc,
-                    });
-                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
-                        {
-                            type: "DOCUMENT_UPDATE_DATA",
-                            message: {
-                                documentID: "mydoc",
-                                documentData: doc,
-                            },
-                        },
-                        [doc]
-                    );
+                    //Ensure we cloned these bytes before passing them to the frame
+                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    expect(passedDoc).not.toBe(document);
                     done();
                 })
                 .catch((e) => fail(e.message));
@@ -970,6 +989,7 @@ describe("DocumentSDK", () => {
                 .catch((e) => fail(e.message));
         });
     });
+
     describe("advanced.decryptUnmanaged", () => {
         const nonEmptyEdeks = new Uint8Array([100]);
         it("fails when encrypted document isnt of the right format", () => {
@@ -1013,6 +1033,219 @@ describe("DocumentSDK", () => {
                             },
                         },
                         [doc]
+                    );
+                    //Ensure we cloned these bytes before passing them to the frame
+                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    expect(passedDoc).not.toBe(document);
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+    });
+
+    describe("advanced.encryptUnmanaged", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            expect(() => DocumentSDK.advanced.encryptUnmanaged(new Uint8Array(32))).toThrow();
+        });
+
+        it("throws errors if arguments are invalid", () => {
+            ShimUtils.setSDKInitialized();
+            expect(() => DocumentSDK.advanced.encryptUnmanaged(new Uint8Array([]))).toThrow();
+            expect(() => DocumentSDK.advanced.encryptUnmanaged(new Uint8Array([]), {documentID: 3} as any)).toThrow();
+            expect(() => DocumentSDK.advanced.encryptUnmanaged(new Uint8Array([]), {documentID: ""})).toThrow();
+            expect(() => DocumentSDK.advanced.encryptUnmanaged(new Uint8Array([]), {documentID: "(ID)"})).toThrow();
+        });
+
+        it("passes bytes to api and returns response from document create", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            const encryptedDoc = new Uint8Array([88, 91, 99]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: encryptedDoc,
+                        documentID: "doc-10",
+                        edeks: "edeks",
+                    },
+                })
+            );
+
+            DocumentSDK.advanced
+                .encryptUnmanaged(document)
+                .then((result) => {
+                    expect(result).toEqual({
+                        documentID: "doc-10",
+                        document: encryptedDoc,
+                        edeks: "edeks",
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: true,
+                                policy: undefined,
+                            },
+                        },
+                        [document]
+                    );
+                    const messagePayload = (FrameMediator.sendMessage as jasmine.Spy).calls.argsFor(0)[0];
+                    expect(messagePayload.message.documentID.length).toEqual(32);
+                    expect(messagePayload.message.documentID).toMatch(/[0-9a-fA-F]+/);
+                    //Ensure we cloned these bytes before passing them to the frame
+                    expect(messagePayload.message.documentData).not.toBe(document);
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("uses grantToAuthor from options object", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            const encryptedDoc = new Uint8Array([90, 102, 103]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: encryptedDoc,
+                        edeks: "edeks",
+                    },
+                })
+            );
+
+            DocumentSDK.advanced
+                .encryptUnmanaged(document, {grantToAuthor: false})
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        document: encryptedDoc,
+                        edeks: "edeks",
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: false,
+                            },
+                        },
+                        [document]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("uses provided ID from options object", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            const encryptedDoc = new Uint8Array([90, 102, 103]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        documentID: "providedID",
+                        document: encryptedDoc,
+                        edeks: "edeks",
+                    },
+                })
+            );
+
+            DocumentSDK.advanced
+                .encryptUnmanaged(document, {documentID: "providedID"})
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        documentID: "providedID",
+                        document: encryptedDoc,
+                        edeks: "edeks",
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_ENCRYPT",
+                            message: {
+                                documentID: "providedID",
+                                documentData: document,
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: true,
+                            },
+                        },
+                        [document]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("dedupes list of users and groups provided", (done) => {
+            ShimUtils.setSDKInitialized();
+            const userList = [{id: "user-31"}, {id: "user-55"}, {id: "user-31"}];
+            const groupList = [{id: "group-1"}, {id: "group-2"}, {id: "group-3"}];
+
+            const document = new Uint8Array([100, 111, 99]);
+            const encryptedDoc = new Uint8Array([90, 102, 103]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: encryptedDoc,
+                    },
+                })
+            );
+
+            DocumentSDK.advanced
+                .encryptUnmanaged(document, {accessList: {users: userList, groups: groupList}})
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        document: encryptedDoc,
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                userGrants: ["user-31", "user-55"],
+                                groupGrants: ["group-1", "group-2", "group-3"],
+                                grantToAuthor: true,
+                            },
+                        },
+                        [document]
+                    );
+                    done();
+                })
+                .catch((e) => fail(e.message));
+        });
+
+        it("passes policy if provided in options", (done) => {
+            ShimUtils.setSDKInitialized();
+            const document = new Uint8Array([100, 111, 99]);
+            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
+                Future.of({
+                    message: {
+                        document: new Uint8Array([90, 102, 103]),
+                    },
+                })
+            );
+
+            DocumentSDK.advanced
+                .encryptUnmanaged(document, {policy: {}})
+                .then(() => {
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_UNMANAGED_ENCRYPT",
+                            message: {
+                                documentID: expect.any(String),
+                                documentData: document,
+                                userGrants: [],
+                                groupGrants: [],
+                                grantToAuthor: true,
+                                policy: {},
+                            },
+                        },
+                        [document]
                     );
                     done();
                 })

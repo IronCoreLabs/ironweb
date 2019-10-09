@@ -10,6 +10,16 @@ import * as UserApi from "../sdk/UserApi";
 
 describe("frame index", () => {
     describe("onMessage init tests", () => {
+        it("FRAME_LOADED_CHECK", () => {
+            const payload: MT.FrameLoadedRequest = {
+                type: "FRAME_LOADED_CHECK",
+            };
+
+            messenger.onMessageCallback(payload, (result) => {
+                expect(result).toEqual({type: "FRAME_LOADED_CHECK_RESPONSE"});
+            });
+        });
+
         it("INIT_SDK", (done) => {
             spyOn(Init, "initialize").and.returnValue(Future.of("init"));
             const payload: MT.InitApiRequest = {
