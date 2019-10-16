@@ -43,7 +43,7 @@ export default class GroupMembers extends React.Component<GroupMembersProps, Gro
         };
     }
 
-    componentWillReceiveProps(nextProps: GroupMembersProps) {
+    UNSAFE_componentWillReceiveProps(nextProps: GroupMembersProps) {
         this.setState({groupMembers: nextProps.groupMembers});
     }
 
