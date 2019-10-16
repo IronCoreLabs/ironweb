@@ -46,7 +46,7 @@ export interface InitApiSdkResponse {
 }
 export interface CreateUserRequest {
     type: "CREATE_USER";
-    message: {passcode: string; jwtToken: string; needsRotation?: boolean};
+    message: {passcode: string; jwtToken: string; needsRotation: boolean};
 }
 export interface CreateUserResponse {
     type: "CREATE_USER_RESPONSE";

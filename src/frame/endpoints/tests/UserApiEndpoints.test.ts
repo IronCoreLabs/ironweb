@@ -62,11 +62,15 @@ describe("UserApiEndpoints", () => {
                 })
             );
 
-            UserApiEndpoints.callUserCreateApi("jwtToken", {
-                ...TestUtils.getEmptyKeyPair(),
-                encryptedPrivateKey: new Uint8Array(10),
-            }).engage(
-                () => fail("reject shouldnt be called with valid user object"),
+            UserApiEndpoints.callUserCreateApi(
+                "jwtToken",
+                {
+                    ...TestUtils.getEmptyKeyPair(),
+                    encryptedPrivateKey: new Uint8Array(10),
+                },
+                true
+            ).engage(
+                (e) => fail(e),
                 (user: any) => {
                     expect(user).toEqual({
                         id: "user-10",
@@ -80,6 +84,7 @@ describe("UserApiEndpoints", () => {
                     expect(JSON.parse(request.body)).toEqual({
                         userPublicKey: {x: expect.any(String), y: expect.any(String)},
                         userPrivateKey: "AAAAAAAAAAAAAA==",
+                        needsRotation: true,
                     });
                 }
             );
