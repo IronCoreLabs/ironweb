@@ -130,12 +130,17 @@ export interface UserCreateResponse {
     segmentID: number;
     status: number;
     userMasterPublicKey: PublicKey<Base64String>;
+    needsRotation?: boolean;
 }
 export interface DeviceKeys {
     accountId: string;
     segmentId: number;
     devicePrivateKey: PrivateKey<Base64String>;
     signingPrivateKey: PrivateKey<Base64String>;
+}
+
+export interface UserCreateOptions {
+    needsRotation?: boolean;
 }
 
 /**

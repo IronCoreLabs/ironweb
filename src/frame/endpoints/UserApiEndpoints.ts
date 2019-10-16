@@ -11,6 +11,7 @@ export type UserKeys = Readonly<{
     publicKey: PublicKey<Uint8Array>;
     privateKey: PrivateKey<Uint8Array>;
     encryptedPrivateKey: PrivateKey<Uint8Array>;
+    needsRotation?: boolean;
 }>;
 
 export type RequestMeta = Readonly<{
@@ -79,11 +80,12 @@ function verify(): RequestMeta {
  * @return {RequestMeta}                Request object that can be passed to fetch() API
  */
 const userCreate = (keys: UserKeys): RequestMeta => {
-    const {publicKey, encryptedPrivateKey} = keys;
+    const {publicKey, encryptedPrivateKey, needsRotation} = keys;
 
     const body = {
         userPublicKey: publicKeyToBase64(publicKey),
         userPrivateKey: fromByteArray(encryptedPrivateKey),
+        userNeedsRotation: needsRotation,
     };
     return {
         url: `users`,

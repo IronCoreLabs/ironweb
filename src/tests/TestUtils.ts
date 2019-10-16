@@ -12,19 +12,14 @@ export const userPublicBytes = {x: toByteArray(userPublicXString), y: toByteArra
 export const devicePublicBytes = {x: toByteArray(devicePublicXString), y: toByteArray(devicePublicYString)};
 export const userSigningKeyBytes = toByteArray(userSigningKeyString);
 
-export function getFullUser() {
+export function getFullUser(): ApiUserResponse {
     return {
         id: "user-10",
         segmentId: 1,
         status: 1,
         userMasterPublicKey: {x: userPublicXString, y: userPublicYString},
         userPrivateKey: "",
-        devices: [
-            {
-                publicKey: {x: devicePublicXString, y: devicePublicYString},
-                signingKey: userSigningKeyString,
-            },
-        ],
+        needsRotation: false,
     };
 }
 

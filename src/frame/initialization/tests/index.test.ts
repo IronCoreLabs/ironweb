@@ -161,6 +161,7 @@ describe("init index", () => {
                 status: 1,
                 userMasterPublicKey: publicKeyToBase64(userKeys.publicKey),
                 userPrivateKey: fromByteArray(userKeys.privateKey),
+                needsRotation: false,
             };
 
             spyOn(FrameUtils, "storeDeviceAndSigningKeys");

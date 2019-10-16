@@ -88,15 +88,20 @@ function setUserPasscode(doesUserExist: boolean, passcode: string): Future<Error
 /**
  * Create a new user using a JWT callback. Returns the created user's info if successful.
  */
-export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> =>
+export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: string, needsRotation: boolean): Promise<UserCreateResponse> =>
     getJWT(jwtCallback)
         .flatMap((jwtToken) => {
-            const payload: CreateUserRequest = {type: "CREATE_USER", message: {passcode, jwtToken}};
+            const payload: CreateUserRequest = {type: "CREATE_USER", message: {passcode, jwtToken, needsRotation}};
             return FrameMediator.sendMessage<CreateUserResponse>(payload);
         })
         //Rename a few fields and strip out the users private key since it'll probably be confusing that they're getting back an encrypted private key
         //eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(({message: {id, segmentId, userPrivateKey, ...rest}}) => ({accountID: id, segmentID: segmentId, ...rest}))
+        .map(({message: {id, segmentId, userPrivateKey, needsRotation, ...rest}}) => ({
+            accountID: id,
+            segmentID: segmentId,
+            needsRotation: needsRotation,
+            ...rest,
+        }))
         .toPromise();
 
 /**
