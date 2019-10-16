@@ -33,7 +33,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
         case "INIT_SDK":
             return Init.initialize(data.message.jwtToken, data.message.symmetricKey).engage(errorHandler, callback);
         case "CREATE_USER":
-            return Init.createUser(data.message.jwtToken, data.message.passcode).engage(errorHandler, callback);
+            return Init.createUser(data.message.jwtToken, data.message.passcode, data.message.needsRotation).engage(errorHandler, callback);
         case "CREATE_USER_AND_DEVICE":
             return Init.createUserAndDevice(data.message.jwtToken, data.message.passcode).engage(errorHandler, callback);
         case "GEN_DEVICE_KEYS":

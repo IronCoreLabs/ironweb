@@ -168,14 +168,14 @@ describe("init index", () => {
 
             spyOn(InitializationApi, "createUser").and.returnValue(Future.of(apiResponse));
 
-            Init.createUser("jwt", "passcode").engage(
+            Init.createUser("jwt", "passcode", false).engage(
                 (e) => fail(e),
                 (SDK) => {
                     expect(SDK).toEqual({
                         type: "CREATE_USER_RESPONSE",
                         message: apiResponse,
                     });
-                    expect(InitializationApi.createUser).toHaveBeenCalledWith("passcode", "jwt");
+                    expect(InitializationApi.createUser).toHaveBeenCalledWith("passcode", "jwt", false);
                     expect(FrameUtils.storeDeviceAndSigningKeys).not.toHaveBeenCalled();
                 }
             );

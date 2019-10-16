@@ -22,13 +22,13 @@ export function initializeApi(jwt: string) {
     return UserApiEndpoints.callUserVerifyApi(jwt);
 }
 
-export const createUser = (passcode: string, jwtToken: string): Future<SDKError, ApiUserResponse> => {
+export const createUser = (passcode: string, jwtToken: string, needsRotation: boolean): Future<SDKError, ApiUserResponse> => {
     const payload: WMT.NewUserKeygenWorkerRequest = {
         type: "NEW_USER_KEYGEN",
         message: {passcode},
     };
     return WorkerMediator.sendMessage<WMT.NewUserKeygenWorkerResponse>(payload).flatMap(({message}) => {
-        return UserApiEndpoints.callUserCreateApi(jwtToken, message);
+        return UserApiEndpoints.callUserCreateApi(jwtToken, message, needsRotation);
     });
 };
 
