@@ -1,12 +1,12 @@
-import GroupApiEndpoints from "../GroupApiEndpoints";
+import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import * as ApiRequest from "../../ApiRequest";
-import Future from "futurejs";
 import ApiState from "../../ApiState";
+import GroupApiEndpoints from "../GroupApiEndpoints";
 
 describe("GroupApiEndpoints", () => {
     beforeEach(() => {
-        spyOn(ApiRequest, "fetchJSON").and.returnValue(
+        spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
             Future.of({
                 foo: "bar",
             })
@@ -21,7 +21,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (groups: any) => {
                     expect(groups).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
                 }
             );
         });
@@ -33,12 +33,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (groups: any) => {
                     expect(groups).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
-                        "groups?id=group-10,group-20",
-                        expect.any(Number),
-                        expect.any(Object),
-                        expect.any(Future)
-                    );
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
                 }
             );
         });
@@ -48,11 +43,10 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (groups: any) => {
                     expect(groups).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
-                        "groups?id=~%60!%40%23%24%25%5E%26*()-_%3D%2B%5B%7B%5D%7D%3B%3A%3C.%3E%2F%3F,%26%3C%3E",
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
+                        "groups?id=~%60!%40%23%24%25%5E%26*()-_%3D%2B%5B%7B%5D%7D%3B%3A%3C.%3E%2F%3F%2C%26%3C%3E",
                         expect.any(Number),
-                        expect.any(Object),
-                        expect.any(Future)
+                        expect.any(Object)
                     );
                 }
             );
@@ -63,7 +57,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (groups) => {
                     expect(groups).toEqual({result: []});
-                    expect(ApiRequest.fetchJSON).not.toHaveBeenCalled();
+                    expect(ApiRequest.makeAuthorizedApiRequest).not.toHaveBeenCalled();
                 }
             );
         });
@@ -75,7 +69,7 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/87", expect.any(Number), expect.any(Object), expect.any(Future));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/87", expect.any(Number), expect.any(Object));
                 }
             );
         });
@@ -95,8 +89,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         id: "35",
@@ -157,8 +151,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         groupPublicKey: {
@@ -210,8 +204,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         name: "group name",
@@ -245,8 +239,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e.message),
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/23", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/23", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
                         name: "new name",
                     });
@@ -259,8 +253,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e.message),
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/%2632", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/%2632", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         name: null,
@@ -290,8 +284,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         admins: [
@@ -324,8 +318,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e.message),
                 (removeResult: any) => {
                     expect(removeResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         users: [{userId: "31"}, {userId: "89"}, {userId: "76"}, {userId: "33"}],
@@ -354,8 +348,8 @@ describe("GroupApiEndpoints", () => {
                 (e) => fail(e),
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object), expect.any(Future));
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         users: [
@@ -395,8 +389,8 @@ describe("GroupApiEndpoints", () => {
                     (e) => fail(e),
                     (removeResult: any) => {
                         expect(removeResult).toEqual({foo: "bar"});
-                        expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object), expect.any(Future));
-                        const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                        expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object));
+                        const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
 
                         expect(JSON.parse(request.body)).toEqual({
                             users: [{userId: "3513"}, {userId: "36236"}],
@@ -412,8 +406,8 @@ describe("GroupApiEndpoints", () => {
                     (e) => fail(e),
                     (deleteResult: any) => {
                         expect(deleteResult).toEqual({foo: "bar"});
-                        expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("groups/31%2632", expect.any(Number), expect.any(Object), expect.any(Future));
-                        const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                        expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/31%2632", expect.any(Number), expect.any(Object));
+                        const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
                         expect(request.body).toBeUndefined();
                     }
                 );

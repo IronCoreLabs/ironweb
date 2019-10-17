@@ -1,8 +1,8 @@
-import {RequestMessage, ResponseMessage, ErrorResponse} from "../../WorkerMessageTypes";
-import * as DocumentCrypto from "./DocumentCrypto";
-import * as UserCrypto from "./UserCrypto";
-import * as GroupCrypto from "./GroupCrypto";
 import SDKError from "../../lib/SDKError";
+import {ErrorResponse, RequestMessage, ResponseMessage} from "../../WorkerMessageTypes";
+import * as DocumentCrypto from "./DocumentCrypto";
+import * as GroupCrypto from "./GroupCrypto";
+import * as UserCrypto from "./UserCrypto";
 
 type WorkerMessageCallback = (message: RequestMessage, callback: (response: ResponseMessage, transferList?: Uint8Array[]) => void) => void;
 
@@ -66,97 +66,93 @@ function errorResponse(callback: (response: ErrorResponse) => void, error: SDKEr
 }
 
 /* tslint:disable cyclomatic-complexity */
-messenger.onMessage(
-    (data: RequestMessage, callback: (message: ResponseMessage, transferList?: Uint8Array[]) => void): void => {
-        const errorHandler = errorResponse.bind(null, callback);
-        switch (data.type) {
-            case "USER_DEVICE_KEYGEN":
-                const {message} = data;
-                return UserCrypto.generateDeviceAndSigningKeys(
-                    message.jwtToken,
-                    message.passcode,
-                    message.keySalt,
-                    message.encryptedPrivateUserKey,
-                    message.publicUserKey
-                ).engage(errorHandler, (keys) => callback({type: "USER_DEVICE_KEYGEN_RESPONSE", message: keys}));
-            case "NEW_USER_AND_DEVICE_KEYGEN":
-                return UserCrypto.generateNewUserAndDeviceKeys(data.message.passcode).engage(errorHandler, (keys) =>
-                    callback({type: "NEW_USER_AND_DEVICE_KEYGEN_RESPONSE", message: keys})
-                );
-            case "NEW_USER_KEYGEN":
-                return UserCrypto.generateNewUserKeys(data.message.passcode).engage(errorHandler, (keys) =>
-                    callback({type: "NEW_USER_KEYGEN_RESPONSE", message: keys})
-                );
-            case "DECRYPT_LOCAL_KEYS":
-                return UserCrypto.decryptDeviceAndSigningKeys(
-                    data.message.encryptedDeviceKey,
-                    data.message.encryptedSigningKey,
-                    data.message.symmetricKey,
-                    data.message.nonce
-                ).engage(errorHandler, (deviceAndSigningKeys) => callback({type: "DECRYPT_LOCAL_KEYS_RESPONSE", message: deviceAndSigningKeys}));
-            case "CHANGE_USER_PASSCODE":
-                return UserCrypto.changeUsersPasscode(
-                    data.message.currentPasscode,
-                    data.message.newPasscode,
-                    data.message.keySalt,
-                    data.message.encryptedPrivateUserKey
-                ).engage(errorHandler, (encryptedPrivateKey) => callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: encryptedPrivateKey}));
-            case "SIGNATURE_GENERATION":
-                return UserCrypto.signRequestPayload(
-                    data.message.segmentID,
-                    data.message.userID,
-                    data.message.signingKeys,
-                    data.message.signatureVersion
-                ).engage(errorHandler, (signature) => callback({type: "SIGNATURE_GENERATION_RESPONSE", message: signature}));
-            case "DOCUMENT_ENCRYPT":
-                return DocumentCrypto.encryptDocument(
-                    data.message.document,
-                    data.message.userKeyList,
-                    data.message.groupKeyList,
-                    data.message.signingKeys
-                ).engage(errorHandler, (encryptedContent) =>
-                    callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedContent}, [encryptedContent.encryptedDocument.content])
-                );
-            case "DOCUMENT_DECRYPT":
-                return DocumentCrypto.decryptDocument(data.message.document, data.message.encryptedSymmetricKey, data.message.privateKey).engage(
-                    errorHandler,
-                    (decryptedDocument) => callback({type: "DOCUMENT_DECRYPT_RESPONSE", message: {decryptedDocument}}, [decryptedDocument])
-                );
-            case "DOCUMENT_REENCRYPT":
-                return DocumentCrypto.reEncryptDocument(data.message.document, data.message.existingDocumentSymmetricKey, data.message.privateKey).engage(
-                    errorHandler,
-                    (encryptedDocument) => callback({type: "DOCUMENT_REENCRYPT_RESPONSE", message: {encryptedDocument}}, [encryptedDocument.content])
-                );
-            case "DOCUMENT_ENCRYPT_TO_KEYS":
-                return DocumentCrypto.encryptToKeys(
-                    data.message.symmetricKey,
-                    data.message.userKeyList,
-                    data.message.groupKeyList,
-                    data.message.privateKey,
-                    data.message.signingKeys
-                ).engage(errorHandler, (keyList) => callback({type: "DOCUMENT_ENCRYPT_TO_KEYS_RESPONSE", message: keyList}));
-            case "GROUP_CREATE":
-                return GroupCrypto.createGroup(data.message.userPublicKey, data.message.signingKeys, data.message.addAsMember).engage(errorHandler, (group) =>
-                    callback({type: "GROUP_CREATE_RESPONSE", message: group})
-                );
-            case "GROUP_ADD_ADMINS":
-                return GroupCrypto.addAdminsToGroup(
-                    data.message.encryptedGroupKey,
-                    data.message.userKeyList,
-                    data.message.adminPrivateKey,
-                    data.message.signingKeys
-                ).engage(errorHandler, (accessKeyList) => callback({type: "GROUP_ADD_ADMINS_RESPONSE", message: accessKeyList}));
-            case "GROUP_ADD_MEMBERS":
-                return GroupCrypto.addMembersToGroup(
-                    data.message.encryptedGroupKey,
-                    data.message.userKeyList,
-                    data.message.adminPrivateKey,
-                    data.message.signingKeys
-                ).engage(errorHandler, (keyList) => callback({type: "GROUP_ADD_MEMBERS_RESPONSE", message: keyList}));
-            default:
-                //Force TS to tell us if we ever create a new request type that we don't handle here
-                const exhaustiveCheck: never = data;
-                return exhaustiveCheck;
-        }
+messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, transferList?: Uint8Array[]) => void): void => {
+    const errorHandler = errorResponse.bind(null, callback);
+    switch (data.type) {
+        case "USER_DEVICE_KEYGEN":
+            const {message} = data;
+            return UserCrypto.generateDeviceAndSigningKeys(
+                message.jwtToken,
+                message.passcode,
+                message.keySalt,
+                message.encryptedPrivateUserKey,
+                message.publicUserKey
+            ).engage(errorHandler, (keys) => callback({type: "USER_DEVICE_KEYGEN_RESPONSE", message: keys}));
+        case "NEW_USER_AND_DEVICE_KEYGEN":
+            return UserCrypto.generateNewUserAndDeviceKeys(data.message.passcode).engage(errorHandler, (keys) =>
+                callback({type: "NEW_USER_AND_DEVICE_KEYGEN_RESPONSE", message: keys})
+            );
+        case "NEW_USER_KEYGEN":
+            return UserCrypto.generateNewUserKeys(data.message.passcode).engage(errorHandler, (keys) =>
+                callback({type: "NEW_USER_KEYGEN_RESPONSE", message: keys})
+            );
+        case "DECRYPT_LOCAL_KEYS":
+            return UserCrypto.decryptDeviceAndSigningKeys(
+                data.message.encryptedDeviceKey,
+                data.message.encryptedSigningKey,
+                data.message.symmetricKey,
+                data.message.nonce
+            ).engage(errorHandler, (deviceAndSigningKeys) => callback({type: "DECRYPT_LOCAL_KEYS_RESPONSE", message: deviceAndSigningKeys}));
+        case "CHANGE_USER_PASSCODE":
+            return UserCrypto.changeUsersPasscode(
+                data.message.currentPasscode,
+                data.message.newPasscode,
+                data.message.keySalt,
+                data.message.encryptedPrivateUserKey
+            ).engage(errorHandler, (encryptedPrivateKey) => callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: encryptedPrivateKey}));
+        case "SIGNATURE_GENERATION":
+            return UserCrypto.signRequestPayload(
+                data.message.segmentID,
+                data.message.userID,
+                data.message.signingKeys,
+                data.message.method,
+                data.message.url,
+                data.message.body
+            ).engage(errorHandler, (signature) => callback({type: "SIGNATURE_GENERATION_RESPONSE", message: signature}));
+        case "DOCUMENT_ENCRYPT":
+            return DocumentCrypto.encryptDocument(data.message.document, data.message.userKeyList, data.message.groupKeyList, data.message.signingKeys).engage(
+                errorHandler,
+                (encryptedContent) => callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedContent}, [encryptedContent.encryptedDocument.content])
+            );
+        case "DOCUMENT_DECRYPT":
+            return DocumentCrypto.decryptDocument(data.message.document, data.message.encryptedSymmetricKey, data.message.privateKey).engage(
+                errorHandler,
+                (decryptedDocument) => callback({type: "DOCUMENT_DECRYPT_RESPONSE", message: {decryptedDocument}}, [decryptedDocument])
+            );
+        case "DOCUMENT_REENCRYPT":
+            return DocumentCrypto.reEncryptDocument(data.message.document, data.message.existingDocumentSymmetricKey, data.message.privateKey).engage(
+                errorHandler,
+                (encryptedDocument) => callback({type: "DOCUMENT_REENCRYPT_RESPONSE", message: {encryptedDocument}}, [encryptedDocument.content])
+            );
+        case "DOCUMENT_ENCRYPT_TO_KEYS":
+            return DocumentCrypto.encryptToKeys(
+                data.message.symmetricKey,
+                data.message.userKeyList,
+                data.message.groupKeyList,
+                data.message.privateKey,
+                data.message.signingKeys
+            ).engage(errorHandler, (keyList) => callback({type: "DOCUMENT_ENCRYPT_TO_KEYS_RESPONSE", message: keyList}));
+        case "GROUP_CREATE":
+            return GroupCrypto.createGroup(data.message.userPublicKey, data.message.signingKeys, data.message.addAsMember).engage(errorHandler, (group) =>
+                callback({type: "GROUP_CREATE_RESPONSE", message: group})
+            );
+        case "GROUP_ADD_ADMINS":
+            return GroupCrypto.addAdminsToGroup(
+                data.message.encryptedGroupKey,
+                data.message.userKeyList,
+                data.message.adminPrivateKey,
+                data.message.signingKeys
+            ).engage(errorHandler, (accessKeyList) => callback({type: "GROUP_ADD_ADMINS_RESPONSE", message: accessKeyList}));
+        case "GROUP_ADD_MEMBERS":
+            return GroupCrypto.addMembersToGroup(
+                data.message.encryptedGroupKey,
+                data.message.userKeyList,
+                data.message.adminPrivateKey,
+                data.message.signingKeys
+            ).engage(errorHandler, (keyList) => callback({type: "GROUP_ADD_MEMBERS_RESPONSE", message: keyList}));
+        default:
+            //Force TS to tell us if we ever create a new request type that we don't handle here
+            const exhaustiveCheck: never = data;
+            return exhaustiveCheck;
     }
-);
+});

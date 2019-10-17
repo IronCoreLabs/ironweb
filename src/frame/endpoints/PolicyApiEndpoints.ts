@@ -2,22 +2,13 @@ import Future from "futurejs";
 import {Policy, UserOrGroup} from "ironweb";
 import {ErrorCodes} from "../../Constants";
 import {SDKError} from "../../shim";
-import * as ApiRequest from "../ApiRequest";
-import ApiState from "../ApiState";
+import {makeAuthorizedApiRequest} from "../ApiRequest";
 
 export type UserOrGroupWithKey = UserOrGroup & {masterPublicKey: PublicKey<string>};
 
 interface PolicyApplyResponse {
     usersAndGroups: UserOrGroupWithKey[];
     invalidUsersAndGroups: UserOrGroup[];
-}
-
-/**
- * Generate signature message from current user state
- */
-function getSignatureHeader() {
-    const {segmentId, id} = ApiState.user();
-    return ApiRequest.getRequestSignature(segmentId, id, ApiState.signingKeys());
 }
 
 /**
@@ -51,6 +42,6 @@ export default {
         }
 
         const {url, options, errorCode} = applyPolicy(policyApplyRequest);
-        return ApiRequest.fetchJSON(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest(url, errorCode, options);
     },
 };

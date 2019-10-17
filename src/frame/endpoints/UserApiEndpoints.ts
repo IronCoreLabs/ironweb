@@ -1,11 +1,11 @@
-import {fromByteArray} from "base64-js";
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
+import {fromByteArray} from "base64-js";
 import Future from "futurejs";
-import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
-import * as ApiRequest from "../ApiRequest";
 import {ErrorCodes} from "../../Constants";
-import ApiState from "../ApiState";
 import SDKError from "../../lib/SDKError";
+import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
+import {IronCoreRequestInit, makeAuthorizedApiRequest, makeJwtApiRequest} from "../ApiRequest";
+import ApiState from "../ApiState";
 
 export type UserKeys = Readonly<{
     publicKey: PublicKey<Uint8Array>;
@@ -15,7 +15,7 @@ export type UserKeys = Readonly<{
 
 export type RequestMeta = Readonly<{
     url: string;
-    options: RequestInit;
+    options: IronCoreRequestInit;
     errorCode: ErrorCodes;
 }>;
 
@@ -48,30 +48,15 @@ export interface UserKeyListResponseType {
 }
 
 /**
- * Generate a signature for the current user from user state
- */
-function getSignatureHeader() {
-    const {segmentId, id} = ApiState.user();
-    return ApiRequest.getRequestSignature(segmentId, id, ApiState.signingKeys());
-}
-
-/**
- * Generate an auth header that uses a JWT for authorization.
- */
-function getJwtHeader(jwt: string) {
-    return Future.of(`jwt ${jwt}`);
-}
-
-/**
  * Generate parameters for the init call with proper URL, options, and error code
  */
-function verify(): RequestMeta {
-    return {
-        url: `users/verify?returnKeys=true`,
-        options: {},
-        errorCode: ErrorCodes.USER_VERIFY_API_REQUEST_FAILURE,
-    };
-}
+const verify = (): RequestMeta => ({
+    url: `users/verify?returnKeys=true`,
+    options: {
+        method: "GET",
+    },
+    errorCode: ErrorCodes.USER_VERIFY_API_REQUEST_FAILURE,
+});
 
 /**
  * Generate API request details for user create request
@@ -139,42 +124,38 @@ const userCreateWithDevice = (keys: UserCreationKeys): RequestMeta => {
  * @param {number}       timestamp     Timestamp of signature generation
  * @return {RequestMeta}
  */
-function userDeviceAdd(userPublicKey: PublicKey<Uint8Array>, transformKey: TransformKey, signature: Uint8Array, timestamp: number): RequestMeta {
-    return {
-        url: `users/devices`,
-        options: {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                timestamp,
-                userPublicKey: publicKeyToBase64(userPublicKey),
-                device: {
-                    transformKey: transformKeyToBase64(transformKey),
-                },
-                signature: fromByteArray(signature),
-            }),
+const userDeviceAdd = (userPublicKey: PublicKey<Uint8Array>, transformKey: TransformKey, signature: Uint8Array, timestamp: number): RequestMeta => ({
+    url: `users/devices`,
+    options: {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
         },
-        errorCode: ErrorCodes.USER_DEVICE_ADD_REQUEST_FAILURE,
-    };
-}
+        body: JSON.stringify({
+            timestamp,
+            userPublicKey: publicKeyToBase64(userPublicKey),
+            device: {
+                transformKey: transformKeyToBase64(transformKey),
+            },
+            signature: fromByteArray(signature),
+        }),
+    },
+    errorCode: ErrorCodes.USER_DEVICE_ADD_REQUEST_FAILURE,
+});
 
 /**
  * Delete the users current device that is being used to make this request.
  */
-function deleteCurrentDevice(userID: string): RequestMeta {
-    return {
-        url: `users/${userID}/devices/current`,
-        options: {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-            },
+const deleteCurrentDevice = (userID: string): RequestMeta => ({
+    url: `users/${userID}/devices/current`,
+    options: {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
         },
-        errorCode: ErrorCodes.USER_DEVICE_DELETE_REQUEST_FAILURE,
-    };
-}
+    },
+    errorCode: ErrorCodes.USER_DEVICE_DELETE_REQUEST_FAILURE,
+});
 
 /**
  * Update a users status and/or their escrowed private key.
@@ -182,36 +163,32 @@ function deleteCurrentDevice(userID: string): RequestMeta {
  * @param {PrivateKey<Uint8Array>} userPrivateKey Users encrypted private key to escrow
  * @param {number}                 status         Updated status of user
  */
-function userUpdate(userID: string, userPrivateKey?: PrivateKey<Uint8Array>, status?: number): RequestMeta {
-    return {
-        url: `users/${userID}`,
-        options: {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                status,
-                userPrivateKey: userPrivateKey ? fromByteArray(userPrivateKey) : undefined,
-            }),
+const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, status?: number): RequestMeta => ({
+    url: `users/${userID}`,
+    options: {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
         },
-        errorCode: ErrorCodes.USER_UPDATE_REQUEST_FAILURE,
-    };
-}
+        body: JSON.stringify({
+            status,
+            userPrivateKey: userPrivateKey ? fromByteArray(userPrivateKey) : undefined,
+        }),
+    },
+    errorCode: ErrorCodes.USER_UPDATE_REQUEST_FAILURE,
+});
 
 /**
  * Generate API request details for user key list request
  * @param {string[]}         userList List of user IDs to retrieve
  */
-function userKeyList(userList: string[]): RequestMeta {
-    return {
-        url: `users?id=${userList.join(",")}`,
-        options: {
-            method: "GET",
-        },
-        errorCode: ErrorCodes.USER_KEY_LIST_REQUEST_FAILURE,
-    };
-}
+const userKeyList = (userList: string[]): RequestMeta => ({
+    url: `users?id=${encodeURIComponent(userList.join(","))}`,
+    options: {
+        method: "GET",
+    },
+    errorCode: ErrorCodes.USER_KEY_LIST_REQUEST_FAILURE,
+});
 
 export default {
     /**
@@ -220,7 +197,7 @@ export default {
      */
     callUserVerifyApi(jwt: string): Future<SDKError, UserVerifyProcessedResult> {
         const {url, options, errorCode} = verify();
-        return ApiRequest.fetchJSON<UserVerifyResponseType>(url, errorCode, options, getJwtHeader(jwt)).map((data) => ({
+        return makeJwtApiRequest<UserVerifyResponseType>(url, errorCode, options, jwt).map((data) => ({
             user: data || undefined,
             jwt,
         }));
@@ -231,7 +208,7 @@ export default {
      */
     callUserCreateApi(jwt: string, keys: UserKeys): Future<SDKError, UserCreateResponseType> {
         const {url, options, errorCode} = userCreate(keys);
-        return ApiRequest.fetchJSON<UserCreateResponseType>(url, errorCode, options, getJwtHeader(jwt));
+        return makeJwtApiRequest<UserCreateResponseType>(url, errorCode, options, jwt);
     },
 
     /**
@@ -239,7 +216,7 @@ export default {
      */
     callUserCreateApiWithDevice(jwt: string, creationKeys: UserCreationKeys): Future<SDKError, UserCreateResponseType> {
         const {url, options, errorCode} = userCreateWithDevice(creationKeys);
-        return ApiRequest.fetchJSON<UserCreateResponseType>(url, errorCode, options, getJwtHeader(jwt));
+        return makeJwtApiRequest<UserCreateResponseType>(url, errorCode, options, jwt);
     },
 
     /**
@@ -250,7 +227,7 @@ export default {
     callUserUpdateApi(userPrivateKey?: PrivateKey<Uint8Array>, status?: number): Future<SDKError, UserUpdateResponseType> {
         const {id} = ApiState.user();
         const {url, options, errorCode} = userUpdate(id, userPrivateKey, status);
-        return ApiRequest.fetchJSON(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest(url, errorCode, options);
     },
 
     /**
@@ -269,7 +246,7 @@ export default {
         timestamp: number
     ): Future<SDKError, UserUpdateResponseType> {
         const {url, options, errorCode} = userDeviceAdd(userPublicKey, transformKey, signature, timestamp);
-        return ApiRequest.fetchJSON(url, errorCode, options, getJwtHeader(jwtToken));
+        return makeJwtApiRequest(url, errorCode, options, jwtToken);
     },
 
     /**
@@ -278,7 +255,7 @@ export default {
     callUserCurrentDeviceDelete(): Future<SDKError, {id: number}> {
         const {id} = ApiState.user();
         const {url, options, errorCode} = deleteCurrentDevice(id);
-        return ApiRequest.fetchJSON(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest(url, errorCode, options);
     },
 
     /**
@@ -290,6 +267,6 @@ export default {
             return Future.of({result: []});
         }
         const {url, options, errorCode} = userKeyList(userList);
-        return ApiRequest.fetchJSON(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest(url, errorCode, options);
     },
 };

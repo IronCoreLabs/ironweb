@@ -43,9 +43,9 @@ interface DerivedKeyResults {
     salt: Uint8Array;
 }
 interface MessageSignature {
-    message: string;
-    signature: string;
-    version: number;
+    userContextHeader: string;
+    requestHeaderSignature: string;
+    authHeaderSignature: string;
 }
 interface KeyPair {
     publicKey: PublicKey<Uint8Array>;

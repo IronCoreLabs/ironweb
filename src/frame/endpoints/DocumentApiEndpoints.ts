@@ -1,7 +1,7 @@
 import {DocumentAssociation, UserOrGroup} from "../../../ironweb";
 import {ErrorCodes, UserAndGroupTypes} from "../../Constants";
 import {publicKeyToBase64} from "../../lib/Utils";
-import * as ApiRequest from "../ApiRequest";
+import {makeAuthorizedApiRequest} from "../ApiRequest";
 import ApiState from "../ApiState";
 
 interface DocumentMetaApiResponse {
@@ -48,14 +48,6 @@ interface DocumentCreatePayload {
     documentName?: string;
     userID: string;
     userPublicKey: PublicKey<Uint8Array>;
-}
-
-/**
- * Generate signature message from current user state
- */
-function getSignatureHeader() {
-    const {segmentId, id} = ApiState.user();
-    return ApiRequest.getRequestSignature(segmentId, id, ApiState.signingKeys());
 }
 
 /**
@@ -214,7 +206,7 @@ export default {
      */
     callDocumentListApi() {
         const {url, options, errorCode} = documentList();
-        return ApiRequest.fetchJSON<DocumentListResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<DocumentListResponseType>(url, errorCode, options);
     },
 
     /**
@@ -242,7 +234,7 @@ export default {
             userID: id,
             userPublicKey: ApiState.userPublicKey(),
         });
-        return ApiRequest.fetchJSON<DocumentCreateResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<DocumentCreateResponseType>(url, errorCode, options);
     },
 
     /**
@@ -251,7 +243,7 @@ export default {
      */
     callDocumentGetApi(documentID: string) {
         const {url, options, errorCode} = documentGet(documentID, true);
-        return ApiRequest.fetchJSON<DocumentGetResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<DocumentGetResponseType>(url, errorCode, options);
     },
 
     /**
@@ -260,7 +252,7 @@ export default {
      */
     callDocumentMetadataGetApi(documentID: string) {
         const {url, options, errorCode} = documentGet(documentID);
-        return ApiRequest.fetchJSON<DocumentMetaGetResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<DocumentMetaGetResponseType>(url, errorCode, options);
     },
 
     /**
@@ -272,7 +264,7 @@ export default {
      */
     callDocumentUpdateApi(documentID: string, encryptedDocument?: Base64String, name?: string | null) {
         const {url, options, errorCode} = documentUpdate(documentID, encryptedDocument, name);
-        return ApiRequest.fetchJSON<DocumentUpdateResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<DocumentUpdateResponseType>(url, errorCode, options);
     },
 
     /**
@@ -283,7 +275,7 @@ export default {
      */
     callDocumentGrantApi(documentID: string, userAccessKeys: EncryptedAccessKey[], groupAccessKeys: EncryptedAccessKey[]) {
         const {url, options, errorCode} = documentGrant(documentID, ApiState.userPublicKey(), userAccessKeys, groupAccessKeys);
-        return ApiRequest.fetchJSON<DocumentAccessResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<DocumentAccessResponseType>(url, errorCode, options);
     },
 
     /**
@@ -294,6 +286,6 @@ export default {
      */
     callDocumentRevokeApi(documentID: string, userRevocations: string[], groupRevocations: string[]) {
         const {url, options, errorCode} = documentRevoke(documentID, userRevocations, groupRevocations);
-        return ApiRequest.fetchJSON<DocumentAccessResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<DocumentAccessResponseType>(url, errorCode, options);
     },
 };
