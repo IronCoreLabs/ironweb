@@ -1,5 +1,6 @@
 //Polyfill TextEncoder/TextDecoder for MSEdge
 import * as Recrypt from "@ironcorelabs/recrypt-wasm-binding";
+import {encode} from "@stablelib/utf8";
 import {fromByteArray, toByteArray} from "base64-js";
 import "fast-text-encoding";
 import Future from "futurejs";
@@ -43,6 +44,11 @@ const transformedPlaintextToEncryptedValue = (encryptedKey: TransformedEncrypted
         randomTransformPublicKey: publicKeyToBytes(transformBlock.randomTransformPublicKey),
     })),
 });
+
+/**
+ * Exported so unit tests can get access to the Recrypt instance for spying.
+ */
+export const getApi = () => RecryptApi;
 
 /**
  * Use PBKDF2 with SHA-256 to derive a key from the provided password. We'll either use the provided salt or generate a new salt
@@ -205,22 +211,40 @@ export const decryptPlaintext = (encryptedPlaintext: TransformedEncryptedMessage
     });
 
 /**
- * Create a message signature of the current time, segment ID, user ID, and public signing key. Encode that as a base64 string and sign it
- * using ed25519.
+ * Create our complex request signature using the provided paramters. Details about how this signature works are written up in
+ * https://github.com/IronCoreLabs/ironoxide/issues/50
  */
-export const createRequestSignature = (segmentID: number, userID: string, signingKeys: SigningKeyPair, signatureVersion: number): MessageSignature => {
-    const payload = utf8StringToArrayBuffer(
-        JSON.stringify({
-            ts: Date.now(),
-            sid: segmentID,
-            uid: userID,
-            x: fromByteArray(signingKeys.publicKey),
-        })
+export const createRequestSignature = (
+    segmentID: number,
+    userID: string,
+    signingKeys: SigningKeyPair,
+    method: string,
+    url: string,
+    body?: BodyInit | null
+): MessageSignature => {
+    const userContext = [Date.now(), segmentID, userID, fromByteArray(signingKeys.publicKey)].join(",");
+    const userContextBytes = encode(userContext);
+    const authHeaderSignature = RecryptApi.ed25519Sign(signingKeys.privateKey, userContextBytes);
+
+    let bodyAsBytes = new Uint8Array();
+    if (body instanceof Uint8Array) {
+        bodyAsBytes = body;
+    } else if (typeof body === "string") {
+        bodyAsBytes = encode(body);
+    } else if (body !== null && body !== undefined) {
+        //This shouldn't happen since our APIs only ever take strings or bytes, but prevent certain signature
+        //failure if provided something else.
+        throw new Error(`Unknown body type provided: ${body}`);
+    }
+
+    const requestHeaderSignature = RecryptApi.ed25519Sign(
+        signingKeys.privateKey,
+        concatArrayBuffers(userContextBytes, encode(method.toUpperCase()), encode(url), bodyAsBytes)
     );
     return {
-        version: signatureVersion,
-        message: fromByteArray(payload),
-        signature: fromByteArray(RecryptApi.ed25519Sign(signingKeys.privateKey, payload)),
+        userContextHeader: userContext,
+        requestHeaderSignature: fromByteArray(requestHeaderSignature),
+        authHeaderSignature: fromByteArray(authHeaderSignature),
     };
 };
 

@@ -1,11 +1,11 @@
-import Future from "futurejs";
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
+import Future from "futurejs";
 import {ErrorCodes} from "../../Constants";
-import {transformKeyToBase64, publicKeyToBase64} from "../../lib/Utils";
-import ApiState from "../ApiState";
-import * as ApiRequest from "../ApiRequest";
-import {TransformKeyGrant} from "../worker/crypto/recrypt";
 import SDKError from "../../lib/SDKError";
+import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
+import {makeAuthorizedApiRequest} from "../ApiRequest";
+import ApiState from "../ApiState";
+import {TransformKeyGrant} from "../worker/crypto/recrypt";
 
 export interface GroupListResponseType {
     result: GroupApiFullResponse[];
@@ -26,19 +26,11 @@ export interface GroupMemberModifyResponseType {
 }
 
 /**
- * Generate signature message from current user state
- */
-function getSignatureHeader() {
-    const {segmentId, id} = ApiState.user();
-    return ApiRequest.getRequestSignature(segmentId, id, ApiState.signingKeys());
-}
-
-/**
  * Get API request details for group list
- * @param {string[]}         groupIDList Optional list of group IDs to retrieve. If omitted all groups will be returned.
+ * @param {string[]} groupIDList Optional list of group IDs to retrieve. If omitted all groups will be returned.
  */
 function groupList(groupIDList: string[] = []) {
-    const groupFilter = groupIDList.length ? `?id=${groupIDList.map(encodeURIComponent).join(",")}` : "";
+    const groupFilter = groupIDList.length ? `?id=${encodeURIComponent(groupIDList.join(","))}` : "";
     return {
         url: `groups${groupFilter}`,
         options: {
@@ -244,7 +236,7 @@ export default {
      */
     callGroupListApi() {
         const {url, options, errorCode} = groupList();
-        return ApiRequest.fetchJSON<GroupListResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupListResponseType>(url, errorCode, options);
     },
 
     /**
@@ -257,7 +249,7 @@ export default {
             return Future.of({result: []});
         }
         const {url, options, errorCode} = groupList(groupIDs);
-        return ApiRequest.fetchJSON<GroupListResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupListResponseType>(url, errorCode, options);
     },
 
     /**
@@ -266,7 +258,7 @@ export default {
      */
     callGroupGetApi(groupID: string) {
         const {url, options, errorCode} = groupGet(groupID);
-        return ApiRequest.fetchJSON<GroupGetResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupGetResponseType>(url, errorCode, options);
     },
 
     /**
@@ -291,7 +283,7 @@ export default {
             name: groupName,
             transformKey,
         });
-        return ApiRequest.fetchJSON<GroupCreateResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupCreateResponseType>(url, errorCode, options);
     },
 
     /**
@@ -299,7 +291,7 @@ export default {
      */
     callGroupUpdateApi(groupID: string, groupName: string | null) {
         const {url, options, errorCode} = groupUpdate(groupID, groupName);
-        return ApiRequest.fetchJSON<GroupApiBasicResponse>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupApiBasicResponse>(url, errorCode, options);
     },
 
     /**
@@ -309,7 +301,7 @@ export default {
      */
     callAddAdminsApi(groupID: string, adminList: EncryptedAccessKey[]) {
         const {url, options, errorCode} = addAdmins(groupID, adminList);
-        return ApiRequest.fetchJSON<GroupMemberModifyResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 
     /**
@@ -319,7 +311,7 @@ export default {
      */
     callRemoveAdminsApi(groupID: string, adminList: string[]) {
         const {url, options, errorCode} = removeAdmins(groupID, adminList);
-        return ApiRequest.fetchJSON<GroupMemberModifyResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 
     /**
@@ -329,7 +321,7 @@ export default {
      */
     callAddMembersApi(groupID: string, memberList: TransformKeyGrant[]) {
         const {url, options, errorCode} = addMembers(groupID, memberList);
-        return ApiRequest.fetchJSON<GroupMemberModifyResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 
     /**
@@ -339,7 +331,7 @@ export default {
      */
     callRemoveMembersApi(groupID: string, memberList: string[]) {
         const {url, options, errorCode} = removeMembers(groupID, memberList);
-        return ApiRequest.fetchJSON<GroupMemberModifyResponseType>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 
     /**
@@ -348,6 +340,6 @@ export default {
      */
     callGroupDeleteApi(groupID: string) {
         const {url, options, errorCode} = groupDelete(groupID);
-        return ApiRequest.fetchJSON<{id: string}>(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest<{id: string}>(url, errorCode, options);
     },
 };

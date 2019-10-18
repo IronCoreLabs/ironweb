@@ -1,33 +1,47 @@
 import Future from "futurejs";
-import * as ApiRequest from "../ApiRequest";
-import * as WorkerMediator from "../WorkerMediator";
 import {ErrorCodes} from "../../Constants";
 import * as TestUtils from "../../tests/TestUtils";
+import * as ApiRequest from "../ApiRequest";
+import ApiState from "../ApiState";
+import * as WorkerMediator from "../WorkerMediator";
 
 describe("ApiRequest", () => {
+    const privateDeviceKey = new Uint8Array([23]);
+    const publicDeviceKey = TestUtils.getEmptyPublicKey();
+    beforeEach(() => {
+        ApiState.setCurrentUser(TestUtils.getFullUser());
+        ApiState.setDeviceAndSigningKeys({publicKey: publicDeviceKey, privateKey: privateDeviceKey}, TestUtils.getSigningKeyPair());
+    });
+
     describe("getRequestSignature", () => {
         it("sends message to worker and maps response to auth header string", () => {
             spyOn(WorkerMediator, "sendMessage").and.returnValue(
                 Future.of({
                     message: {
-                        version: 35,
-                        message: "mess",
-                        signature: "signature",
+                        userContextHeader: "context",
+                        requestHeaderSignature: "sig1",
+                        authHeaderSignature: "sig2",
                     },
                 })
             );
 
-            ApiRequest.getRequestSignature(1, "user-10", TestUtils.getSigningKeyPair()).engage(
+            ApiRequest.getRequestSignature("/path/to/resource", "GET", "bodyparts").engage(
                 (e) => fail(e.message),
                 (signature) => {
-                    expect(signature).toEqual("IronCore 35.mess.signature");
+                    expect(signature).toEqual({
+                        userContextHeader: "context",
+                        requestHeaderSignature: "sig1",
+                        authHeaderSignature: "sig2",
+                    });
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
                         type: "SIGNATURE_GENERATION",
                         message: {
                             segmentID: 1,
                             userID: "user-10",
                             signingKeys: TestUtils.getSigningKeyPair(),
-                            signatureVersion: 1,
+                            url: "/path/to/resource",
+                            method: "GET",
+                            body: "bodyparts",
                         },
                     });
                 }
@@ -35,8 +49,7 @@ describe("ApiRequest", () => {
         });
     });
 
-    describe("fetchJSON", () => {
-        const authHeaderFuture = Future.of("auth jwt");
+    describe("fetchJson", () => {
         beforeAll(() => {
             if (typeof window.fetch === "function") {
                 spyOn(window, "fetch");
@@ -46,22 +59,22 @@ describe("ApiRequest", () => {
         });
 
         it("invokes window.fetch with expected parameters", () => {
-            const fetchFuture = ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture);
+            const fetchFuture = ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header");
             fetchFuture.engage(jasmine.createSpy("fetchFailure"), jasmine.createSpy("fetchSuccess"));
 
             expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
                 method: "POST",
-                headers: {Authorization: "auth jwt", "Content-Type": "application/json"},
+                headers: {Authorization: "auth header", "Content-Type": "application/json"},
             });
         });
 
         it("invokes window.fetch with octet-stream content type if body is bytes", () => {
-            const fetchFuture = ApiRequest.fetchJSON("api/method", -1, {method: "POST", body: new Uint8Array([])}, authHeaderFuture);
+            const fetchFuture = ApiRequest.fetchJson("api/method", -1, {method: "POST", body: new Uint8Array([])}, "auth header");
             fetchFuture.engage(jasmine.createSpy("fetchFailure"), jasmine.createSpy("fetchSuccess"));
 
             expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
                 method: "POST",
-                headers: {Authorization: "auth jwt", "Content-Type": "application/octet-stream"},
+                headers: {Authorization: "auth header", "Content-Type": "application/octet-stream"},
                 body: new Uint8Array([]),
             });
         });
@@ -69,7 +82,7 @@ describe("ApiRequest", () => {
         it("converts failed request to SDK error", (done) => {
             (window.fetch as jasmine.Spy).and.callFake(() => Promise.reject(new Error("forced error")));
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
                     expect(error.message).toEqual("forced error");
                     expect(error.code).toEqual(-1);
@@ -88,7 +101,7 @@ describe("ApiRequest", () => {
                 })
             );
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
                     expect(error.message).toEqual("API response error message");
                     expect(error.code).toEqual(-1);
@@ -106,7 +119,7 @@ describe("ApiRequest", () => {
                 })
             );
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
                     expect(error.message).toBeString();
                     expect(error.code).toEqual(ErrorCodes.REQUEST_RATE_LIMITED);
@@ -124,7 +137,7 @@ describe("ApiRequest", () => {
                 })
             );
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
                     expect(error.message).toEqual("not good");
                     expect(error.code).toEqual(-1);
@@ -143,7 +156,7 @@ describe("ApiRequest", () => {
                 })
             );
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
                     expect(error.message).toEqual("not good");
                     expect(error.code).toEqual(-1);
@@ -156,7 +169,7 @@ describe("ApiRequest", () => {
         it("returns empty object if request status is a 204", (done) => {
             (window.fetch as jasmine.Spy).and.callFake(() => Promise.resolve({ok: true, status: 204}));
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (e) => fail(e),
                 (response: any) => {
                     expect(response).toBeUndefined();
@@ -174,7 +187,7 @@ describe("ApiRequest", () => {
                 })
             );
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
                     expect(error.message).toBeString();
                     expect(error.code).toEqual(-1);
@@ -193,11 +206,73 @@ describe("ApiRequest", () => {
                 })
             );
 
-            ApiRequest.fetchJSON("api/method", -1, {method: "POST"}, authHeaderFuture).engage(
+            ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (e) => fail(e),
                 (response: any) => {
                     expect(response).toEqual({
                         foo: "bar",
+                    });
+                    done();
+                }
+            );
+        });
+    });
+
+    describe("makeAuthorizedApiRequest", () => {
+        it("calculates custom header signaturtes and auth signature", (done) => {
+            spyOn(WorkerMediator, "sendMessage").and.returnValue(
+                Future.of({
+                    message: {
+                        userContextHeader: "context",
+                        requestHeaderSignature: "sig1",
+                        authHeaderSignature: "sig2",
+                    },
+                })
+            );
+
+            (window.fetch as jasmine.Spy).and.callFake(() =>
+                Promise.resolve({
+                    ok: true,
+                    status: 204,
+                    json: () => Promise.resolve({foo: "bar"}) as Promise<any>,
+                })
+            );
+
+            ApiRequest.makeAuthorizedApiRequest("api/method", -1, {headers: {foo: "bar"}, method: "POST"}).engage(
+                (e) => fail(e),
+                () => {
+                    expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
+                        method: "POST",
+                        headers: {
+                            foo: "bar",
+                            "Content-Type": "application/json",
+                            Authorization: "IronCore 2.sig2",
+                            "X-IronCore-User-Context": "context",
+                            "X-IronCore-Request-Sig": "sig1",
+                        },
+                    });
+                    done();
+                }
+            );
+        });
+    });
+
+    describe("makeJwtApiRequest", () => {
+        it("formats provided JWT to expected auth header", (done) => {
+            (window.fetch as jasmine.Spy).and.callFake(() =>
+                Promise.resolve({
+                    ok: true,
+                    status: 204,
+                    json: () => Promise.resolve({foo: "bar"}) as Promise<any>,
+                })
+            );
+
+            ApiRequest.makeJwtApiRequest("api/method", -1, {method: "GET"}, "jwt").engage(
+                (e) => fail(e),
+                () => {
+                    expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
+                        method: "GET",
+                        headers: {Authorization: "jwt jwt", "Content-Type": "application/json"},
                     });
                     done();
                 }

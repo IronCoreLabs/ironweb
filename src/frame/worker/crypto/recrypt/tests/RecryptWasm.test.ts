@@ -1,9 +1,9 @@
 import {toByteArray} from "base64-js";
 import Future from "futurejs";
-import * as Recrypt from "../RecryptWasm";
 import * as TestUtils from "../../../../../tests/TestUtils";
 import * as CryptoUtils from "../../CryptoUtils";
 import * as nativePBKDF2 from "../../pbkdf2/native";
+import * as Recrypt from "../RecryptWasm";
 
 describe("RecryptWasm", () => {
     beforeAll(() => {
@@ -355,14 +355,49 @@ describe("RecryptWasm", () => {
     });
 
     describe("createRequestSignature", () => {
-        it("returns signature details", () => {
+        it("returns comma list of items and calculates two signatures", () => {
+            const signingKeys = TestUtils.getSigningKeyPair();
+            jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
             spyOn(Date, "now").and.returnValue(123456);
-            const signatureDetails = Recrypt.createRequestSignature(1, "user-10", TestUtils.getSigningKeyPair(), 55);
-            expect(signatureDetails.version).toEqual(55);
-            expect(signatureDetails.message).toEqual(
-                "eyJ0cyI6MTIzNDU2LCJzaWQiOjEsInVpZCI6InVzZXItMTAiLCJ4IjoiQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQT0ifQ=="
-            );
-            expect(signatureDetails.signature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+            const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "get", "/path/to/resource", "bodyparts");
+            expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
+            expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+            expect(signatureDetails.requestHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+
+            //prettier-ignore
+            expect(Recrypt.getApi().ed25519Sign).toHaveBeenCalledWith(signingKeys.privateKey, new Uint8Array([49, 50, 51, 52, 53, 54, 44, 49, 44, 117, 115, 101, 114, 45, 49, 48, 44, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 61]));
+            //prettier-ignore
+            expect(Recrypt.getApi().ed25519Sign).toHaveBeenCalledWith(signingKeys.privateKey, new Uint8Array([49, 50, 51, 52, 53, 54, 44, 49, 44, 117, 115, 101, 114, 45, 49, 48, 44, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 61, 71, 69, 84, 47, 112, 97, 116, 104, 47, 116, 111, 47, 114, 101, 115, 111, 117, 114, 99, 101, 98, 111, 100, 121, 112, 97, 114, 116, 115]));
+        });
+
+        it("uses an empty byte array when body is empty", () => {
+            const signingKeys = TestUtils.getSigningKeyPair();
+            jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
+            spyOn(Date, "now").and.returnValue(123456);
+            const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "POST", "/path/to/resource", null);
+            expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
+            expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+            expect(signatureDetails.requestHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+
+            //prettier-ignore
+            expect(Recrypt.getApi().ed25519Sign).toHaveBeenCalledWith(signingKeys.privateKey, new Uint8Array([49, 50, 51, 52, 53, 54, 44, 49, 44, 117, 115, 101, 114, 45, 49, 48, 44, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 61]));
+            //prettier-ignore
+            expect(Recrypt.getApi().ed25519Sign).toHaveBeenCalledWith(signingKeys.privateKey, new Uint8Array([49, 50, 51, 52, 53, 54, 44, 49, 44, 117, 115, 101, 114, 45, 49, 48, 44, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 61, 80, 79, 83, 84, 47, 112, 97, 116, 104, 47, 116, 111, 47, 114, 101, 115, 111, 117, 114, 99, 101]));
+        });
+
+        it("uses existing Uint8Array when body is set as one", () => {
+            const signingKeys = TestUtils.getSigningKeyPair();
+            jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
+            spyOn(Date, "now").and.returnValue(123456);
+            const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "GET", "/path/to/resource", new Uint8Array([9, 9, 9, 9]));
+            expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
+            expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+            expect(signatureDetails.requestHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
+
+            //prettier-ignore
+            expect(Recrypt.getApi().ed25519Sign).toHaveBeenCalledWith(signingKeys.privateKey, new Uint8Array([49, 50, 51, 52, 53, 54, 44, 49, 44, 117, 115, 101, 114, 45, 49, 48, 44, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 61]));
+            //prettier-ignore
+            expect(Recrypt.getApi().ed25519Sign).toHaveBeenCalledWith(signingKeys.privateKey, new Uint8Array([49, 50, 51, 52, 53, 54, 44, 49, 44, 117, 115, 101, 114, 45, 49, 48, 44, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 61, 71, 69, 84, 47, 112, 97, 116, 104, 47, 116, 111, 47, 114, 101, 115, 111, 117, 114, 99, 101, 9, 9, 9, 9]));
         });
     });
 
