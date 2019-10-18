@@ -84,7 +84,7 @@ const userCreate = (keys: UserKeys, needsRotation: boolean): RequestMeta => {
     const body = {
         userPublicKey: publicKeyToBase64(publicKey),
         userPrivateKey: fromByteArray(encryptedPrivateKey),
-        needsRotation: needsRotation,
+        needsRotation,
     };
     return {
         url: `users`,
