@@ -229,9 +229,12 @@ export const createRequestSignature = (
     let bodyAsBytes = new Uint8Array();
     if (body instanceof Uint8Array) {
         bodyAsBytes = body;
-    }
-    if (typeof body === "string") {
+    } else if (typeof body === "string") {
         bodyAsBytes = encode(body);
+    } else if (body !== null && body !== undefined) {
+        //This shouldn't happen since our APIs only ever take strings or bytes, but prevent certain signature
+        //failure if provided something else.
+        throw new Error(`Unknown body type provided: ${body}`);
     }
 
     const requestHeaderSignature = RecryptApi.ed25519Sign(
