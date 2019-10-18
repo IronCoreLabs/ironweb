@@ -147,7 +147,7 @@ const userDeviceAdd = (userPublicKey: PublicKey<Uint8Array>, transformKey: Trans
  * Delete the users current device that is being used to make this request.
  */
 const deleteCurrentDevice = (userID: string): RequestMeta => ({
-    url: `users/${userID}/devices/current`,
+    url: `users/${encodeURIComponent(userID)}/devices/current`,
     options: {
         method: "DELETE",
         headers: {
@@ -164,7 +164,7 @@ const deleteCurrentDevice = (userID: string): RequestMeta => ({
  * @param {number}                 status         Updated status of user
  */
 const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, status?: number): RequestMeta => ({
-    url: `users/${userID}`,
+    url: `users/${encodeURIComponent(userID)}`,
     options: {
         method: "PUT",
         headers: {

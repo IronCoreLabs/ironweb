@@ -215,13 +215,13 @@ describe("UserApiEndpoints", () => {
                 })
             );
 
-            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setCurrentUser({...TestUtils.getFullUser(), id: "user-special~!@#$"});
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserUpdateApi(new Uint8Array([98, 103, 110])).engage(
                 (e) => fail(e.message),
                 () => {
-                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-special~!%40%23%24", expect.any(Number), expect.any(Object));
                     const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPrivateKey: "Ymdu",
@@ -303,14 +303,18 @@ describe("UserApiEndpoints", () => {
     describe("callUserCurrentDeviceDelete", () => {
         it("calls API to delete device for current user", () => {
             (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of({id: 353}));
-            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setCurrentUser({...TestUtils.getFullUser(), id: "user-special~!@#$"});
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserCurrentDeviceDelete().engage(
                 (e) => fail(e),
                 (deleteResult: any) => {
                     expect(deleteResult).toEqual({id: 353});
-                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10/devices/current", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
+                        "users/user-special~!%40%23%24/devices/current",
+                        expect.any(Number),
+                        expect.any(Object)
+                    );
                 }
             );
         });

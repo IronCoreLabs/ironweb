@@ -212,7 +212,7 @@ export const decryptPlaintext = (encryptedPlaintext: TransformedEncryptedMessage
 
 /**
  * Create our complex request signature using the provided paramters. Details about how this signature works are written up in
- * https://github.com/IronCoreLabs/design-docs/issues/369
+ * https://github.com/IronCoreLabs/ironoxide/issues/50
  */
 export const createRequestSignature = (
     segmentID: number,
