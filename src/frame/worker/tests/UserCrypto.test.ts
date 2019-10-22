@@ -1,9 +1,9 @@
-import * as UserCrypto from "../UserCrypto";
-import * as AES from "../crypto/aes";
-import * as Recrypt from "../crypto/recrypt/RecryptWasm";
 import Future from "futurejs";
 import {ErrorCodes} from "../../../Constants";
 import * as TestUtils from "../../../tests/TestUtils";
+import * as AES from "../crypto/aes";
+import * as Recrypt from "../crypto/recrypt/RecryptWasm";
+import * as UserCrypto from "../UserCrypto";
 
 describe("UserCrypto", () => {
     describe("generateDeviceAndSigningKeys", () => {
@@ -280,20 +280,27 @@ describe("UserCrypto", () => {
     describe("signRequestPayload", () => {
         it("signs the provided payload and returns the signature", () => {
             spyOn(Recrypt, "createRequestSignature").and.returnValue({
-                message: "stuff",
-                signature: "sig",
-                version: 33,
+                userContextHeader: "comma,list,stuff",
+                requestHeaderSignature: "sig1",
+                authHeaderSignature: "sig2",
             });
 
-            UserCrypto.signRequestPayload(1, "user-10", TestUtils.getSigningKeyPair(), 33).engage(
+            UserCrypto.signRequestPayload(1, "user-10", TestUtils.getSigningKeyPair(), "GET", "/path/to/resource", "body").engage(
                 (e) => fail(e.message),
                 (result) => {
                     expect(result).toEqual({
-                        message: "stuff",
-                        signature: "sig",
-                        version: 33,
+                        userContextHeader: "comma,list,stuff",
+                        requestHeaderSignature: "sig1",
+                        authHeaderSignature: "sig2",
                     });
-                    expect(Recrypt.createRequestSignature).toHaveBeenCalledWith(1, "user-10", TestUtils.getSigningKeyPair(), 33);
+                    expect(Recrypt.createRequestSignature).toHaveBeenCalledWith(
+                        1,
+                        "user-10",
+                        TestUtils.getSigningKeyPair(),
+                        "GET",
+                        "/path/to/resource",
+                        "body"
+                    );
                 }
             );
         });
@@ -301,7 +308,7 @@ describe("UserCrypto", () => {
         it("maps a recrypt error into an SDKError", () => {
             spyOn(Recrypt, "createRequestSignature").and.throwError("REEFER MADNESS");
 
-            UserCrypto.signRequestPayload(1, "user-10", TestUtils.getSigningKeyPair(), 33).engage(
+            UserCrypto.signRequestPayload(1, "user-10", TestUtils.getSigningKeyPair(), "GET", "/path/to/resource", "body").engage(
                 (e) => {
                     expect(e.message).toBe("REEFER MADNESS");
                     expect(e.code).toBe(ErrorCodes.SIGNATURE_GENERATION_FAILURE);

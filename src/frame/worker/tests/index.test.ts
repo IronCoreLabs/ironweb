@@ -1,9 +1,9 @@
+import Future from "futurejs";
 import {messenger} from "../";
-import * as UserCrypto from "../UserCrypto";
+import SDKError from "../../../lib/SDKError";
 import * as DocumentCrypto from "../DocumentCrypto";
 import * as GroupCrypto from "../GroupCrypto";
-import Future from "futurejs";
-import SDKError from "../../../lib/SDKError";
+import * as UserCrypto from "../UserCrypto";
 
 describe("worker index", () => {
     describe("ParentThreadMessenger", () => {
@@ -158,12 +158,21 @@ describe("worker index", () => {
                     segmentID: 1,
                     userID: "user-10",
                     signingKeys: {publicKey: new Uint8Array(32), privateKey: new Uint8Array(64)},
-                    signatureVersion: 35,
+                    method: "GET",
+                    url: "/path/to/resource",
+                    body: '{"foo":"bar"}',
                 },
             };
             messenger.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: "SIGNATURE_GENERATION_RESPONSE", message: "signature"});
-                expect(UserCrypto.signRequestPayload).toHaveBeenCalledWith(1, "user-10", {publicKey: new Uint8Array(32), privateKey: new Uint8Array(64)}, 35);
+                expect(UserCrypto.signRequestPayload).toHaveBeenCalledWith(
+                    1,
+                    "user-10",
+                    {publicKey: new Uint8Array(32), privateKey: new Uint8Array(64)},
+                    "GET",
+                    "/path/to/resource",
+                    '{"foo":"bar"}'
+                );
                 done();
             });
         });

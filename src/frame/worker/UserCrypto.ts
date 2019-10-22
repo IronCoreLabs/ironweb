@@ -1,8 +1,8 @@
-import loadRecrypt from "./crypto/recrypt";
-import * as AES from "./crypto/aes";
 import Future from "futurejs";
-import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
+import SDKError from "../../lib/SDKError";
+import * as AES from "./crypto/aes";
+import loadRecrypt from "./crypto/recrypt";
 
 /**
  * Decrypt the users private user key by generating a derived key from their passcode.
@@ -177,8 +177,8 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
 /**
  * Create a request signature using the provided arguments for requests to the ironcore-id API
  */
-export function signRequestPayload(segmentID: number, userID: string, signingKeys: SigningKeyPair, signatureVersion: number) {
+export function signRequestPayload(segmentID: number, userID: string, signingKeys: SigningKeyPair, method: string, url: string, body?: BodyInit | null) {
     return loadRecrypt()
-        .map((Recrypt) => Recrypt.createRequestSignature(segmentID, userID, signingKeys, signatureVersion))
+        .map((Recrypt) => Recrypt.createRequestSignature(segmentID, userID, signingKeys, method, url, body))
         .errorMap((error) => new SDKError(error, ErrorCodes.SIGNATURE_GENERATION_FAILURE));
 }

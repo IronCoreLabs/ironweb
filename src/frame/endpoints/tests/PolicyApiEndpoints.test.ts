@@ -6,7 +6,7 @@ import PolicyApiEndpoints from "../PolicyApiEndpoints";
 
 describe("PolicyApiEndpoint", () => {
     beforeEach(() => {
-        spyOn(ApiRequest, "fetchJSON").and.returnValue(
+        spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
             Future.of({
                 foo: "bar",
             })
@@ -26,11 +26,10 @@ describe("PolicyApiEndpoint", () => {
                 (e) => fail(e),
                 (result) => {
                     expect(result).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
                         "policies?sensitivity=classy%20boi&category=catty%26batty&dataSubject=Tommy%26Fing%20B&substituteId=CZECH%20REPUB",
                         expect.any(Number),
-                        expect.any(Object),
-                        expect.any(Future)
+                        expect.any(Object)
                     );
                 }
             );
@@ -45,11 +44,10 @@ describe("PolicyApiEndpoint", () => {
                 (e) => fail(e),
                 (result) => {
                     expect(result).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith(
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
                         "policies?sensitivity=classy%20boi&category=catty%26batty",
                         expect.any(Number),
-                        expect.any(Object),
-                        expect.any(Future)
+                        expect.any(Object)
                     );
                 }
             );

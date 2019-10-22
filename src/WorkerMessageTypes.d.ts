@@ -1,6 +1,6 @@
-import {UserUpdateKeys, UserCreationKeys, UserKeys} from "./frame/endpoints/UserApiEndpoints";
-import {TransformKeyGrant} from "./frame/worker/crypto/recrypt";
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
+import {UserCreationKeys, UserKeys, UserUpdateKeys} from "./frame/endpoints/UserApiEndpoints";
+import {TransformKeyGrant} from "./frame/worker/crypto/recrypt";
 
 export interface NewUserKeygenWorkerRequest {
     type: "NEW_USER_KEYGEN";
@@ -205,7 +205,9 @@ export interface SignatureGenerationWorkerRequest {
         segmentID: number;
         userID: string;
         signingKeys: SigningKeyPair;
-        signatureVersion: number;
+        url: string;
+        method: string;
+        body?: BodyInit | null;
     };
 }
 export interface SignatureGenerationWorkerResponse {

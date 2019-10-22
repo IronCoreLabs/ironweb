@@ -1,12 +1,12 @@
 import Future from "futurejs";
-import * as ApiRequest from "../../ApiRequest";
 import * as TestUtils from "../../../tests/TestUtils";
+import * as ApiRequest from "../../ApiRequest";
 import ApiState from "../../ApiState";
 import EncryptedDekEndpoints from "../EncryptedDekEndpoints";
 
 describe("EncryptedDekEndpoints", () => {
     beforeEach(() => {
-        spyOn(ApiRequest, "fetchJSON").and.returnValue(
+        spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
             Future.of({
                 foo: "bar",
             })
@@ -23,9 +23,9 @@ describe("EncryptedDekEndpoints", () => {
                 () => fail("edeks/transform should not reject"),
                 (response: any) => {
                     expect(response).toEqual({foo: "bar"});
-                    expect(ApiRequest.fetchJSON).toHaveBeenCalledWith("edeks/transform", expect.any(Number), expect.any(Object), expect.any(Future));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("edeks/transform", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.fetchJSON as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
                     expect(request.body).toEqual(edeks);
                 }
             );

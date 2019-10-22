@@ -1,21 +1,12 @@
-import {ErrorCodes} from "../../Constants";
-import * as ApiRequest from "../ApiRequest";
-import ApiState from "../ApiState";
 import Future from "futurejs";
-import {SDKError} from "../../shim";
 import {UserOrGroup} from "ironweb";
+import {ErrorCodes} from "../../Constants";
+import {SDKError} from "../../shim";
+import {makeAuthorizedApiRequest} from "../ApiRequest";
 
 interface EncryptedDekTransformResponse {
     encryptedSymmetricKey: TransformedEncryptedMessage;
     userOrGroup: UserOrGroup;
-}
-
-/**
- * Generate signature message from current user state
- */
-function getSignatureHeader() {
-    const {segmentId, id} = ApiState.user();
-    return ApiRequest.getRequestSignature(segmentId, id, ApiState.signingKeys());
 }
 
 /**
@@ -40,6 +31,6 @@ export default {
      */
     callEncryptedDekTransformApi(encryptedDeks: Uint8Array): Future<SDKError, EncryptedDekTransformResponse> {
         const {url, options, errorCode} = encryptedDekTransform(encryptedDeks);
-        return ApiRequest.fetchJSON(url, errorCode, options, getSignatureHeader());
+        return makeAuthorizedApiRequest(url, errorCode, options);
     },
 };
