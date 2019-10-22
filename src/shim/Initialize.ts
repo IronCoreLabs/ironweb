@@ -99,7 +99,7 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
         .map(({message: {id, segmentId, userPrivateKey, needsRotation, ...rest}}) => ({
             accountID: id,
             segmentID: segmentId,
-            needsRotation: needsRotation,
+            needsRotation,
             ...rest,
         }))
         .toPromise();
