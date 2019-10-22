@@ -88,7 +88,7 @@ function setUserPasscode(doesUserExist: boolean, passcode: string): Future<Error
 /**
  * Create a new user using a JWT callback. Returns the created user's info if successful.
  */
-export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: string, needsRotation: boolean): Promise<UserCreateResponse> =>
+export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: string, needsRotation = false): Promise<UserCreateResponse> =>
     getJWT(jwtCallback)
         .flatMap((jwtToken) => {
             const payload: CreateUserRequest = {type: "CREATE_USER", message: {passcode, jwtToken, needsRotation}};
