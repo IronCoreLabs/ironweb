@@ -109,6 +109,7 @@ interface ApiUserResponse {
     status: number;
     userMasterPublicKey: PublicKey<Base64String>;
     userPrivateKey: PrivateKey<Base64String>;
+    needsRotation: boolean;
 }
 interface UserOrGroupPublicKey {
     id: string;

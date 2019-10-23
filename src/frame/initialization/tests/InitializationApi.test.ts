@@ -32,7 +32,7 @@ describe("InitializationApi", () => {
             );
             spyOn(UserApiEndpoints, "callUserCreateApi").and.returnValue(Future.of("new user"));
 
-            InitApi.createUser("passcode", "jwtToken2").engage(
+            InitApi.createUser("passcode", "jwtToken2", false).engage(
                 (e) => fail(e),
                 (userCreationData: any) => {
                     expect(userCreationData).toEqual("new user");
@@ -41,7 +41,7 @@ describe("InitializationApi", () => {
                         type: expect.any(String),
                         message: {passcode: "passcode"},
                     });
-                    expect(UserApiEndpoints.callUserCreateApi).toHaveBeenCalledWith("jwtToken2", userKeys);
+                    expect(UserApiEndpoints.callUserCreateApi).toHaveBeenCalledWith("jwtToken2", userKeys, false);
                     done();
                 }
             );

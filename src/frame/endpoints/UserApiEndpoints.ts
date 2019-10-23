@@ -63,12 +63,13 @@ const verify = (): RequestMeta => ({
  * @param  {UserKeys} keys Generated keys. Can either be a full key pair set of public/private keys, or a partial set with only a public key.
  * @return {RequestMeta}                Request object that can be passed to fetch() API
  */
-const userCreate = (keys: UserKeys): RequestMeta => {
+const userCreate = (keys: UserKeys, needsRotation: boolean): RequestMeta => {
     const {publicKey, encryptedPrivateKey} = keys;
 
     const body = {
         userPublicKey: publicKeyToBase64(publicKey),
         userPrivateKey: fromByteArray(encryptedPrivateKey),
+        needsRotation,
     };
     return {
         url: `users`,
@@ -206,8 +207,9 @@ export default {
     /**
      * Invoke user create API with jwt and users keys
      */
-    callUserCreateApi(jwt: string, keys: UserKeys): Future<SDKError, UserCreateResponseType> {
-        const {url, options, errorCode} = userCreate(keys);
+
+    callUserCreateApi(jwt: string, keys: UserKeys, needsRotation: boolean): Future<SDKError, UserCreateResponseType> {
+        const {url, options, errorCode} = userCreate(keys, needsRotation);
         return makeJwtApiRequest<UserCreateResponseType>(url, errorCode, options, jwt);
     },
 

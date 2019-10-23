@@ -67,9 +67,9 @@ describe("Init exposed public SDK", () => {
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
 
-            PublicSdk.createNewUser(fetchJWT, passcode);
+            PublicSdk.createNewUser(fetchJWT, passcode, {needsRotation: true});
 
-            expect(Init.createNewUser).toHaveBeenCalledWith(fetchJWT, passcode);
+            expect(Init.createNewUser).toHaveBeenCalledWith(fetchJWT, passcode, true);
         });
 
         it("should return error code if random number generation is not available in client browser", (done) => {

@@ -1,4 +1,4 @@
-import {SDKInitializationResult, UserCreateResponse} from "../../ironweb";
+import {SDKInitializationResult, UserCreateResponse, UserCreateOptions} from "../../ironweb";
 import {ErrorCodes} from "../Constants";
 import SDKError from "../lib/SDKError";
 import * as Init from "./Initialize";
@@ -35,8 +35,13 @@ const randomGenFailure = () =>
 
 /**
  * Create a new user from the given JWT callback and passcode. Doesn't create any devices for the new user, and doesn't initialize the SDK.
+ * @param {UserCreateOptions}
  */
-export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: string): Promise<UserCreateResponse> {
+export function createNewUser(
+    jwtCallback: JWTCallbackToPromise,
+    passcode: string,
+    options: UserCreateOptions = {needsRotation: false}
+): Promise<UserCreateResponse> {
     if (!jwtCallback || typeof jwtCallback !== "function") {
         throw new Error("You must provide a function which will generate a JWT as the first parameter to 'IronWeb.createNewUser'.");
     }
@@ -46,7 +51,7 @@ export function createNewUser(jwtCallback: JWTCallbackToPromise, passcode: strin
     if (!isWebAssemblySupported()) {
         return webAssemblyFailure();
     }
-    return Init.createNewUser(jwtCallback, passcode);
+    return Init.createNewUser(jwtCallback, passcode, options.needsRotation || false);
 }
 
 /**

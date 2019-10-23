@@ -10,7 +10,7 @@ describe("Initialize", () => {
         it("rejects if JWT callback does not return a promise", (done) => {
             const jwtCallback = () => ({} as any);
 
-            Initialize.createNewUser(jwtCallback, "passcode")
+            Initialize.createNewUser(jwtCallback, "passcode", false)
                 .then(() => fail("resolve should not be called when JWT CB is invalid"))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
@@ -24,7 +24,7 @@ describe("Initialize", () => {
                 return Promise.reject(new Error("failed promise"));
             };
 
-            Initialize.createNewUser(jwtCallback, "passcode")
+            Initialize.createNewUser(jwtCallback, "passcode", false)
                 .then(() => fail("resolve should not be called when JWT CB rejects"))
                 .catch((err: Error) => {
                     expect(err).toEqual(new Error("failed promise"));
@@ -35,7 +35,7 @@ describe("Initialize", () => {
         it("rejects if JWT returned is not a string", (done) => {
             const jwtCallback = () => Promise.resolve({}) as Promise<string>;
 
-            Initialize.createNewUser(jwtCallback, "passcode")
+            Initialize.createNewUser(jwtCallback, "passcode", false)
                 .then(() => fail("resolve should not be called when JWT CB rejects"))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
@@ -47,7 +47,7 @@ describe("Initialize", () => {
         it("rejects if JWT returned is an empty string", (done) => {
             const jwtCallback = () => Promise.resolve("");
 
-            Initialize.createNewUser(jwtCallback, "passcode")
+            Initialize.createNewUser(jwtCallback, "passcode", false)
                 .then(() => fail("resolve should not be called when JWT CB rejects"))
                 .catch((err: SDKError) => {
                     expect(err).toEqual(expect.any(Error));
@@ -63,7 +63,7 @@ describe("Initialize", () => {
             );
             spyOn(ShimUtils, "storeParentWindowSymmetricKey");
 
-            Initialize.createNewUser(jwtCallback, "passcode")
+            Initialize.createNewUser(jwtCallback, "passcode", false)
                 .then((initResult) => {
                     expect(jwtCallback.calls.count()).toEqual(1);
                     expect(initResult).toEqual({
@@ -78,6 +78,7 @@ describe("Initialize", () => {
                         message: {
                             jwtToken: "validJWT",
                             passcode: "passcode",
+                            needsRotation: false,
                         },
                     });
 

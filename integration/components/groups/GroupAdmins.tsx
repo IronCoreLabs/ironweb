@@ -42,7 +42,7 @@ export default class GroupAdmins extends React.Component<GroupAdminsProps, Group
         };
     }
 
-    componentWillReceiveProps(nextProps: GroupAdminsProps) {
+    UNSAFE_componentWillReceiveProps(nextProps: GroupAdminsProps) {
         this.setState({groupAdmins: nextProps.groupAdmins});
     }
 

@@ -44,12 +44,13 @@ describe("frame index", () => {
                 message: {
                     jwtToken: "validJwt",
                     passcode: "passcode",
+                    needsRotation: false,
                 },
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
                 expect(result).toEqual("createUser");
-                expect(Init.createUser).toHaveBeenCalledWith("validJwt", "passcode");
+                expect(Init.createUser).toHaveBeenCalledWith("validJwt", "passcode", false);
                 done();
             });
         });

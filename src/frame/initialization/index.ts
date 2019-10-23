@@ -81,8 +81,8 @@ export const initialize = (jwtToken: string, deviceAndSigningSymmetricKey?: stri
 /**
  * Create a new user given a JWT token to request with and the user's passcode to escrow their keys
  */
-export const createUser = (jwtToken: string, passcode: string): Future<SDKError, CreateUserResponse> =>
-    InitializationApi.createUser(passcode, jwtToken).map((_) => ({
+export const createUser = (jwtToken: string, passcode: string, needsRotation: boolean): Future<SDKError, CreateUserResponse> =>
+    InitializationApi.createUser(passcode, jwtToken, needsRotation).map((_) => ({
         type: "CREATE_USER_RESPONSE",
         message: _,
     }));
