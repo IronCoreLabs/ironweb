@@ -19,6 +19,17 @@ export function changePasscode(currentPasscode: string, newPasscode: string) {
         .toPromise();
 }
 
+export function rotateCurrUsersPrivateKey(passcode: string) {
+    checkSDKInitialized();
+    const payload: MT.RotateUserPrivateKey = {
+        type: "ROTATE_USER_PRIVATE_KEY",
+        message: {passcode},
+    };
+    return FrameMediator.sendMessage<MT.RotateUserPrivateKeyResponse>(payload)
+        .map(() => undefined)
+        .toPromise();
+}
+
 /**
  * Clears local device keys from the current browser instance. This will require the user to enter their passcode the next time they want to use this browser on this machine.
  * This method should usually be called whenever the current user logs out of your application.

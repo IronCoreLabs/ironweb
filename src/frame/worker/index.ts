@@ -93,6 +93,10 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 data.message.symmetricKey,
                 data.message.nonce
             ).engage(errorHandler, (deviceAndSigningKeys) => callback({type: "DECRYPT_LOCAL_KEYS_RESPONSE", message: deviceAndSigningKeys}));
+        case "ROTATE_USER_PRIVATE_KEY":
+            return UserCrypto.augmentPrivateKey(data.message.passcode, data.message.privateKey).engage(errorHandler, (userRotationResult) =>
+                callback({type: "ROTATE_USER_PRIVATE_KEY_RESPONSE", message: userRotationResult})
+            );
         case "CHANGE_USER_PASSCODE":
             return UserCrypto.changeUsersPasscode(
                 data.message.currentPasscode,

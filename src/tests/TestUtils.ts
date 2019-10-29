@@ -20,6 +20,7 @@ export function getFullUser(): ApiUserResponse {
         userMasterPublicKey: {x: userPublicXString, y: userPublicYString},
         userPrivateKey: "",
         needsRotation: false,
+        keyId: 1,
     };
 }
 

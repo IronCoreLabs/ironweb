@@ -40,6 +40,7 @@ export interface InitApiSdkResponse {
         user: {
             id: string;
             status: number;
+            needsRotation: boolean;
         };
         symmetricKey?: string;
     };
@@ -378,6 +379,17 @@ export interface GroupDeleteResponse {
 }
 
 /* User */
+
+export interface RotateUserPrivateKey {
+    type: "ROTATE_USER_PRIVATE_KEY";
+    message: {passcode: string};
+}
+
+export interface RotateUserPrivateKeyResponse {
+    type: "ROTATE_USER_PRIVATE_KEY_RESPONSE";
+    message: null;
+}
+
 export interface ChangeUserPasscode {
     type: "CHANGE_USER_PASSCODE";
     message: {
@@ -407,6 +419,7 @@ export interface ErrorResponse {
 }
 
 export type RequestMessage =
+    | RotateUserPrivateKey
     | FrameLoadedRequest
     | InitApiRequest
     | CreateUserRequest
@@ -440,6 +453,7 @@ export type RequestMessage =
     | DocumentUnmanagedEncryptRequest;
 
 export type ResponseMessage =
+    | RotateUserPrivateKeyResponse
     | FrameLoadedResponse
     | InitApiPasscodeResponse
     | InitApiSdkResponse

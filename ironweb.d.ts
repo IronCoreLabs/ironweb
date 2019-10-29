@@ -146,10 +146,10 @@ export interface UserCreateOptions {
 /**
  * SDK Namespaces
  */
-
 export interface User {
     deauthorizeDevice(): Promise<{transformKeyDeleted: boolean}>;
     changePasscode(currentPasscode: string, newPasscode: string): Promise<void>;
+    rotateCurrUsersPrivateKey(passcode: string): Promise<void>;
 }
 
 export interface Document {
@@ -198,6 +198,7 @@ export interface Codec {
 export interface InitializedUser {
     id: string;
     status: number;
+    needsRotation: boolean;
 }
 
 export interface SDKInitializationResult {
@@ -272,7 +273,7 @@ export const codec: Codec;
 export const user: User;
 export const group: Group;
 
-export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback): Promise<SDKInitializationResult>;
+export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback, needsRotation: boolean): Promise<SDKInitializationResult>;
 export function createNewUser(jwtCallback: JWTCallback, passcode: string, options?: UserCreateOptions): Promise<UserCreateResponse>;
 export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceKeys>;
 export function isInitialized(): boolean;

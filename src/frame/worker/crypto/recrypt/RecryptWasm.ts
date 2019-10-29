@@ -15,6 +15,22 @@ type Plaintext = Uint8Array;
 let RecryptApi: Recrypt.Api256;
 
 /**
+ * Augments UserPrivateKey and return both the augmented private key and the augmentation factor.
+ * @param userPrivateKey current private key to be augmented
+ * @param augmentatioFactor
+ */
+export const getRotationResults = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+    return generateKeyPair().map((data) => {
+        const augmentationFactor = data.privateKey;
+        const newPrivateKey = Recrypt.subtractPrivateKeys(userPrivateKey, augmentationFactor);
+        return {
+            newPrivateKey,
+            augmentationFactor,
+        };
+    });
+};
+
+/**
  * Convert the components of an encrypted symmetric key into base64 strings for submission to the API
  * @param {EncryptedValue} encryptedValue Encrypted value to transform
  */

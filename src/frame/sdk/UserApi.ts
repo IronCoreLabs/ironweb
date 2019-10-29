@@ -26,6 +26,27 @@ export function deauthorizeDevice() {
 }
 
 /**
+ * Rotate users current private key by taking their current passcode and using it to derive a key to decrypt their user private key.
+ * Then generates and augmentation factor and subtracts that augmentation factor from the users private key. The new private key is then
+ * encrypted. The new encrypted private key and the augmetnation factor is then passed as an authorized api request. The server then
+ * validates the request and augments the server side private key.
+ * @param {string} passcode Users current passcode
+ */
+export function rotateCurrUsersPrivateKey(passcode: string) {
+    const {privateKey} = ApiState.signingKeys();
+    const payload: WMT.RotateUserPrivateKeyWorkRequest = {
+        type: "ROTATE_USER_PRIVATE_KEY",
+        message: {
+            passcode,
+            privateKey,
+        },
+    };
+    return WorkerMediator.sendMessage<WMT.RotateUserPrivateKeyWorkResponse>(payload).flatMap(({message}) =>
+        UserApiEndpoints.callUserKeyUpdateApi(message.newEncryptedPrivateUserKey, message.augmentationFactor)
+    );
+}
+
+/**
  * Change the current users passcode by taking their current passcode and using it to derive a key to decrypt their user private key.
  * Then derive a key from their new passcode and use that to encrypt their user private key before saving it in escrow.
  * @param {string} currentPasscode Users current passcode
