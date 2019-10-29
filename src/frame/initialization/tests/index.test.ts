@@ -136,6 +136,7 @@ describe("init index", () => {
                         message: {
                             user: {
                                 id: "user-10",
+                                needsRotation: false,
                                 status: 1,
                             },
                             symmetricKey: undefined,
@@ -221,6 +222,7 @@ describe("init index", () => {
                             symmetricKey: "AAA=",
                             user: {
                                 id: "user-10",
+                                needsRotation: false,
                                 status: 1,
                             },
                         },
@@ -270,6 +272,7 @@ describe("init index", () => {
                             symmetricKey: "AAA=",
                             user: {
                                 id: "user-10",
+                                needsRotation: false,
                                 status: 1,
                             },
                         },
