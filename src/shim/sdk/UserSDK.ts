@@ -22,7 +22,7 @@ export function changePasscode(currentPasscode: string, newPasscode: string) {
  * Rotates the user current private key.
  * @param {string} passcode
  */
-export function rotateCurrUsersPrivateKey(passcode: string) {
+export function rotateMasterKey(passcode: string) {
     checkSDKInitialized();
     const payload: MT.RotateUserPrivateKey = {
         type: "ROTATE_USER_PRIVATE_KEY",

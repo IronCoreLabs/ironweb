@@ -9,20 +9,29 @@ import loadRecrypt from "./crypto/recrypt";
  * @param {Uint8Array} privateKey
  * @param {Uint8Array} augmentationFactor
  */
-export function augmentPrivateKey(
+export function rotatePrivateKey(
     passcode: string,
-    userPrivateKey: Uint8Array
+    encryptedPrivateUserKey: Uint8Array,
+    derivedKeySalt: Uint8Array
 ): Future<SDKError, {newEncryptedPrivateUserKey: Uint8Array; augmentationFactor: Uint8Array}> {
     return loadRecrypt()
-        .flatMap((Recrypt) => Future.gather2(Recrypt.getRotationResults(userPrivateKey), Recrypt.generatePasswordDerivedKey(passcode)))
-        .flatMap(([{newPrivateKey, augmentationFactor}, derivedKey]) =>
-            AES.encryptUserKey(newPrivateKey, derivedKey).map((encryptedPrivateKey) => ({
-                newEncryptedPrivateUserKey: encryptedPrivateKey,
-                augmentationFactor,
-            }))
-        )
+        .flatMap((Recrypt) => {
+            return Future.gather2(decryptUserMasterPrivateKey(passcode, encryptedPrivateUserKey, derivedKeySalt), Recrypt.generatePasswordDerivedKey(passcode))
+                .flatMap(([userPrivateKey, derivedKey]) => {
+                    return Future.gather2(Recrypt.rotateUsersPrivateKey(userPrivateKey), Future.of(derivedKey));
+                })
+                .flatMap(([{newPrivateKey, augmentationFactor}, derivedKey]) => {
+                    return AES.encryptUserKey(newPrivateKey, derivedKey).map((encryptedPrivateKey) => {
+                        return {
+                            newEncryptedPrivateUserKey: encryptedPrivateKey,
+                            augmentationFactor,
+                        };
+                    });
+                });
+        })
         .errorMap((error) => new SDKError(error, ErrorCodes.USER_PRIVATE_KEY_ROTATION_FAILURE));
 }
+
 /**
  * Decrypt the users private user key by generating a derived key from their passcode.
  * @param {string}     passcode                Users passcode

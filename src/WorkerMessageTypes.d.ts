@@ -72,15 +72,16 @@ export interface DecryptLocalKeysWorkerResponse {
     };
 }
 
-export interface RotateUserPrivateKeyWorkRequest {
+export interface RotateUserPrivateKeyWorkerRequest {
     type: "ROTATE_USER_PRIVATE_KEY";
     message: {
         passcode: string;
-        privateKey: Uint8Array;
+        encryptedPrivateUserKey: Uint8Array;
+        keySalt: Uint8Array;
     };
 }
 
-export interface RotateUserPrivateKeyWorkResponse {
+export interface RotateUserPrivateKeyWorkerResponse {
     type: "ROTATE_USER_PRIVATE_KEY_RESPONSE";
     message: {
         newEncryptedPrivateUserKey: Uint8Array;
@@ -240,7 +241,7 @@ export interface ErrorResponse {
 }
 
 export type RequestMessage =
-    | RotateUserPrivateKeyWorkRequest
+    | RotateUserPrivateKeyWorkerRequest
     | EncryptDocumentWorkerRequest
     | ReencryptDocumentWorkerRequest
     | DecryptDocumentWorkerRequest
@@ -256,7 +257,7 @@ export type RequestMessage =
     | SignatureGenerationWorkerRequest;
 
 export type ResponseMessage =
-    | RotateUserPrivateKeyWorkResponse
+    | RotateUserPrivateKeyWorkerResponse
     | EncryptDocumentWorkerResponse
     | ReencryptDocumentWorkerResponse
     | DecryptDocumentWorkerResponse

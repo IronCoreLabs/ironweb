@@ -29,7 +29,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
 
     switch (data.type) {
         case "ROTATE_USER_PRIVATE_KEY":
-            return UserApi.rotateCurrUsersPrivateKey(data.message.passcode).engage(errorHandler, () =>
+            return UserApi.rotateUserMasterKey(data.message.passcode).engage(errorHandler, () =>
                 callback({
                     type: "ROTATE_USER_PRIVATE_KEY_RESPONSE",
                     message: null,

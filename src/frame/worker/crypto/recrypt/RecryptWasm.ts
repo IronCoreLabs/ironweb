@@ -19,13 +19,11 @@ let RecryptApi: Recrypt.Api256;
  * @param userPrivateKey current private key to be augmented
  * @param augmentatioFactor
  */
-export const getRotationResults = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+export const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
     return generateKeyPair().map((data) => {
-        const augmentationFactor = data.privateKey;
-        const newPrivateKey = Recrypt.subtractPrivateKeys(userPrivateKey, augmentationFactor);
         return {
-            newPrivateKey,
-            augmentationFactor,
+            newPrivateKey: Recrypt.subtractPrivateKeys(userPrivateKey, data.privateKey),
+            augmentationFactor: data.privateKey,
         };
     });
 };

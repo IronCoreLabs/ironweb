@@ -60,15 +60,15 @@ describe("UserSDK", () => {
             });
         });
 
-        describe("rotateCurrUsersPrivateKey", () => {
+        describe("rotateMasterKey", () => {
             it("throw if SDK has not yet been initalized", () => {
                 ShimUtils.clearSDKInitialized();
-                expect(() => UserSDK.rotateCurrUsersPrivateKey("current")).toThrow();
+                expect(() => UserSDK.rotateMasterKey("current")).toThrow();
             });
 
             it("send rotate user private key payload to the frame", (done) => {
                 ShimUtils.setSDKInitialized();
-                UserSDK.rotateCurrUsersPrivateKey("current")
+                UserSDK.rotateMasterKey("current")
                     .then((result: any) => {
                         expect(result).toBeUndefined();
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({

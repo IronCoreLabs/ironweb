@@ -30,7 +30,7 @@ declare const _WORKER_PATH_LOCATION_: string;
 type Base64String = string;
 type PrivateKey<T> = T;
 type SigningPublicKey<T> = T;
-type AugmentationFactor<T> = T;
+type AugmentationFactor = Uint8Array;
 type JWTCallbackToPromise = () => Promise<string>;
 type PasscodeCallbackToPromise = (userExists: boolean) => Promise<string>;
 type DerivedKey = CryptoKey | Uint8Array;

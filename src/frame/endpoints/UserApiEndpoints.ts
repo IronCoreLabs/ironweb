@@ -179,12 +179,7 @@ const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, sta
     errorCode: ErrorCodes.USER_UPDATE_REQUEST_FAILURE,
 });
 
-const userKeyUpdateApi = (
-    userID: string,
-    userPrivateKey: PrivateKey<Uint8Array>,
-    augmentationFactor: AugmentationFactor<Uint8Array>,
-    userKeyId: number
-): RequestMeta => ({
+const userKeyUpdateApi = (userID: string, userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor, userKeyId: number): RequestMeta => ({
     url: `users/${encodeURIComponent(userID)}keys/${userKeyId}`,
     options: {
         method: "PUT",
@@ -246,7 +241,7 @@ export default {
      * @param userPrivateKey
      * @param augmentationFactor
      */
-    callUserKeyUpdateApi(userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor<Uint8Array>): Future<SDKError, UserUpdateResponseType> {
+    callUserKeyUpdateApi(userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor): Future<SDKError, UserUpdateResponseType> {
         const {id, keyId} = ApiState.user();
         const {url, options, errorCode} = userKeyUpdateApi(id, userPrivateKey, augmentationFactor, keyId);
         return makeAuthorizedApiRequest(url, errorCode, options);

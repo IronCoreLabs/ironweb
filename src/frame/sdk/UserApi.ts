@@ -32,16 +32,17 @@ export function deauthorizeDevice() {
  * validates the request and augments the server side private key.
  * @param {string} passcode Users current passcode
  */
-export function rotateCurrUsersPrivateKey(passcode: string) {
-    const {privateKey} = ApiState.signingKeys();
-    const payload: WMT.RotateUserPrivateKeyWorkRequest = {
+export function rotateUserMasterKey(passcode: string) {
+    const encryptedPrivateUserKey = ApiState.encryptedUserKey();
+    const payload: WMT.RotateUserPrivateKeyWorkerRequest = {
         type: "ROTATE_USER_PRIVATE_KEY",
         message: {
             passcode,
-            privateKey,
+            encryptedPrivateUserKey,
+            keySalt: sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH),
         },
     };
-    return WorkerMediator.sendMessage<WMT.RotateUserPrivateKeyWorkResponse>(payload).flatMap(({message}) =>
+    return WorkerMediator.sendMessage<WMT.RotateUserPrivateKeyWorkerResponse>(payload).flatMap(({message}) =>
         UserApiEndpoints.callUserKeyUpdateApi(message.newEncryptedPrivateUserKey, message.augmentationFactor)
     );
 }

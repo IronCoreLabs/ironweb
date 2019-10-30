@@ -149,7 +149,7 @@ export interface UserCreateOptions {
 export interface User {
     deauthorizeDevice(): Promise<{transformKeyDeleted: boolean}>;
     changePasscode(currentPasscode: string, newPasscode: string): Promise<void>;
-    rotateCurrUsersPrivateKey(passcode: string): Promise<void>;
+    rotateMasterKey(passcode: string): Promise<void>;
 }
 
 export interface Document {
@@ -235,6 +235,7 @@ export interface ErrorCodes {
     USER_DEVICE_KEY_DECRYPTION_FAILURE: 208;
     USER_PASSCODE_CHANGE_FAILURE: 209;
     USER_DEVICE_DELETE_REQUEST_FAILURE: 210;
+    USER_PRIVATE_KEY_ROTATION_FAILURE: 211;
     DOCUMENT_LIST_REQUEST_FAILURE: 300;
     DOCUMENT_GET_REQUEST_FAILURE: 301;
     DOCUMENT_CREATE_REQUEST_FAILURE: 302;
