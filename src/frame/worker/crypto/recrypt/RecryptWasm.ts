@@ -15,20 +15,6 @@ type Plaintext = Uint8Array;
 let RecryptApi: Recrypt.Api256;
 
 /**
- * Augments UserPrivateKey and return both the augmented private key and the augmentation factor.
- * @param userPrivateKey current private key to be augmented
- * @param augmentatioFactor
- */
-export const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
-    return generateKeyPair().map((data) => {
-        return {
-            newPrivateKey: Recrypt.subtractPrivateKeys(userPrivateKey, data.privateKey),
-            augmentationFactor: data.privateKey,
-        };
-    });
-};
-
-/**
  * Convert the components of an encrypted symmetric key into base64 strings for submission to the API
  * @param {EncryptedValue} encryptedValue Encrypted value to transform
  */
@@ -108,6 +94,20 @@ export const generateSigningKeyPair = (): Future<Error, SigningKeyPair> => Futur
  */
 export const getPublicSigningKeyFromPrivate = (privateSigningKey: PrivateKey<Uint8Array>) =>
     Future.tryF(() => RecryptApi.computeEd25519PublicKey(privateSigningKey));
+
+/**
+ * Augments UserPrivateKey and return both the augmented private key and the augmentation factor.
+ * @param userPrivateKey current private key to be augmented
+ * @param augmentatioFactor
+ */
+export const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+    return generateKeyPair().map(({privateKey}) => {
+        return {
+            newPrivateKey: Recrypt.subtractPrivateKeys(userPrivateKey, privateKey),
+            augmentationFactor: privateKey,
+        };
+    });
+};
 
 /**
  * Generate a set of user, device, and signing keys for new user creation

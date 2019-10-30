@@ -187,8 +187,8 @@ const userKeyUpdateApi = (userID: string, userPrivateKey: PrivateKey<Uint8Array>
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            userPrivateKey: userPrivateKey ? fromByteArray(userPrivateKey) : undefined,
-            augmentationFactor: augmentationFactor ? fromByteArray(augmentationFactor) : undefined,
+            userPrivateKey,
+            augmentationFactor,
         }),
     },
     errorCode: ErrorCodes.USER_UPDATE_REQUEST_FAILURE,
