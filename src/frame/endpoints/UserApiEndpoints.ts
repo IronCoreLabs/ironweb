@@ -180,7 +180,7 @@ const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, sta
 });
 
 const userKeyUpdateApi = (userID: string, userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor, userKeyId: number): RequestMeta => ({
-    url: `users/${encodeURIComponent(userID)}keys/${userKeyId}`,
+    url: `users/${encodeURIComponent(userID)}/keys/${userKeyId}`,
     options: {
         method: "PUT",
         headers: {
