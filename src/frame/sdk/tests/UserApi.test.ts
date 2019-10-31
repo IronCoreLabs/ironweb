@@ -45,7 +45,7 @@ describe("UserApi", () => {
             spyOn(UserApiEndpoints, "callUserKeyUpdateApi").and.returnValue(Future.of("user key update result"));
             spyOn(WorkerMediator, "sendMessage").and.returnValue(
                 Future.of({
-                    message: {encryptedPrivateUserKey: "newEncryptedPrivateUserKey", augmentationFactor: "augmentationFactor"},
+                    message: {newEncryptedPrivateUserKey: "newEncryptedPrivateUserKey", augmentationFactor: "augmentationFactor"},
                 })
             );
 
