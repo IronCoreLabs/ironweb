@@ -20,7 +20,7 @@ export function changePasscode(currentPasscode: string, newPasscode: string) {
 }
 /**
  * Rotates the user current private key.
- * @param {string} passcode
+ * @param {string} passcode The users current passcode
  */
 export function rotateMasterKey(passcode: string) {
     checkSDKInitialized();

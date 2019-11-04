@@ -60,7 +60,6 @@ describe("UserApi", () => {
                         message: {
                             passcode: "current",
                             encryptedPrivateUserKey: new Uint8Array([]),
-                            keySalt: new Uint8Array([]),
                         },
                     });
                     done();
@@ -92,7 +91,6 @@ describe("UserApi", () => {
                             currentPasscode: "current",
                             newPasscode: "new",
                             encryptedPrivateUserKey: new Uint8Array([]),
-                            keySalt: new Uint8Array([]),
                         },
                     });
                     done();

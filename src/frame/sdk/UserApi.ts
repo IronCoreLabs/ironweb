@@ -1,7 +1,5 @@
 import ApiState from "../ApiState";
 import {clearDeviceAndSigningKeys} from "../FrameUtils";
-import {CryptoConstants} from "../../Constants";
-import {sliceArrayBuffer} from "../../lib/Utils";
 import * as WMT from "../../WorkerMessageTypes";
 import * as WorkerMediator from "../WorkerMediator";
 import UserApiEndpoints from "../endpoints/UserApiEndpoints";
@@ -39,7 +37,6 @@ export function rotateUserMasterKey(passcode: string) {
         message: {
             passcode,
             encryptedPrivateUserKey,
-            keySalt: sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH),
         },
     };
     return WorkerMediator.sendMessage<WMT.RotateUserPrivateKeyWorkerResponse>(payload).flatMap(({message}) =>
@@ -62,7 +59,6 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
             currentPasscode,
             newPasscode,
             encryptedPrivateUserKey,
-            keySalt: sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH),
         },
     };
 

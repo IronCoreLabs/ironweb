@@ -77,7 +77,6 @@ export interface RotateUserPrivateKeyWorkerRequest {
     message: {
         passcode: string;
         encryptedPrivateUserKey: Uint8Array;
-        keySalt: Uint8Array;
     };
 }
 
@@ -95,7 +94,6 @@ export interface ChangeUserPasscodeWorkerRequest {
         currentPasscode: string;
         newPasscode: string;
         encryptedPrivateUserKey: Uint8Array;
-        keySalt: Uint8Array;
     };
 }
 export interface ChangeUserPasscodeWorkerResponse {

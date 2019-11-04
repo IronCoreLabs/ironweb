@@ -196,7 +196,7 @@ describe("UserApiEndpoints", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
-            UserApiEndpoints.callUserKeyUpdateApi(new Uint8Array([98, 103, 110]), new Uint8Array([99, 104, 111])).engage(
+            UserApiEndpoints.callUserKeyUpdateApi(new Uint8Array([99, 104, 111]), new Uint8Array([98, 103, 110])).engage(
                 (e) => fail(e.message),
                 (userKeys: any) => {
                     expect(userKeys).toEqual({
@@ -206,8 +206,8 @@ describe("UserApiEndpoints", () => {
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10/keys/1", expect.any(Number), expect.any(Object)); // keyId?
                     const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
-                        userPrivateKey: expect.any(Object),
-                        augmentationFactor: expect.any(Object),
+                        userPrivateKey: "Y2hv",
+                        augmentationFactor: "Ymdu",
                     });
                 }
             );

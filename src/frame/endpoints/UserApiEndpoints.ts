@@ -179,6 +179,10 @@ const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, sta
     errorCode: ErrorCodes.USER_UPDATE_REQUEST_FAILURE,
 });
 
+/**
+ * Generate an API request to rotate the users private key passing the augmentation factor that the key is rotated by and
+ * the users encrypted private key that has been augmetned by that same factor.
+ */
 const userKeyUpdateApi = (userID: string, userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor, userKeyId: number): RequestMeta => ({
     url: `users/${encodeURIComponent(userID)}/keys/${userKeyId}`,
     options: {
@@ -187,11 +191,11 @@ const userKeyUpdateApi = (userID: string, userPrivateKey: PrivateKey<Uint8Array>
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            userPrivateKey,
-            augmentationFactor,
+            userPrivateKey: fromByteArray(userPrivateKey),
+            augmentationFactor: fromByteArray(augmentationFactor),
         }),
     },
-    errorCode: ErrorCodes.USER_UPDATE_REQUEST_FAILURE,
+    errorCode: ErrorCodes.USER_UPDATE_KEY_REQUEST_FAILURE,
 });
 
 /**

@@ -16,7 +16,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("trick"));
             spyOn(AES, "decryptUserKey").and.returnValue(Future.of(privateKey));
 
-            UserCrypto.rotatePrivateKey("passcode", encryptedPrivateUserKey, new Uint8Array(32)).engage(
+            UserCrypto.rotatePrivateKey("passcode", encryptedPrivateUserKey).engage(
                 (e) => fail(e),
                 (userKeyRotationResult: any) => {
                     expect(userKeyRotationResult).toEqual({
@@ -254,7 +254,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
-            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
+            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => fail(e.message),
                 (encryptedKey: any) => {
                     expect(encryptedKey).toEqual({
@@ -275,7 +275,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
-            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
+            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.USER_PASSCODE_INCORRECT);
                     expect(AES.encryptUserKey).not.toHaveBeenCalled();
@@ -290,7 +290,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptUserKey").and.returnValue(Future.reject(new Error("could not encrypt key")));
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
-            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
+            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.USER_PASSCODE_CHANGE_FAILURE);
                     expect(AES.encryptUserKey).toHaveBeenCalled();
