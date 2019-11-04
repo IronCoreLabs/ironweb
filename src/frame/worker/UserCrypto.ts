@@ -67,7 +67,7 @@ export function rotatePrivateKey(
                     }));
                 });
         })
-        .errorMap((error) => new SDKError(error, ErrorCodes.USER_UPDATE_KEY_REQUEST_FAILURE));
+        .errorMap((error) => new SDKError(error, ErrorCodes.USER_PRIVATE_KEY_ROTATION_FAILURE));
 }
 
 /**
@@ -187,7 +187,6 @@ export function decryptDeviceAndSigningKeys(encryptedDeviceKey: Uint8Array, encr
  * a key from their new passcode and use that to re-encrypt the master private key.
  * @param {string}     currentPasscode         Users current passcode
  * @param {string}     newPasscode             Users new passcode
- * @param {Uint8Array} derivedKeySalt          Salt that was used during prior key derivation
  * @param {Uint8Array} encryptedPrivateUserKey Users encrypted master private key
  */
 export function changeUsersPasscode(currentPasscode: string, newPasscode: string, encryptedPrivateUserKey: Uint8Array) {

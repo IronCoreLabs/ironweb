@@ -181,7 +181,7 @@ const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, sta
 
 /**
  * Generate an API request to rotate the users private key passing the augmentation factor that the key is rotated by and
- * the users encrypted private key that has been augmetned by that same factor.
+ * the users encrypted private key that has been augmented by that same factor.
  */
 const userKeyUpdateApi = (userID: string, userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor, userKeyId: number): RequestMeta => ({
     url: `users/${encodeURIComponent(userID)}/keys/${userKeyId}`,

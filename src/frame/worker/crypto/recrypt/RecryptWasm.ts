@@ -100,12 +100,10 @@ export const getPublicSigningKeyFromPrivate = (privateSigningKey: PrivateKey<Uin
  * @param userPrivateKey current private key to be augmented
  */
 export const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
-    return generateKeyPair().map(({privateKey}) => {
-        return {
-            newPrivateKey: Recrypt.subtractPrivateKeys(userPrivateKey, privateKey),
-            augmentationFactor: privateKey,
-        };
-    });
+    return generateKeyPair().map(({privateKey}) => ({
+        newPrivateKey: Recrypt.subtractPrivateKeys(userPrivateKey, privateKey),
+        augmentationFactor: privateKey,
+    }));
 };
 
 /**
