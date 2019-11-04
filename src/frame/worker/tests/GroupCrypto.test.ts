@@ -138,20 +138,24 @@ describe("GroupCrypto", () => {
 
     describe("addMembersToGroup", () => {
         it("decrypts key and reencrypts it to the list of users provided", (done) => {
+            const signature = new Uint8Array(32);
             spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of(["anything", "documentSymKey"]));
             spyOn(Recrypt, "generateTransformKeyToList").and.returnValue(Future.of("keysForUser"));
+            spyOn(Recrypt, "generateAddMemberSignature").and.returnValue(Future.of(signature));
 
             const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const adminPrivateKey = new Uint8Array(20);
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const signingKeys = TestUtils.getSigningKeyPair();
+            const groupPublicKey = TestUtils.getEmptyPublicKeyString();
 
-            GroupCrypto.addMembersToGroup(groupPrivateKey, userList, adminPrivateKey, signingKeys).engage(
+            GroupCrypto.addMembersToGroup(groupPrivateKey, groupPublicKey, "groupID", userList, adminPrivateKey, signingKeys).engage(
                 (e) => fail(e),
                 (result: any) => {
-                    expect(result).toEqual("keysForUser");
+                    expect(result).toEqual({transformKeyGrant: "keysForUser", signature});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
                     expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith("documentSymKey", userList, signingKeys);
+                    expect(Recrypt.generateAddMemberSignature).toHaveBeenCalledWith("anything", groupPublicKey, "groupID");
                     done();
                 }
             );
@@ -164,8 +168,9 @@ describe("GroupCrypto", () => {
             const adminPrivateKey = new Uint8Array(20);
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const signingKeys = TestUtils.getSigningKeyPair();
+            const groupPublicKey = TestUtils.getEmptyPublicKeyString();
 
-            GroupCrypto.addMembersToGroup(groupPrivateKey, userList, adminPrivateKey, signingKeys).engage(
+            GroupCrypto.addMembersToGroup(groupPrivateKey, groupPublicKey, "groupID", userList, adminPrivateKey, signingKeys).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decryption failed");
                     expect(error.code).toEqual(ErrorCodes.GROUP_MEMBER_KEY_ENCRYPTION_FAILURE);

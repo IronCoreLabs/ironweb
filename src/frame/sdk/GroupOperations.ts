@@ -48,8 +48,10 @@ export function encryptGroupPrivateKeyToList(
  * @param {PrivateKey<Uint8Array>}      myPrivateKey             Private key of current, admin user
  * @param {SigningKeyPair}              signingKeys              Current users signing keys
  */
-export function generateGroupTransformKeyToList(
+export function generateGroupTransformKeyToListAndSignature(
     encryptedGroupPrivateKey: TransformedEncryptedMessage,
+    groupPublicKey: PublicKey<string>,
+    groupID: string,
     userKeyList: UserOrGroupPublicKey[],
     myPrivateKey: PrivateKey<Uint8Array>,
     signingKeys: SigningKeyPair
@@ -58,6 +60,8 @@ export function generateGroupTransformKeyToList(
         type: "GROUP_ADD_MEMBERS",
         message: {
             encryptedGroupKey: encryptedGroupPrivateKey,
+            groupPublicKey,
+            groupID,
             userKeyList,
             adminPrivateKey: myPrivateKey,
             signingKeys,

@@ -410,9 +410,17 @@ describe("GroupApi", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
             const userKeys = [{id: "id1", userMasterPublicKey: {x: "key1"}}, {id: "id2", userMasterPublicKey: {x: "key2"}}];
+            const signature = new Uint8Array(32);
 
             spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
+                Future.of({
+                    groupID: "32",
+                    encryptedPrivateKey: "encryptedPrivKey",
+                    groupPublicKey: "groupPublicKey",
+                    GroupID: "groupID",
+                    permissions: ["admin", "member"],
+                    adminIds: ["id1"],
+                })
             );
             spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
             spyOn(GroupApiEndpoints, "callAddMembersApi").and.returnValue(
@@ -421,7 +429,9 @@ describe("GroupApi", () => {
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
             );
-            spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(Future.of(["transformKey1", "transformKey2"]));
+            spyOn(GroupOperations, "generateGroupTransformKeyToListAndSignature").and.returnValue(
+                Future.of({transformKeyGrant: ["transformKey1", "transformKey2"], signature})
+            );
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => fail(e),
@@ -433,9 +443,11 @@ describe("GroupApi", () => {
 
                     expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("61");
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1", "user2"]);
-                    expect(GroupApiEndpoints.callAddMembersApi).toHaveBeenCalledWith("61", ["transformKey1", "transformKey2"]);
-                    expect(GroupOperations.generateGroupTransformKeyToList).toHaveBeenCalledWith(
+                    expect(GroupApiEndpoints.callAddMembersApi).toHaveBeenCalledWith("61", ["transformKey1", "transformKey2"], signature);
+                    expect(GroupOperations.generateGroupTransformKeyToListAndSignature).toHaveBeenCalledWith(
                         "encryptedPrivKey",
+                        "groupPublicKey",
+                        "groupID",
                         [{id: "id1", masterPublicKey: {x: "key1"}}, {id: "id2", masterPublicKey: {x: "key2"}}],
                         expect.any(Uint8Array),
                         ApiState.signingKeys()
@@ -451,7 +463,7 @@ describe("GroupApi", () => {
                 Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"]})
             );
             spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
-            spyOn(GroupOperations, "generateGroupTransformKeyToList");
+            spyOn(GroupOperations, "generateGroupTransformKeyToListAndSignature");
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => fail(e),
@@ -463,7 +475,7 @@ describe("GroupApi", () => {
 
                     expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("61");
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1", "user2"]);
-                    expect(GroupOperations.generateGroupTransformKeyToList).not.toHaveBeenCalled();
+                    expect(GroupOperations.generateGroupTransformKeyToListAndSignature).not.toHaveBeenCalled();
                     done();
                 }
             );
@@ -508,7 +520,7 @@ describe("GroupApi", () => {
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
             );
-            spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(Future.of(["transformKey1", "transformKey2"]));
+            spyOn(GroupOperations, "generateGroupTransformKeyToListAndSignature").and.returnValue(Future.of(["transformKey1", "transformKey2"]));
 
             GroupApi.addMembers("61", ["user1", "user2", "12"]).engage(
                 (e) => fail(e),

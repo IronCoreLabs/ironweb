@@ -57,16 +57,24 @@ export function addAdminsToGroup(
  * @param {SigningKeyPair}              signingKeys     Current users signing keys used to sign transform key
  */
 export function addMembersToGroup(
-    groupPrivateKey: TransformedEncryptedMessage,
+    encryptedGroupPrivateKey: TransformedEncryptedMessage,
+    groupPublicKey: PublicKey<string>,
+    groupID: string,
     userKeyList: UserOrGroupPublicKey[],
     adminPrivateKey: PrivateKey<Uint8Array>,
     signingKeys: SigningKeyPair
 ) {
     return loadRecrypt()
         .flatMap((Recrypt) => {
-            return Recrypt.decryptPlaintext(groupPrivateKey, adminPrivateKey).flatMap(([_, key]) =>
-                Recrypt.generateTransformKeyToList(key, userKeyList, signingKeys)
-            );
+            return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([groupPrivateKey, key]) => {
+                return Future.gather2(
+                    Recrypt.generateTransformKeyToList(key, userKeyList, signingKeys),
+                    Recrypt.generateAddMemberSignature(groupPrivateKey, groupPublicKey, groupID)
+                ).map(([transformKeyGrant, signature]) => ({
+                    transformKeyGrant,
+                    signature,
+                }));
+            });
         })
         .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_MEMBER_KEY_ENCRYPTION_FAILURE));
 }

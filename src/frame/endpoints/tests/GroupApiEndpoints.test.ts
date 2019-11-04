@@ -343,8 +343,9 @@ describe("GroupApiEndpoints", () => {
                     id: "99",
                 },
             ];
+            const signature = new Uint8Array(32);
 
-            GroupApiEndpoints.callAddMembersApi("31", userKeys).engage(
+            GroupApiEndpoints.callAddMembersApi("31", userKeys, signature).engage(
                 (e) => fail(e),
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
@@ -378,6 +379,7 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        signature: signature,
                     });
                 }
             );

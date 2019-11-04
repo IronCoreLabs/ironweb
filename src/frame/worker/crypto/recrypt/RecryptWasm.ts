@@ -248,6 +248,10 @@ export const createRequestSignature = (
     };
 };
 
+export const generateAddMemberSignature = (groupPrivateKey: Uint8Array, groupPublicKey: PublicKey<string>, groupId: string) => {
+    return Future.of(RecryptApi.schnorrSign(groupPrivateKey, publicKeyToBytes(groupPublicKey), utf8StringToArrayBuffer(groupId)));
+};
+
 /**
  * Generate a signature to be used as part of a device add operation
  * @param {String}       jwtToken          JWT token authorizing the current user
