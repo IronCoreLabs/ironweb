@@ -1,9 +1,9 @@
 import Future from "futurejs";
-import {ErrorCodes, CryptoConstants} from "../../Constants";
+import {CryptoConstants, ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
+import {sliceArrayBuffer} from "../../lib/Utils";
 import * as AES from "./crypto/aes";
 import loadRecrypt from "./crypto/recrypt";
-import {sliceArrayBuffer} from "../../lib/Utils";
 
 /**
  * Decrypt the users private user key by generating a derived key from their passcode.
@@ -11,10 +11,14 @@ import {sliceArrayBuffer} from "../../lib/Utils";
  * @param {Uint8Array} derivedKeySalt          Salt used during derived key generation
  * @param {Uint8Array} encryptedPrivateUserKey Users encrypted key
  */
-function decryptUserMasterPrivateKey(passcode: string, derivedKeySalt: Uint8Array, encryptedPrivateUserKey: Uint8Array) {
+function decryptUserMasterPrivateKey(
+    passcode: string,
+    derivedKeySalt: Uint8Array,
+    encryptedPrivateUserKey: Uint8Array
+): Future<SDKError, {userPrivateKey: Uint8Array; derivedKey: DerivedKeyResults}> {
     return loadRecrypt()
         .flatMap((Recrypt) => Recrypt.generatePasswordDerivedKey(passcode, derivedKeySalt))
-        .flatMap((derivedKey) => AES.decryptUserKey(encryptedPrivateUserKey, derivedKey))
+        .flatMap((derivedKey) => AES.decryptUserKey(encryptedPrivateUserKey, derivedKey).map((userPrivateKey) => ({userPrivateKey, derivedKey})))
         .errorMap(() => new SDKError(new Error("User passcode was incorrect."), ErrorCodes.USER_PASSCODE_INCORRECT));
 }
 
@@ -54,19 +58,19 @@ export function rotatePrivateKey(
     encryptedPrivateUserKey: Uint8Array
 ): Future<SDKError, {newEncryptedPrivateUserKey: Uint8Array; augmentationFactor: Uint8Array}> {
     const derivedKeySalt = sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH);
-    return Future.gather2(decryptUserMasterPrivateKey(passcode, encryptedPrivateUserKey, derivedKeySalt), loadRecrypt())
-        .flatMap(([userPrivateKey, Recrypt]) => {
-            return Future.gather2(Recrypt.generatePasswordDerivedKey(passcode), Future.of(userPrivateKey))
-                .flatMap(([derivedKey, userPrivateKey]) => {
-                    return Future.gather2(Recrypt.rotateUsersPrivateKey(userPrivateKey), Future.of(derivedKey));
-                })
-                .flatMap(([{newPrivateKey, augmentationFactor}, derivedKey]) => {
-                    return AES.encryptUserKey(newPrivateKey, derivedKey).map((encryptedPrivateKey) => ({
-                        newEncryptedPrivateUserKey: encryptedPrivateKey,
-                        augmentationFactor,
-                    }));
-                });
-        })
+    return loadRecrypt()
+        .flatMap((Recrypt) =>
+            decryptUserMasterPrivateKey(passcode, derivedKeySalt, encryptedPrivateUserKey).flatMap(({userPrivateKey, derivedKey}) => {
+                return Recrypt.rotateUsersPrivateKey(userPrivateKey)
+                    .flatMap(({newPrivateKey, augmentationFactor}) => {
+                        return AES.encryptUserKey(newPrivateKey, derivedKey).map((newEncryptedPrivateUserKey) => ({
+                            newEncryptedPrivateUserKey,
+                            augmentationFactor,
+                        }));
+                    })
+                    .errorMap((error) => new SDKError(error, ErrorCodes.USER_PRIVATE_KEY_ROTATION_FAILURE));
+            })
+        )
         .errorMap((error) => new SDKError(error, ErrorCodes.USER_PRIVATE_KEY_ROTATION_FAILURE));
 }
 
@@ -89,7 +93,7 @@ export function generateDeviceAndSigningKeys(
                     Recrypt.generateKeyPair(),
                     Recrypt.generateSigningKeyPair()
                 )
-                    .flatMap(([userPrivateKey, deviceKeys, signingKeys]) => {
+                    .flatMap(([{userPrivateKey}, deviceKeys, signingKeys]) => {
                         const userKeys = {publicKey: publicUserKey, privateKey: userPrivateKey};
                         return Future.gather3(
                             AES.encryptDeviceAndSigningKeys(deviceKeys.privateKey, signingKeys.privateKey),
@@ -192,9 +196,9 @@ export function decryptDeviceAndSigningKeys(encryptedDeviceKey: Uint8Array, encr
 export function changeUsersPasscode(currentPasscode: string, newPasscode: string, encryptedPrivateUserKey: Uint8Array) {
     const derivedKeySalt = sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH);
     return Future.gather2(decryptUserMasterPrivateKey(currentPasscode, derivedKeySalt, encryptedPrivateUserKey), loadRecrypt())
-        .flatMap(([masterPrivateKey, Recrypt]) => {
+        .flatMap(([{userPrivateKey}, Recrypt]) => {
             return Recrypt.generatePasswordDerivedKey(newPasscode).flatMap((newPasscodeDerivedKey) =>
-                AES.encryptUserKey(masterPrivateKey, newPasscodeDerivedKey)
+                AES.encryptUserKey(userPrivateKey, newPasscodeDerivedKey)
             );
         })
         .errorMap((error) => new SDKError(error, ErrorCodes.USER_PASSCODE_CHANGE_FAILURE))

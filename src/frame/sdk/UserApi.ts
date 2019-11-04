@@ -1,9 +1,9 @@
-import ApiState from "../ApiState";
-import {clearDeviceAndSigningKeys} from "../FrameUtils";
-import * as WMT from "../../WorkerMessageTypes";
-import * as WorkerMediator from "../WorkerMediator";
-import UserApiEndpoints from "../endpoints/UserApiEndpoints";
 import Future from "futurejs";
+import * as WMT from "../../WorkerMessageTypes";
+import ApiState from "../ApiState";
+import UserApiEndpoints from "../endpoints/UserApiEndpoints";
+import {clearDeviceAndSigningKeys} from "../FrameUtils";
+import * as WorkerMediator from "../WorkerMediator";
 
 /**
  * Makes a request to delete the provided device from the DB and also clear user's device and signing keys from local storage.
@@ -39,9 +39,12 @@ export function rotateUserMasterKey(passcode: string) {
             encryptedPrivateUserKey,
         },
     };
-    return WorkerMediator.sendMessage<WMT.RotateUserPrivateKeyWorkerResponse>(payload).flatMap(({message}) =>
-        UserApiEndpoints.callUserKeyUpdateApi(message.newEncryptedPrivateUserKey, message.augmentationFactor)
-    );
+    return WorkerMediator.sendMessage<WMT.RotateUserPrivateKeyWorkerResponse>(payload).flatMap(({message}) => {
+        //Since the users private key is now different, store it off in case the user performs any operations that need it (e.g. change password)
+        //within this existing session.
+        ApiState.setEncryptedPrivateUserKey(message.newEncryptedPrivateUserKey);
+        return UserApiEndpoints.callUserKeyUpdateApi(message.newEncryptedPrivateUserKey, message.augmentationFactor);
+    });
 }
 
 /**

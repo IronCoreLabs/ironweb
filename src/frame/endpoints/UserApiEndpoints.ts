@@ -246,8 +246,8 @@ export default {
      * @param augmentationFactor
      */
     callUserKeyUpdateApi(userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor): Future<SDKError, UserUpdateResponseType> {
-        const {id, keyId} = ApiState.user();
-        const {url, options, errorCode} = userKeyUpdateApi(id, userPrivateKey, augmentationFactor, keyId);
+        const {id, currentKeyId} = ApiState.user();
+        const {url, options, errorCode} = userKeyUpdateApi(id, userPrivateKey, augmentationFactor, currentKeyId);
         return makeAuthorizedApiRequest(url, errorCode, options);
     },
 

@@ -1,13 +1,13 @@
-import * as Init from "../index";
-import ApiState from "../../ApiState";
-import * as TestUtils from "../../../tests/TestUtils";
-import * as FrameUtils from "../../FrameUtils";
-import Future from "futurejs";
-import * as InitializationApi from "../InitializationApi";
-import {publicKeyToBase64} from "../../../lib/Utils";
-import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
-import {ErrorCodes} from "../../../Constants";
 import {fromByteArray} from "base64-js";
+import Future from "futurejs";
+import {ErrorCodes} from "../../../Constants";
+import {publicKeyToBase64} from "../../../lib/Utils";
+import * as TestUtils from "../../../tests/TestUtils";
+import ApiState from "../../ApiState";
+import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
+import * as FrameUtils from "../../FrameUtils";
+import * as Init from "../index";
+import * as InitializationApi from "../InitializationApi";
 
 describe("init index", () => {
     beforeEach(() => {
@@ -162,7 +162,7 @@ describe("init index", () => {
                 status: 1,
                 userMasterPublicKey: publicKeyToBase64(userKeys.publicKey),
                 userPrivateKey: fromByteArray(userKeys.privateKey),
-                keyId: 1,
+                currentKeyId: 1,
                 needsRotation: false,
             };
 

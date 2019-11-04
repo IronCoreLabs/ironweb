@@ -1,22 +1,22 @@
-import * as React from "react";
-import * as IronWeb from "../../../src/shim";
-import {DocumentAssociationResponse, DocumentIDNameResponse, DocumentAssociation} from "../../../ironweb";
-import {logAction} from "../../Logger";
-import {isLocalDocument} from "../../DocumentDB";
-import {List, ListItem} from "material-ui/List";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import Subheader from "material-ui/Subheader";
-import Refresh from "material-ui/svg-icons/navigation/refresh";
-import Divider from "material-ui/Divider";
+import Avatar from "material-ui/Avatar";
 import Chip from "material-ui/Chip";
+import Divider from "material-ui/Divider";
+import FloatingActionButton from "material-ui/FloatingActionButton";
+import {List, ListItem} from "material-ui/List";
+import {brown200, brown400, cyan500, lightGreen200, lightGreen400, lightGreenA700, orange200, orange400} from "material-ui/styles/colors";
+import Subheader from "material-ui/Subheader";
+import Assignment from "material-ui/svg-icons/action/assignment";
+import Add from "material-ui/svg-icons/content/add";
 import Cloud from "material-ui/svg-icons/file/cloud";
 import Local from "material-ui/svg-icons/file/cloud-off";
-import Add from "material-ui/svg-icons/content/add";
+import Refresh from "material-ui/svg-icons/navigation/refresh";
 import Group from "material-ui/svg-icons/social/group-add";
 import Person from "material-ui/svg-icons/social/person-add";
-import Assignment from "material-ui/svg-icons/action/assignment";
-import Avatar from "material-ui/Avatar";
-import {lightGreen200, lightGreen400, orange200, orange400, lightGreenA700, cyan500, brown200, brown400} from "material-ui/styles/colors";
+import * as React from "react";
+import {DocumentAssociation, DocumentAssociationResponse, DocumentIDNameResponse} from "../../../ironweb";
+import * as IronWeb from "../../../src/shim";
+import {isLocalDocument} from "../../DocumentDB";
+import {logAction} from "../../Logger";
 import AddDocumentData from "./AddDocumentData";
 
 interface DocumentListProps {
@@ -56,6 +56,14 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
             .catch((error: IronWeb.SDKError) => {
                 logAction(`Document list error: ${error.message}. Error Code: ${error.code}`, "error");
             });
+
+        const baseBuffer = window.crypto.getRandomValues(new Uint8Array(32));
+        console.log("Base Buffer: " + baseBuffer);
+        const transferBuffer = new Uint8Array(baseBuffer.buffer, 16);
+        console.log("Transfer Buffer: " + transferBuffer + " offset: " + transferBuffer.byteOffset);
+        IronWeb.document.encrypt(transferBuffer).then(() => {
+            console.log("Transfer Buffer: " + transferBuffer + " offset: " + transferBuffer.byteOffset);
+        });
     };
 
     getAssociationChip(association: DocumentAssociation) {
