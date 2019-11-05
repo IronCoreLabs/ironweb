@@ -48,12 +48,13 @@ describe("UserApi", () => {
                     message: {newEncryptedPrivateUserKey: "newEncryptedPrivateUserKey", augmentationFactor: "augmentationFactor"},
                 })
             );
+            spyOn(ApiState, "setEncryptedPrivateUserKey");
 
             UserApi.rotateUserMasterKey("current").engage(
                 (e) => fail(e.message),
                 (result: any) => {
                     expect(result).toEqual("user key update result");
-
+                    expect(ApiState.setEncryptedPrivateUserKey).toHaveBeenCalledWith("newEncryptedPrivateUserKey");
                     expect(UserApiEndpoints.callUserKeyUpdateApi).toHaveBeenCalledWith("newEncryptedPrivateUserKey", "augmentationFactor");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
                         type: "ROTATE_USER_PRIVATE_KEY",
