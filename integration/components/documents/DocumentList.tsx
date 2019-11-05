@@ -56,14 +56,6 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
             .catch((error: IronWeb.SDKError) => {
                 logAction(`Document list error: ${error.message}. Error Code: ${error.code}`, "error");
             });
-
-        const baseBuffer = window.crypto.getRandomValues(new Uint8Array(32));
-        console.log("Base Buffer: " + baseBuffer);
-        const transferBuffer = new Uint8Array(baseBuffer.buffer, 16);
-        console.log("Transfer Buffer: " + transferBuffer + " offset: " + transferBuffer.byteOffset);
-        IronWeb.document.encrypt(transferBuffer).then(() => {
-            console.log("Transfer Buffer: " + transferBuffer + " offset: " + transferBuffer.byteOffset);
-        });
     };
 
     getAssociationChip(association: DocumentAssociation) {
