@@ -416,7 +416,7 @@ describe("GroupApi", () => {
                 Future.of({
                     groupID: "32",
                     encryptedPrivateKey: "encryptedPrivKey",
-                    groupPublicKey: "groupPublicKey",
+                    groupMasterPublicKey: {x: "12", y: "23"},
                     GroupID: "groupID",
                     permissions: ["admin", "member"],
                     adminIds: ["id1"],
@@ -446,8 +446,8 @@ describe("GroupApi", () => {
                     expect(GroupApiEndpoints.callAddMembersApi).toHaveBeenCalledWith("61", ["transformKey1", "transformKey2"], signature);
                     expect(GroupOperations.generateGroupTransformKeyToListAndSignature).toHaveBeenCalledWith(
                         "encryptedPrivKey",
-                        "groupPublicKey",
-                        "groupID",
+                        {x: "12", y: "23"},
+                        "61",
                         [{id: "id1", masterPublicKey: {x: "key1"}}, {id: "id2", masterPublicKey: {x: "key2"}}],
                         expect.any(Uint8Array),
                         ApiState.signingKeys()

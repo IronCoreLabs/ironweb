@@ -169,6 +169,7 @@ export function addMembers(groupID: string, userList: string[]) {
                 );
             }
             const userPublicKeys = userKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey}));
+            console.log(group);
             return GroupOperations.generateGroupTransformKeyToListAndSignature(
                 group.encryptedPrivateKey,
                 group.groupMasterPublicKey,

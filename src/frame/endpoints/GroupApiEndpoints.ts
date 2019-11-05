@@ -6,6 +6,7 @@ import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
 import {makeAuthorizedApiRequest} from "../ApiRequest";
 import ApiState from "../ApiState";
 import {TransformKeyGrant} from "../worker/crypto/recrypt";
+import {fromByteArray} from "base64-js";
 
 export interface GroupListResponseType {
     result: GroupApiFullResponse[];
@@ -187,7 +188,7 @@ function addMembers(groupID: string, addedMembers: TransformKeyGrant[], signatur
                     userMasterPublicKey: member.publicKey,
                     transformKey: transformKeyToBase64(member.transformKey),
                 })),
-                signature,
+                signature: fromByteArray(signature),
             }),
         },
         errorCode: ErrorCodes.GROUP_ADD_MEMBERS_REQUEST_FAILURE,
