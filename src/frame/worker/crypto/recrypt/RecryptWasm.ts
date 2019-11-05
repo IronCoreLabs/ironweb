@@ -248,6 +248,12 @@ export const createRequestSignature = (
     };
 };
 
+/**
+ * Generate a schnorr signature using the group's private key over the group's provided id
+ * @param groupPrivateKey
+ * @param groupPublicKey
+ * @param groupId
+ */
 export const generateAddMemberSignature = (groupPrivateKey: Uint8Array, groupPublicKey: PublicKey<string>, groupId: string) => {
     return Future.of(RecryptApi.schnorrSign(groupPrivateKey, publicKeyToBytes(groupPublicKey), utf8StringToArrayBuffer(groupId)));
 };

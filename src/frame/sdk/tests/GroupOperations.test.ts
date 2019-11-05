@@ -77,7 +77,7 @@ describe("GroupOperations", () => {
         });
     });
 
-    describe("generateGroupTransformKeyToListAndSignature", () => {
+    describe("generateGroupTransformKeyToList", () => {
         it("sends message to worker to generate transform key to list", () => {
             spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "transformed user keys"}));
             const userPrivateKey = new Uint8Array(32);
@@ -86,14 +86,7 @@ describe("GroupOperations", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             const groupPublicKey = TestUtils.getEmptyPublicKeyString();
 
-            GroupOperations.generateGroupTransformKeyToListAndSignature(
-                encryptedGroupPrivateKey,
-                groupPublicKey,
-                "GroupID",
-                userList,
-                userPrivateKey,
-                signingKeys
-            ).engage(
+            GroupOperations.generateGroupTransformKeyToList(encryptedGroupPrivateKey, groupPublicKey, "GroupID", userList, userPrivateKey, signingKeys).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual("transformed user keys");
