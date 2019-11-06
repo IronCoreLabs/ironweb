@@ -82,7 +82,17 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
             .then((initializedResult) => {
                 document.cookie = `integrationDemo=${JSON.stringify({id: window.User.id, name: window.User.name})};`;
                 logAction(`Init complete. Initialized user ${initializedResult.user.id} who has status ${initializedResult.user.status}`, "success");
-                this.props.onComplete();
+                if (initializedResult.user.needsRotation) {
+                    logAction(`Rotating users key`);
+                    return IronWeb.user.rotateMasterKey(this.state.passcode).then((res) => {
+                        logAction(`Users master key rotated`);
+                        logAction(JSON.stringify(res));
+                        this.props.onComplete();
+                    });
+                } else {
+                    this.props.onComplete();
+                    return Promise.resolve();
+                }
             })
             .catch((error: IronWeb.SDKError) => {
                 logAction(`Initialize error: ${error.message}. Error Code: ${error.code}`, "error");
@@ -106,7 +116,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
 
     createUser = () => {
         logAction(`Creating user manually without device...`);
-        IronWeb.createNewUser(this.generateJWT, this.state.passcode)
+        IronWeb.createNewUser(this.generateJWT, this.state.passcode, {needsRotation: true})
             .then((res) => {
                 logAction(`User manually created`, "success");
                 logAction(JSON.stringify(res));
