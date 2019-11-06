@@ -93,13 +93,15 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 data.message.symmetricKey,
                 data.message.nonce
             ).engage(errorHandler, (deviceAndSigningKeys) => callback({type: "DECRYPT_LOCAL_KEYS_RESPONSE", message: deviceAndSigningKeys}));
+        case "ROTATE_USER_PRIVATE_KEY":
+            return UserCrypto.rotatePrivateKey(data.message.passcode, data.message.encryptedPrivateUserKey).engage(errorHandler, (userRotationResult) =>
+                callback({type: "ROTATE_USER_PRIVATE_KEY_RESPONSE", message: userRotationResult})
+            );
         case "CHANGE_USER_PASSCODE":
-            return UserCrypto.changeUsersPasscode(
-                data.message.currentPasscode,
-                data.message.newPasscode,
-                data.message.keySalt,
-                data.message.encryptedPrivateUserKey
-            ).engage(errorHandler, (encryptedPrivateKey) => callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: encryptedPrivateKey}));
+            return UserCrypto.changeUsersPasscode(data.message.currentPasscode, data.message.newPasscode, data.message.encryptedPrivateUserKey).engage(
+                errorHandler,
+                (encryptedPrivateKey) => callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: encryptedPrivateKey})
+            );
         case "SIGNATURE_GENERATION":
             return UserCrypto.signRequestPayload(
                 data.message.segmentID,

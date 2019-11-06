@@ -6,6 +6,30 @@ import * as Recrypt from "../crypto/recrypt/RecryptWasm";
 import * as UserCrypto from "../UserCrypto";
 
 describe("UserCrypto", () => {
+    describe("RotatePrivateKey", () => {
+        it("rotate the current private key and encrypt it then return it and the augmentation factor of that raotation", () => {
+            const encryptedPrivateUserKey = new Uint8Array(32);
+            const privateKey = new Uint8Array(32);
+
+            spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derivedKey"));
+            spyOn(Recrypt, "rotateUsersPrivateKeyWithRetry").and.returnValue(Future.of({newPrivateKey: "boo", augmentationFactor: "or-treat"}));
+            spyOn(AES, "encryptUserKey").and.returnValue(Future.of("trick"));
+            spyOn(AES, "decryptUserKey").and.returnValue(Future.of(privateKey));
+
+            UserCrypto.rotatePrivateKey("passcode", encryptedPrivateUserKey).engage(
+                (e) => fail(e),
+                (userKeyRotationResult: any) => {
+                    expect(userKeyRotationResult).toEqual({
+                        newEncryptedPrivateUserKey: "trick",
+                        augmentationFactor: "or-treat",
+                    });
+                    expect(Recrypt.rotateUsersPrivateKeyWithRetry).toHaveBeenCalledWith(privateKey);
+                    expect(AES.encryptUserKey).toHaveBeenCalledWith("boo", "derivedKey");
+                }
+            );
+        });
+    });
+
     describe("generateDeviceAndSigningKeys", () => {
         it("decrypts document key and then decrypts document", () => {
             const signingKeys = {
@@ -230,7 +254,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
-            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
+            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => fail(e.message),
                 (encryptedKey: any) => {
                     expect(encryptedKey).toEqual({
@@ -251,7 +275,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
-            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
+            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.USER_PASSCODE_INCORRECT);
                     expect(AES.encryptUserKey).not.toHaveBeenCalled();
@@ -266,7 +290,7 @@ describe("UserCrypto", () => {
             spyOn(AES, "encryptUserKey").and.returnValue(Future.reject(new Error("could not encrypt key")));
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
 
-            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33]), new Uint8Array(34)).engage(
+            UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.USER_PASSCODE_CHANGE_FAILURE);
                     expect(AES.encryptUserKey).toHaveBeenCalled();

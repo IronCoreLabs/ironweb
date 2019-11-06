@@ -30,6 +30,7 @@ declare const _WORKER_PATH_LOCATION_: string;
 type Base64String = string;
 type PrivateKey<T> = T;
 type SigningPublicKey<T> = T;
+type AugmentationFactor = Uint8Array;
 type JWTCallbackToPromise = () => Promise<string>;
 type PasscodeCallbackToPromise = (userExists: boolean) => Promise<string>;
 type DerivedKey = CryptoKey | Uint8Array;
@@ -109,6 +110,7 @@ interface ApiUserResponse {
     status: number;
     userMasterPublicKey: PublicKey<Base64String>;
     userPrivateKey: PrivateKey<Base64String>;
+    currentKeyId: number;
     needsRotation: boolean;
 }
 interface UserOrGroupPublicKey {

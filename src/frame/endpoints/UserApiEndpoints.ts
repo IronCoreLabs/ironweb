@@ -180,6 +180,25 @@ const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, sta
 });
 
 /**
+ * Generate an API request to rotate the users private key passing the augmentation factor that the key is rotated by and
+ * the users encrypted private key that has been augmented by that same factor.
+ */
+const userKeyUpdateApi = (userID: string, userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor, userKeyId: number): RequestMeta => ({
+    url: `users/${encodeURIComponent(userID)}/keys/${userKeyId}`,
+    options: {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            userPrivateKey: fromByteArray(userPrivateKey),
+            augmentationFactor: fromByteArray(augmentationFactor),
+        }),
+    },
+    errorCode: ErrorCodes.USER_UPDATE_KEY_REQUEST_FAILURE,
+});
+
+/**
  * Generate API request details for user key list request
  * @param {string[]}         userList List of user IDs to retrieve
  */
@@ -219,6 +238,17 @@ export default {
     callUserCreateApiWithDevice(jwt: string, creationKeys: UserCreationKeys): Future<SDKError, UserCreateResponseType> {
         const {url, options, errorCode} = userCreateWithDevice(creationKeys);
         return makeJwtApiRequest<UserCreateResponseType>(url, errorCode, options, jwt);
+    },
+
+    /**
+     * Invoke user update keys with encrypted augmented privateKey and augmentation factor.
+     * @param userPrivateKey
+     * @param augmentationFactor
+     */
+    callUserKeyUpdateApi(userPrivateKey: PrivateKey<Uint8Array>, augmentationFactor: AugmentationFactor): Future<SDKError, UserUpdateResponseType> {
+        const {id, currentKeyId} = ApiState.user();
+        const {url, options, errorCode} = userKeyUpdateApi(id, userPrivateKey, augmentationFactor, currentKeyId);
+        return makeAuthorizedApiRequest(url, errorCode, options);
     },
 
     /**

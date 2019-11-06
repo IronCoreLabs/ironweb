@@ -145,7 +145,7 @@ describe("worker index", () => {
 
             messenger.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: "CHANGE_USER_PASSCODE_RESPONSE", message: "new encrypted private key"});
-                expect(UserCrypto.changeUsersPasscode).toHaveBeenCalledWith("current", "new", "key salt", "current encrypted private key");
+                expect(UserCrypto.changeUsersPasscode).toHaveBeenCalledWith("current", "new", "current encrypted private key");
                 done();
             });
         });

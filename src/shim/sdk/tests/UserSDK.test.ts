@@ -59,5 +59,28 @@ describe("UserSDK", () => {
                     .catch((e) => fail(e.message));
             });
         });
+
+        describe("rotateMasterKey", () => {
+            it("throw if SDK has not yet been initalized", () => {
+                ShimUtils.clearSDKInitialized();
+                expect(() => UserSDK.rotateMasterKey("current")).toThrow();
+            });
+
+            it("send rotate user private key payload to the frame", (done) => {
+                ShimUtils.setSDKInitialized();
+                UserSDK.rotateMasterKey("current")
+                    .then((result: any) => {
+                        expect(result).toBeUndefined();
+                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                            type: "ROTATE_USER_PRIVATE_KEY",
+                            message: {
+                                passcode: "current",
+                            },
+                        });
+                        done();
+                    })
+                    .catch((e) => fail(e.message));
+            });
+        });
     });
 });
