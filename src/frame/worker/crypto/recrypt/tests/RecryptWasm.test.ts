@@ -25,7 +25,7 @@ describe("RecryptWasm", () => {
         });
 
         it("should result in an error when subtraction result is zero", () => {
-            spyOn(Recrypt.getApi(), "generateKeyPair").and.returnValue({privateKey: new Uint8Array([12, 23, 34])});
+            jest.spyOn(Recrypt.getApi(), "generateKeyPair").mockReturnValue({privateKey: new Uint8Array([12, 23, 34])} as any);
             jest.spyOn(MockRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array(32));
             Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey).engage(
                 (error) => {
@@ -38,15 +38,15 @@ describe("RecryptWasm", () => {
         });
 
         it("should success when valid augmentation factor is produced and the result of the subtraction does not result in zero", () => {
-            spyOn(Recrypt.getApi(), "generateKeyPair").and.returnValue({privateKey: new Uint8Array([12, 23, 34])});
-            jest.spyOn(MockRecrypt, "subtractPrivateKeys");
+            jest.spyOn(Recrypt.getApi(), "generateKeyPair").mockReturnValue({privateKey: new Uint8Array([12, 23, 34])} as any);
+            jest.spyOn(MockRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array([11, 22, 33]));
             Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey).engage(
-                (e) => e,
+                (e) => fail(e),
                 ({newPrivateKey, augmentationFactor}) => {
                     expect(Recrypt.getApi().generateKeyPair).toHaveBeenCalled;
                     expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalled;
-                    expect(newPrivateKey).toEqual(expect.any(Uint8Array));
-                    expect(augmentationFactor).toEqual([12, 23, 34]);
+                    expect(newPrivateKey).toEqual(new Uint8Array([11, 22, 33]));
+                    expect(augmentationFactor).toEqual(new Uint8Array([12, 23, 34]));
                 }
             );
         });

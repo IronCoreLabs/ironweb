@@ -122,6 +122,12 @@ const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPr
     });
 };
 
+/**
+ * Calls rotateUsersPrivateKey, in the case that rotateUsersPrivateKey generates an augmentationFactor of zero or subtractPrivateKeys
+ * results in zero an error is returned. This error is handled by calling rotateUsersPrivateKey again in an attempt produce valid results.
+ * @param userPrivateKey
+ */
+
 export const rotateUsersPrivateKeyWithRetry = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
     return rotateUsersPrivateKey(userPrivateKey).handleWith(() => rotateUsersPrivateKey(userPrivateKey));
 };
