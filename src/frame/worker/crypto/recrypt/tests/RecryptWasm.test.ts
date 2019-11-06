@@ -43,8 +43,8 @@ describe("RecryptWasm", () => {
             Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey).engage(
                 (e) => fail(e),
                 ({newPrivateKey, augmentationFactor}) => {
-                    expect(Recrypt.getApi().generateKeyPair).toHaveBeenCalled;
-                    expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalled;
+                    expect(Recrypt.getApi().generateKeyPair).toHaveBeenCalledTimes(1);
+                    expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(1);
                     expect(newPrivateKey).toEqual(new Uint8Array([11, 22, 33]));
                     expect(augmentationFactor).toEqual(new Uint8Array([12, 23, 34]));
                 }
