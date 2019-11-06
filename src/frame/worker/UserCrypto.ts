@@ -61,7 +61,7 @@ export function rotatePrivateKey(
     return loadRecrypt()
         .flatMap((Recrypt) =>
             decryptUserMasterPrivateKey(passcode, derivedKeySalt, encryptedPrivateUserKey).flatMap(({userPrivateKey, derivedKey}) => {
-                return Recrypt.rotateUsersPrivateKey(userPrivateKey)
+                return Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey)
                     .flatMap(({newPrivateKey, augmentationFactor}) => {
                         return AES.encryptUserKey(newPrivateKey, derivedKey).map((newEncryptedPrivateUserKey) => ({
                             newEncryptedPrivateUserKey,

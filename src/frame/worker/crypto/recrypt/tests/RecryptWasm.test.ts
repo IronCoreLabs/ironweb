@@ -10,6 +10,33 @@ describe("RecryptWasm", () => {
         Recrypt.instantiateApi();
     });
 
+    describe("rotateUsersPrivateKeyWithRetry", () => {
+        const userPrivateKey = new Uint8Array([12, 13, 14]);
+        it("should result in an error when mocked generateKeyPair returns Uint8Array of zeros for augmentationFactor", () => {
+            jest.spyOn(Recrypt.getApi(), "generateKeyPair");
+            Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey).engage(
+                (error) => {
+                    expect(error.message).toEqual("Key rotation failed.");
+                },
+                () => fail("Should not invoke success when operation fails")
+            );
+            expect(Recrypt.getApi().generateKeyPair).toHaveBeenCalledTimes(2);
+        });
+
+        it("should result in an error when subtraction result is zero", () => {
+            spyOn(Recrypt.getApi(), "generateKeyPair").and.returnValue({privateKey: new Uint8Array([12, 23, 34])});
+            jest.spyOn(Recrypt.getApi(), "subtractPrivateKeys").mockReturnValue(new Uint8Array(32));
+            Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey).engage(
+                (error) => {
+                    expect(error.message).toEqual("Key rotation failed.");
+                },
+                () => fail("Should not invoke success when operation fails")
+            );
+
+            expect(Recrypt.getApi().subtractPrivateKeys).toHaveBeenCalledTimes(2);
+        });
+    });
+
     describe("generatePasswordDerivedKey", () => {
         it("should generate random bytes and use WebCrypto pbkdf2 when available", () => {
             spyOn(nativePBKDF2, "generatePasscodeDerivedKey").and.returnValue(Future.of("derivedKey"));

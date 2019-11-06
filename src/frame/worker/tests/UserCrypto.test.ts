@@ -12,7 +12,7 @@ describe("UserCrypto", () => {
             const privateKey = new Uint8Array(32);
 
             spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derivedKey"));
-            spyOn(Recrypt, "rotateUsersPrivateKey").and.returnValue(Future.of({newPrivateKey: "boo", augmentationFactor: "or-treat"}));
+            spyOn(Recrypt, "rotateUsersPrivateKeyWithRetry").and.returnValue(Future.of({newPrivateKey: "boo", augmentationFactor: "or-treat"}));
             spyOn(AES, "encryptUserKey").and.returnValue(Future.of("trick"));
             spyOn(AES, "decryptUserKey").and.returnValue(Future.of(privateKey));
 
@@ -23,7 +23,7 @@ describe("UserCrypto", () => {
                         newEncryptedPrivateUserKey: "trick",
                         augmentationFactor: "or-treat",
                     });
-                    expect(Recrypt.rotateUsersPrivateKey).toHaveBeenCalledWith(privateKey);
+                    expect(Recrypt.rotateUsersPrivateKeyWithRetry).toHaveBeenCalledWith(privateKey);
                     expect(AES.encryptUserKey).toHaveBeenCalledWith("boo", "derivedKey");
                 }
             );

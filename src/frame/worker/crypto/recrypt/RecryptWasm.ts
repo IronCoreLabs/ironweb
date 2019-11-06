@@ -82,7 +82,7 @@ export const instantiateApi = (seed?: Uint8Array) => {
 /**
  * Generate a new Recrypt public/private key pair
  */
-export const generateKeyPair = (): Future<Error, KeyPair> => Future.tryF(() => RecryptApi.generateKeyPair());
+export const generateKeyPair = (): Future<Error, KeyPair> => Future.tryF(() => RecryptApi.generateKeyPair()); //add logs to this to see what is being vc
 
 /**
  * Generate a new ed25519 signing key pair
@@ -95,15 +95,32 @@ export const generateSigningKeyPair = (): Future<Error, SigningKeyPair> => Futur
 export const getPublicSigningKeyFromPrivate = (privateSigningKey: PrivateKey<Uint8Array>) =>
     Future.tryF(() => RecryptApi.computeEd25519PublicKey(privateSigningKey));
 
+const isBufferAllZero = (bytes: Uint8Array) => {
+    return bytes.every((val) => val === 0);
+};
+
 /**
  * Augments UserPrivateKey and return both the augmented private key and the augmentation factor.
  * @param userPrivateKey current private key to be augmented
  */
-export const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
-    return generateKeyPair().map(({privateKey}) => ({
-        newPrivateKey: Recrypt.subtractPrivateKeys(userPrivateKey, privateKey),
-        augmentationFactor: privateKey,
-    }));
+const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+    return generateKeyPair().flatMap(({privateKey}) => {
+        if (isBufferAllZero(privateKey)) {
+            return Future.reject(new Error("Key rotation failed."));
+        }
+        const newPrivateKey = RecryptApi.subtractPrivateKeys(userPrivateKey, privateKey);
+        if (isBufferAllZero(newPrivateKey)) {
+            return Future.reject(new Error("Key rotation failed."));
+        }
+        return Future.of({
+            newPrivateKey,
+            augmentationFactor: privateKey,
+        });
+    });
+};
+
+export const rotateUsersPrivateKeyWithRetry = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+    return rotateUsersPrivateKey(userPrivateKey).handleWith(() => rotateUsersPrivateKey(userPrivateKey));
 };
 
 /**

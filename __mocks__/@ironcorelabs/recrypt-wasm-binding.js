@@ -3,6 +3,10 @@
  * replace it with this mock which just returns empty values for most things. This mock is automatically consumed by Jest given its location
  */
 exports.Api256 = class Api256 {
+    subtractPrivateKeys() {
+        return new Uint8Array(32);
+    }
+
     generateKeyPair() {
         return {
             privateKey: new Uint8Array(32),
