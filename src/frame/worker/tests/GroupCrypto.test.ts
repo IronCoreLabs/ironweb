@@ -155,11 +155,13 @@ describe("GroupCrypto", () => {
                     expect(result).toEqual({transformKeyGrant: "keysForUser", signature});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
                     expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith("documentSymKey", userList, signingKeys);
-                    expect(Recrypt.generateAddMemberSignature).toHaveBeenCalledWith("anything", groupPublicKey, "groupID");
+                    expect(Recrypt.generateAddMemberSignature).toHaveBeenCalledWith("documentSymKey", groupPublicKey, "groupID");
                     done();
                 }
             );
         });
+
+        // it("should generate a valid signature")
 
         it("maps errors to SDKError with specific error code", () => {
             spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));

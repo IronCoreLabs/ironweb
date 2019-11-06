@@ -66,10 +66,10 @@ export function addMembersToGroup(
 ) {
     return loadRecrypt()
         .flatMap((Recrypt) => {
-            return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([groupPrivateKey, key]) => {
+            return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([_, key]) => {
                 return Future.gather2(
                     Recrypt.generateTransformKeyToList(key, userKeyList, signingKeys),
-                    Recrypt.generateAddMemberSignature(groupPrivateKey, groupPublicKey, groupID)
+                    Recrypt.generateAddMemberSignature(key, groupPublicKey, groupID)
                 ).map(([transformKeyGrant, signature]) => ({
                     transformKeyGrant,
                     signature,
