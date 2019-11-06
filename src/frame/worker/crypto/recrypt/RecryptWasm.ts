@@ -82,7 +82,7 @@ export const instantiateApi = (seed?: Uint8Array) => {
 /**
  * Generate a new Recrypt public/private key pair
  */
-export const generateKeyPair = (): Future<Error, KeyPair> => Future.tryF(() => RecryptApi.generateKeyPair()); //add logs to this to see what is being vc
+export const generateKeyPair = (): Future<Error, KeyPair> => Future.tryF(() => RecryptApi.generateKeyPair());
 
 /**
  * Generate a new ed25519 signing key pair
@@ -94,7 +94,10 @@ export const generateSigningKeyPair = (): Future<Error, SigningKeyPair> => Futur
  */
 export const getPublicSigningKeyFromPrivate = (privateSigningKey: PrivateKey<Uint8Array>) =>
     Future.tryF(() => RecryptApi.computeEd25519PublicKey(privateSigningKey));
-
+/**
+ * Will return true if the Uint8Array contains only zeros.
+ * @param bytes
+ */
 const isBufferAllZero = (bytes: Uint8Array) => {
     return bytes.every((val) => val === 0);
 };
