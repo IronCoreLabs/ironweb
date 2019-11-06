@@ -93,3 +93,5 @@ exports.Api256 = class Api256 {
 };
 exports.transformKeyToBytes256 = () => new Uint8Array(672);
 exports.pbkdf2SHA256 = () => new Uint8Array(32);
+exports.subtractPrivateKeys = () => new Uint8Array(32);
+exports.addPrivateKeys = () => new Uint8Array(32);

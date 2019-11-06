@@ -4,6 +4,7 @@ import * as TestUtils from "../../../../../tests/TestUtils";
 import * as CryptoUtils from "../../CryptoUtils";
 import * as nativePBKDF2 from "../../pbkdf2/native";
 import * as Recrypt from "../RecryptWasm";
+import * as MochRecrypt from "@ironcorelabs/recrypt-wasm-binding";
 
 describe("RecryptWasm", () => {
     beforeAll(() => {
@@ -25,7 +26,7 @@ describe("RecryptWasm", () => {
 
         it("should result in an error when subtraction result is zero", () => {
             spyOn(Recrypt.getApi(), "generateKeyPair").and.returnValue({privateKey: new Uint8Array([12, 23, 34])});
-            jest.spyOn(Recrypt.getApi(), "subtractPrivateKeys").mockReturnValue(new Uint8Array(32));
+            jest.spyOn(MochRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array(32));
             Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey).engage(
                 (error) => {
                     expect(error.message).toEqual("Key rotation failed.");
@@ -33,7 +34,7 @@ describe("RecryptWasm", () => {
                 () => fail("Should not invoke success when operation fails")
             );
 
-            expect(Recrypt.getApi().subtractPrivateKeys).toHaveBeenCalledTimes(2);
+            expect(MochRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(2);
         });
     });
 

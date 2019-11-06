@@ -108,7 +108,7 @@ const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPr
         if (isBufferAllZero(privateKey)) {
             return Future.reject(new Error("Key rotation failed."));
         }
-        const newPrivateKey = RecryptApi.subtractPrivateKeys(userPrivateKey, privateKey);
+        const newPrivateKey = Recrypt.subtractPrivateKeys(userPrivateKey, privateKey);
         if (isBufferAllZero(newPrivateKey)) {
             return Future.reject(new Error("Key rotation failed."));
         }
