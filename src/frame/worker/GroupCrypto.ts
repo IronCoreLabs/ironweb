@@ -50,8 +50,10 @@ export function addAdminsToGroup(
 }
 
 /**
- * Decrypt the provided group private key and use it to generate transform keys to each public user key provided.
+ * Decrypt the provided group private key and use it to generate Schnorr signature and transform keys to each public user key provided.
  * @param {TransformedEncryptedMessage} groupPrivateKey Encrypted private key for group
+ * @param {PublicKey<string>}           groupPublicKey  Group public key of the group being added to
+ * @param {string}                      groupID         Group Id of the group being added to
  * @param {UserOrGroupPublicKey[]}      userKeyList     List of user public keys to generate transform keys to
  * @param {PrivateKey<Uint8Array>}      adminPrivateKey Private key of the group add who is adding these new members.
  * @param {SigningKeyPair}              signingKeys     Current users signing keys used to sign transform key

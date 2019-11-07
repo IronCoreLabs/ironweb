@@ -44,6 +44,8 @@ export function encryptGroupPrivateKeyToList(
 /**
  * Send message to worker to decrypt the groups private key and generate transform keys from it to the list of user public keys provided.
  * @param {TransformedEncryptedMessage} encryptedGroupPrivateKey Response from group GET call
+ * @param {PublicKey<string>}           groupPublicKey           Group public key of the group being added to
+ * @param {string}                      groupID                  Group Id of the group being added to
  * @param {UserOrGroupPublicKey[]}      userKeyList              List of public keys to generate transform keys to
  * @param {PrivateKey<Uint8Array>}      myPrivateKey             Private key of current, admin user
  * @param {SigningKeyPair}              signingKeys              Current users signing keys

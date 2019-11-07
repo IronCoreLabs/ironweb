@@ -161,8 +161,6 @@ describe("GroupCrypto", () => {
             );
         });
 
-        // it("should generate a valid signature")
-
         it("maps errors to SDKError with specific error code", () => {
             spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
 
