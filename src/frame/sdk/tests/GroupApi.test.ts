@@ -417,7 +417,6 @@ describe("GroupApi", () => {
                     groupID: "32",
                     encryptedPrivateKey: "encryptedPrivKey",
                     groupMasterPublicKey: {x: "12", y: "23"},
-                    GroupID: "groupID",
                     permissions: ["admin", "member"],
                     adminIds: ["id1"],
                 })
