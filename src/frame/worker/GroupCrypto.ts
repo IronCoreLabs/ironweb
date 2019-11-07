@@ -30,8 +30,8 @@ export function createGroup(userPublicKey: PublicKey<Uint8Array>, signingKeys: S
 /**
  * Generate schnorr siganture and encrypted access keys to the groups private key for the provided list of users in order to make them admins of the group.
  * @param {TransformedEncryptedMessage} encryptedGroupPrivateKey Groups encrypted private key
- * @param {PublicKey<string>}           groupPublicKey  Group public key of the group being added to
- * @param {string}                      groupID         Group Id of the group being added to
+ * @param {PublicKey<string>}           groupPublicKey           Group public key of the group being added to
+ * @param {string}                      groupID                  Group Id of the group being added to
  * @param {UserOrGroupPublicKey[]}      userKeyList              List of user public keys to encrypt group private key to
  * @param {PrivateKey<Uint8Array>}      adminPrivateKey          Private key for the admin who is adding the other admins. The current user performing this operation.
  * @param {SigningKeyPair}              signingKeys              Signing keys for the admin adding the other admins. The current user performing this operation.
@@ -49,7 +49,7 @@ export function addAdminsToGroup(
             return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([plaintext, key]) => {
                 return Future.gather2(
                     Recrypt.encryptPlaintextToList(plaintext, userKeyList, signingKeys),
-                    Recrypt.generateAddMemberSignature(key, groupPublicKey, groupID)
+                    Future.of(Recrypt.schnorrSignUtf8String(key, groupPublicKey, groupID))
                 ).map(([encryptedAccessKey, signature]) => ({
                     encryptedAccessKey,
                     signature,

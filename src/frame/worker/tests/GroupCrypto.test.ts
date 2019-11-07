@@ -104,7 +104,7 @@ describe("GroupCrypto", () => {
             const groupPublicKey = TestUtils.getEmptyPublicKeyString();
             jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of(["decryptedPlaintext"]) as any);
             jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["accessKey1", "accessKey2"]) as any);
-            jest.spyOn(Recrypt, "generateAddMemberSignature").mockReturnValue(Future.of(signature));
+            jest.spyOn(Recrypt, "schnorrSignUtf8String").mockReturnValue(signature as any);
 
             const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const adminPrivateKey = new Uint8Array(20);
@@ -122,7 +122,6 @@ describe("GroupCrypto", () => {
         });
 
         it("maps errors to SDKError with expected error code", () => {
-            const signature = new Uint8Array(32);
             const groupPublicKey = TestUtils.getEmptyPublicKeyString();
             spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
 
@@ -133,7 +132,7 @@ describe("GroupCrypto", () => {
 
             GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "grouID", userList, adminPrivateKey, signingKeys).engage(
                 (error) => {
-                    expect(error.message).toEqual({encryptedAccessKey: "plaintext decryption failed", signature});
+                    expect(error.message).toEqual("plaintext decryption failed");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_DECRYPTION_FAILURE);
                 },
                 () => fail("Success should not be invoked when operations fail")
