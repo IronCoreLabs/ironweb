@@ -139,9 +139,9 @@ describe("GroupCrypto", () => {
     describe("addMembersToGroup", () => {
         it("decrypts key and reencrypts it to the list of users provided", (done) => {
             const signature = new Uint8Array(32);
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of(["anything", "documentSymKey"]));
-            spyOn(Recrypt, "generateTransformKeyToList").and.returnValue(Future.of("keysForUser"));
-            spyOn(Recrypt, "generateAddMemberSignature").and.returnValue(Future.of(signature));
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of(["anything", "documentSymKey"]) as any);
+            jest.spyOn(Recrypt, "generateTransformKeyToList").mockReturnValue(Future.of("keysForUser") as any);
+            jest.spyOn(Recrypt, "schnorrSignUtf8String").mockReturnValue(signature as any);
 
             const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const adminPrivateKey = new Uint8Array(20);
@@ -155,7 +155,7 @@ describe("GroupCrypto", () => {
                     expect(result).toEqual({transformKeyGrant: "keysForUser", signature});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
                     expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith("documentSymKey", userList, signingKeys);
-                    expect(Recrypt.generateAddMemberSignature).toHaveBeenCalledWith("documentSymKey", groupPublicKey, "groupID");
+                    expect(Recrypt.schnorrSignUtf8String).toHaveBeenCalledWith("documentSymKey", groupPublicKey, "groupID");
                     done();
                 }
             );
