@@ -252,12 +252,21 @@ describe("GroupApi", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
             const userKeys = [{id: "id1", userMasterPublicKey: {x: "key1"}}, {id: "id2", userMasterPublicKey: {x: "key2"}}];
+            const signature = new Uint8Array(32);
 
             spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
+                Future.of({
+                    groupMasterPublicKey: {x: "12", y: "23"},
+                    groupID: "32",
+                    encryptedPrivateKey: "encryptedPrivKey",
+                    permissions: ["admin", "member"],
+                    adminIds: ["id1"],
+                })
             );
             spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(Future.of(["encryptedAccessKey1", "encryptedAccessKey2"]));
+            spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(
+                Future.of({encryptedAccessKey: ["encryptedAccessKey1", "encryptedAccessKey2"], signature})
+            );
             spyOn(GroupApiEndpoints, "callAddAdminsApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "user1"}, {userId: "user2"}],
@@ -275,9 +284,11 @@ describe("GroupApi", () => {
 
                     expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("33");
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1", "user2"]);
-                    expect(GroupApiEndpoints.callAddAdminsApi).toHaveBeenCalledWith("33", ["encryptedAccessKey1", "encryptedAccessKey2"]);
+                    expect(GroupApiEndpoints.callAddAdminsApi).toHaveBeenCalledWith("33", ["encryptedAccessKey1", "encryptedAccessKey2"], signature);
                     expect(GroupOperations.encryptGroupPrivateKeyToList).toHaveBeenCalledWith(
                         "encryptedPrivKey",
+                        {x: "12", y: "23"},
+                        "33",
                         [{id: "id1", masterPublicKey: {x: "key1"}}, {id: "id2", masterPublicKey: {x: "key2"}}],
                         expect.any(Uint8Array),
                         ApiState.signingKeys()

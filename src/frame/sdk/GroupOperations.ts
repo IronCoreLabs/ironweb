@@ -19,12 +19,16 @@ export function groupCreate(userPublicKey: PublicKey<Uint8Array>, signingKeys: S
  * Send message to worker to decrypt the groups priavte key and encrypt it to the provided list of user public keys. Used to add additional admins
  * to the group.
  * @param {TransformedEncryptedMessage} encryptedGroupPrivateKey Private key for group
+ * @param {PublicKey<string>}           groupPublicKey           Group public key of the group being added to
+ * @param {string}                      groupID                  Group Id of the group being added to
  * @param {UserOrGroupPublicKey[]}      userKeyList              List of public keys to encrypt key to
  * @param {PrivateKey<Uint8Array>}      myPrivateKey             Private key of current, admin user
  * @param {SigningKeyPair}              signingKeys              Current users signing keys
  */
 export function encryptGroupPrivateKeyToList(
     encryptedGroupPrivateKey: TransformedEncryptedMessage,
+    groupPublicKey: PublicKey<string>,
+    groupID: string,
     userKeyList: UserOrGroupPublicKey[],
     myPrivateKey: PrivateKey<Uint8Array>,
     signingKeys: SigningKeyPair
@@ -33,6 +37,8 @@ export function encryptGroupPrivateKeyToList(
         type: "GROUP_ADD_ADMINS",
         message: {
             encryptedGroupKey: encryptedGroupPrivateKey,
+            groupPublicKey,
+            groupID,
             userKeyList,
             adminPrivateKey: myPrivateKey,
             signingKeys,

@@ -304,6 +304,8 @@ describe("worker index", () => {
                     encryptedGroupKey: {
                         foo: "bar",
                     },
+                    groupPublicKey: new Uint8Array(32),
+                    groupID: "groupID",
                     userKeyList: ["32", "13"],
                     adminPrivateKey: new Uint8Array(32),
                     signingKeys: "signkeys",
@@ -313,7 +315,14 @@ describe("worker index", () => {
             messenger.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("added admins");
-                expect(GroupCrypto.addAdminsToGroup).toHaveBeenCalledWith({foo: "bar"}, ["32", "13"], new Uint8Array(32), "signkeys");
+                expect(GroupCrypto.addAdminsToGroup).toHaveBeenCalledWith(
+                    {foo: "bar"},
+                    new Uint8Array(32),
+                    "groupID",
+                    ["32", "13"],
+                    new Uint8Array(32),
+                    "signkeys"
+                );
                 done();
             });
         });
