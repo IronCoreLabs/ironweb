@@ -70,12 +70,9 @@ export function addMembersToGroup(
     return loadRecrypt()
         .flatMap((Recrypt) => {
             return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([_, key]) => {
-                return Future.gather2(
-                    Recrypt.generateTransformKeyToList(key, userKeyList, signingKeys),
-                    Future.of(Recrypt.schnorrSignUtf8String(key, publicKeyToBytes(groupPublicKey), groupID))
-                ).map(([transformKeyGrant, signature]) => ({
+                return Recrypt.generateTransformKeyToList(key, userKeyList, signingKeys).map((transformKeyGrant) => ({
                     transformKeyGrant,
-                    signature,
+                    signature: Recrypt.schnorrSignUtf8String(key, publicKeyToBytes(groupPublicKey), groupID),
                 }));
             });
         })
