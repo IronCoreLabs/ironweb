@@ -102,7 +102,7 @@ describe("GroupCrypto", () => {
         it("decrypts group private key encrypts it to the provided list of public keys", () => {
             const signature = new Uint8Array(32);
             const groupPublicKey = TestUtils.getEmptyPublicKeyString();
-            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of(["decryptedPlaintext"]) as any);
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of(["decryptedPlaintext", "key"]) as any);
             jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["accessKey1", "accessKey2"]) as any);
             jest.spyOn(Recrypt, "schnorrSignUtf8String").mockReturnValue(signature as any);
 
@@ -111,12 +111,13 @@ describe("GroupCrypto", () => {
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "grouID", userList, adminPrivateKey, signingKeys).engage(
+            GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "groupID", userList, adminPrivateKey, signingKeys).engage(
                 (e) => fail(e.message),
                 (result: any) => {
                     expect(result).toEqual({encryptedAccessKey: ["accessKey1", "accessKey2"], signature});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith("decryptedPlaintext", userList, signingKeys);
+                    expect(Recrypt.schnorrSignUtf8String).toHaveBeenCalledWith("key", groupPublicKey, "groupID");
                 }
             );
         });
@@ -130,7 +131,7 @@ describe("GroupCrypto", () => {
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "grouID", userList, adminPrivateKey, signingKeys).engage(
+            GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "groupID", userList, adminPrivateKey, signingKeys).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decryption failed");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_DECRYPTION_FAILURE);

@@ -305,6 +305,7 @@ describe("GroupApiEndpoints", () => {
                                 ...groupEncryptedPrivateKey,
                             },
                         ],
+                        signature: "Ymdu",
                     });
                 }
             );

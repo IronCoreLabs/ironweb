@@ -47,12 +47,9 @@ export function addAdminsToGroup(
     return loadRecrypt()
         .flatMap((Recrypt) => {
             return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([plaintext, key]) => {
-                return Future.gather2(
-                    Recrypt.encryptPlaintextToList(plaintext, userKeyList, signingKeys),
-                    Future.of(Recrypt.schnorrSignUtf8String(key, groupPublicKey, groupID))
-                ).map(([encryptedAccessKey, signature]) => ({
+                return Recrypt.encryptPlaintextToList(plaintext, userKeyList, signingKeys).map((encryptedAccessKey) => ({
                     encryptedAccessKey,
-                    signature,
+                    signature: Recrypt.schnorrSignUtf8String(key, groupPublicKey, groupID),
                 }));
             });
         })

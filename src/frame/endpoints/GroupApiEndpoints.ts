@@ -142,8 +142,8 @@ function addAdmins(groupID: string, addedAdmins: EncryptedAccessKey[], signature
                     },
                     ...admin.encryptedPlaintext,
                 })),
+                signature: fromByteArray(signature),
             }),
-            sugnature: fromByteArray(signature),
         },
         errorCode: ErrorCodes.GROUP_ADD_ADMINS_REQUEST_FAILURE,
     };
@@ -301,8 +301,8 @@ export default {
      * @param {string}               groupID   ID of group to add admins to
      * @param {EncryptedAccessKey[]} adminList List of admin users to add to the group
      */
-    callAddAdminsApi(groupID: string, adminList: EncryptedAccessKey[], signasture: Uint8Array) {
-        const {url, options, errorCode} = addAdmins(groupID, adminList, signasture);
+    callAddAdminsApi(groupID: string, adminList: EncryptedAccessKey[], signature: Uint8Array) {
+        const {url, options, errorCode} = addAdmins(groupID, adminList, signature);
         return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 
