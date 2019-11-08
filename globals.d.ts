@@ -124,7 +124,6 @@ interface GroupApiBasicResponse {
     permissions: string[];
     created: string;
     updated: string;
-    needsRotation?: boolean;
 }
 interface GroupApiFullResponse extends GroupApiBasicResponse {
     groupMasterPublicKey: PublicKey<string>;
@@ -133,4 +132,5 @@ interface GroupApiFullResponse extends GroupApiBasicResponse {
 interface GroupApiFullDetailResponse extends GroupApiFullResponse {
     adminIds: string[];
     memberIds: string[];
+    needsRotation?: boolean;
 }

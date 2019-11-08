@@ -63,6 +63,7 @@ function formatDetailedGroupResponse(group: GroupApiBasicResponse | GroupApiFull
             ...groupBase,
             groupAdmins: group.adminIds,
             groupMembers: group.memberIds,
+            needsRotation: typeof group.needsRotation === "boolean" ? group.needsRotation : undefined,
         };
     }
     return groupBase;

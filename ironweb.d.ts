@@ -110,6 +110,7 @@ export interface GroupListResponse {
 export interface GroupDetailResponse extends GroupMetaResponse {
     groupAdmins: string[];
     groupMembers: string[];
+    needsRotation?: boolean;
 }
 export interface GroupUserEditResponse {
     succeeded: string[];
