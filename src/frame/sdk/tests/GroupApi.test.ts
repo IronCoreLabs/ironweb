@@ -220,7 +220,7 @@ describe("GroupApi", () => {
             );
         });
 
-        it("if needsRotation is set to true group is created with needsRotaion true", () => {
+        it("if needsRotation is set to true callGroupCreateApi is called with needsRotation true", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
