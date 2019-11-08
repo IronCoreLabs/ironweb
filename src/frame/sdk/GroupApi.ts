@@ -11,6 +11,7 @@ export interface InteralGroupCreateOptions extends GroupCreateOptions {
     groupID: string;
     addAsMember: boolean;
     groupName: string;
+    needsRotation: boolean;
 }
 
 /**
@@ -89,11 +90,12 @@ export function get(groupID: string) {
  * @param {string}  groupID Client provided optional group ID
  * @param {string}  groupName Client provide optonal group name
  * @param {boolean} addAsMember Whether the group creator shoudl be added as a member upon create
+ * @param {boolean} needsRotation Whether the group needs to rotate it private key
  */
-export function create(groupID: string, groupName: string, addAsMember: boolean) {
+export function create(groupID: string, groupName: string, addAsMember: boolean, needsRotation: boolean) {
     return GroupOperations.groupCreate(ApiState.userPublicKey(), ApiState.signingKeys(), addAsMember)
         .flatMap(({encryptedGroupKey, groupPublicKey, transformKey}) =>
-            GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedGroupKey, groupName, transformKey)
+            GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedGroupKey, needsRotation, groupName, transformKey)
         )
         .map((createdGroup) => formatDetailedGroupResponse(createdGroup) as GroupDetailResponse);
 }

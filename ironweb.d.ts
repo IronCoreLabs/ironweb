@@ -30,7 +30,9 @@ export interface GroupCreateOptions {
     groupID?: string;
     groupName?: string;
     addAsMember?: boolean;
+    needsRotation?: boolean;
 }
+
 export interface GroupUpdateOptions {
     groupName: string | null;
 }

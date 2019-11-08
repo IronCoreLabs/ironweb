@@ -76,16 +76,15 @@ describe("GroupApiEndpoints", () => {
     });
 
     describe("callGroupCreateApi", () => {
+        const groupPublicKey = {
+            x: new Uint8Array([98, 105, 133]),
+            y: new Uint8Array([110, 98]),
+        };
         it("combines all group content into payload and maps response to data result", () => {
-            const groupPublicKey = {
-                x: new Uint8Array([98, 105, 133]),
-                y: new Uint8Array([110, 98]),
-            };
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
-
             const transformKey = TestUtils.getTransformKey();
 
-            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, "group name", transformKey).engage(
+            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, false, "group name", transformKey).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -134,20 +133,17 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        needsRotation: false,
                     });
                 }
             );
         });
 
         it("doesnt send in name value if one is not provided", () => {
-            const groupPublicKey = {
-                x: new Uint8Array([98, 105, 133]),
-                y: new Uint8Array([110, 98]),
-            };
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
             const transformKey = TestUtils.getTransformKey();
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "", transformKey).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, "", transformKey).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -182,16 +178,13 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        needsRotation: false,
                     });
                 }
             );
         });
 
         it("checks contents of transformKey, if undefined payload should not have transformKey key or member list", () => {
-            const groupPublicKey = {
-                x: new Uint8Array([98, 105, 133]),
-                y: new Uint8Array([110, 98]),
-            };
             const groupEncryptedPrivateKey: any = {
                 encryptedMessage: "abc",
                 authorizationCode: "auth",
@@ -200,7 +193,7 @@ describe("GroupApiEndpoints", () => {
 
             const transformKey = undefined;
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "group name", transformKey).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, "group name", transformKey).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -227,6 +220,7 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        needsRotation: false,
                     });
                 }
             );

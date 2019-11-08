@@ -153,7 +153,7 @@ describe("GroupApi", () => {
                 })
             );
 
-            GroupApi.create("23", "private group", false).engage(
+            GroupApi.create("23", "private group", false, false).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -167,7 +167,7 @@ describe("GroupApi", () => {
                         updated: "2",
                     });
 
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("23", "pub", "encGroupKey", "private group", undefined);
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("23", "pub", "encGroupKey", false, "private group", undefined);
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), false);
                 }
             );
@@ -198,7 +198,7 @@ describe("GroupApi", () => {
                 })
             );
 
-            GroupApi.create("", "private group", true).engage(
+            GroupApi.create("", "private group", true, false).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -212,7 +212,14 @@ describe("GroupApi", () => {
                         updated: "2",
                     });
 
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", "private group", TestUtils.getTransformKey());
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
+                        "",
+                        "pub",
+                        "encGroupKey",
+                        false,
+                        "private group",
+                        TestUtils.getTransformKey()
+                    );
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), true);
                 }
             );
