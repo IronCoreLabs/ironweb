@@ -130,8 +130,15 @@ export function addAdmins(groupID: string, userList: string[]) {
                 );
             }
             const userPublicKeys = userKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey}));
-            return GroupOperations.encryptGroupPrivateKeyToList(group.encryptedPrivateKey, userPublicKeys, privateKey, ApiState.signingKeys())
-                .flatMap((adminKeyList) => GroupApiEndpoints.callAddAdminsApi(groupID, adminKeyList))
+            return GroupOperations.encryptGroupPrivateKeyToList(
+                group.encryptedPrivateKey,
+                group.groupMasterPublicKey,
+                groupID,
+                userPublicKeys,
+                privateKey,
+                ApiState.signingKeys()
+            )
+                .flatMap(({encryptedAccessKey, signature}) => GroupApiEndpoints.callAddAdminsApi(groupID, encryptedAccessKey, signature))
                 .map(({failedIds, succeededIds}) => mapOperationToSuccessAndFailureList(userList, succeededIds, failedIds));
         }
     );
@@ -171,8 +178,15 @@ export function addMembers(groupID: string, userList: string[]) {
                 );
             }
             const userPublicKeys = userKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey}));
-            return GroupOperations.generateGroupTransformKeyToList(group.encryptedPrivateKey, userPublicKeys, privateKey, ApiState.signingKeys())
-                .flatMap((userKeyList) => GroupApiEndpoints.callAddMembersApi(groupID, userKeyList))
+            return GroupOperations.generateGroupTransformKeyToList(
+                group.encryptedPrivateKey,
+                group.groupMasterPublicKey,
+                groupID,
+                userPublicKeys,
+                privateKey,
+                ApiState.signingKeys()
+            )
+                .flatMap(({transformKeyGrant, signature}) => GroupApiEndpoints.callAddMembersApi(groupID, transformKeyGrant, signature))
                 .map(({failedIds, succeededIds}) => mapOperationToSuccessAndFailureList(userList, succeededIds, failedIds));
         }
     );

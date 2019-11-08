@@ -261,6 +261,7 @@ describe("GroupApiEndpoints", () => {
     describe("callAddAdminsApi", () => {
         it("invokes API with expected parameters", () => {
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
+            const signature = new Uint8Array([98, 103, 110]);
             const userKeys = [
                 {
                     encryptedPlaintext: groupEncryptedPrivateKey,
@@ -274,7 +275,7 @@ describe("GroupApiEndpoints", () => {
                 },
             ];
 
-            GroupApiEndpoints.callAddAdminsApi("22", userKeys).engage(
+            GroupApiEndpoints.callAddAdminsApi("22", userKeys, signature).engage(
                 (e) => fail(e),
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
@@ -298,6 +299,7 @@ describe("GroupApiEndpoints", () => {
                                 ...groupEncryptedPrivateKey,
                             },
                         ],
+                        signature: "Ymdu",
                     });
                 }
             );
@@ -337,8 +339,9 @@ describe("GroupApiEndpoints", () => {
                     id: "99",
                 },
             ];
+            const signature = new Uint8Array([98, 103, 110]);
 
-            GroupApiEndpoints.callAddMembersApi("31", userKeys).engage(
+            GroupApiEndpoints.callAddMembersApi("31", userKeys, signature).engage(
                 (e) => fail(e),
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
@@ -372,6 +375,7 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        signature: "Ymdu",
                     });
                 }
             );

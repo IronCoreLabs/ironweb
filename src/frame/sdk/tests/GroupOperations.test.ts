@@ -57,8 +57,9 @@ describe("GroupOperations", () => {
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const encryptedGroupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const signingKeys = TestUtils.getSigningKeyPair();
+            const groupPublicKey = TestUtils.getEmptyPublicKeyString();
 
-            GroupOperations.encryptGroupPrivateKeyToList(encryptedGroupPrivateKey, userList, userPrivateKey, signingKeys).engage(
+            GroupOperations.encryptGroupPrivateKeyToList(encryptedGroupPrivateKey, groupPublicKey, "groupID", userList, userPrivateKey, signingKeys).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual("encrypted user keys");
@@ -67,6 +68,8 @@ describe("GroupOperations", () => {
                         type: "GROUP_ADD_ADMINS",
                         message: {
                             encryptedGroupKey: encryptedGroupPrivateKey,
+                            groupPublicKey: groupPublicKey,
+                            groupID: "groupID",
                             userKeyList: userList,
                             adminPrivateKey: userPrivateKey,
                             signingKeys,
@@ -84,8 +87,9 @@ describe("GroupOperations", () => {
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const encryptedGroupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const signingKeys = TestUtils.getSigningKeyPair();
+            const groupPublicKey = TestUtils.getEmptyPublicKeyString();
 
-            GroupOperations.generateGroupTransformKeyToList(encryptedGroupPrivateKey, userList, userPrivateKey, signingKeys).engage(
+            GroupOperations.generateGroupTransformKeyToList(encryptedGroupPrivateKey, groupPublicKey, "GroupID", userList, userPrivateKey, signingKeys).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual("transformed user keys");
@@ -94,6 +98,8 @@ describe("GroupOperations", () => {
                         type: "GROUP_ADD_MEMBERS",
                         message: {
                             encryptedGroupKey: encryptedGroupPrivateKey,
+                            groupPublicKey: groupPublicKey,
+                            groupID: "GroupID",
                             userKeyList: userList,
                             adminPrivateKey: userPrivateKey,
                             signingKeys,

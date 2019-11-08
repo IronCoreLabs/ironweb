@@ -6,6 +6,7 @@ import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
 import {makeAuthorizedApiRequest} from "../ApiRequest";
 import ApiState from "../ApiState";
 import {TransformKeyGrant} from "../worker/crypto/recrypt";
+import {fromByteArray} from "base64-js";
 
 export interface GroupListResponseType {
     result: GroupApiFullResponse[];
@@ -126,7 +127,7 @@ function groupUpdate(groupID: string, groupName: string | null) {
  * @param {string}               groupID     ID of the group to add admins
  * @param {EncryptedAccessKey[]} addedAdmins List of admin encrypted access keys to add
  */
-function addAdmins(groupID: string, addedAdmins: EncryptedAccessKey[]) {
+function addAdmins(groupID: string, addedAdmins: EncryptedAccessKey[], signature: Uint8Array) {
     return {
         url: `groups/${encodeURIComponent(groupID)}/admins`,
         options: {
@@ -142,6 +143,7 @@ function addAdmins(groupID: string, addedAdmins: EncryptedAccessKey[]) {
                     },
                     ...admin.encryptedPlaintext,
                 })),
+                signature: fromByteArray(signature),
             }),
         },
         errorCode: ErrorCodes.GROUP_ADD_ADMINS_REQUEST_FAILURE,
@@ -174,7 +176,7 @@ function removeAdmins(groupID: string, removedAdmins: string[]) {
  * @param {string}              groupID      ID of group to add members to
  * @param {TransformKeyGrant[]} addedMembers List of member transform keys to add
  */
-function addMembers(groupID: string, addedMembers: TransformKeyGrant[]) {
+function addMembers(groupID: string, addedMembers: TransformKeyGrant[], signature: Uint8Array) {
     return {
         url: `groups/${encodeURIComponent(groupID)}/users`,
         options: {
@@ -188,6 +190,7 @@ function addMembers(groupID: string, addedMembers: TransformKeyGrant[]) {
                     userMasterPublicKey: member.publicKey,
                     transformKey: transformKeyToBase64(member.transformKey),
                 })),
+                signature: fromByteArray(signature),
             }),
         },
         errorCode: ErrorCodes.GROUP_ADD_MEMBERS_REQUEST_FAILURE,
@@ -305,8 +308,8 @@ export default {
      * @param {string}               groupID   ID of group to add admins to
      * @param {EncryptedAccessKey[]} adminList List of admin users to add to the group
      */
-    callAddAdminsApi(groupID: string, adminList: EncryptedAccessKey[]) {
-        const {url, options, errorCode} = addAdmins(groupID, adminList);
+    callAddAdminsApi(groupID: string, adminList: EncryptedAccessKey[], signature: Uint8Array) {
+        const {url, options, errorCode} = addAdmins(groupID, adminList, signature);
         return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 
@@ -325,8 +328,8 @@ export default {
      * @param {string}              groupID    ID of the group to add members to
      * @param {TransformKeyGrant[]} memberList List of users and transform keys to add to group
      */
-    callAddMembersApi(groupID: string, memberList: TransformKeyGrant[]) {
-        const {url, options, errorCode} = addMembers(groupID, memberList);
+    callAddMembersApi(groupID: string, memberList: TransformKeyGrant[], signature: Uint8Array) {
+        const {url, options, errorCode} = addMembers(groupID, memberList, signature);
         return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 

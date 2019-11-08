@@ -141,17 +141,21 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
         case "GROUP_ADD_ADMINS":
             return GroupCrypto.addAdminsToGroup(
                 data.message.encryptedGroupKey,
+                data.message.groupPublicKey,
+                data.message.groupID,
                 data.message.userKeyList,
                 data.message.adminPrivateKey,
                 data.message.signingKeys
-            ).engage(errorHandler, (accessKeyList) => callback({type: "GROUP_ADD_ADMINS_RESPONSE", message: accessKeyList}));
+            ).engage(errorHandler, (result) => callback({type: "GROUP_ADD_ADMINS_RESPONSE", message: result}));
         case "GROUP_ADD_MEMBERS":
             return GroupCrypto.addMembersToGroup(
                 data.message.encryptedGroupKey,
+                data.message.groupPublicKey,
+                data.message.groupID,
                 data.message.userKeyList,
                 data.message.adminPrivateKey,
                 data.message.signingKeys
-            ).engage(errorHandler, (keyList) => callback({type: "GROUP_ADD_MEMBERS_RESPONSE", message: keyList}));
+            ).engage(errorHandler, (result) => callback({type: "GROUP_ADD_MEMBERS_RESPONSE", message: result}));
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;
