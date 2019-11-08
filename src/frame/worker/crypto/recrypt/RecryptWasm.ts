@@ -249,10 +249,10 @@ export const createRequestSignature = (
 };
 
 /**
- * Generate a schnorr signature using the group's private key over the group's provided id
+ * Generate a schnorr signature using the private key over the provided id
  */
-export const schnorrSignUtf8String = (privateKey: Uint8Array, publicKey: PublicKey<string>, string: string) => {
-    return RecryptApi.schnorrSign(privateKey, publicKeyToBytes(publicKey), utf8StringToArrayBuffer(string));
+export const schnorrSignUtf8String = (privateKey: Uint8Array, publicKey: PublicKey<Uint8Array>, string: string) => {
+    return RecryptApi.schnorrSign(privateKey, publicKey, utf8StringToArrayBuffer(string));
 };
 
 /**

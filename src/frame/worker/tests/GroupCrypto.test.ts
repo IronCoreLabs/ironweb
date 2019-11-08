@@ -3,6 +3,7 @@ import * as Recrypt from "../crypto/recrypt/RecryptWasm";
 import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import {ErrorCodes} from "../../../Constants";
+import {publicKeyToBytes} from "../../../lib/Utils";
 
 describe("GroupCrypto", () => {
     describe("createGroup", () => {
@@ -155,7 +156,7 @@ describe("GroupCrypto", () => {
                     expect(result).toEqual({transformKeyGrant: "keysForUser", signature});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
                     expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith("documentSymKey", userList, signingKeys);
-                    expect(Recrypt.schnorrSignUtf8String).toHaveBeenCalledWith("documentSymKey", groupPublicKey, "groupID");
+                    expect(Recrypt.schnorrSignUtf8String).toHaveBeenCalledWith("documentSymKey", publicKeyToBytes(groupPublicKey), "groupID");
                     done();
                 }
             );

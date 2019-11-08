@@ -2,6 +2,7 @@ import loadRecrypt from "./crypto/recrypt";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
+import {publicKeyToBytes} from "../../lib/Utils";
 
 /**
  * Create the keys for a new group. Generates a new keypair for the group and encrypts the value used to generate the
@@ -71,7 +72,7 @@ export function addMembersToGroup(
             return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([_, key]) => {
                 return Future.gather2(
                     Recrypt.generateTransformKeyToList(key, userKeyList, signingKeys),
-                    Future.of(Recrypt.schnorrSignUtf8String(key, groupPublicKey, groupID))
+                    Future.of(Recrypt.schnorrSignUtf8String(key, publicKeyToBytes(groupPublicKey), groupID))
                 ).map(([transformKeyGrant, signature]) => ({
                     transformKeyGrant,
                     signature,
