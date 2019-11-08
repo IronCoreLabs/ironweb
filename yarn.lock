@@ -146,10 +146,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@ironcorelabs/recrypt-wasm-binding@^0.5.4":
-  version "0.5.4"
-  resolved "https://registry.yarnpkg.com/@ironcorelabs/recrypt-wasm-binding/-/recrypt-wasm-binding-0.5.4.tgz#222d6e3a295e71ca7a0cdd58db11b8993c7b6e11"
-  integrity sha512-q5IsJXVBlet/GTRZ/+9AI02rZrVGjoOy+gETvJRjVtgeHF+zXo5nnt6r7IXgBp9fs4bXcTIIpYZGJoLtQF44qg==
+"@ironcorelabs/recrypt-wasm-binding@^0.5.5":
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/@ironcorelabs/recrypt-wasm-binding/-/recrypt-wasm-binding-0.5.5.tgz#e450ca324ea045480f6ade8b2e2523c315b46193"
+  integrity sha512-lrTb9wfkf8VHhng73GFLMj9pv3vovmGN3J4wr5W5TFg40AjrdQ0+RaqYsT+e2wwpXreNypcL+c8pEgw56tpodQ==
 
 "@jest/console@^24.7.1":
   version "24.7.1"

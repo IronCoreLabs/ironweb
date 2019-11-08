@@ -1,6 +1,6 @@
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
-import {toByteArray, fromByteArray} from "base64-js";
-import {DocumentMetaGetResponseType, DocumentGetResponseType} from "../frame/endpoints/DocumentApiEndpoints";
+import {fromByteArray, toByteArray} from "base64-js";
+import {DocumentGetResponseType, DocumentMetaGetResponseType} from "../frame/endpoints/DocumentApiEndpoints";
 
 export const userPublicXString = "upkx";
 export const userPublicYString = "upky";
@@ -20,6 +20,7 @@ export function getFullUser(): ApiUserResponse {
         userMasterPublicKey: {x: userPublicXString, y: userPublicYString},
         userPrivateKey: "",
         needsRotation: false,
+        currentKeyId: 1,
     };
 }
 

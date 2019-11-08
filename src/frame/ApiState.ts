@@ -48,6 +48,11 @@ class SdkUser {
     }
 
     /**
+     * Store a users new encrypted master private key. Only happens when the user rotates their key.
+     */
+    setEncryptedPrivateUserKey = (encryptedPrivateUserKey: PrivateKey<Uint8Array>) => (this.encryptedPrivateUserKey = encryptedPrivateUserKey);
+
+    /**
      * Get a users encrypted master private key
      */
     encryptedUserKey = (): PrivateKey<Uint8Array> => this.encryptedPrivateUserKey;

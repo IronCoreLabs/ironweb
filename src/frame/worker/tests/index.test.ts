@@ -145,7 +145,7 @@ describe("worker index", () => {
 
             messenger.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: "CHANGE_USER_PASSCODE_RESPONSE", message: "new encrypted private key"});
-                expect(UserCrypto.changeUsersPasscode).toHaveBeenCalledWith("current", "new", "key salt", "current encrypted private key");
+                expect(UserCrypto.changeUsersPasscode).toHaveBeenCalledWith("current", "new", "current encrypted private key");
                 done();
             });
         });
@@ -336,6 +336,8 @@ describe("worker index", () => {
                     encryptedGroupKey: {
                         foo: "bar",
                     },
+                    groupPublicKey: new Uint8Array(32),
+                    groupID: "groupID",
                     userKeyList: ["32", "13"],
                     adminPrivateKey: new Uint8Array(32),
                     signingKeys: "signkeys",
@@ -345,7 +347,14 @@ describe("worker index", () => {
             messenger.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("added members");
-                expect(GroupCrypto.addMembersToGroup).toHaveBeenCalledWith({foo: "bar"}, ["32", "13"], new Uint8Array(32), "signkeys");
+                expect(GroupCrypto.addMembersToGroup).toHaveBeenCalledWith(
+                    {foo: "bar"},
+                    new Uint8Array(32),
+                    "groupID",
+                    ["32", "13"],
+                    new Uint8Array(32),
+                    "signkeys"
+                );
                 done();
             });
         });

@@ -28,6 +28,13 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
     const errorHandler = errorResponse.bind(null, callback);
 
     switch (data.type) {
+        case "ROTATE_USER_PRIVATE_KEY":
+            return UserApi.rotateUserMasterKey(data.message.passcode).engage(errorHandler, () =>
+                callback({
+                    type: "ROTATE_USER_PRIVATE_KEY_RESPONSE",
+                    message: null,
+                })
+            );
         case "FRAME_LOADED_CHECK":
             return callback({type: "FRAME_LOADED_CHECK_RESPONSE"});
         case "INIT_SDK":

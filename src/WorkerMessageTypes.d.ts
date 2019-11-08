@@ -72,13 +72,28 @@ export interface DecryptLocalKeysWorkerResponse {
     };
 }
 
+export interface RotateUserPrivateKeyWorkerRequest {
+    type: "ROTATE_USER_PRIVATE_KEY";
+    message: {
+        passcode: string;
+        encryptedPrivateUserKey: Uint8Array;
+    };
+}
+
+export interface RotateUserPrivateKeyWorkerResponse {
+    type: "ROTATE_USER_PRIVATE_KEY_RESPONSE";
+    message: {
+        newEncryptedPrivateUserKey: Uint8Array;
+        augmentationFactor: Uint8Array;
+    };
+}
+
 export interface ChangeUserPasscodeWorkerRequest {
     type: "CHANGE_USER_PASSCODE";
     message: {
         currentPasscode: string;
         newPasscode: string;
         encryptedPrivateUserKey: Uint8Array;
-        keySalt: Uint8Array;
     };
 }
 export interface ChangeUserPasscodeWorkerResponse {
@@ -194,6 +209,8 @@ export interface GroupAddMemberWorkerRequest {
     type: "GROUP_ADD_MEMBERS";
     message: {
         encryptedGroupKey: TransformedEncryptedMessage;
+        groupID: string;
+        groupPublicKey: PublicKey<string>;
         userKeyList: UserOrGroupPublicKey[];
         adminPrivateKey: PrivateKey<Uint8Array>;
         signingKeys: SigningKeyPair;
@@ -201,7 +218,10 @@ export interface GroupAddMemberWorkerRequest {
 }
 export interface GroupAddMemberWorkerResponse {
     type: "GROUP_ADD_MEMBERS_RESPONSE";
-    message: TransformKeyGrant[];
+    message: {
+        transformKeyGrant: TransformKeyGrant[];
+        signature: Uint8Array;
+    };
 }
 
 export interface SignatureGenerationWorkerRequest {
@@ -229,6 +249,7 @@ export interface ErrorResponse {
 }
 
 export type RequestMessage =
+    | RotateUserPrivateKeyWorkerRequest
     | EncryptDocumentWorkerRequest
     | ReencryptDocumentWorkerRequest
     | DecryptDocumentWorkerRequest
@@ -244,6 +265,7 @@ export type RequestMessage =
     | SignatureGenerationWorkerRequest;
 
 export type ResponseMessage =
+    | RotateUserPrivateKeyWorkerResponse
     | EncryptDocumentWorkerResponse
     | ReencryptDocumentWorkerResponse
     | DecryptDocumentWorkerResponse

@@ -39,6 +39,36 @@ describe("UserApi", () => {
         });
     });
 
+    describe("rotateUserMasterKey", () => {
+        it("sends message to worker and takes result and passes it to call user key update endpoint", (done) => {
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            spyOn(UserApiEndpoints, "callUserKeyUpdateApi").and.returnValue(Future.of("user key update result"));
+            spyOn(WorkerMediator, "sendMessage").and.returnValue(
+                Future.of({
+                    message: {newEncryptedPrivateUserKey: "newEncryptedPrivateUserKey", augmentationFactor: "augmentationFactor"},
+                })
+            );
+            spyOn(ApiState, "setEncryptedPrivateUserKey");
+
+            UserApi.rotateUserMasterKey("current").engage(
+                (e) => fail(e.message),
+                (result: any) => {
+                    expect(result).toEqual("user key update result");
+                    expect(ApiState.setEncryptedPrivateUserKey).toHaveBeenCalledWith("newEncryptedPrivateUserKey");
+                    expect(UserApiEndpoints.callUserKeyUpdateApi).toHaveBeenCalledWith("newEncryptedPrivateUserKey", "augmentationFactor");
+                    expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "ROTATE_USER_PRIVATE_KEY",
+                        message: {
+                            passcode: "current",
+                            encryptedPrivateUserKey: new Uint8Array([]),
+                        },
+                    });
+                    done();
+                }
+            );
+        });
+    });
+
     describe("changeUsersPasscode", () => {
         it("sends message to worker and takes result and passes it to call user update endpoint", (done) => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
@@ -62,7 +92,6 @@ describe("UserApi", () => {
                             currentPasscode: "current",
                             newPasscode: "new",
                             encryptedPrivateUserKey: new Uint8Array([]),
-                            keySalt: new Uint8Array([]),
                         },
                     });
                     done();

@@ -568,6 +568,26 @@ describe("frame index", () => {
                 done();
             });
         });
+
+        it("ROTATE_USER_PRIVATE_KEY", (done) => {
+            spyOn(UserApi, "rotateUserMasterKey").and.returnValue(Future.of("rotateUserMasterKey"));
+
+            const payload: MT.RotateUserPrivateKey = {
+                type: "ROTATE_USER_PRIVATE_KEY",
+                message: {
+                    passcode: "current",
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "ROTATE_USER_PRIVATE_KEY_RESPONSE",
+                    message: null,
+                });
+            });
+            expect(UserApi.rotateUserMasterKey).toHaveBeenCalledWith("current");
+            done();
+        });
     });
 
     describe("onMessage group tests", () => {

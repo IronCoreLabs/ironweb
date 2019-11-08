@@ -2,6 +2,19 @@ import ApiState from "../ApiState";
 import * as TestUtils from "../../tests/TestUtils";
 
 describe("ApiState", () => {
+    describe("setEncryptedPrivateUserKey", () => {
+        it("store the user master private key", () => {
+            const newMasterPrivateKey = new Uint8Array([23, 34, 45]);
+            const user = TestUtils.getFullUser();
+
+            ApiState.setCurrentUser(user);
+            expect(ApiState.encryptedUserKey()).not.toEqual(newMasterPrivateKey);
+
+            ApiState.setEncryptedPrivateUserKey(newMasterPrivateKey);
+            expect(ApiState.encryptedUserKey()).toEqual(newMasterPrivateKey);
+        });
+    });
+
     describe("setCurrentUser", () => {
         it("sets fields and decodes base64 strings", () => {
             const user = TestUtils.getFullUser();

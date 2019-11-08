@@ -18,6 +18,20 @@ export function changePasscode(currentPasscode: string, newPasscode: string) {
         .map(() => undefined)
         .toPromise();
 }
+/**
+ * Rotates the user current private key.
+ * @param {string} passcode The users current passcode
+ */
+export function rotateMasterKey(passcode: string) {
+    checkSDKInitialized();
+    const payload: MT.RotateUserPrivateKey = {
+        type: "ROTATE_USER_PRIVATE_KEY",
+        message: {passcode},
+    };
+    return FrameMediator.sendMessage<MT.RotateUserPrivateKeyResponse>(payload)
+        .map(() => undefined)
+        .toPromise();
+}
 
 /**
  * Clears local device keys from the current browser instance. This will require the user to enter their passcode the next time they want to use this browser on this machine.

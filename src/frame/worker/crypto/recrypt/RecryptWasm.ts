@@ -94,6 +94,43 @@ export const generateSigningKeyPair = (): Future<Error, SigningKeyPair> => Futur
  */
 export const getPublicSigningKeyFromPrivate = (privateSigningKey: PrivateKey<Uint8Array>) =>
     Future.tryF(() => RecryptApi.computeEd25519PublicKey(privateSigningKey));
+/**
+ * Will return true if the Uint8Array contains only zeros.
+ * @param bytes
+ */
+const isBufferAllZero = (bytes: Uint8Array) => {
+    return bytes.every((val) => val === 0);
+};
+
+/**
+ * Augments UserPrivateKey and return both the augmented private key and the augmentation factor.
+ * @param userPrivateKey current private key to be augmented
+ */
+const rotateUsersPrivateKey = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+    return generateKeyPair().flatMap(({privateKey}) => {
+        if (isBufferAllZero(privateKey)) {
+            return Future.reject(new Error("Key rotation failed."));
+        }
+        const newPrivateKey = Recrypt.subtractPrivateKeys(userPrivateKey, privateKey);
+        if (isBufferAllZero(newPrivateKey)) {
+            return Future.reject(new Error("Key rotation failed."));
+        }
+        return Future.of({
+            newPrivateKey,
+            augmentationFactor: privateKey,
+        });
+    });
+};
+
+/**
+ * Calls rotateUsersPrivateKey, in the case that rotateUsersPrivateKey generates an augmentationFactor of zero or subtractPrivateKeys
+ * results in zero an error is returned. This error is handled by calling rotateUsersPrivateKey again in an attempt produce valid results.
+ * @param userPrivateKey
+ */
+
+export const rotateUsersPrivateKeyWithRetry = (userPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+    return rotateUsersPrivateKey(userPrivateKey).handleWith(() => rotateUsersPrivateKey(userPrivateKey));
+};
 
 /**
  * Generate a set of user, device, and signing keys for new user creation
@@ -249,10 +286,10 @@ export const createRequestSignature = (
 };
 
 /**
- * Generate a schnorr signature using the group's private key over the group's provided id
+ * Generate a schnorr signature using the private key over the provided id
  */
-export const schnorrSignUtf8String = (groupPrivateKey: Uint8Array, groupPublicKey: PublicKey<string>, groupId: string) => {
-    return RecryptApi.schnorrSign(groupPrivateKey, publicKeyToBytes(groupPublicKey), utf8StringToArrayBuffer(groupId));
+export const schnorrSignUtf8String = (privateKey: Uint8Array, publicKey: PublicKey<Uint8Array>, string: string) => {
+    return RecryptApi.schnorrSign(privateKey, publicKey, utf8StringToArrayBuffer(string));
 };
 
 /**

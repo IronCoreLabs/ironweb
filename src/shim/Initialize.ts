@@ -1,20 +1,20 @@
 import Future from "futurejs";
-import SDKError from "../lib/SDKError";
+import {DeviceKeys, SDKInitializationResult, UserCreateResponse} from "ironweb";
+import {ErrorCodes} from "../Constants";
 import {
-    InitApiRequest,
-    InitApiPasscodeResponse,
-    InitApiSdkResponse,
-    GenerateNewDeviceKeysRequest,
-    CreateUserRequest,
-    CreateUserResponse,
-    CreateUserAndDeviceRequest,
     CreateDetachedUserDeviceRequest,
     CreateDetachedUserDeviceResponse,
+    CreateUserAndDeviceRequest,
+    CreateUserRequest,
+    CreateUserResponse,
+    GenerateNewDeviceKeysRequest,
+    InitApiPasscodeResponse,
+    InitApiRequest,
+    InitApiSdkResponse,
 } from "../FrameMessageTypes";
-import {ErrorCodes} from "../Constants";
-import {storeParentWindowSymmetricKey, getParentWindowSymmetricKey, setSDKInitialized} from "./ShimUtils";
+import SDKError from "../lib/SDKError";
 import * as FrameMediator from "./FrameMediator";
-import {SDKInitializationResult, UserCreateResponse, DeviceKeys} from "ironweb";
+import {getParentWindowSymmetricKey, setSDKInitialized, storeParentWindowSymmetricKey} from "./ShimUtils";
 
 //Store reference to the JWT callback in case we need to invoke it again to create user
 let userJWTCallback: JWTCallbackToPromise;
@@ -94,13 +94,14 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
             const payload: CreateUserRequest = {type: "CREATE_USER", message: {passcode, jwtToken, needsRotation}};
             return FrameMediator.sendMessage<CreateUserResponse>(payload);
         })
-        //Rename a few fields and strip out the users private key since it'll probably be confusing that they're getting back an encrypted private key
+        //Rename a few fields and strip out the users private key and currentKeyId since they'll probably be confusing that they're getting back an encrypted private key
         //eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .map(({message: {id, segmentId, userPrivateKey, needsRotation, ...rest}}) => ({
+        .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => ({
             accountID: id,
             segmentID: segmentId,
             needsRotation,
-            ...rest,
+            status,
+            userMasterPublicKey,
         }))
         .toPromise();
 
