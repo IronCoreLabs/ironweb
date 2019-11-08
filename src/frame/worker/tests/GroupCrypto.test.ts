@@ -101,25 +101,30 @@ describe("GroupCrypto", () => {
 
     describe("addAdminsToGroup", () => {
         it("decrypts group private key encrypts it to the provided list of public keys", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of(["decryptedPlaintext"]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.returnValue(Future.of(["accessKey1", "accessKey2"]));
+            const signature = new Uint8Array(32);
+            const groupPublicKey = TestUtils.getEmptyPublicKeyString();
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of(["decryptedPlaintext", "key"]) as any);
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["accessKey1", "accessKey2"]) as any);
+            jest.spyOn(Recrypt, "schnorrSignUtf8String").mockReturnValue(signature as any);
 
             const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const adminPrivateKey = new Uint8Array(20);
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            GroupCrypto.addAdminsToGroup(groupPrivateKey, userList, adminPrivateKey, signingKeys).engage(
+            GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "groupID", userList, adminPrivateKey, signingKeys).engage(
                 (e) => fail(e.message),
                 (result: any) => {
-                    expect(result).toEqual(["accessKey1", "accessKey2"]);
+                    expect(result).toEqual({encryptedAccessKey: ["accessKey1", "accessKey2"], signature});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith("decryptedPlaintext", userList, signingKeys);
+                    expect(Recrypt.schnorrSignUtf8String).toHaveBeenCalledWith("key", publicKeyToBytes(groupPublicKey), "groupID");
                 }
             );
         });
 
         it("maps errors to SDKError with expected error code", () => {
+            const groupPublicKey = TestUtils.getEmptyPublicKeyString();
             spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
 
             const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
@@ -127,7 +132,7 @@ describe("GroupCrypto", () => {
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            GroupCrypto.addAdminsToGroup(groupPrivateKey, userList, adminPrivateKey, signingKeys).engage(
+            GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "groupID", userList, adminPrivateKey, signingKeys).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decryption failed");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_DECRYPTION_FAILURE);

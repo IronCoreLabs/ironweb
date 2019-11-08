@@ -190,6 +190,8 @@ export interface GroupAddAdminWorkerRequest {
     type: "GROUP_ADD_ADMINS";
     message: {
         encryptedGroupKey: TransformedEncryptedMessage;
+        groupID: string;
+        groupPublicKey: PublicKey<string>;
         userKeyList: UserOrGroupPublicKey[];
         adminPrivateKey: PrivateKey<Uint8Array>;
         signingKeys: SigningKeyPair;
@@ -197,7 +199,10 @@ export interface GroupAddAdminWorkerRequest {
 }
 export interface GroupAddAdminWorkerResponse {
     type: "GROUP_ADD_ADMINS_RESPONSE";
-    message: EncryptedAccessKey[];
+    message: {
+        encryptedAccessKey: EncryptedAccessKey[];
+        signature: Uint8Array;
+    };
 }
 
 export interface GroupAddMemberWorkerRequest {
