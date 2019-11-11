@@ -30,7 +30,9 @@ export interface GroupCreateOptions {
     groupID?: string;
     groupName?: string;
     addAsMember?: boolean;
+    needsRotation?: boolean;
 }
+
 export interface GroupUpdateOptions {
     groupName: string | null;
 }
@@ -108,6 +110,7 @@ export interface GroupListResponse {
 export interface GroupDetailResponse extends GroupMetaResponse {
     groupAdmins: string[];
     groupMembers: string[];
+    needsRotation?: boolean;
 }
 export interface GroupUserEditResponse {
     succeeded: string[];
