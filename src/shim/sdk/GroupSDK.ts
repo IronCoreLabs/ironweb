@@ -53,6 +53,24 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
         .toPromise();
 }
 
+export function createWithMembers(options: GroupCreateOptions = {groupName: "", addAsMember: true}, userList: string[]) {
+    ShimUtils.checkSDKInitialized();
+    ShimUtils.validateIDList(userList);
+    if (options.groupID) {
+        ShimUtils.validateID(options.groupID);
+    }
+    const payload: MT.GroupCreateWithMembersRequest = {
+        type: "GROUP_CREATE_WITH_MEMBERS",
+        message: {
+            interalGroupCreateOptions: {groupID: options.groupID || "", groupName: options.groupName || "", addAsMember: options.addAsMember !== false},
+            userList: ShimUtils.dedupeArray(userList, true),
+        },
+    };
+    return FrameMediator.sendMessage<MT.GroupCreateWithMembersResponse>(payload)
+        .map(({message}) => message)
+        .toPromise();
+}
+
 /**
  * Update a group. Currently only supports updating the group name to a new value or clearing it out by passing in null.
  * @param {string}             groupID ID of the group to update.

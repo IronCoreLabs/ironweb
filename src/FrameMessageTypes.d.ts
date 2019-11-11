@@ -293,7 +293,17 @@ export interface GroupCreateResponse {
     type: "GROUP_CREATE_RESPONSE";
     message: GroupDetailResponse;
 }
-
+export interface GroupCreateWithMembersRequest {
+    type: "GROUP_CREATE_WITH_MEMBERS";
+    message: {
+        interalGroupCreateOptions: InteralGroupCreateOptions;
+        userList: string[];
+    };
+}
+export interface GroupCreateWithMembersResponse {
+    type: "GROUP_CREATE_WITH_MEMBERS_RESPONSE";
+    message: GroupDetailResponse;
+}
 export interface GroupUpdateRequest {
     type: "GROUP_UPDATE";
     message: {
@@ -419,6 +429,7 @@ export interface ErrorResponse {
 }
 
 export type RequestMessage =
+    | GroupCreateWithMembersRequest
     | RotateUserPrivateKey
     | FrameLoadedRequest
     | InitApiRequest
