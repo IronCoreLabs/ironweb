@@ -19,7 +19,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const https = require('https');
+const https = require("https");
 const shell = require("shelljs");
 
 //Fail this script if any of these commands fail
@@ -27,12 +27,12 @@ shell.set("-e");
 
 const args = process.argv.slice(2);
 //Make sure the user passes in a version to publish
-if(args.indexOf('--version') === -1){
+if (args.indexOf("--version") === -1) {
     shell.echo("You must provide the version of ironweb to publish publicly with the '--version' argument, e.g. '--version 1.2.3'.");
     shell.exit(-1);
 }
-const PUBLISH_VERSION = args[args.indexOf('--version') + 1];
-const SHOULD_PUBLISH = args.indexOf('--publish') !== -1;
+const PUBLISH_VERSION = args[args.indexOf("--version") + 1];
+const SHOULD_PUBLISH = args.indexOf("--publish") !== -1;
 const PRODUCTION_FRAME_FILE_URL = `https://api.ironcorelabs.com/static/ironweb-frame-${PUBLISH_VERSION}/ironweb-frame.min.js`;
 
 //Ensure that our directory is set to where this file lives
@@ -44,17 +44,17 @@ shell.cd(rootDirectory);
  * also swap out the package name so we can publish it against the public NPM package.
  * @param {Object} packageJsonContent Package.json of internal ironweb repo in JSON form
  */
-function prepareInternalPackageForRelease(packageJsonContent){
+function prepareInternalPackageForRelease(packageJsonContent) {
     //The downloaded package.json from NPM includes a whole bunch of "added" properties including a bunch that are all prefixed
     //with underscores. Nuke all that content before we re-deploy up to the public package.
     delete packageJsonContent.deprecated;
     delete packageJsonContent.bundleDependencies;
-    for(let key in packageJsonContent){
-        if(packageJsonContent.hasOwnProperty(key) && key[0] === '_'){
+    for (let key in packageJsonContent) {
+        if (packageJsonContent.hasOwnProperty(key) && key[0] === "_") {
             delete packageJsonContent[key];
         }
     }
-    packageJsonContent.name = '@ironcorelabs/ironweb';
+    packageJsonContent.name = "@ironcorelabs/ironweb";
     return packageJsonContent;
 }
 
@@ -65,21 +65,23 @@ shell.mkdir("-p", "./publish/node_modules");
 
 https.get(PRODUCTION_FRAME_FILE_URL, (response) => {
     //If we couldn't find the associated version of the frame published in production, fail the publish script.
-    if(response.statusCode !== 200){
-        shell.echo(`Could not find version '${PUBLISH_VERSION}' of the ironweb-frame hosted in production. Requested '${PRODUCTION_FRAME_FILE_URL}' which returned a non 200 status code. Instead got a '${response.statusCode}' status code`);
+    if (response.statusCode !== 200) {
+        shell.echo(
+            `Could not find version '${PUBLISH_VERSION}' of the ironweb-frame hosted in production. Requested '${PRODUCTION_FRAME_FILE_URL}' which returned a non 200 status code. Instead got a '${response.statusCode}' status code`
+        );
         shell.exit(1);
     }
-    shell.pushd('./publish');
+    shell.pushd("./publish");
     //Pull down the private internal ironweb content from NPM and move things around so we can republish it under the public name
     shell.exec(`npm install @ironcorelabs/ironweb-internal@${PUBLISH_VERSION} --no-save --production`);
-    shell.mv('./node_modules/@ironcorelabs/ironweb-internal/*', './');
-    shell.rm('-rf', './node_modules');
+    shell.mv("./node_modules/@ironcorelabs/ironweb-internal/*", "./");
+    shell.rm("-rf", "./node_modules");
 
-    const internalPackageJson = prepareInternalPackageForRelease(require('./publish/package.json'));
+    const internalPackageJson = prepareInternalPackageForRelease(require("./publish/package.json"));
     fs.writeFileSync("./package.json", JSON.stringify(internalPackageJson, null, 2));
 
     //Publish!
-    shell.exec(SHOULD_PUBLISH ? "npm publish --access public" : "irish-pub");
+    shell.exec(SHOULD_PUBLISH ? "npm publish --access public" : "npm publish --dry-run");
 
     //Go back to the main directory and cleanup the directory
     shell.popd();
