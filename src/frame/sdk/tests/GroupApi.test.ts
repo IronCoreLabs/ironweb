@@ -285,6 +285,19 @@ describe("GroupApi", () => {
                 }
             );
         });
+        it("fails if userList is sent and contains non existent users", () => {
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({
+                result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+            }) as any);
+
+            GroupApi.create("", "private group", false, ["user1", "user2"]).engage(
+                (e) => {
+                    expect(e.message).toContain(["user2"]);
+                    expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_FAILURE);
+                },
+                () => fail("Should not be able to create group with members if mamber list request contains non existent users")
+            );
+        });
     });
 
     describe("update", () => {
