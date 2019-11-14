@@ -12,6 +12,7 @@ export interface InteralGroupCreateOptions extends GroupCreateOptions {
     groupID: string;
     addAsMember: boolean;
     groupName: string;
+    needsRotation: boolean;
 }
 
 /**
@@ -63,6 +64,7 @@ function formatDetailedGroupResponse(group: GroupApiBasicResponse | GroupApiFull
             ...groupBase,
             groupAdmins: group.adminIds,
             groupMembers: group.memberIds,
+            needsRotation: typeof group.needsRotation === "boolean" ? group.needsRotation : undefined,
         };
     }
     return groupBase;
@@ -96,8 +98,15 @@ function createErrorForInvalidUserList(userKeys: UserKeyListResponseType, userGr
  * @param {string}  groupID Client provided optional group ID
  * @param {string}  groupName Client provide optonal group name
  * @param {boolean} addAsMember Whether the group creator shoudl be added as a member upon create
+ * @param {boolean} needsRotation Whether the group needs to rotate it private key
  */
-export function create(groupID: string, groupName: string, addAsMember: boolean, userList?: string[]): Future<SDKError, GroupDetailResponse> {
+export function create(
+    groupID: string,
+    groupName: string,
+    addAsMember: boolean,
+    needsRotation: boolean,
+    userList?: string[]
+): Future<SDKError, GroupDetailResponse> {
     const creator = {id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())};
     const creatorMemberKeys = addAsMember ? [creator] : [];
     const userListResult =
@@ -121,7 +130,7 @@ export function create(groupID: string, groupName: string, addAsMember: boolean,
         .flatMap((memberKeys) =>
             GroupOperations.groupCreate(ApiState.userPublicKey(), ApiState.signingKeys(), addAsMember || userList !== undefined ? memberKeys : undefined)
                 .flatMap(({encryptedGroupKey, groupPublicKey, transformKeyGrantList}) =>
-                    GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedGroupKey, groupName, transformKeyGrantList)
+                    GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedGroupKey, needsRotation, groupName, transformKeyGrantList)
                 )
                 .map((createdGroup) => formatDetailedGroupResponse(createdGroup) as GroupDetailResponse)
         );

@@ -76,6 +76,7 @@ describe("GroupApi", () => {
                     permissions: ["member", "admin"],
                     created: "1",
                     updated: "2",
+                    needsRotation: true,
                 })
             );
 
@@ -91,6 +92,7 @@ describe("GroupApi", () => {
                         isMember: true,
                         created: "1",
                         updated: "2",
+                        needsRotation: true,
                     });
 
                     expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("87");
@@ -107,6 +109,7 @@ describe("GroupApi", () => {
                     permissions: [],
                     created: "1",
                     updated: "2",
+                    needsRotation: true,
                 })
             );
 
@@ -150,7 +153,7 @@ describe("GroupApi", () => {
                 transformKeyGrantList: undefined,
             }) as any);
 
-            GroupApi.create("23", "private group", false).engage(
+            GroupApi.create("23", "private group", false, false).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -164,7 +167,7 @@ describe("GroupApi", () => {
                         updated: "2",
                     });
 
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("23", "pub", "encGroupKey", "private group", undefined);
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("23", "pub", "encGroupKey", false, "private group", undefined);
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), undefined);
                 }
             );
@@ -192,7 +195,7 @@ describe("GroupApi", () => {
                 transformKeyGrantList: "datList",
             }) as any);
 
-            GroupApi.create("", "private group", true).engage(
+            GroupApi.create("", "private group", true, false).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -206,7 +209,7 @@ describe("GroupApi", () => {
                         updated: "2",
                     });
 
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", "private group", "datList");
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", false, "private group", "datList");
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), [{id, masterPublicKey}]);
                 }
             );
@@ -244,7 +247,7 @@ describe("GroupApi", () => {
 
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
 
-            GroupApi.create("", "private group", true, ["user1", "user2"]).engage(
+            GroupApi.create("", "private group", true, false, ["user1", "user2"]).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -258,7 +261,7 @@ describe("GroupApi", () => {
                         updated: "2",
                     });
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalled;
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", "private group", "datList");
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", false, "private group", "datList");
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), memberList);
                 }
             );
@@ -274,7 +277,7 @@ describe("GroupApi", () => {
 
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
 
-            GroupApi.create("", "private group", false, ["user1", "user2"]).engage(
+            GroupApi.create("", "private group", false, false, ["user1", "user2"]).engage(
                 (e) => fail(e),
                 () => {
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
@@ -290,12 +293,32 @@ describe("GroupApi", () => {
                 result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
             }) as any);
 
-            GroupApi.create("", "private group", false, ["user1", "user2"]).engage(
+            GroupApi.create("", "private group", false, false, ["user1", "user2"]).engage(
                 (e) => {
                     expect(e.message).toContain(["user2"]);
                     expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_FAILURE);
                 },
                 () => fail("Should not be able to create group with members if mamber list request contains non existent users")
+            );
+        });
+        it("if needsRotation is set to true callGroupCreateApi is called with needsRotation true", () => {
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+
+            jest.spyOn(GroupApiEndpoints, "callGroupCreateApi");
+
+            GroupApi.create("", "private group", false, true).engage(
+                (e) => fail(e),
+                () => {
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
+                        "",
+                        "pub",
+                        "encGroupKey",
+                        true,
+                        "private group",
+                        TestUtils.getTransformKey()
+                    );
+                }
             );
         });
     });

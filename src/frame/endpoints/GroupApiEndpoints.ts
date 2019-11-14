@@ -61,7 +61,7 @@ function groupGet(groupID: string) {
  * @param {string}             groupID       Client provided ID for group
  * @param {GroupCreatePayload} createPayload Group content including keys, optional group name, and current user info to be added as group admin
  */
-function groupCreate(groupID: string, createPayload: GroupCreatePayload) {
+function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRotation: boolean) {
     const userPublicKeyString = publicKeyToBase64(createPayload.userPublicKey);
     let memberList;
 
@@ -94,6 +94,7 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload) {
                     },
                 ],
                 members: memberList,
+                needsRotation,
             }),
         },
         errorCode: ErrorCodes.GROUP_CREATE_REQUEST_FAILURE,
@@ -275,17 +276,22 @@ export default {
         groupID: string,
         groupPublicKey: PublicKey<Uint8Array>,
         groupEncryptedPrivateKey: PREEncryptedMessage,
+        needsRotation: boolean,
         groupName?: string,
         transformKeyGrantList?: TransformKeyGrant[]
     ) {
-        const {url, options, errorCode} = groupCreate(groupID, {
-            userID: ApiState.user().id,
-            groupPublicKey,
-            groupEncryptedPrivateKey,
-            userPublicKey: ApiState.userPublicKey(),
-            name: groupName,
-            transformKeyGrantList,
-        });
+        const {url, options, errorCode} = groupCreate(
+            groupID,
+            {
+                userID: ApiState.user().id,
+                groupPublicKey,
+                groupEncryptedPrivateKey,
+                userPublicKey: ApiState.userPublicKey(),
+                name: groupName,
+                transformKeyGrantList,
+            },
+            needsRotation
+        );
         return makeAuthorizedApiRequest<GroupCreateResponseType>(url, errorCode, options);
     },
 

@@ -35,7 +35,7 @@ export function get(groupID: string) {
  * Create a new group. Takes an options object which allow for specifying an optional, unencrypted ID and name for the group.
  * @param {GroupCreateOptions} options Group creation options
  */
-export function create(options: GroupCreateOptions = {groupName: "", addAsMember: true}) {
+export function create(options: GroupCreateOptions = {groupName: "", addAsMember: true, needsRotation: false}) {
     ShimUtils.checkSDKInitialized();
     if (options.groupID) {
         ShimUtils.validateID(options.groupID);
@@ -46,6 +46,7 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
             groupID: options.groupID || "",
             groupName: options.groupName || "",
             addAsMember: options.addAsMember !== false,
+            needsRotation: options.needsRotation === true,
             userList: options.userList,
         },
     };

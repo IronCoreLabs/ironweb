@@ -76,6 +76,10 @@ describe("GroupApiEndpoints", () => {
     });
 
     describe("callGroupCreateApi", () => {
+        const groupPublicKey = {
+            x: new Uint8Array([98, 105, 133]),
+            y: new Uint8Array([110, 98]),
+        };
         it("combines all group content into payload and maps response to data result", () => {
             const groupPublicKey = {
                 x: new Uint8Array([98, 105, 133]),
@@ -86,7 +90,7 @@ describe("GroupApiEndpoints", () => {
             const creator = TestUtils.getFullUser();
             const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
 
-            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, "group name", [transformKeyGrant]).engage(
+            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, false, "group name", [transformKeyGrant]).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -135,21 +139,18 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        needsRotation: false,
                     });
                 }
             );
         });
 
         it("doesnt send in name value if one is not provided", () => {
-            const groupPublicKey = {
-                x: new Uint8Array([98, 105, 133]),
-                y: new Uint8Array([110, 98]),
-            };
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
             const creator = TestUtils.getFullUser();
             const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "", [transformKeyGrant]).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, "", [transformKeyGrant]).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -184,6 +185,7 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        needsRotation: false,
                     });
                 }
             );
@@ -202,7 +204,7 @@ describe("GroupApiEndpoints", () => {
 
             const transformKeyGrantList = undefined;
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "group name", transformKeyGrantList).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, "group name", transformKeyGrantList).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -229,6 +231,7 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
+                        needsRotation: false,
                     });
                 }
             );

@@ -132,4 +132,5 @@ interface GroupApiFullResponse extends GroupApiBasicResponse {
 interface GroupApiFullDetailResponse extends GroupApiFullResponse {
     adminIds: string[];
     memberIds: string[];
+    needsRotation?: boolean;
 }

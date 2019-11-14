@@ -84,6 +84,7 @@ describe("GroupSDK", () => {
                                 groupID: "",
                                 groupName: "",
                                 addAsMember: true,
+                                needsRotation: false,
                             },
                         });
                         done();
@@ -102,6 +103,7 @@ describe("GroupSDK", () => {
                                 groupID: "providedGroupID",
                                 groupName: "",
                                 addAsMember: true,
+                                needsRotation: false,
                             },
                         });
                         done();
@@ -120,6 +122,7 @@ describe("GroupSDK", () => {
                                 groupID: "",
                                 groupName: "",
                                 addAsMember: false,
+                                needsRotation: false,
                             },
                         });
                         done();
@@ -138,6 +141,7 @@ describe("GroupSDK", () => {
                                 groupID: "",
                                 groupName: "abc",
                                 addAsMember: true,
+                                needsRotation: false,
                             },
                         });
                         done();
@@ -147,7 +151,7 @@ describe("GroupSDK", () => {
 
             it("sends create message to frame with options passed in if provided", (done) => {
                 ShimUtils.setSDKInitialized();
-                GroupSDK.create({groupID: "providedID", groupName: "abc", addAsMember: true})
+                GroupSDK.create({groupID: "providedID", groupName: "abc", addAsMember: true, needsRotation: true})
                     .then((result: any) => {
                         expect(result).toEqual("messageResponse");
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
@@ -156,6 +160,7 @@ describe("GroupSDK", () => {
                                 groupID: "providedID",
                                 groupName: "abc",
                                 addAsMember: true,
+                                needsRotation: true,
                             },
                         });
                         done();
@@ -173,6 +178,7 @@ describe("GroupSDK", () => {
                                 groupID: "",
                                 groupName: "",
                                 addAsMember: true,
+                                needsRotation: false,
                                 userList: ["user1", "user2"],
                             },
                         });
