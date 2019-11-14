@@ -4,6 +4,7 @@ import SDKError from "../../../lib/SDKError";
 import * as DocumentCrypto from "../DocumentCrypto";
 import * as GroupCrypto from "../GroupCrypto";
 import * as UserCrypto from "../UserCrypto";
+import {fromByteArray} from "base64-js";
 
 describe("worker index", () => {
     describe("ParentThreadMessenger", () => {
@@ -276,21 +277,22 @@ describe("worker index", () => {
 
     describe("group message handling", () => {
         it("GROUP_CREATE", (done) => {
-            spyOn(GroupCrypto, "createGroup").and.returnValue(Future.of("created group"));
+            const creator = {id: "35", masterPublicKey: {x: fromByteArray(new Uint8Array(32)), y: fromByteArray(new Uint8Array(32))}};
+            jest.spyOn(GroupCrypto, "createGroup").mockReturnValue(Future.of("created group") as any);
 
             const payload: any = {
                 type: "GROUP_CREATE",
                 message: {
                     userPublicKey: new Uint8Array(10),
                     signingKeys: "signkeys",
-                    addAsMember: true,
+                    memberList: [creator],
                 },
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("created group");
-                expect(GroupCrypto.createGroup).toHaveBeenCalledWith(new Uint8Array(10), "signkeys", true);
+                expect(GroupCrypto.createGroup).toHaveBeenCalledWith(new Uint8Array(10), "signkeys", [creator]);
                 done();
             });
         });

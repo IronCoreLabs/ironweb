@@ -30,6 +30,7 @@ export interface GroupCreateOptions {
     groupID?: string;
     groupName?: string;
     addAsMember?: boolean;
+    userList?: string[];
 }
 export interface GroupUpdateOptions {
     groupName: string | null;

@@ -46,27 +46,10 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
             groupID: options.groupID || "",
             groupName: options.groupName || "",
             addAsMember: options.addAsMember !== false,
+            userList: options.userList,
         },
     };
     return FrameMediator.sendMessage<MT.GroupCreateResponse>(payload)
-        .map(({message}) => message)
-        .toPromise();
-}
-
-export function createWithMembers(options: GroupCreateOptions = {groupName: "", addAsMember: true}, userList: string[]) {
-    ShimUtils.checkSDKInitialized();
-    ShimUtils.validateIDList(userList);
-    if (options.groupID) {
-        ShimUtils.validateID(options.groupID);
-    }
-    const payload: MT.GroupCreateWithMembersRequest = {
-        type: "GROUP_CREATE_WITH_MEMBERS",
-        message: {
-            interalGroupCreateOptions: {groupID: options.groupID || "", groupName: options.groupName || "", addAsMember: options.addAsMember !== false},
-            userList: ShimUtils.dedupeArray(userList, true),
-        },
-    };
-    return FrameMediator.sendMessage<MT.GroupCreateWithMembersResponse>(payload)
         .map(({message}) => message)
         .toPromise();
 }

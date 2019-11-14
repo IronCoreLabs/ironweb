@@ -162,6 +162,24 @@ describe("GroupSDK", () => {
                     })
                     .catch((e) => fail(e));
             });
+            it("sends create message to frame with userList when provided", (done) => {
+                ShimUtils.setSDKInitialized();
+                GroupSDK.create({userList: ["user1", "user2"]})
+                    .then((result: any) => {
+                        expect(result).toEqual("messageResponse");
+                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                            type: "GROUP_CREATE",
+                            message: {
+                                groupID: "",
+                                groupName: "",
+                                addAsMember: true,
+                                userList: ["user1", "user2"],
+                            },
+                        });
+                        done();
+                    })
+                    .catch((e) => fail(e));
+            });
         });
 
         describe("update", () => {

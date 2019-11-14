@@ -2,15 +2,17 @@ import * as GroupOperations from "../GroupOperations";
 import * as WorkerMediator from "../../WorkerMediator";
 import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
+import {publicKeyToBase64} from "../../../lib/Utils";
 
 describe("GroupOperations", () => {
     describe("groupCreate", () => {
-        it("sends worker message to create group", () => {
+        it("sends worker message to create group with memberList", () => {
             spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "new group"}));
             const signingKeys = TestUtils.getSigningKeyPair();
             const userKey = TestUtils.getEmptyPublicKey();
+            const creator = {id: "userID", masterPublicKey: publicKeyToBase64(userKey)};
 
-            GroupOperations.groupCreate(userKey, signingKeys, true).engage(
+            GroupOperations.groupCreate(userKey, signingKeys, [creator]).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual("new group");
@@ -19,20 +21,20 @@ describe("GroupOperations", () => {
                         type: "GROUP_CREATE",
                         message: {
                             userPublicKey: userKey,
-                            addAsMember: true,
                             signingKeys,
+                            memberList: [creator],
                         },
                     });
                 }
             );
         });
 
-        it("sends provided option value as addAsMember property of message", () => {
+        it("sends worker message to create group without memberList", () => {
             spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: ""}));
             const userKey = TestUtils.getEmptyPublicKey();
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            GroupOperations.groupCreate(userKey, signingKeys, false).engage(
+            GroupOperations.groupCreate(userKey, signingKeys).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual("");
@@ -41,7 +43,6 @@ describe("GroupOperations", () => {
                         type: "GROUP_CREATE",
                         message: {
                             userPublicKey: userKey,
-                            addAsMember: false,
                             signingKeys,
                         },
                     });

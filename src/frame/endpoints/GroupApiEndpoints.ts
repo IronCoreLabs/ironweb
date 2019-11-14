@@ -20,6 +20,7 @@ interface GroupCreatePayload {
     userPublicKey: PublicKey<Uint8Array>;
     name?: string;
     transformKey?: TransformKey;
+    transformKeyGrantList?: TransformKeyGrant[];
 }
 export interface GroupMemberModifyResponseType {
     succeededIds: {userId: string}[];
@@ -63,14 +64,13 @@ function groupGet(groupID: string) {
 function groupCreate(groupID: string, createPayload: GroupCreatePayload) {
     const userPublicKeyString = publicKeyToBase64(createPayload.userPublicKey);
     let memberList;
-    if (createPayload.transformKey) {
-        memberList = [
-            {
-                userId: createPayload.userID,
-                userMasterPublicKey: userPublicKeyString,
-                transformKey: transformKeyToBase64(createPayload.transformKey),
-            },
-        ];
+
+    if (createPayload.transformKeyGrantList) {
+        memberList = createPayload.transformKeyGrantList.map((member) => ({
+            userId: member.id,
+            userMasterPublicKey: member.publicKey,
+            transformKey: transformKeyToBase64(member.transformKey),
+        }));
     }
 
     return {
@@ -276,7 +276,7 @@ export default {
         groupPublicKey: PublicKey<Uint8Array>,
         groupEncryptedPrivateKey: PREEncryptedMessage,
         groupName?: string,
-        transformKey?: TransformKey
+        transformKeyGrantList?: TransformKeyGrant[]
     ) {
         const {url, options, errorCode} = groupCreate(groupID, {
             userID: ApiState.user().id,
@@ -284,7 +284,7 @@ export default {
             groupEncryptedPrivateKey,
             userPublicKey: ApiState.userPublicKey(),
             name: groupName,
-            transformKey,
+            transformKeyGrantList,
         });
         return makeAuthorizedApiRequest<GroupCreateResponseType>(url, errorCode, options);
     },

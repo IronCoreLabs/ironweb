@@ -628,11 +628,11 @@ describe("frame index", () => {
         });
 
         it("GROUP_CREATE", (done) => {
-            spyOn(GroupApi, "create").and.returnValue(Future.of("groupCreate"));
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
-                message: {groupID: "my-group", groupName: "bar", addAsMember: true},
+                message: {groupID: "my-group", groupName: "bar", addAsMember: true, userList: ["string"]},
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
@@ -640,7 +640,7 @@ describe("frame index", () => {
                     type: "GROUP_CREATE_RESPONSE",
                     message: "groupCreate",
                 });
-                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", true);
+                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", true, ["string"]);
                 done();
             });
         });

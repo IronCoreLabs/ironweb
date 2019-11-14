@@ -3,13 +3,14 @@ import * as Recrypt from "../crypto/recrypt/RecryptWasm";
 import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import {ErrorCodes} from "../../../Constants";
-import {publicKeyToBytes} from "../../../lib/Utils";
+import {publicKeyToBytes, publicKeyToBase64} from "../../../lib/Utils";
 
 describe("GroupCrypto", () => {
     describe("createGroup", () => {
         it("generates new group keypair and encrypts it using the provided public key", () => {
             const userKey = TestUtils.getEmptyPublicKey();
             const signingKeys = TestUtils.getSigningKeyPair();
+            const creator = {id: "userID", masterPublicKey: publicKeyToBase64(userKey)};
 
             spyOn(Recrypt, "generateGroupKeyPair").and.returnValue(
                 Future.of({
@@ -25,14 +26,13 @@ describe("GroupCrypto", () => {
                 })
             );
 
-            spyOn(Recrypt, "generateTransformKey").and.returnValue(
+            spyOn(Recrypt, "generateTransformKeyToList").and.returnValue(
                 Future.of({
-                    fromPrivateKey: new Uint8Array(29),
-                    toPublicKey: TestUtils.getEmptyPublicKey(),
+                    transformKeyGrant: [{transformKey: "TransformKey", publicKey: "PublicKey<string>", id: "string"}],
                 })
             );
 
-            GroupCrypto.createGroup(userKey, signingKeys, true).engage(
+            GroupCrypto.createGroup(userKey, signingKeys, [creator]).engage(
                 (e) => fail(e),
                 (groupKeys: any) => {
                     expect(groupKeys.encryptedGroupKey).toEqual({encryptedMessage: "stuff"});
@@ -41,12 +41,12 @@ describe("GroupCrypto", () => {
                     expect(Recrypt.generateGroupKeyPair).toHaveBeenCalledWith();
                     expect(Recrypt.encryptPlaintext).toHaveBeenCalledWith(new Uint8Array(12), userKey, signingKeys);
 
-                    expect(Recrypt.generateTransformKey).toHaveBeenCalledWith(new Uint8Array(29), TestUtils.getEmptyPublicKey(), signingKeys);
+                    expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith(new Uint8Array(29), [creator], signingKeys);
                 }
             );
         });
 
-        it("does not generate a transform key if addAsMember is false", () => {
+        it("does not generate a transform key list if no membersList", () => {
             const userKey = TestUtils.getEmptyPublicKey();
             const signingKeys = TestUtils.getSigningKeyPair();
 
@@ -64,14 +64,13 @@ describe("GroupCrypto", () => {
                 })
             );
 
-            spyOn(Recrypt, "generateTransformKey").and.returnValue(
+            spyOn(Recrypt, "generateTransformKeyToList").and.returnValue(
                 Future.of({
-                    fromPrivateKey: new Uint8Array(29),
-                    toPublicKey: TestUtils.getEmptyPublicKey(),
+                    transformKeyGrant: [{transformKey: "TransformKey", publicKey: "PublicKey<string>", id: "string"}],
                 })
             );
 
-            GroupCrypto.createGroup(userKey, signingKeys, false).engage(
+            GroupCrypto.createGroup(userKey, signingKeys).engage(
                 (e) => fail(e),
                 (groupKeys: any) => {
                     expect(groupKeys.encryptedGroupKey).toEqual({encryptedMessage: "stuff"});
@@ -80,7 +79,7 @@ describe("GroupCrypto", () => {
                     expect(Recrypt.generateGroupKeyPair).toHaveBeenCalledWith();
                     expect(Recrypt.encryptPlaintext).toHaveBeenCalledWith(new Uint8Array(12), userKey, signingKeys);
 
-                    expect(Recrypt.generateTransformKey).not.toHaveBeenCalled();
+                    expect(Recrypt.generateTransformKeyToList).not.toHaveBeenCalled();
                 }
             );
         });
@@ -89,7 +88,7 @@ describe("GroupCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             spyOn(Recrypt, "generateGroupKeyPair").and.returnValue(Future.reject(new Error("group key gen failure")));
 
-            GroupCrypto.createGroup(TestUtils.getEmptyPublicKey(), signingKeys, false).engage(
+            GroupCrypto.createGroup(TestUtils.getEmptyPublicKey(), signingKeys).engage(
                 (error) => {
                     expect(error.message).toEqual("group key gen failure");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_GENERATION_FAILURE);

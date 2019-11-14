@@ -6,6 +6,7 @@ import * as GroupOperations from "../GroupOperations";
 import * as TestUtils from "../../../tests/TestUtils";
 import ApiState from "../../ApiState";
 import {ErrorCodes} from "../../../Constants";
+import {publicKeyToBase64} from "../../../lib/Utils";
 
 describe("GroupApi", () => {
     describe("list", () => {
@@ -128,30 +129,26 @@ describe("GroupApi", () => {
     });
 
     describe("create", () => {
-        it("requests create endpoint with ID and options and maps response, if addAsMemeber is set to false, transform key will return undefined", () => {
+        it("requests create endpoint with ID and options and maps response, if addAsMemeber is set to false, transformKeyGrantList will return undefined", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
-            spyOn(GroupApiEndpoints, "callGroupCreateApi").and.returnValue(
-                Future.of({
-                    groupPublicKey: "bar",
-                    name: "private group",
-                    id: "87",
-                    adminIds: ["2"],
-                    memberIds: ["2", "53"],
-                    permissions: ["admin"],
-                    created: "1",
-                    updated: "2",
-                })
-            );
+            jest.spyOn(GroupApiEndpoints, "callGroupCreateApi").mockReturnValue(Future.of({
+                groupPublicKey: "bar",
+                name: "private group",
+                id: "87",
+                adminIds: ["2"],
+                memberIds: ["2", "53"],
+                permissions: ["admin"],
+                created: "1",
+                updated: "2",
+            }) as any);
 
-            spyOn(GroupOperations, "groupCreate").and.returnValue(
-                Future.of({
-                    encryptedGroupKey: "encGroupKey",
-                    groupPublicKey: "pub",
-                    transformKey: undefined,
-                })
-            );
+            jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(Future.of({
+                encryptedGroupKey: "encGroupKey",
+                groupPublicKey: "pub",
+                transformKeyGrantList: undefined,
+            }) as any);
 
             GroupApi.create("23", "private group", false).engage(
                 (e) => fail(e),
@@ -168,35 +165,32 @@ describe("GroupApi", () => {
                     });
 
                     expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("23", "pub", "encGroupKey", "private group", undefined);
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), false);
+                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), undefined);
                 }
             );
         });
 
-        it("if addAsMemeber is set to true, transform key will return with a value", () => {
+        it("if addAsMemeber is set to true, mebers list will be created containing the group creator", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+            const id = ApiState.user().id;
+            const masterPublicKey = publicKeyToBase64(ApiState.userPublicKey());
+            jest.spyOn(GroupApiEndpoints, "callGroupCreateApi").mockReturnValue(Future.of({
+                groupPublicKey: "bar",
+                name: "private group",
+                id: "87",
+                adminIds: ["2"],
+                memberIds: ["2", "53"],
+                permissions: ["admin"],
+                created: "1",
+                updated: "2",
+            }) as any);
 
-            spyOn(GroupApiEndpoints, "callGroupCreateApi").and.returnValue(
-                Future.of({
-                    groupPublicKey: "bar",
-                    name: "private group",
-                    id: "87",
-                    adminIds: ["2"],
-                    memberIds: ["2", "53"],
-                    permissions: ["admin"],
-                    created: "1",
-                    updated: "2",
-                })
-            );
-
-            spyOn(GroupOperations, "groupCreate").and.returnValue(
-                Future.of({
-                    encryptedGroupKey: "encGroupKey",
-                    groupPublicKey: "pub",
-                    transformKey: TestUtils.getTransformKey(),
-                })
-            );
+            jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(Future.of({
+                encryptedGroupKey: "encGroupKey",
+                groupPublicKey: "pub",
+                transformKeyGrantList: "datList",
+            }) as any);
 
             GroupApi.create("", "private group", true).engage(
                 (e) => fail(e),
@@ -212,8 +206,82 @@ describe("GroupApi", () => {
                         updated: "2",
                     });
 
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", "private group", TestUtils.getTransformKey());
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), true);
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", "private group", "datList");
+                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), [{id, masterPublicKey}]);
+                }
+            );
+        });
+        it("if addAsMember is true and userList is provided memberList will contain the creator and users in userList", () => {
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+            const id = ApiState.user().id;
+            const masterPublicKey = publicKeyToBase64(ApiState.userPublicKey());
+            const userKeyList = [
+                {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
+            const memberList = [
+                {id, masterPublicKey},
+                {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
+            jest.spyOn(GroupApiEndpoints, "callGroupCreateApi").mockReturnValue(Future.of({
+                groupPublicKey: "bar",
+                name: "private group",
+                id: "87",
+                adminIds: ["2"],
+                memberIds: ["2", "53"],
+                permissions: ["admin"],
+                created: "1",
+                updated: "2",
+            }) as any);
+
+            jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(Future.of({
+                encryptedGroupKey: "encGroupKey",
+                groupPublicKey: "pub",
+                transformKeyGrantList: "datList",
+            }) as any);
+
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
+
+            GroupApi.create("", "private group", true, ["user1", "user2"]).engage(
+                (e) => fail(e),
+                (result: any) => {
+                    expect(result).toEqual({
+                        groupID: "87",
+                        groupName: "private group",
+                        groupAdmins: ["2"],
+                        groupMembers: ["2", "53"],
+                        isAdmin: true,
+                        isMember: false,
+                        created: "1",
+                        updated: "2",
+                    });
+                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalled;
+                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith("", "pub", "encGroupKey", "private group", "datList");
+                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(TestUtils.userPublicBytes, ApiState.signingKeys(), memberList);
+                }
+            );
+        });
+        it("if addAsMember is false and userList is provided memberList will contain just userList", () => {
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+            const userKeyList = [
+                {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
+            jest.spyOn(GroupOperations, "groupCreate");
+
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
+
+            GroupApi.create("", "private group", false, ["user1", "user2"]).engage(
+                (e) => fail(e),
+                () => {
+                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
+                        TestUtils.userPublicBytes,
+                        ApiState.signingKeys(),
+                        userKeyList.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey}))
+                    );
                 }
             );
         });

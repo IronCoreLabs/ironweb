@@ -81,11 +81,12 @@ describe("GroupApiEndpoints", () => {
                 x: new Uint8Array([98, 105, 133]),
                 y: new Uint8Array([110, 98]),
             };
+
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
+            const creator = TestUtils.getFullUser();
+            const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
 
-            const transformKey = TestUtils.getTransformKey();
-
-            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, "group name", transformKey).engage(
+            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, "group name", [transformKeyGrant]).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -145,9 +146,10 @@ describe("GroupApiEndpoints", () => {
                 y: new Uint8Array([110, 98]),
             };
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
-            const transformKey = TestUtils.getTransformKey();
+            const creator = TestUtils.getFullUser();
+            const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "", transformKey).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "", [transformKeyGrant]).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -187,7 +189,7 @@ describe("GroupApiEndpoints", () => {
             );
         });
 
-        it("checks contents of transformKey, if undefined payload should not have transformKey key or member list", () => {
+        it("checks contents of transformKeyGrantList, if undefined payload should not have member list", () => {
             const groupPublicKey = {
                 x: new Uint8Array([98, 105, 133]),
                 y: new Uint8Array([110, 98]),
@@ -198,9 +200,9 @@ describe("GroupApiEndpoints", () => {
                 ephemeralPublicKey: "epub",
             };
 
-            const transformKey = undefined;
+            const transformKeyGrantList = undefined;
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "group name", transformKey).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, "group name", transformKeyGrantList).engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});

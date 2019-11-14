@@ -7,10 +7,14 @@ import * as WMT from "../../WorkerMessageTypes";
  * @param {SigningKeyPair}        signingKeys   Current users signing keys
  * @param {boolean}               addAsMember   Whether to also add user who is creating group as a member of the group
  */
-export function groupCreate(userPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair, addAsMember: boolean) {
+export function groupCreate(
+    userPublicKey: PublicKey<Uint8Array>,
+    signingKeys: SigningKeyPair,
+    memberList?: {id: string; masterPublicKey: PublicKey<string>}[]
+) {
     const payload: WMT.GroupCreateWorkerRequest = {
         type: "GROUP_CREATE",
-        message: {userPublicKey, signingKeys, addAsMember},
+        message: {userPublicKey, signingKeys, memberList},
     };
     return WorkerMediator.sendMessage<WMT.GroupCreateWorkerResponse>(payload).map(({message}) => message);
 }
