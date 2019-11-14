@@ -293,6 +293,7 @@ export interface GroupCreateResponse {
     type: "GROUP_CREATE_RESPONSE";
     message: GroupDetailResponse;
 }
+
 export interface GroupUpdateRequest {
     type: "GROUP_UPDATE";
     message: {
