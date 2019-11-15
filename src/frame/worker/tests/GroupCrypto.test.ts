@@ -70,7 +70,7 @@ describe("GroupCrypto", () => {
                 })
             );
 
-            GroupCrypto.createGroup(userKey, signingKeys).engage(
+            GroupCrypto.createGroup(userKey, signingKeys, []).engage(
                 (e) => fail(e),
                 (groupKeys: any) => {
                     expect(groupKeys.encryptedGroupKey).toEqual({encryptedMessage: "stuff"});
@@ -88,7 +88,7 @@ describe("GroupCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             spyOn(Recrypt, "generateGroupKeyPair").and.returnValue(Future.reject(new Error("group key gen failure")));
 
-            GroupCrypto.createGroup(TestUtils.getEmptyPublicKey(), signingKeys).engage(
+            GroupCrypto.createGroup(TestUtils.getEmptyPublicKey(), signingKeys, []).engage(
                 (error) => {
                     expect(error.message).toEqual("group key gen failure");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_GENERATION_FAILURE);
