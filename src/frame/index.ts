@@ -140,7 +140,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.groupName,
                 data.message.addAsMember,
                 data.message.needsRotation,
-                data.message.userList
+                data.message.memberList
             ).engage(errorHandler, (newGroup) => callback({type: "GROUP_CREATE_RESPONSE", message: newGroup}));
         case "GROUP_UPDATE":
             return GroupApi.update(data.message.groupID, data.message.groupName).engage(errorHandler, (updatedGroup) =>

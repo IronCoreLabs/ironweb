@@ -30,7 +30,7 @@ export interface GroupCreateOptions {
     groupID?: string;
     groupName?: string;
     addAsMember?: boolean;
-    userList?: string[];
+    memberList?: string[];
     needsRotation?: boolean;
 }
 

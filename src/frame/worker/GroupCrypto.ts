@@ -17,7 +17,7 @@ export function createGroup(userPublicKey: PublicKey<Uint8Array>, signingKeys: S
             return Recrypt.generateGroupKeyPair().flatMap(({publicKey, plaintext, privateKey}) => {
                 return Future.gather2(
                     Recrypt.encryptPlaintext(plaintext, userPublicKey, signingKeys),
-                    typeof memberList !== "undefined" ? Recrypt.generateTransformKeyToList(privateKey, memberList, signingKeys) : Future.of(undefined)
+                    typeof memberList !== "undefined" ? Recrypt.generateTransformKeyToList(privateKey, memberList, signingKeys) : Future.of([])
                 ).map(([encryptedGroupKey, transformKeyGrantList]) => ({
                     encryptedGroupKey,
                     groupPublicKey: publicKey,

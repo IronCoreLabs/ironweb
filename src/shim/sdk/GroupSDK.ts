@@ -47,7 +47,7 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
             groupName: options.groupName || "",
             addAsMember: options.addAsMember !== false,
             needsRotation: options.needsRotation === true,
-            userList: options.userList,
+            memberList: options.memberList,
         },
     };
     return FrameMediator.sendMessage<MT.GroupCreateResponse>(payload)

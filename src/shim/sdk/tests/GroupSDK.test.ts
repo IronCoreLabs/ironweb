@@ -167,9 +167,9 @@ describe("GroupSDK", () => {
                     })
                     .catch((e) => fail(e));
             });
-            it("sends create message to frame with userList when provided", (done) => {
+            it("sends create message to frame with memberList when provided", (done) => {
                 ShimUtils.setSDKInitialized();
-                GroupSDK.create({userList: ["user1", "user2"]})
+                GroupSDK.create({memberList: ["user1", "user2"]})
                     .then((result: any) => {
                         expect(result).toEqual("messageResponse");
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
@@ -179,7 +179,7 @@ describe("GroupSDK", () => {
                                 groupName: "",
                                 addAsMember: true,
                                 needsRotation: false,
-                                userList: ["user1", "user2"],
+                                memberList: ["user1", "user2"],
                             },
                         });
                         done();

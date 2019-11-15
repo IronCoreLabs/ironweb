@@ -632,7 +632,7 @@ describe("frame index", () => {
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
-                message: {groupID: "my-group", groupName: "bar", addAsMember: true, needsRotation: false, userList: ["string"]},
+                message: {groupID: "my-group", groupName: "bar", addAsMember: true, needsRotation: false, memberList: ["string"]},
             };
 
             messenger.onMessageCallback(payload, (result: any) => {

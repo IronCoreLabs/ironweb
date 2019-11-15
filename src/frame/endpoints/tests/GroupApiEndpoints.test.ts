@@ -90,7 +90,7 @@ describe("GroupApiEndpoints", () => {
             const creator = TestUtils.getFullUser();
             const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
 
-            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, false, "group name", [transformKeyGrant]).engage(
+            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, false, [transformKeyGrant], "group name").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -150,7 +150,7 @@ describe("GroupApiEndpoints", () => {
             const creator = TestUtils.getFullUser();
             const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, "", [transformKeyGrant]).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, [transformKeyGrant], "").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -191,7 +191,7 @@ describe("GroupApiEndpoints", () => {
             );
         });
 
-        it("checks contents of transformKeyGrantList, if undefined payload should not have member list", () => {
+        it("checks contents of transformKeyGrantList, if empty payload should not have member list", () => {
             const groupPublicKey = {
                 x: new Uint8Array([98, 105, 133]),
                 y: new Uint8Array([110, 98]),
@@ -202,9 +202,9 @@ describe("GroupApiEndpoints", () => {
                 ephemeralPublicKey: "epub",
             };
 
-            const transformKeyGrantList = undefined;
+            // const transformKeyGrantList = [];
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, "group name", transformKeyGrantList).engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, [], "group name").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});

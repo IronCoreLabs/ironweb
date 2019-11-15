@@ -181,7 +181,7 @@ export interface GroupCreateWorkerResponse {
     message: {
         encryptedGroupKey: PREEncryptedMessage;
         groupPublicKey: PublicKey<Uint8Array>;
-        transformKeyGrantList?: TransformKeyGrant[];
+        transformKeyGrantList: TransformKeyGrant[];
     };
 }
 
