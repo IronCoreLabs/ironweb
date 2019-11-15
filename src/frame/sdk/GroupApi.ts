@@ -90,29 +90,27 @@ export function get(groupID: string) {
 /**
  * Create the error strings for missing users
  */
-function createErrorForInvalidUserList(userKeysResponse: UserKeyListResponseType, memberList: string[]) {
+function getListOfMissingUsersFromKeyResponse(userKeysResponse: UserKeyListResponseType, memberList: string[]) {
     const existingUserIDs = userKeysResponse.result.map(({id}) => id);
-    return memberList.filter((userID) => !existingUserIDs.includes(userID));
+    return memberList.filter((userID) => !existingUserIDs.includes(userID)).join(", ");
 }
 
 /**
  * Checkes that all members listed in member list are existing members
  */
-function validateMemberList(memberList: string[]) {
-    return memberList !== undefined && memberList.length > 0
-        ? UserApiEndpoints.callUserKeyListApi(memberList).flatMap((userKeysResponse) => {
-              if (userKeysResponse.result.length !== memberList.length) {
-                  const missingUsersString = createErrorForInvalidUserList(userKeysResponse, memberList);
-                  return Future.reject(
-                      new SDKError(
-                          new Error(`Failed to create group due to unknown users in user list. Missing user IDs: [${missingUsersString}]`),
-                          ErrorCodes.GROUP_CREATE_WITH_MEMBERS_FAILURE
-                      )
-                  );
-              }
-              return Future.of(userKeysResponse.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})));
-          })
-        : Future.of([]);
+function getCompleteListOfUserPublicKeys(userList: string[]) {
+    return UserApiEndpoints.callUserKeyListApi(userList).flatMap((userKeysResponse) => {
+        if (userKeysResponse.result.length !== userList.length) {
+            const missingUsersString = getListOfMissingUsersFromKeyResponse(userKeysResponse, userList);
+            return Future.reject(
+                new SDKError(
+                    new Error(`Failed to create group due to unknown users in user list. Missing user IDs: [${missingUsersString}]`),
+                    ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE
+                )
+            );
+        }
+        return Future.of(userKeysResponse.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})));
+    });
 }
 
 /**
@@ -130,7 +128,7 @@ export function create(
     memberList?: string[]
 ): Future<SDKError, GroupDetailResponse> {
     const creatorMemberKey = addAsMember ? [{id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())}] : [];
-    const memberListValidationResult = memberList !== undefined && memberList.length > 0 ? validateMemberList(memberList) : Future.of([]);
+    const memberListValidationResult = memberList !== undefined && memberList.length > 0 ? getCompleteListOfUserPublicKeys(memberList) : Future.of([]);
 
     return memberListValidationResult
         .flatMap((memberKeys) => GroupOperations.groupCreate(ApiState.userPublicKey(), ApiState.signingKeys(), creatorMemberKey.concat(memberKeys)))
