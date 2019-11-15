@@ -173,7 +173,7 @@ export interface GroupCreateWorkerRequest {
     message: {
         userPublicKey: PublicKey<Uint8Array>;
         signingKeys: SigningKeyPair;
-        memberList?: UserOrGroupPublicKey[];
+        memberList: UserOrGroupPublicKey[];
     };
 }
 export interface GroupCreateWorkerResponse {
