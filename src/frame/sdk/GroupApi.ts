@@ -129,8 +129,7 @@ export function create(
     needsRotation: boolean,
     memberList?: string[]
 ): Future<SDKError, GroupDetailResponse> {
-    const creator = {id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())};
-    const creatorMemberKey = addAsMember ? [creator] : [];
+    const creatorMemberKey = addAsMember ? [{id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())}] : [];
     const memberListValidationResult = memberList !== undefined && memberList.length > 0 ? validateMemberList(memberList) : Future.of([]);
 
     return memberListValidationResult
