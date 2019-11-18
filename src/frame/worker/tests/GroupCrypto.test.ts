@@ -78,8 +78,6 @@ describe("GroupCrypto", () => {
 
                     expect(Recrypt.generateGroupKeyPair).toHaveBeenCalledWith();
                     expect(Recrypt.encryptPlaintext).toHaveBeenCalledWith(new Uint8Array(12), userKey, signingKeys);
-
-                    expect(Recrypt.generateTransformKeyToList).not.toHaveBeenCalled();
                 }
             );
         });

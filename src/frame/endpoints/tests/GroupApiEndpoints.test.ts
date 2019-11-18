@@ -88,15 +88,19 @@ describe("GroupApiEndpoints", () => {
 
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
             const creator = TestUtils.getFullUser();
-            const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
+            // const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
+            const transformKeyGrantList = [
+                {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()},
+                {id: "userID", publicKey: TestUtils.getEmptyPublicKeyString(), transformKey: TestUtils.getTransformKey()},
+            ];
 
-            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, false, [transformKeyGrant], "group name").engage(
+            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, groupEncryptedPrivateKey, false, transformKeyGrantList, "group name").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
                     const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
-
+                    console.log(request.body);
                     expect(JSON.parse(request.body)).toEqual({
                         id: "35",
                         name: "group name",
@@ -138,7 +142,29 @@ describe("GroupApiEndpoints", () => {
                                     signature: expect.any(String),
                                 },
                             },
+                            {
+                                userId: "userID",
+                                userMasterPublicKey: {
+                                    x: expect.any(String),
+                                    y: expect.any(String),
+                                },
+                                transformKey: {
+                                    ephemeralPublicKey: {
+                                        x: expect.any(String),
+                                        y: expect.any(String),
+                                    },
+                                    toPublicKey: {
+                                        x: expect.any(String),
+                                        y: expect.any(String),
+                                    },
+                                    encryptedTempKey: expect.any(String),
+                                    hashedTempKey: expect.any(String),
+                                    publicSigningKey: expect.any(String),
+                                    signature: expect.any(String),
+                                },
+                            },
                         ],
+
                         needsRotation: false,
                     });
                 }
@@ -201,8 +227,6 @@ describe("GroupApiEndpoints", () => {
                 authorizationCode: "auth",
                 ephemeralPublicKey: "epub",
             };
-
-            // const transformKeyGrantList = [];
 
             GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, groupEncryptedPrivateKey, false, [], "group name").engage(
                 (e) => fail(e),
