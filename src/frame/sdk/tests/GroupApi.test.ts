@@ -153,7 +153,7 @@ describe("GroupApi", () => {
                 transformKeyGrantList: [],
             }) as any);
 
-            GroupApi.create("23", "private group", false, false, []).engage(
+            GroupApi.create("23", "private group", false, false).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -195,7 +195,7 @@ describe("GroupApi", () => {
                 transformKeyGrantList: "datList",
             }) as any);
 
-            GroupApi.create("", "private group", true, false, []).engage(
+            GroupApi.create("", "private group", true, false).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -307,7 +307,7 @@ describe("GroupApi", () => {
 
             jest.spyOn(GroupApiEndpoints, "callGroupCreateApi");
 
-            GroupApi.create("", "private group", false, true, []).engage(
+            GroupApi.create("", "private group", false, true).engage(
                 (e) => fail(e),
                 () => {
                     expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(

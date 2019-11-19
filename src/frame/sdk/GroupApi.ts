@@ -12,7 +12,6 @@ export interface InteralGroupCreateOptions extends GroupCreateOptions {
     groupID: string;
     addAsMember: boolean;
     groupName: string;
-    memberList: string[];
     needsRotation: boolean;
 }
 
@@ -126,10 +125,10 @@ export function create(
     groupName: string,
     addAsMember: boolean,
     needsRotation: boolean,
-    memberList: string[]
+    memberList?: string[]
 ): Future<SDKError, GroupDetailResponse> {
     const creatorMemberKey = addAsMember ? [{id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())}] : [];
-    const memberListValidationResult = memberList.length > 0 ? getCompleteListOfUserPublicKeys(memberList) : Future.of([]);
+    const memberListValidationResult = memberList !== undefined && memberList.length > 0 ? getCompleteListOfUserPublicKeys(memberList) : Future.of([]);
 
     return memberListValidationResult
         .flatMap((memberKeys) => GroupOperations.groupCreate(ApiState.userPublicKey(), ApiState.signingKeys(), creatorMemberKey.concat(memberKeys)))
