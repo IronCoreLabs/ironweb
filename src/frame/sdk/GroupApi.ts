@@ -8,11 +8,12 @@ import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 import {publicKeyToBase64} from "../../lib/Utils";
 
-export interface InteralGroupCreateOptions extends GroupCreateOptions {
+export interface InternalGroupCreateOptions extends GroupCreateOptions {
     groupID: string;
     addAsMember: boolean;
     groupName: string;
     needsRotation: boolean;
+    memberList: string[];
 }
 
 /**
