@@ -88,7 +88,6 @@ describe("GroupApiEndpoints", () => {
 
             const groupEncryptedPrivateKey = TestUtils.getEncryptedSymmetricKey();
             const creator = TestUtils.getFullUser();
-            // const transformKeyGrant = {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()};
             const transformKeyGrantList = [
                 {id: creator.id, publicKey: creator.userMasterPublicKey, transformKey: TestUtils.getTransformKey()},
                 {id: "userID", publicKey: TestUtils.getEmptyPublicKeyString(), transformKey: TestUtils.getTransformKey()},
@@ -100,7 +99,6 @@ describe("GroupApiEndpoints", () => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
                     const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
-                    console.log(request.body);
                     expect(JSON.parse(request.body)).toEqual({
                         id: "35",
                         name: "group name",

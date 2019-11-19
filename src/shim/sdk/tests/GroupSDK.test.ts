@@ -85,6 +85,7 @@ describe("GroupSDK", () => {
                                 groupName: "",
                                 addAsMember: true,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -104,6 +105,7 @@ describe("GroupSDK", () => {
                                 groupName: "",
                                 addAsMember: true,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -123,6 +125,7 @@ describe("GroupSDK", () => {
                                 groupName: "",
                                 addAsMember: false,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -142,6 +145,7 @@ describe("GroupSDK", () => {
                                 groupName: "abc",
                                 addAsMember: true,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -161,6 +165,7 @@ describe("GroupSDK", () => {
                                 groupName: "abc",
                                 addAsMember: true,
                                 needsRotation: true,
+                                memberList: [],
                             },
                         });
                         done();
