@@ -3,14 +3,14 @@ import * as WMT from "../../WorkerMessageTypes";
 
 /**
  * Send message to worker to create a new group.
- * @param {PublicKey<Uint8Array>} userPublicKey Users public key to encrypt document key to. The user who is creating this group will become the first group admin
- * @param {SigningKeyPair}        signingKeys   Current users signing keys
- * @param {boolean}               addAsMember   Whether to also add user who is creating group as a member of the group
+ * @param {PublicKey<Uint8Array>}       userPublicKey Users public key to encrypt document key to. The user who is creating this group will become the first group admin
+ * @param {SigningKeyPair}              signingKeys   Current users signing keys
+ * @param {UserOrGroupPublicKey[]}      memberList    List of users to be initalized as members when the group is created
  */
-export function groupCreate(userPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair, addAsMember: boolean) {
+export function groupCreate(userPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair, memberList: UserOrGroupPublicKey[]) {
     const payload: WMT.GroupCreateWorkerRequest = {
         type: "GROUP_CREATE",
-        message: {userPublicKey, signingKeys, addAsMember},
+        message: {userPublicKey, signingKeys, memberList},
     };
     return WorkerMediator.sendMessage<WMT.GroupCreateWorkerResponse>(payload).map(({message}) => message);
 }

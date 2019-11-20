@@ -135,7 +135,7 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 data.message.signingKeys
             ).engage(errorHandler, (keyList) => callback({type: "DOCUMENT_ENCRYPT_TO_KEYS_RESPONSE", message: keyList}));
         case "GROUP_CREATE":
-            return GroupCrypto.createGroup(data.message.userPublicKey, data.message.signingKeys, data.message.addAsMember).engage(errorHandler, (group) =>
+            return GroupCrypto.createGroup(data.message.userPublicKey, data.message.signingKeys, data.message.memberList).engage(errorHandler, (group) =>
                 callback({type: "GROUP_CREATE_RESPONSE", message: group})
             );
         case "GROUP_ADD_ADMINS":

@@ -2,16 +2,18 @@ import {GroupListResponse, GroupMetaResponse, GroupDetailResponse, GroupCreateOp
 import ApiState from "../ApiState";
 import * as GroupOperations from "./GroupOperations";
 import GroupApiEndpoints from "../endpoints/GroupApiEndpoints";
-import UserApiEndpoints from "../endpoints/UserApiEndpoints";
+import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
 import {GroupPermissions, ErrorCodes} from "../../Constants";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
+import {publicKeyToBase64} from "../../lib/Utils";
 
-export interface InteralGroupCreateOptions extends GroupCreateOptions {
+export interface InternalGroupCreateOptions extends GroupCreateOptions {
     groupID: string;
     addAsMember: boolean;
     groupName: string;
     needsRotation: boolean;
+    memberList: string[];
 }
 
 /**
@@ -87,16 +89,52 @@ export function get(groupID: string) {
 }
 
 /**
+ * Create the error strings for missing users
+ */
+function getListOfMissingUsersFromKeyResponse(userKeysResponse: UserKeyListResponseType, memberList: string[]) {
+    const existingUserIDs = userKeysResponse.result.map(({id}) => id);
+    return memberList.filter((userID) => !existingUserIDs.includes(userID)).join(", ");
+}
+
+/**
+ * Checkes that all members listed in member list are existing members
+ */
+function getCompleteListOfUserPublicKeys(userList: string[]) {
+    return UserApiEndpoints.callUserKeyListApi(userList).flatMap((userKeysResponse) => {
+        if (userKeysResponse.result.length !== userList.length) {
+            const missingUsersString = getListOfMissingUsersFromKeyResponse(userKeysResponse, userList);
+            return Future.reject(
+                new SDKError(
+                    new Error(`Failed to create group due to unknown users in user list. Missing user IDs: [${missingUsersString}]`),
+                    ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE
+                )
+            );
+        }
+        return Future.of(userKeysResponse.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})));
+    });
+}
+
+/**
  * Create a new group with the provided ID and options
  * @param {string}  groupID Client provided optional group ID
  * @param {string}  groupName Client provide optonal group name
  * @param {boolean} addAsMember Whether the group creator shoudl be added as a member upon create
  * @param {boolean} needsRotation Whether the group needs to rotate it private key
  */
-export function create(groupID: string, groupName: string, addAsMember: boolean, needsRotation: boolean) {
-    return GroupOperations.groupCreate(ApiState.userPublicKey(), ApiState.signingKeys(), addAsMember)
-        .flatMap(({encryptedGroupKey, groupPublicKey, transformKey}) =>
-            GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedGroupKey, needsRotation, groupName, transformKey)
+export function create(
+    groupID: string,
+    groupName: string,
+    addAsMember: boolean,
+    needsRotation: boolean,
+    memberList?: string[]
+): Future<SDKError, GroupDetailResponse> {
+    const creatorMemberKey = addAsMember ? [{id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())}] : [];
+    const memberListValidationResult = memberList !== undefined && memberList.length > 0 ? getCompleteListOfUserPublicKeys(memberList) : Future.of([]);
+
+    return memberListValidationResult
+        .flatMap((memberKeys) => GroupOperations.groupCreate(ApiState.userPublicKey(), ApiState.signingKeys(), creatorMemberKey.concat(memberKeys)))
+        .flatMap(({encryptedGroupKey, groupPublicKey, transformKeyGrantList}) =>
+            GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedGroupKey, needsRotation, transformKeyGrantList, groupName)
         )
         .map((createdGroup) => formatDetailedGroupResponse(createdGroup) as GroupDetailResponse);
 }

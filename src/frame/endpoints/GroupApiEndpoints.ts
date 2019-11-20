@@ -1,4 +1,3 @@
-import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import Future from "futurejs";
 import {ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
@@ -18,8 +17,8 @@ interface GroupCreatePayload {
     groupPublicKey: PublicKey<Uint8Array>;
     groupEncryptedPrivateKey: PREEncryptedMessage;
     userPublicKey: PublicKey<Uint8Array>;
+    transformKeyGrantList: TransformKeyGrant[];
     name?: string;
-    transformKey?: TransformKey;
 }
 export interface GroupMemberModifyResponseType {
     succeededIds: {userId: string}[];
@@ -59,18 +58,18 @@ function groupGet(groupID: string) {
  * Create a new group
  * @param {string}             groupID       Client provided ID for group
  * @param {GroupCreatePayload} createPayload Group content including keys, optional group name, and current user info to be added as group admin
+ * @param {boolean}            needsRotation Flag for seting the groups needsRotation statues
  */
 function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRotation: boolean) {
     const userPublicKeyString = publicKeyToBase64(createPayload.userPublicKey);
     let memberList;
-    if (createPayload.transformKey) {
-        memberList = [
-            {
-                userId: createPayload.userID,
-                userMasterPublicKey: userPublicKeyString,
-                transformKey: transformKeyToBase64(createPayload.transformKey),
-            },
-        ];
+
+    if (createPayload.transformKeyGrantList.length > 0) {
+        memberList = createPayload.transformKeyGrantList.map((member) => ({
+            userId: member.id,
+            userMasterPublicKey: member.publicKey,
+            transformKey: transformKeyToBase64(member.transformKey),
+        }));
     }
 
     return {
@@ -270,6 +269,8 @@ export default {
      * @param {string}                groupID                  Client provided ID of group to create
      * @param {PublicKey<Uint8Array>} groupPublicKey           Public key for new group
      * @param {PREEncryptedMessage}   groupEncryptedPrivateKey Encrypted group private key content
+     * @param {boolean}               needsRotation            NeedsRotation flag
+     * @param {TransformKeyGrant[]}   transformKeyGrantList    List of users to initialize as members on greap creation
      * @param {string}                groupName                Optional name to set for group
      */
     callGroupCreateApi(
@@ -277,8 +278,8 @@ export default {
         groupPublicKey: PublicKey<Uint8Array>,
         groupEncryptedPrivateKey: PREEncryptedMessage,
         needsRotation: boolean,
-        groupName?: string,
-        transformKey?: TransformKey
+        transformKeyGrantList: TransformKeyGrant[],
+        groupName?: string
     ) {
         const {url, options, errorCode} = groupCreate(
             groupID,
@@ -287,8 +288,8 @@ export default {
                 groupPublicKey,
                 groupEncryptedPrivateKey,
                 userPublicKey: ApiState.userPublicKey(),
+                transformKeyGrantList,
                 name: groupName,
-                transformKey,
             },
             needsRotation
         );

@@ -12,7 +12,7 @@ import {
     Policy,
     UserOrGroup,
 } from "../ironweb";
-import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
+import {InternalGroupCreateOptions} from "./frame/sdk/GroupApi";
 
 export interface FrameLoadedRequest {
     type: "FRAME_LOADED_CHECK";
@@ -287,7 +287,7 @@ export interface GroupGetResponse {
 
 export interface GroupCreateRequest {
     type: "GROUP_CREATE";
-    message: InteralGroupCreateOptions;
+    message: InternalGroupCreateOptions;
 }
 export interface GroupCreateResponse {
     type: "GROUP_CREATE_RESPONSE";

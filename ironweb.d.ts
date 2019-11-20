@@ -30,6 +30,7 @@ export interface GroupCreateOptions {
     groupID?: string;
     groupName?: string;
     addAsMember?: boolean;
+    memberList?: string[];
     needsRotation?: boolean;
 }
 
@@ -269,6 +270,7 @@ export interface ErrorCodes {
     GROUP_REMOVE_ADMINS_REQUEST_FAILURE: 412;
     GROUP_UPDATE_REQUEST_FAILURE: 413;
     GROUP_DELETE_REQUEST_FAILURE: 414;
+    GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE: 415;
     REQUEST_RATE_LIMITED: 500;
 }
 

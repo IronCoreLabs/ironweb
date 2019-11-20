@@ -85,6 +85,7 @@ describe("GroupSDK", () => {
                                 groupName: "",
                                 addAsMember: true,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -104,6 +105,7 @@ describe("GroupSDK", () => {
                                 groupName: "",
                                 addAsMember: true,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -123,6 +125,7 @@ describe("GroupSDK", () => {
                                 groupName: "",
                                 addAsMember: false,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -142,6 +145,7 @@ describe("GroupSDK", () => {
                                 groupName: "abc",
                                 addAsMember: true,
                                 needsRotation: false,
+                                memberList: [],
                             },
                         });
                         done();
@@ -161,6 +165,26 @@ describe("GroupSDK", () => {
                                 groupName: "abc",
                                 addAsMember: true,
                                 needsRotation: true,
+                                memberList: [],
+                            },
+                        });
+                        done();
+                    })
+                    .catch((e) => fail(e));
+            });
+            it("sends create message to frame with memberList when provided", (done) => {
+                ShimUtils.setSDKInitialized();
+                GroupSDK.create({memberList: ["user1", "user2"]})
+                    .then((result: any) => {
+                        expect(result).toEqual("messageResponse");
+                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                            type: "GROUP_CREATE",
+                            message: {
+                                groupID: "",
+                                groupName: "",
+                                addAsMember: true,
+                                needsRotation: false,
+                                memberList: ["user1", "user2"],
                             },
                         });
                         done();
