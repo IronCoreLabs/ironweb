@@ -13,7 +13,7 @@ export interface InternalGroupCreateOptions extends GroupCreateOptions {
     addAsMember: boolean;
     groupName: string;
     needsRotation: boolean;
-    memberList: string[];
+    memberList?: string[];
 }
 
 /**
