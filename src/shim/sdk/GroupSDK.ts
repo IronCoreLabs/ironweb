@@ -35,7 +35,7 @@ export function get(groupID: string) {
  * Create a new group. Takes an options object which allow for specifying an optional, unencrypted ID and name for the group.
  * @param {GroupCreateOptions} options Group creation options
  */
-export function create(options: GroupCreateOptions = {groupName: "", addAsMember: true, needsRotation: false}) {
+export function create(options: GroupCreateOptions = {groupName: "", addAsMember: true, addAsAdmin: true, needsRotation: false}) {
     ShimUtils.checkSDKInitialized();
     if (options.groupID) {
         ShimUtils.validateID(options.groupID);
@@ -45,9 +45,14 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
         message: {
             groupID: options.groupID || "",
             groupName: options.groupName || "",
+            owner: options.owner || "",
             addAsMember: options.addAsMember !== false,
+            addAsAdmin: options.addAsAdmin !== false,
             needsRotation: options.needsRotation === true,
-            memberList: options.memberList || [],
+            userLists: {
+                memberList: options.memberList ? ShimUtils.dedupeArray(options.memberList, true) : [],
+                adminList: options.adminList ? ShimUtils.dedupeArray(options.adminList, true) : [],
+            },
         },
     };
     return FrameMediator.sendMessage<MT.GroupCreateResponse>(payload)

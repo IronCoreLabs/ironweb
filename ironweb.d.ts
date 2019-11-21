@@ -29,8 +29,11 @@ export interface Policy {
 export interface GroupCreateOptions {
     groupID?: string;
     groupName?: string;
+    owner?: string;
     addAsMember?: boolean;
+    addAsAdmin?: boolean;
     memberList?: string[];
+    adminList?: string[];
     needsRotation?: boolean;
 }
 

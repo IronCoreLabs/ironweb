@@ -632,7 +632,18 @@ describe("frame index", () => {
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
-                message: {groupID: "my-group", groupName: "bar", addAsMember: true, needsRotation: false, memberList: ["userID"]},
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    owner: "owner",
+                    addAsMember: true,
+                    addAsAdmin: true,
+                    needsRotation: false,
+                    userLists: {
+                        memberList: ["memberString"],
+                        adminList: ["adminString"],
+                    },
+                },
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
@@ -640,7 +651,10 @@ describe("frame index", () => {
                     type: "GROUP_CREATE_RESPONSE",
                     message: "groupCreate",
                 });
-                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", true, false, ["userID"]);
+                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", "owner", true, true, false, {
+                    memberList: ["memberString"],
+                    adminList: ["adminString"],
+                });
                 done();
             });
         });

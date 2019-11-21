@@ -11,15 +11,15 @@ import {publicKeyToBytes} from "../../lib/Utils";
  * @param {SigningKeyPair}        signingKeys   Current users signing keys used to sign transform key
  * @param {boolean}               addAsMember   Whether to add the current group admin as a member
  */
-export function createGroup(userPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair, memberList: UserOrGroupPublicKey[]) {
+export function createGroup(signingKeys: SigningKeyPair, memberList: UserOrGroupPublicKey[], adminList: UserOrGroupPublicKey[]) {
     return loadRecrypt()
         .flatMap((Recrypt) => {
             return Recrypt.generateGroupKeyPair().flatMap(({publicKey, plaintext, privateKey}) => {
                 return Future.gather2(
-                    Recrypt.encryptPlaintext(plaintext, userPublicKey, signingKeys),
+                    Recrypt.encryptPlaintextToList(plaintext, adminList, signingKeys),
                     Recrypt.generateTransformKeyToList(privateKey, memberList, signingKeys)
-                ).map(([encryptedGroupKey, transformKeyGrantList]) => ({
-                    encryptedGroupKey,
+                ).map(([encryptedAccessKeys, transformKeyGrantList]) => ({
+                    encryptedAccessKeys,
                     groupPublicKey: publicKey,
                     transformKeyGrantList,
                 }));

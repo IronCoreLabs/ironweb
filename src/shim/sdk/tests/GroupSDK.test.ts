@@ -83,9 +83,14 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
+                                owner: "",
                                 addAsMember: true,
+                                addAsAdmin: true,
                                 needsRotation: false,
-                                memberList: [],
+                                userLists: {
+                                    memberList: [],
+                                    adminList: [],
+                                },
                             },
                         });
                         done();
@@ -103,9 +108,14 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "providedGroupID",
                                 groupName: "",
+                                owner: "",
                                 addAsMember: true,
+                                addAsAdmin: true,
                                 needsRotation: false,
-                                memberList: [],
+                                userLists: {
+                                    memberList: [],
+                                    adminList: [],
+                                },
                             },
                         });
                         done();
@@ -123,9 +133,14 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
+                                owner: "",
                                 addAsMember: false,
+                                addAsAdmin: true,
                                 needsRotation: false,
-                                memberList: [],
+                                userLists: {
+                                    memberList: [],
+                                    adminList: [],
+                                },
                             },
                         });
                         done();
@@ -143,9 +158,14 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "abc",
+                                owner: "",
                                 addAsMember: true,
+                                addAsAdmin: true,
                                 needsRotation: false,
-                                memberList: [],
+                                userLists: {
+                                    memberList: [],
+                                    adminList: [],
+                                },
                             },
                         });
                         done();
@@ -163,9 +183,14 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "providedID",
                                 groupName: "abc",
+                                owner: "",
                                 addAsMember: true,
+                                addAsAdmin: true,
                                 needsRotation: true,
-                                memberList: [],
+                                userLists: {
+                                    memberList: [],
+                                    adminList: [],
+                                },
                             },
                         });
                         done();
@@ -182,9 +207,62 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
+                                owner: "",
                                 addAsMember: true,
+                                addAsAdmin: true,
                                 needsRotation: false,
-                                memberList: ["user1", "user2"],
+                                userLists: {
+                                    memberList: ["user1", "user2"],
+                                    adminList: [],
+                                },
+                            },
+                        });
+                        done();
+                    })
+                    .catch((e) => fail(e));
+            });
+            it("sends create message to frame with adminList when provided", (done) => {
+                ShimUtils.setSDKInitialized();
+                GroupSDK.create({adminList: ["user1", "user2"]})
+                    .then((result: any) => {
+                        expect(result).toEqual("messageResponse");
+                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                            type: "GROUP_CREATE",
+                            message: {
+                                groupID: "",
+                                groupName: "",
+                                owner: "",
+                                addAsMember: true,
+                                addAsAdmin: true,
+                                needsRotation: false,
+                                userLists: {
+                                    memberList: [],
+                                    adminList: ["user1", "user2"],
+                                },
+                            },
+                        });
+                        done();
+                    })
+                    .catch((e) => fail(e));
+            });
+            it("send create message to frame with owner if provided", (done) => {
+                ShimUtils.setSDKInitialized();
+                GroupSDK.create({owner: "owner"})
+                    .then((result: any) => {
+                        expect(result).toEqual("messageResponse");
+                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                            type: "GROUP_CREATE",
+                            message: {
+                                groupID: "",
+                                groupName: "",
+                                owner: "owner",
+                                addAsMember: true,
+                                addAsAdmin: true,
+                                needsRotation: false,
+                                userLists: {
+                                    memberList: [],
+                                    adminList: [],
+                                },
                             },
                         });
                         done();

@@ -3,90 +3,74 @@ import * as Recrypt from "../crypto/recrypt/RecryptWasm";
 import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import {ErrorCodes} from "../../../Constants";
-import {publicKeyToBytes, publicKeyToBase64} from "../../../lib/Utils";
+import {publicKeyToBytes} from "../../../lib/Utils";
 
 describe("GroupCrypto", () => {
     describe("createGroup", () => {
-        it("generates new group keypair and encrypts it using the provided public key", () => {
-            const userKey = TestUtils.getEmptyPublicKey();
+        it("generates new group keypair and encrypts it to the publickKeys of the users in the provided admin list", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
-            const creator = {id: "userID", masterPublicKey: publicKeyToBase64(userKey)};
+            const adminList = [
+                {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
+            const memeberList = [{id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
 
-            spyOn(Recrypt, "generateGroupKeyPair").and.returnValue(
-                Future.of({
-                    publicKey: new Uint8Array(32),
-                    plaintext: new Uint8Array(12),
-                    privateKey: new Uint8Array(29),
-                })
-            );
+            jest.spyOn(Recrypt, "generateGroupKeyPair").mockReturnValue(Future.of({
+                publicKey: new Uint8Array(32),
+                plaintext: new Uint8Array(12),
+                privateKey: new Uint8Array(29),
+            }) as any);
 
-            spyOn(Recrypt, "encryptPlaintext").and.returnValue(
-                Future.of({
-                    encryptedMessage: "stuff",
-                })
-            );
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["TransformKeyGrant"]) as any);
 
-            spyOn(Recrypt, "generateTransformKeyToList").and.returnValue(
-                Future.of({
-                    transformKeyGrant: [{transformKey: "TransformKey", publicKey: "PublicKey<string>", id: "string"}],
-                })
-            );
+            jest.spyOn(Recrypt, "generateTransformKeyToList").mockReturnValue(Future.of({
+                transformKeyGrant: [],
+            }) as any);
 
-            GroupCrypto.createGroup(userKey, signingKeys, [creator]).engage(
+            GroupCrypto.createGroup(signingKeys, memeberList, adminList).engage(
                 (e) => fail(e),
                 (groupKeys: any) => {
-                    expect(groupKeys.encryptedGroupKey).toEqual({encryptedMessage: "stuff"});
+                    expect(groupKeys.encryptedAccessKeys).toEqual(["TransformKeyGrant"]);
                     expect(groupKeys.groupPublicKey).toEqual(new Uint8Array(32));
-
                     expect(Recrypt.generateGroupKeyPair).toHaveBeenCalledWith();
-                    expect(Recrypt.encryptPlaintext).toHaveBeenCalledWith(new Uint8Array(12), userKey, signingKeys);
-
-                    expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith(new Uint8Array(29), [creator], signingKeys);
+                    expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(new Uint8Array(12), adminList, signingKeys);
+                    expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith(new Uint8Array(29), memeberList, signingKeys);
                 }
             );
         });
-
-        it("does not generate a transform key list if no membersList", () => {
-            const userKey = TestUtils.getEmptyPublicKey();
+        it("does not generate a TransformKey grant list if no membersList", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
+            const adminList = [
+                {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
 
-            spyOn(Recrypt, "generateGroupKeyPair").and.returnValue(
-                Future.of({
-                    publicKey: new Uint8Array(32),
-                    plaintext: new Uint8Array(12),
-                    privateKey: new Uint8Array(29),
-                })
-            );
+            jest.spyOn(Recrypt, "generateGroupKeyPair").mockReturnValue(Future.of({
+                publicKey: new Uint8Array(32),
+                plaintext: new Uint8Array(12),
+                privateKey: new Uint8Array(29),
+            }) as any);
 
-            spyOn(Recrypt, "encryptPlaintext").and.returnValue(
-                Future.of({
-                    encryptedMessage: "stuff",
-                })
-            );
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["TransformKeyGrant"]) as any);
 
-            spyOn(Recrypt, "generateTransformKeyToList").and.returnValue(
-                Future.of({
-                    transformKeyGrant: [{transformKey: "TransformKey", publicKey: "PublicKey<string>", id: "string"}],
-                })
-            );
-
-            GroupCrypto.createGroup(userKey, signingKeys, []).engage(
+            jest.spyOn(Recrypt, "generateTransformKeyToList");
+            GroupCrypto.createGroup(signingKeys, [], adminList).engage(
                 (e) => fail(e),
                 (groupKeys: any) => {
-                    expect(groupKeys.encryptedGroupKey).toEqual({encryptedMessage: "stuff"});
+                    expect(groupKeys.encryptedAccessKeys).toEqual(["TransformKeyGrant"]);
                     expect(groupKeys.groupPublicKey).toEqual(new Uint8Array(32));
-
+                    expect(groupKeys.transformKeyGrantList).toEqual([]);
                     expect(Recrypt.generateGroupKeyPair).toHaveBeenCalledWith();
-                    expect(Recrypt.encryptPlaintext).toHaveBeenCalledWith(new Uint8Array(12), userKey, signingKeys);
+                    expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(new Uint8Array(12), adminList, signingKeys);
+                    expect(Recrypt.generateTransformKeyToList).toHaveBeenCalledWith(new Uint8Array(29), [], signingKeys);
                 }
             );
         });
-
         it("maps errors to SDKError with specific error code", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
-            spyOn(Recrypt, "generateGroupKeyPair").and.returnValue(Future.reject(new Error("group key gen failure")));
+            jest.spyOn(Recrypt, "generateGroupKeyPair").mockReturnValue(Future.reject(new Error("group key gen failure")));
 
-            GroupCrypto.createGroup(TestUtils.getEmptyPublicKey(), signingKeys, []).engage(
+            GroupCrypto.createGroup(signingKeys, [], []).engage(
                 (error) => {
                     expect(error.message).toEqual("group key gen failure");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_GENERATION_FAILURE);

@@ -171,15 +171,15 @@ export interface DocumentEncryptToKeysWorkerResponse {
 export interface GroupCreateWorkerRequest {
     type: "GROUP_CREATE";
     message: {
-        userPublicKey: PublicKey<Uint8Array>;
         signingKeys: SigningKeyPair;
         memberList: UserOrGroupPublicKey[];
+        adminList: UserOrGroupPublicKey[];
     };
 }
 export interface GroupCreateWorkerResponse {
     type: "GROUP_CREATE_RESPONSE";
     message: {
-        encryptedGroupKey: PREEncryptedMessage;
+        encryptedAccessKeys: EncryptedAccessKey[];
         groupPublicKey: PublicKey<Uint8Array>;
         transformKeyGrantList: TransformKeyGrant[];
     };

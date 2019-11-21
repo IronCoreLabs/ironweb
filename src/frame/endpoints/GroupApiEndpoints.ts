@@ -3,7 +3,6 @@ import {ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
 import {makeAuthorizedApiRequest} from "../ApiRequest";
-import ApiState from "../ApiState";
 import {TransformKeyGrant} from "../worker/crypto/recrypt";
 import {fromByteArray} from "base64-js";
 
@@ -13,12 +12,11 @@ export interface GroupListResponseType {
 type GroupGetResponseType = GroupApiBasicResponse | GroupApiFullDetailResponse;
 type GroupCreateResponseType = GroupApiFullDetailResponse;
 interface GroupCreatePayload {
-    userID: string;
     groupPublicKey: PublicKey<Uint8Array>;
-    groupEncryptedPrivateKey: PREEncryptedMessage;
-    userPublicKey: PublicKey<Uint8Array>;
+    encryptedAccessKeys: EncryptedAccessKey[];
     transformKeyGrantList: TransformKeyGrant[];
     name?: string;
+    owner?: string;
 }
 export interface GroupMemberModifyResponseType {
     succeededIds: {userId: string}[];
@@ -61,7 +59,13 @@ function groupGet(groupID: string) {
  * @param {boolean}            needsRotation Flag for seting the groups needsRotation statues
  */
 function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRotation: boolean) {
-    const userPublicKeyString = publicKeyToBase64(createPayload.userPublicKey);
+    const adminList = createPayload.encryptedAccessKeys.map((admin) => ({
+        encryptedPlaintext: admin.encryptedPlaintext,
+        user: {
+            userId: admin.id,
+            userMasterPublicKey: admin.publicKey,
+        },
+    }));
     let memberList;
 
     if (createPayload.transformKeyGrantList.length > 0) {
@@ -82,16 +86,9 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRo
             body: JSON.stringify({
                 id: groupID || undefined,
                 name: createPayload.name || undefined,
+                owner: createPayload.owner || undefined,
                 groupPublicKey: publicKeyToBase64(createPayload.groupPublicKey),
-                admins: [
-                    {
-                        ...createPayload.groupEncryptedPrivateKey,
-                        user: {
-                            userId: createPayload.userID,
-                            userMasterPublicKey: userPublicKeyString,
-                        },
-                    },
-                ],
+                admins: adminList,
                 members: memberList,
                 needsRotation,
             }),
@@ -276,20 +273,20 @@ export default {
     callGroupCreateApi(
         groupID: string,
         groupPublicKey: PublicKey<Uint8Array>,
-        groupEncryptedPrivateKey: PREEncryptedMessage,
+        owner: string[],
+        encryptedAccessKeys: EncryptedAccessKey[],
         needsRotation: boolean,
         transformKeyGrantList: TransformKeyGrant[],
         groupName?: string
-    ) {
+    ): Future<SDKError, GroupCreateResponseType> {
         const {url, options, errorCode} = groupCreate(
             groupID,
             {
-                userID: ApiState.user().id,
                 groupPublicKey,
-                groupEncryptedPrivateKey,
-                userPublicKey: ApiState.userPublicKey(),
+                encryptedAccessKeys,
                 transformKeyGrantList,
                 name: groupName,
+                owner: owner[0],
             },
             needsRotation
         );
