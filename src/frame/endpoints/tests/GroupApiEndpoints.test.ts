@@ -110,7 +110,6 @@ describe("GroupApiEndpoints", () => {
                         },
                         admins: [
                             {
-                                encryptedPlaintext,
                                 user: {
                                     userId: "owner",
                                     userMasterPublicKey: {
@@ -118,6 +117,7 @@ describe("GroupApiEndpoints", () => {
                                         y: "firstpublickeyy",
                                     },
                                 },
+                                ...encryptedPlaintext,
                             },
                         ],
                         members: [
@@ -194,7 +194,6 @@ describe("GroupApiEndpoints", () => {
                         },
                         admins: [
                             {
-                                encryptedPlaintext,
                                 user: {
                                     userId: "owner",
                                     userMasterPublicKey: {
@@ -202,6 +201,7 @@ describe("GroupApiEndpoints", () => {
                                         y: "firstpublickeyy",
                                     },
                                 },
+                                ...encryptedPlaintext,
                             },
                         ],
                         members: [
@@ -250,7 +250,6 @@ describe("GroupApiEndpoints", () => {
                         },
                         admins: [
                             {
-                                encryptedPlaintext,
                                 user: {
                                     userId: "owner",
                                     userMasterPublicKey: {
@@ -258,6 +257,7 @@ describe("GroupApiEndpoints", () => {
                                         y: "firstpublickeyy",
                                     },
                                 },
+                                ...encryptedPlaintext,
                             },
                         ],
                         needsRotation: false,
@@ -290,7 +290,6 @@ describe("GroupApiEndpoints", () => {
                         },
                         admins: [
                             {
-                                encryptedPlaintext,
                                 user: {
                                     userId: "owner",
                                     userMasterPublicKey: {
@@ -298,6 +297,7 @@ describe("GroupApiEndpoints", () => {
                                         y: "firstpublickeyy",
                                     },
                                 },
+                                ...encryptedPlaintext,
                             },
                         ],
                         needsRotation: false,

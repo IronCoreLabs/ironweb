@@ -59,13 +59,6 @@ function groupGet(groupID: string) {
  * @param {boolean}            needsRotation Flag for seting the groups needsRotation statues
  */
 function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRotation: boolean) {
-    const adminList = createPayload.encryptedAccessKeys.map((admin) => ({
-        encryptedPlaintext: admin.encryptedPlaintext,
-        user: {
-            userId: admin.id,
-            userMasterPublicKey: admin.publicKey,
-        },
-    }));
     let memberList;
 
     if (createPayload.transformKeyGrantList.length > 0) {
@@ -88,7 +81,13 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRo
                 name: createPayload.name || undefined,
                 owner: createPayload.owner || undefined,
                 groupPublicKey: publicKeyToBase64(createPayload.groupPublicKey),
-                admins: adminList,
+                admins: createPayload.encryptedAccessKeys.map((admin) => ({
+                    user: {
+                        userId: admin.id,
+                        userMasterPublicKey: admin.publicKey,
+                    },
+                    ...admin.encryptedPlaintext,
+                })),
                 members: memberList,
                 needsRotation,
             }),
