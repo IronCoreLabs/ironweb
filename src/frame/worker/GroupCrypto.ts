@@ -6,8 +6,7 @@ import {publicKeyToBytes} from "../../lib/Utils";
 
 /**
  * Create the keys for a new group. Generates a new keypair for the group and encrypts the value used to generate the
- * group private key to the provided user public key
- * @param {PublicKey<Uint8Array>} userPublicKey Public key of groups created and first admin
+ * group private key to the provided adminList public keys
  * @param {SigningKeyPair}        signingKeys   Current users signing keys used to sign transform key
  * @param {boolean}               addAsMember   Whether to add the current group admin as a member
  */
