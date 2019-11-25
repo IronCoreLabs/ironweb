@@ -1,10 +1,8 @@
-import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import Future from "futurejs";
 import {ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
 import {makeAuthorizedApiRequest} from "../ApiRequest";
-import ApiState from "../ApiState";
 import {TransformKeyGrant} from "../worker/crypto/recrypt";
 import {fromByteArray} from "base64-js";
 
@@ -14,12 +12,11 @@ export interface GroupListResponseType {
 type GroupGetResponseType = GroupApiBasicResponse | GroupApiFullDetailResponse;
 type GroupCreateResponseType = GroupApiFullDetailResponse;
 interface GroupCreatePayload {
-    userID: string;
     groupPublicKey: PublicKey<Uint8Array>;
-    groupEncryptedPrivateKey: PREEncryptedMessage;
-    userPublicKey: PublicKey<Uint8Array>;
+    encryptedAccessKeys: EncryptedAccessKey[];
+    transformKeyGrantList: TransformKeyGrant[];
     name?: string;
-    transformKey?: TransformKey;
+    ownerUserId?: string;
 }
 export interface GroupMemberModifyResponseType {
     succeededIds: {userId: string}[];
@@ -59,18 +56,17 @@ function groupGet(groupID: string) {
  * Create a new group
  * @param {string}             groupID       Client provided ID for group
  * @param {GroupCreatePayload} createPayload Group content including keys, optional group name, and current user info to be added as group admin
+ * @param {boolean}            needsRotation Flag for seting the groups needsRotation statues
  */
 function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRotation: boolean) {
-    const userPublicKeyString = publicKeyToBase64(createPayload.userPublicKey);
     let memberList;
-    if (createPayload.transformKey) {
-        memberList = [
-            {
-                userId: createPayload.userID,
-                userMasterPublicKey: userPublicKeyString,
-                transformKey: transformKeyToBase64(createPayload.transformKey),
-            },
-        ];
+
+    if (createPayload.transformKeyGrantList.length > 0) {
+        memberList = createPayload.transformKeyGrantList.map((member) => ({
+            userId: member.id,
+            userMasterPublicKey: member.publicKey,
+            transformKey: transformKeyToBase64(member.transformKey),
+        }));
     }
 
     return {
@@ -83,16 +79,15 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRo
             body: JSON.stringify({
                 id: groupID || undefined,
                 name: createPayload.name || undefined,
+                owner: createPayload.ownerUserId || undefined,
                 groupPublicKey: publicKeyToBase64(createPayload.groupPublicKey),
-                admins: [
-                    {
-                        ...createPayload.groupEncryptedPrivateKey,
-                        user: {
-                            userId: createPayload.userID,
-                            userMasterPublicKey: userPublicKeyString,
-                        },
+                admins: createPayload.encryptedAccessKeys.map((admin) => ({
+                    user: {
+                        userId: admin.id,
+                        userMasterPublicKey: admin.publicKey,
                     },
-                ],
+                    ...admin.encryptedPlaintext,
+                })),
                 members: memberList,
                 needsRotation,
             }),
@@ -270,25 +265,27 @@ export default {
      * @param {string}                groupID                  Client provided ID of group to create
      * @param {PublicKey<Uint8Array>} groupPublicKey           Public key for new group
      * @param {PREEncryptedMessage}   groupEncryptedPrivateKey Encrypted group private key content
+     * @param {boolean}               needsRotation            NeedsRotation flag
+     * @param {TransformKeyGrant[]}   transformKeyGrantList    List of users to initialize as members on greap creation
      * @param {string}                groupName                Optional name to set for group
      */
     callGroupCreateApi(
         groupID: string,
         groupPublicKey: PublicKey<Uint8Array>,
-        groupEncryptedPrivateKey: PREEncryptedMessage,
+        encryptedAccessKeys: EncryptedAccessKey[],
         needsRotation: boolean,
-        groupName?: string,
-        transformKey?: TransformKey
-    ) {
+        transformKeyGrantList: TransformKeyGrant[],
+        ownerUserId?: string,
+        groupName?: string
+    ): Future<SDKError, GroupCreateResponseType> {
         const {url, options, errorCode} = groupCreate(
             groupID,
             {
-                userID: ApiState.user().id,
                 groupPublicKey,
-                groupEncryptedPrivateKey,
-                userPublicKey: ApiState.userPublicKey(),
+                encryptedAccessKeys,
+                transformKeyGrantList,
                 name: groupName,
-                transformKey,
+                ownerUserId,
             },
             needsRotation
         );

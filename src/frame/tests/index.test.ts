@@ -7,6 +7,7 @@ import * as DocumentAdvancedApi from "../sdk/DocumentAdvancedApi";
 import * as DocumentApi from "../sdk/DocumentApi";
 import * as GroupApi from "../sdk/GroupApi";
 import * as UserApi from "../sdk/UserApi";
+import ApiState from "../ApiState";
 
 describe("frame index", () => {
     describe("onMessage init tests", () => {
@@ -628,11 +629,23 @@ describe("frame index", () => {
         });
 
         it("GROUP_CREATE", (done) => {
+            jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
             jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
-                message: {groupID: "my-group", groupName: "bar", addAsMember: true, needsRotation: false},
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    ownerUserId: "ownerUserId",
+                    addAsMember: true,
+                    addAsAdmin: true,
+                    needsRotation: false,
+                    userLists: {
+                        memberList: ["memberString"],
+                        adminList: ["adminString"],
+                    },
+                },
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
@@ -640,7 +653,14 @@ describe("frame index", () => {
                     type: "GROUP_CREATE_RESPONSE",
                     message: "groupCreate",
                 });
-                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", true, false);
+                expect(GroupApi.create).toHaveBeenCalledWith(
+                    "my-group",
+                    "bar",
+                    false,
+                    ["memberString", "groupCreatorId"],
+                    ["ownerUserId", "groupCreatorId", "adminString"],
+                    "ownerUserId"
+                );
                 done();
             });
         });
@@ -763,6 +783,168 @@ describe("frame index", () => {
                     message: "deleteresp",
                 });
                 expect(GroupApi.deleteGroup).toHaveBeenCalledWith("my-group");
+                done();
+            });
+        });
+    });
+    describe("resolveToStandardForm", () => {
+        it("return a standard form result with no options sent", (done) => {
+            jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+
+            const payload: MT.GroupCreateRequest = {
+                type: "GROUP_CREATE",
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    addAsMember: true,
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "GROUP_CREATE_RESPONSE",
+                    message: "groupCreate",
+                });
+                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", false, ["groupCreatorId"], ["groupCreatorId"], undefined);
+                done();
+            });
+        });
+        it("return a standard form result with no options sent addAsMember is false", (done) => {
+            jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+
+            const payload: MT.GroupCreateRequest = {
+                type: "GROUP_CREATE",
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    addAsMember: false,
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "GROUP_CREATE_RESPONSE",
+                    message: "groupCreate",
+                });
+                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", false, [], ["groupCreatorId"], undefined);
+                done();
+            });
+        });
+        it("return a standard form result when options are sent", (done) => {
+            jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+
+            const payload: MT.GroupCreateRequest = {
+                type: "GROUP_CREATE",
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    ownerUserId: "ownerUserId",
+                    addAsMember: true,
+                    addAsAdmin: true,
+                    needsRotation: true,
+                    userLists: {
+                        memberList: ["memberString"],
+                        adminList: ["adminString"],
+                    },
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "GROUP_CREATE_RESPONSE",
+                    message: "groupCreate",
+                });
+                expect(GroupApi.create).toHaveBeenCalledWith(
+                    "my-group",
+                    "bar",
+                    true,
+                    ["memberString", "groupCreatorId"],
+                    ["ownerUserId", "groupCreatorId", "adminString"],
+                    "ownerUserId"
+                );
+                done();
+            });
+        });
+        it("add the owner to an empyty admin list", (done) => {
+            jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+
+            const payload: MT.GroupCreateRequest = {
+                type: "GROUP_CREATE",
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    ownerUserId: "ownerUserId",
+                    addAsMember: false,
+                    addAsAdmin: false,
+                    needsRotation: true,
+                    userLists: {
+                        memberList: [],
+                        adminList: [],
+                    },
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "GROUP_CREATE_RESPONSE",
+                    message: "groupCreate",
+                });
+                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", true, [], ["ownerUserId"], "ownerUserId");
+                done();
+            });
+        });
+        it("add group creator to empty admin list when addAsMember and addAsAdmin are true", (done) => {
+            jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+
+            const payload: MT.GroupCreateRequest = {
+                type: "GROUP_CREATE",
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    addAsMember: false,
+                    addAsAdmin: true,
+                    needsRotation: true,
+                    userLists: {
+                        memberList: [],
+                        adminList: [],
+                    },
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "GROUP_CREATE_RESPONSE",
+                    message: "groupCreate",
+                });
+                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", true, [], ["groupCreatorId"], undefined);
+                done();
+            });
+        });
+        it("create a members and admins list when one is not provided and add the creatot when addAsMemebr and addAs Admin are true", (done) => {
+            jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+
+            const payload: MT.GroupCreateRequest = {
+                type: "GROUP_CREATE",
+                message: {
+                    groupID: "my-group",
+                    groupName: "bar",
+                    addAsMember: true,
+                    addAsAdmin: true,
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "GROUP_CREATE_RESPONSE",
+                    message: "groupCreate",
+                });
+                expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", false, ["groupCreatorId"], ["groupCreatorId"], undefined);
                 done();
             });
         });

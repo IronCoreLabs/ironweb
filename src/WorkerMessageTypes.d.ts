@@ -1,4 +1,3 @@
-import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import {UserCreationKeys, UserKeys, UserUpdateKeys} from "./frame/endpoints/UserApiEndpoints";
 import {TransformKeyGrant} from "./frame/worker/crypto/recrypt";
 
@@ -172,17 +171,17 @@ export interface DocumentEncryptToKeysWorkerResponse {
 export interface GroupCreateWorkerRequest {
     type: "GROUP_CREATE";
     message: {
-        userPublicKey: PublicKey<Uint8Array>;
-        addAsMember: boolean;
         signingKeys: SigningKeyPair;
+        memberList: UserOrGroupPublicKey[];
+        adminList: UserOrGroupPublicKey[];
     };
 }
 export interface GroupCreateWorkerResponse {
     type: "GROUP_CREATE_RESPONSE";
     message: {
-        encryptedGroupKey: PREEncryptedMessage;
+        encryptedAccessKeys: EncryptedAccessKey[];
         groupPublicKey: PublicKey<Uint8Array>;
-        transformKey?: TransformKey;
+        transformKeyGrantList: TransformKeyGrant[];
     };
 }
 

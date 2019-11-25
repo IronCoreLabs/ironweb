@@ -80,6 +80,12 @@ describe("ShimUtils", () => {
         });
     });
 
+    describe("validateOwnership", () => {
+        it("fails if an owner is not provided and addAsAdmin is false", () => {
+            expect(() => ShimUtils.validateOwnership(false)).toThrow();
+        });
+    });
+
     describe("validateID", () => {
         it("fails when ID is not a string with length", () => {
             expect(() => ShimUtils.validateID(3 as any)).toThrow();

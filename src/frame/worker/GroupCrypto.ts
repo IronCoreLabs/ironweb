@@ -6,22 +6,22 @@ import {publicKeyToBytes} from "../../lib/Utils";
 
 /**
  * Create the keys for a new group. Generates a new keypair for the group and encrypts the value used to generate the
- * group private key to the provided user public key
- * @param {PublicKey<Uint8Array>} userPublicKey Public key of groups created and first admin
- * @param {SigningKeyPair}        signingKeys   Current users signing keys used to sign transform key
- * @param {boolean}               addAsMember   Whether to add the current group admin as a member
+ * group private key to the provided adminList public keys
+ * @param {SigningKeyPair}          signingKeys   Current users signing keys used to sign transform key
+ * @param {UserOrGroupPublicKey[]}  memberList   List of user public keys to generate transform grants for
+ * @param {UserOrGroupPublicKey[]}  addAsMember   List of user public keys to encrypt group private key to
  */
-export function createGroup(userPublicKey: PublicKey<Uint8Array>, signingKeys: SigningKeyPair, addAsMember: boolean) {
+export function createGroup(signingKeys: SigningKeyPair, memberList: UserOrGroupPublicKey[], adminList: UserOrGroupPublicKey[]) {
     return loadRecrypt()
         .flatMap((Recrypt) => {
             return Recrypt.generateGroupKeyPair().flatMap(({publicKey, plaintext, privateKey}) => {
                 return Future.gather2(
-                    Recrypt.encryptPlaintext(plaintext, userPublicKey, signingKeys),
-                    addAsMember ? Recrypt.generateTransformKey(privateKey, userPublicKey, signingKeys) : Future.of(undefined)
-                ).map(([encryptedGroupKey, transformKey]) => ({
-                    encryptedGroupKey,
+                    Recrypt.encryptPlaintextToList(plaintext, adminList, signingKeys),
+                    Recrypt.generateTransformKeyToList(privateKey, memberList, signingKeys)
+                ).map(([encryptedAccessKeys, transformKeyGrantList]) => ({
+                    encryptedAccessKeys,
                     groupPublicKey: publicKey,
-                    transformKey,
+                    transformKeyGrantList,
                 }));
             });
         })

@@ -12,7 +12,6 @@ import {
     Policy,
     UserOrGroup,
 } from "../ironweb";
-import {InteralGroupCreateOptions} from "./frame/sdk/GroupApi";
 
 export interface FrameLoadedRequest {
     type: "FRAME_LOADED_CHECK";
@@ -287,7 +286,18 @@ export interface GroupGetResponse {
 
 export interface GroupCreateRequest {
     type: "GROUP_CREATE";
-    message: InteralGroupCreateOptions;
+    message: {
+        groupID: string;
+        groupName: string;
+        addAsMember: boolean;
+        needsRotation?: boolean;
+        ownerUserId?: string;
+        addAsAdmin?: boolean;
+        userLists?: {
+            memberList: string[];
+            adminList: string[];
+        };
+    };
 }
 export interface GroupCreateResponse {
     type: "GROUP_CREATE_RESPONSE";
