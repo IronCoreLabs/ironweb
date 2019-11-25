@@ -46,7 +46,7 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
         message: {
             groupID: options.groupID || "",
             groupName: options.groupName || "",
-            ownerUserId: options.ownerUserId || "",
+            ownerUserId: options.ownerUserId,
             addAsMember: options.addAsMember !== false,
             addAsAdmin: options.addAsAdmin !== false,
             needsRotation: options.needsRotation === true,

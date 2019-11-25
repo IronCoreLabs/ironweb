@@ -110,6 +110,7 @@ function getCompleteListOfUserPublicKeys(userList: string[]): Future<SDKError, U
  */
 function validateUsers(memberList: string[], adminList: string[], maybeOwnerUserId?: string) {
     const ownerUserId = maybeOwnerUserId ? [maybeOwnerUserId] : [];
+    //  all users provided are reduced to one unique set so we only retrieve the public key once for users that appear in both lists or the same list multiple times
     const uniqueUsers = Array.from(new Set([...memberList, ...adminList, ...ownerUserId]).values());
     return getCompleteListOfUserPublicKeys(uniqueUsers).map((userList) => {
         return {
@@ -137,9 +138,7 @@ export function create(
     ownerUserId?: string
 ): Future<SDKError, GroupDetailResponse> {
     return validateUsers(memberList, adminList, ownerUserId)
-        .flatMap(({memberKeys, adminKeys}) => {
-            return GroupOperations.groupCreate(ApiState.signingKeys(), memberKeys, adminKeys);
-        })
+        .flatMap(({memberKeys, adminKeys}) => GroupOperations.groupCreate(ApiState.signingKeys(), memberKeys, adminKeys))
         .flatMap(({encryptedAccessKeys, groupPublicKey, transformKeyGrantList}) =>
             GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedAccessKeys, needsRotation, transformKeyGrantList, ownerUserId, groupName)
         )

@@ -26,24 +26,22 @@ function errorResponse(callback: (response: ErrorResponse) => void, error: SDKEr
 /**
  * Resolves GroupCreateRequests down to a standard form, fixing options not available in earlier versions to fixed values to allow for backwards compatibility
  */
-function resolveToStandardForm(data: GroupCreateRequest) {
+function convertGroupCreateOptionsToFixedValues(data: GroupCreateRequest) {
     const groupCreator = [ApiState.user().id];
     const addAsAdmin = data.message.addAsAdmin !== false;
     const maybeAddCreatorAsAdmin = addAsAdmin ? groupCreator : [];
     // In the case addAsAdmin is false, an earlier check insures an ownerUserId was provided so defaultAdmins will have at-least one userId.
-    const defaultAdmins = data.message.ownerUserId ? [data.message.ownerUserId].concat(maybeAddCreatorAsAdmin) : maybeAddCreatorAsAdmin;
-    const maybeMembers = data.message.addAsMember ? groupCreator : [];
-    let adminList;
-    let memberList;
+    let adminList = data.message.ownerUserId ? [data.message.ownerUserId].concat(maybeAddCreatorAsAdmin) : maybeAddCreatorAsAdmin;
+    let memberList = data.message.addAsMember ? groupCreator : [];
     if (data.message.userLists) {
-        adminList = data.message.userLists.adminList.length > 0 ? defaultAdmins.concat(data.message.userLists.adminList) : defaultAdmins;
-        memberList = data.message.userLists.memberList.length > 0 ? data.message.userLists.memberList.concat(maybeMembers) : maybeMembers;
+        adminList = data.message.userLists.adminList.length > 0 ? adminList.concat(data.message.userLists.adminList) : adminList;
+        memberList = data.message.userLists.memberList.length > 0 ? data.message.userLists.memberList.concat(memberList) : memberList;
     }
     return {
         groupID: data.message.groupID,
         groupName: data.message.groupName,
-        adminList: adminList || defaultAdmins,
-        memberList: memberList || (data.message.addAsMember ? groupCreator : []),
+        adminList: adminList,
+        memberList: memberList,
         ownerUserId: data.message.ownerUserId, // If ownerUserId is undefined an owner will not be sent to the server resulting the creator being the owner by defult
         needsRotation: data.message.needsRotation === true,
     };
@@ -161,7 +159,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
         case "GROUP_GET":
             return GroupApi.get(data.message.groupID).engage(errorHandler, (group) => callback({type: "GROUP_GET_RESPONSE", message: group}));
         case "GROUP_CREATE":
-            const standardFormResult = resolveToStandardForm(data);
+            const standardFormResult = convertGroupCreateOptionsToFixedValues(data);
             return GroupApi.create(
                 standardFormResult.groupID,
                 standardFormResult.groupName,

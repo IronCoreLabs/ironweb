@@ -82,7 +82,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                ownerUserId: "",
+                                ownerUserId: undefined,
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -107,7 +107,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "providedGroupID",
                                 groupName: "",
-                                ownerUserId: "",
+                                ownerUserId: undefined,
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -132,7 +132,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                ownerUserId: "",
+                                ownerUserId: undefined,
                                 addAsMember: false,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -145,10 +145,6 @@ describe("GroupSDK", () => {
                         done();
                     })
                     .catch((e) => fail(e));
-            });
-            it("fails validateOwnership if addAsAdmin id provided as false and no owner is specified", () => {
-                ShimUtils.setSDKInitialized();
-                expect(() => GroupSDK.create({addAsAdmin: false})).toThrow();
             });
             it("sends create message to frame with addAsAdmin value and ownerUserIdif that value is passed in as options", (done) => {
                 ShimUtils.setSDKInitialized();
@@ -184,7 +180,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "abc",
-                                ownerUserId: "",
+                                ownerUserId: undefined,
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -241,7 +237,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                ownerUserId: "",
+                                ownerUserId: undefined,
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -265,7 +261,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                ownerUserId: "",
+                                ownerUserId: undefined,
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
