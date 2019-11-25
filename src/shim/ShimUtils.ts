@@ -94,7 +94,7 @@ export function dedupeArray(list: string[], clearEmptyValues = false) {
  */
 export function validateOwnership(addAsAdmin?: boolean, maybeOwner?: string) {
     if (!maybeOwner && addAsAdmin === false) {
-        throw new Error(`Failed to create group because group ownership must be held by a group adminastrator`);
+        throw new Error(`Failed to create group because group ownership must be held by a group administrator`);
     }
 }
 
