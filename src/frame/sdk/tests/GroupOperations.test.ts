@@ -8,9 +8,8 @@ describe("GroupOperations", () => {
         it("sends worker message to create group", () => {
             spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "new group"}));
             const signingKeys = TestUtils.getSigningKeyPair();
-            const userKey = TestUtils.getEmptyPublicKey();
 
-            GroupOperations.groupCreate(userKey, signingKeys, []).engage(
+            GroupOperations.groupCreate(signingKeys, [], []).engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual("new group");
@@ -18,9 +17,9 @@ describe("GroupOperations", () => {
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
                         type: "GROUP_CREATE",
                         message: {
-                            userPublicKey: userKey,
                             signingKeys,
                             memberList: [],
+                            adminList: [],
                         },
                     });
                 }

@@ -1,7 +1,7 @@
 //Polyfill Promises and fetch for browsers which don't support them
 import "es6-promise/auto";
 import "whatwg-fetch";
-import {ErrorResponse, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
+import {ErrorResponse, RequestMessage, ResponseMessage, GroupCreateRequest} from "../FrameMessageTypes";
 import SDKError from "../lib/SDKError";
 import FrameMessenger from "./FrameMessenger";
 import * as Init from "./initialization";
@@ -9,6 +9,7 @@ import * as DocumentAdvancedApi from "./sdk/DocumentAdvancedApi";
 import * as DocumentApi from "./sdk/DocumentApi";
 import * as GroupApi from "./sdk/GroupApi";
 import * as UserApi from "./sdk/UserApi";
+import ApiState from "./ApiState";
 
 /**
  * Generic method to convert SDK error messages down into the message/code parts for transfer back to the parent window
@@ -21,6 +22,29 @@ function errorResponse(callback: (response: ErrorResponse) => void, error: SDKEr
             text: error.message,
         },
     });
+}
+/**
+ * Resolves GroupCreateRequests down to a standard form, fixing options not available in earlier versions to fixed values to allow for backwards compatibility
+ */
+function convertGroupCreateOptionsToFixedValues(data: GroupCreateRequest) {
+    const groupCreator = [ApiState.user().id];
+    const addAsAdmin = data.message.addAsAdmin !== false;
+    const maybeAddCreatorAsAdmin = addAsAdmin ? groupCreator : [];
+    // In the case addAsAdmin is false, an earlier check insures an ownerUserId was provided so defaultAdmins will have at-least one userId.
+    let adminList = data.message.ownerUserId ? [data.message.ownerUserId].concat(maybeAddCreatorAsAdmin) : maybeAddCreatorAsAdmin;
+    let memberList = data.message.addAsMember ? groupCreator : [];
+    if (data.message.userLists) {
+        adminList = data.message.userLists.adminList.length > 0 ? adminList.concat(data.message.userLists.adminList) : adminList;
+        memberList = data.message.userLists.memberList.length > 0 ? data.message.userLists.memberList.concat(memberList) : memberList;
+    }
+    return {
+        groupID: data.message.groupID,
+        groupName: data.message.groupName,
+        adminList: adminList,
+        memberList: memberList,
+        ownerUserId: data.message.ownerUserId, // If ownerUserId is undefined an owner will not be sent to the server resulting the creator being the owner by defult
+        needsRotation: data.message.needsRotation === true,
+    };
 }
 
 /* tslint:disable cyclomatic-complexity */
@@ -135,12 +159,14 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
         case "GROUP_GET":
             return GroupApi.get(data.message.groupID).engage(errorHandler, (group) => callback({type: "GROUP_GET_RESPONSE", message: group}));
         case "GROUP_CREATE":
+            const standardFormResult = convertGroupCreateOptionsToFixedValues(data);
             return GroupApi.create(
-                data.message.groupID,
-                data.message.groupName,
-                data.message.addAsMember,
-                data.message.needsRotation,
-                data.message.memberList
+                standardFormResult.groupID,
+                standardFormResult.groupName,
+                standardFormResult.needsRotation,
+                standardFormResult.memberList,
+                standardFormResult.adminList,
+                standardFormResult.ownerUserId
             ).engage(errorHandler, (newGroup) => callback({type: "GROUP_CREATE_RESPONSE", message: newGroup}));
         case "GROUP_UPDATE":
             return GroupApi.update(data.message.groupID, data.message.groupName).engage(errorHandler, (updatedGroup) =>

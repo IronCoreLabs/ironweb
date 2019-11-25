@@ -89,6 +89,16 @@ export function dedupeArray(list: string[], clearEmptyValues = false) {
 }
 
 /**
+ * Validates that either an owner was specified or addAsAdmin is true allowing the creator to be the default owner.
+ * An error will be returned if no owner is specified and the group creator is not going to be an admin.
+ */
+export function validateOwnership(addAsAdmin?: boolean, maybeOwner?: string) {
+    if (!maybeOwner && addAsAdmin === false) {
+        throw new Error(`Failed to create group because group ownership must be held by a group administrator`);
+    }
+}
+
+/**
  * Validate that the provided document ID is a string and has a length
  */
 export function validateID(id: string) {

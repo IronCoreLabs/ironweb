@@ -283,16 +283,16 @@ describe("worker index", () => {
             const payload: any = {
                 type: "GROUP_CREATE",
                 message: {
-                    userPublicKey: new Uint8Array(10),
                     signingKeys: "signkeys",
                     memberList: [creator],
+                    adminList: [creator],
                 },
             };
 
             messenger.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("created group");
-                expect(GroupCrypto.createGroup).toHaveBeenCalledWith(new Uint8Array(10), "signkeys", [creator]);
+                expect(GroupCrypto.createGroup).toHaveBeenCalledWith("signkeys", [creator], [creator]);
                 done();
             });
         });

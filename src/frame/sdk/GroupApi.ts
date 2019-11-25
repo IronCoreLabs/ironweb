@@ -1,4 +1,4 @@
-import {GroupListResponse, GroupMetaResponse, GroupDetailResponse, GroupCreateOptions, GroupUserEditResponse} from "../../../ironweb";
+import {GroupListResponse, GroupMetaResponse, GroupDetailResponse, GroupUserEditResponse} from "../../../ironweb";
 import ApiState from "../ApiState";
 import * as GroupOperations from "./GroupOperations";
 import GroupApiEndpoints from "../endpoints/GroupApiEndpoints";
@@ -6,15 +6,6 @@ import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEnd
 import {GroupPermissions, ErrorCodes} from "../../Constants";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
-import {publicKeyToBase64} from "../../lib/Utils";
-
-export interface InternalGroupCreateOptions extends GroupCreateOptions {
-    groupID: string;
-    addAsMember: boolean;
-    groupName: string;
-    needsRotation: boolean;
-    memberList?: string[];
-}
 
 /**
  * Type guard to determine if provided group contains the full response meaning the user is either an admin or member.
@@ -99,7 +90,7 @@ function getListOfMissingUsersFromKeyResponse(userKeysResponse: UserKeyListRespo
 /**
  * Checkes that all members listed in member list are existing members
  */
-function getCompleteListOfUserPublicKeys(userList: string[]) {
+function getCompleteListOfUserPublicKeys(userList: string[]): Future<SDKError, UserOrGroupPublicKey[]> {
     return UserApiEndpoints.callUserKeyListApi(userList).flatMap((userKeysResponse) => {
         if (userKeysResponse.result.length !== userList.length) {
             const missingUsersString = getListOfMissingUsersFromKeyResponse(userKeysResponse, userList);
@@ -115,26 +106,41 @@ function getCompleteListOfUserPublicKeys(userList: string[]) {
 }
 
 /**
+ * Retrieves the master public keys for users in the memberList, adminList and owner.
+ */
+function validateUsers(memberList: string[], adminList: string[], maybeOwnerUserId?: string) {
+    const ownerUserId = maybeOwnerUserId ? [maybeOwnerUserId] : [];
+    //  all users provided are reduced to one unique set so we only retrieve the public key once for users that appear in both lists or the same list multiple times
+    const uniqueUsers = Array.from(new Set([...memberList, ...adminList, ...ownerUserId]).values());
+    return getCompleteListOfUserPublicKeys(uniqueUsers).map((userList) => {
+        return {
+            memberKeys: userList.filter((user) => memberList.includes(user.id)),
+            adminKeys: userList.filter((user) => adminList.includes(user.id) || ownerUserId.includes(user.id)),
+        };
+    });
+}
+
+/**
  * Create a new group with the provided ID and options
- * @param {string}  groupID Client provided optional group ID
- * @param {string}  groupName Client provide optonal group name
- * @param {boolean} addAsMember Whether the group creator shoudl be added as a member upon create
- * @param {boolean} needsRotation Whether the group needs to rotate it private key
+ * @param groupID Client provided optional group ID
+ * @param groupName Client provide optonal group name
+ * @param needsRotation Whether the group needs to rotate it private key
+ * @param memberList Client provide optonal user list to be initialized as group members
+ * @param adminList List of atlease one user to be initialized as group administrators. AdminList will contain the group owner or creator if an owner is not provided
+ * @param ownerUserId Client provide user designated to be the group owner, if undefined the group creator will be the owner by defalt on the server side
  */
 export function create(
     groupID: string,
     groupName: string,
-    addAsMember: boolean,
     needsRotation: boolean,
-    memberList?: string[]
+    memberList: string[],
+    adminList: string[],
+    ownerUserId?: string
 ): Future<SDKError, GroupDetailResponse> {
-    const creatorMemberKey = addAsMember ? [{id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())}] : [];
-    const memberListValidationResult = memberList !== undefined && memberList.length > 0 ? getCompleteListOfUserPublicKeys(memberList) : Future.of([]);
-
-    return memberListValidationResult
-        .flatMap((memberKeys) => GroupOperations.groupCreate(ApiState.userPublicKey(), ApiState.signingKeys(), creatorMemberKey.concat(memberKeys)))
-        .flatMap(({encryptedGroupKey, groupPublicKey, transformKeyGrantList}) =>
-            GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedGroupKey, needsRotation, transformKeyGrantList, groupName)
+    return validateUsers(memberList, adminList, ownerUserId)
+        .flatMap(({memberKeys, adminKeys}) => GroupOperations.groupCreate(ApiState.signingKeys(), memberKeys, adminKeys))
+        .flatMap(({encryptedAccessKeys, groupPublicKey, transformKeyGrantList}) =>
+            GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedAccessKeys, needsRotation, transformKeyGrantList, ownerUserId, groupName)
         )
         .map((createdGroup) => formatDetailedGroupResponse(createdGroup) as GroupDetailResponse);
 }
