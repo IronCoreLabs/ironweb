@@ -85,7 +85,7 @@ describe("GroupApiEndpoints", () => {
             const encryptedAccessKeys = [
                 {
                     encryptedPlaintext,
-                    id: "owner",
+                    id: "ownerUserId",
                     publicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
                 },
             ];
@@ -94,7 +94,7 @@ describe("GroupApiEndpoints", () => {
                 {id: "user2ID", publicKey: TestUtils.getEmptyPublicKeyString(), transformKey: TestUtils.getTransformKey()},
             ];
 
-            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, ["owner"], encryptedAccessKeys, false, transformKeyGrantList, "group name").engage(
+            GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, encryptedAccessKeys, false, transformKeyGrantList, "ownerUserId", "group name").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -103,7 +103,7 @@ describe("GroupApiEndpoints", () => {
                     expect(JSON.parse(request.body)).toEqual({
                         id: "35",
                         name: "group name",
-                        owner: "owner",
+                        owner: "ownerUserId",
                         groupPublicKey: {
                             x: "YmmF",
                             y: "bmI=",
@@ -111,7 +111,7 @@ describe("GroupApiEndpoints", () => {
                         admins: [
                             {
                                 user: {
-                                    userId: "owner",
+                                    userId: "ownerUserId",
                                     userMasterPublicKey: {
                                         x: "firstpublickeyx",
                                         y: "firstpublickeyy",
@@ -175,12 +175,12 @@ describe("GroupApiEndpoints", () => {
             const encryptedAccessKeys = [
                 {
                     encryptedPlaintext: TestUtils.getEncryptedSymmetricKey(),
-                    id: "owner",
+                    id: "ownerUserId",
                     publicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
                 },
             ];
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, ["owner"], encryptedAccessKeys, false, [transformKeyGrant], "").engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, encryptedAccessKeys, false, [transformKeyGrant], "ownerUserId", "").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -195,7 +195,7 @@ describe("GroupApiEndpoints", () => {
                         admins: [
                             {
                                 user: {
-                                    userId: "owner",
+                                    userId: "ownerUserId",
                                     userMasterPublicKey: {
                                         x: "firstpublickeyx",
                                         y: "firstpublickeyy",
@@ -218,7 +218,7 @@ describe("GroupApiEndpoints", () => {
                                 },
                             },
                         ],
-                        owner: "owner",
+                        owner: "ownerUserId",
                         needsRotation: false,
                     });
                 }
@@ -229,12 +229,12 @@ describe("GroupApiEndpoints", () => {
             const encryptedAccessKeys = [
                 {
                     encryptedPlaintext: TestUtils.getEncryptedSymmetricKey(),
-                    id: "owner",
+                    id: "ownerUserId",
                     publicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
                 },
             ];
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, ["owner"], encryptedAccessKeys, false, [], "group name").engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, encryptedAccessKeys, false, [], "ownerUserId", "group name").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -243,7 +243,7 @@ describe("GroupApiEndpoints", () => {
 
                     expect(JSON.parse(request.body)).toEqual({
                         name: "group name",
-                        owner: "owner",
+                        owner: "ownerUserId",
                         groupPublicKey: {
                             x: "YmmF",
                             y: "bmI=",
@@ -251,7 +251,7 @@ describe("GroupApiEndpoints", () => {
                         admins: [
                             {
                                 user: {
-                                    userId: "owner",
+                                    userId: "ownerUserId",
                                     userMasterPublicKey: {
                                         x: "firstpublickeyx",
                                         y: "firstpublickeyy",
@@ -265,17 +265,17 @@ describe("GroupApiEndpoints", () => {
                 }
             );
         });
-        it("if an owner is not provided one is not sent", () => {
+        it("if an ownerUserId is not provided one is not sent", () => {
             const encryptedPlaintext = TestUtils.getEncryptedSymmetricKey();
             const encryptedAccessKeys = [
                 {
                     encryptedPlaintext: TestUtils.getEncryptedSymmetricKey(),
-                    id: "owner",
+                    id: "ownerUserId",
                     publicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
                 },
             ];
 
-            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, [], encryptedAccessKeys, false, [], "group name").engage(
+            GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, encryptedAccessKeys, false, [], "", "group name").engage(
                 (e) => fail(e),
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
@@ -291,7 +291,7 @@ describe("GroupApiEndpoints", () => {
                         admins: [
                             {
                                 user: {
-                                    userId: "owner",
+                                    userId: "ownerUserId",
                                     userMasterPublicKey: {
                                         x: "firstpublickeyx",
                                         y: "firstpublickeyy",

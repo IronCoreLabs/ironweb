@@ -1,4 +1,4 @@
-import {GroupListResponse, GroupMetaResponse, GroupDetailResponse, GroupCreateOptions, GroupUserEditResponse} from "../../../ironweb";
+import {GroupListResponse, GroupMetaResponse, GroupDetailResponse, GroupUserEditResponse} from "../../../ironweb";
 import ApiState from "../ApiState";
 import * as GroupOperations from "./GroupOperations";
 import GroupApiEndpoints from "../endpoints/GroupApiEndpoints";
@@ -6,20 +6,6 @@ import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEnd
 import {GroupPermissions, ErrorCodes} from "../../Constants";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
-import {publicKeyToBase64} from "../../lib/Utils";
-
-export interface InternalGroupCreateOptions extends GroupCreateOptions {
-    groupID: string;
-    groupName: string;
-    owner: string;
-    addAsMember: boolean;
-    addAsAdmin: boolean;
-    needsRotation: boolean;
-    userLists?: {
-        memberList: string[];
-        adminList: string[];
-    };
-}
 
 /**
  * Type guard to determine if provided group contains the full response meaning the user is either an admin or member.
@@ -120,80 +106,42 @@ function getCompleteListOfUserPublicKeys(userList: string[]): Future<SDKError, U
 }
 
 /**
- * Retrieves the master public keys for users in the memberList, adminList and owner. This will return new members list and admin list
- * with the owner (if specified) added to the adminlist if it was not already on it.
- * @param memberList
- * @param adminList
+ * Retrieves the master public keys for users in the memberList, adminList and owner.
  */
-function validateUsers(memberList: string[], adminList: string[], owner: string[]): Future<SDKError, UserOrGroupPublicKey[][]> {
-    const uniqueUsers = Array.from(new Set([...memberList, ...adminList, ...owner]).values());
-    return memberList.length > 0 || adminList.length > 0
-        ? getCompleteListOfUserPublicKeys(uniqueUsers).map((userList) => {
-              return [
-                  userList.filter((user) => memberList.includes(user.id)),
-                  userList.filter((user) => adminList.includes(user.id) || owner.includes(user.id)),
-              ];
-          })
-        : Future.of([[], []]);
-}
-/**
- * Validates that either an owner was specified or addAsAdmin is true allowing the creator to be the default owner.
- * An error will be returned if no owner is specified and the group creator is not going to be an admin.
- */
-function validateOwnership(addAsAdmin: boolean, maybeOwner: string): Future<SDKError, string[]> {
-    if (maybeOwner === "" && !addAsAdmin) {
-        return Future.reject(
-            new SDKError(
-                new Error(`Failed to create group because group ownership must be held by a group adminastrator`),
-                ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE
-            )
-        );
-    }
-    if (maybeOwner !== "") {
-        return Future.of([maybeOwner]);
-    }
-    // If no owner is specified and addAsAdmin is true an empty array is returned.
-    // This will result in the group creator becoming the owner on the server side.
-    else return Future.of([]);
+function validateUsers(memberList: string[], adminList: string[], maybeOwnerUserId?: string) {
+    const ownerUserId = maybeOwnerUserId ? [maybeOwnerUserId] : [];
+    const uniqueUsers = Array.from(new Set([...memberList, ...adminList, ...ownerUserId]).values());
+    return getCompleteListOfUserPublicKeys(uniqueUsers).map((userList) => {
+        return {
+            memberKeys: userList.filter((user) => memberList.includes(user.id)),
+            adminKeys: userList.filter((user) => adminList.includes(user.id) || ownerUserId.includes(user.id)),
+        };
+    });
 }
 
 /**
  * Create a new group with the provided ID and options
- * @param {string}  groupID Client provided optional group ID
- * @param {string}  groupName Client provide optonal group name
- * @param {boolean} addAsMember Whether the group creator shoudl be added as a member upon create
- * @param {boolean} needsRotation Whether the group needs to rotate it private key
+ * @param groupID Client provided optional group ID
+ * @param groupName Client provide optonal group name
+ * @param needsRotation Whether the group needs to rotate it private key
+ * @param memberList Client provide optonal user list to be initialized as group members
+ * @param adminList List of atlease one user to be initialized as group administrators. AdminList will contain the group owner or creator if an owner is not provided
+ * @param ownerUserId Client provide user designated to be the group owner, if undefined the group creator will be the owner by defalt on the server side
  */
 export function create(
     groupID: string,
     groupName: string,
-    maybeOwner: string,
-    addAsMember: boolean,
-    addAsAdmin: boolean,
     needsRotation: boolean,
-    userLists?: {memberList: string[]; adminList: string[]}
+    memberList: string[],
+    adminList: string[],
+    ownerUserId?: string
 ): Future<SDKError, GroupDetailResponse> {
-    const creatorID = ApiState.user().id;
-    const creatorMemberKey = addAsMember ? [{id: creatorID, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())}] : [];
-
-    // creatorAdminKey will later be added to the admins list. If the group creator requested to be an admin and placed
-    // themselves in the admins list, creatorAdminKey will evaluate to an empty array to prevent the group creator appearing on the admin list twice.
-
-    const creatorAdminKey =
-        addAsAdmin && (userLists === undefined || !userLists.adminList.includes(creatorID))
-            ? [{id: ApiState.user().id, masterPublicKey: publicKeyToBase64(ApiState.userPublicKey())}]
-            : [];
-    const isMemberList = userLists !== undefined ? userLists.memberList : [];
-    const isAdminList = userLists !== undefined ? userLists.adminList : [];
-    return validateOwnership(addAsAdmin, maybeOwner)
-        .flatMap((owner) =>
-            validateUsers(isMemberList, isAdminList, owner)
-                .flatMap(([memberKeys, adminKeys]) => {
-                    return GroupOperations.groupCreate(ApiState.signingKeys(), creatorMemberKey.concat(memberKeys), creatorAdminKey.concat(adminKeys));
-                })
-                .flatMap(({encryptedAccessKeys, groupPublicKey, transformKeyGrantList}) =>
-                    GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, owner, encryptedAccessKeys, needsRotation, transformKeyGrantList, groupName)
-                )
+    return validateUsers(memberList, adminList, ownerUserId)
+        .flatMap(({memberKeys, adminKeys}) => {
+            return GroupOperations.groupCreate(ApiState.signingKeys(), memberKeys, adminKeys);
+        })
+        .flatMap(({encryptedAccessKeys, groupPublicKey, transformKeyGrantList}) =>
+            GroupApiEndpoints.callGroupCreateApi(groupID, groupPublicKey, encryptedAccessKeys, needsRotation, transformKeyGrantList, ownerUserId, groupName)
         )
         .map((createdGroup) => formatDetailedGroupResponse(createdGroup) as GroupDetailResponse);
 }

@@ -16,7 +16,7 @@ interface GroupCreatePayload {
     encryptedAccessKeys: EncryptedAccessKey[];
     transformKeyGrantList: TransformKeyGrant[];
     name?: string;
-    owner?: string;
+    ownerUserId?: string;
 }
 export interface GroupMemberModifyResponseType {
     succeededIds: {userId: string}[];
@@ -79,7 +79,7 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRo
             body: JSON.stringify({
                 id: groupID || undefined,
                 name: createPayload.name || undefined,
-                owner: createPayload.owner || undefined,
+                owner: createPayload.ownerUserId || undefined,
                 groupPublicKey: publicKeyToBase64(createPayload.groupPublicKey),
                 admins: createPayload.encryptedAccessKeys.map((admin) => ({
                     user: {
@@ -272,10 +272,10 @@ export default {
     callGroupCreateApi(
         groupID: string,
         groupPublicKey: PublicKey<Uint8Array>,
-        owner: string[],
         encryptedAccessKeys: EncryptedAccessKey[],
         needsRotation: boolean,
         transformKeyGrantList: TransformKeyGrant[],
+        ownerUserId?: string,
         groupName?: string
     ): Future<SDKError, GroupCreateResponseType> {
         const {url, options, errorCode} = groupCreate(
@@ -285,7 +285,7 @@ export default {
                 encryptedAccessKeys,
                 transformKeyGrantList,
                 name: groupName,
-                owner: owner[0],
+                ownerUserId,
             },
             needsRotation
         );

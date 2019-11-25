@@ -131,22 +131,19 @@ describe("GroupApi", () => {
     });
 
     describe("create", () => {
-        it("requests create endpoint with ID and options and maps response, addAsMember and addAsAdmin are false", () => {
+        it("requests create endpoint with ID and options and maps response", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+            const memberList = [{id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+            const adminList = [
+                {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user3ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
             const userKeyList = [
                 {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
                 {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
                 {id: "user3ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
             ];
-
-            const memberList = [{id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
-            // owner is required to be an admin and is returned to adminList
-            const adminList = [
-                {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                {id: "user3ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-            ];
-
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
             jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(Future.of({
                 encryptedAccessKeys: "encryptedAccessKeys",
@@ -166,10 +163,7 @@ describe("GroupApi", () => {
                 updated: "2",
             }) as any);
 
-            GroupApi.create("groupID", "groupName", "user1ID", false, false, false, {
-                memberList: ["user2ID"],
-                adminList: ["user3ID"],
-            }).engage(
+            GroupApi.create("groupID", "groupName", false, ["user2ID"], ["user3ID"], "user1ID").engage(
                 (e) => fail(e),
                 (result: any) => {
                     expect(result).toEqual({
@@ -187,220 +181,45 @@ describe("GroupApi", () => {
                     expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
                         "groupID",
                         "groupPublicKey",
-                        ["user1ID"],
                         "encryptedAccessKeys",
                         false,
                         "transformKeyGrantList",
+                        "user1ID",
                         "groupName"
                     );
                 }
             );
         });
-        it("if an owner is not sent in and addAsAdmin is true owner should be sent to callGroupCreateApi as an empty array", () => {
+        it("resolve duplicates in userLists", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-            const groupCreatorKeys = {id: "user-10", masterPublicKey: {x: "upkx", y: "upky"}};
-
+            const userKeyList = [
+                {id: "user1", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user2", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+            ];
             jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(Future.of({
-                encryptedAccessKeys: ["encryptedAccessKeys"],
-                groupPublicKey: "groupPublicKey",
-                transformKeyGrantList: ["transformKeyGrantList"],
-            }) as any);
-            jest.spyOn(GroupApiEndpoints, "callGroupCreateApi").mockReturnValue(Future.of({
-                groupPublicKey: "groupPublicKey",
-                name: "groupName",
-                id: "groupID",
-                adminIds: ["adminList"],
-                memberIds: ["memberList"],
-                permissions: ["admin"],
-                needsRotation: false,
-                created: "1",
-                updated: "2",
+                encryptedAccessKeys: [],
+                groupPublicKey: TestUtils.getEmptyPublicKeyString(),
+                transformKeyGrantList: [],
             }) as any);
 
-            GroupApi.create("groupID", "groupName", "", false, true, false).engage(
-                (e) => fail(e),
-                () => {
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(ApiState.signingKeys(), [], [groupCreatorKeys]);
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
-                        "groupID",
-                        "groupPublicKey",
-                        [], // If no owner is specified and addAsAdmin is true an empty array is returned. This will result in the group creator becoming the owner on the server side.
-                        ["encryptedAccessKeys"],
-                        false,
-                        ["transformKeyGrantList"],
-                        "groupName"
-                    );
-                }
-            );
-        });
-        it("if an owner is sent, owner should be sent to callGroupCreateApi as an array containing the owners userID", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-            const groupCreatorKeys = {id: "user-10", masterPublicKey: {x: "upkx", y: "upky"}};
-
-            GroupApi.create("groupID", "groupName", "user1ID", false, true, false).engage(
-                (e) => fail(e),
-                () => {
-                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1ID"]);
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
-                        ApiState.signingKeys(),
-                        [],
-                        [groupCreatorKeys, {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}]
-                    );
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
-                        "groupID",
-                        "groupPublicKey",
-                        ["user1ID"],
-                        ["encryptedAccessKeys"],
-                        false,
-                        ["transformKeyGrantList"],
-                        "groupName"
-                    );
-                }
-            );
-        });
-        it("if an owner is sent and addAsAdmin is false provided owner will be sent as owner and both owner and groupcreator will be added as admins", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-
-            GroupApi.create("groupID", "groupName", "user1ID", false, false, false).engage(
-                (e) => fail(e),
-                () => {
-                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1ID"]);
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
-                        ApiState.signingKeys(),
-                        [],
-                        [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}]
-                    );
-                    expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
-                        "groupID",
-                        "groupPublicKey",
-                        ["user1ID"],
-                        ["encryptedAccessKeys"],
-                        false,
-                        ["transformKeyGrantList"],
-                        "groupName"
-                    );
-                }
-            );
-        });
-        it("if an owner is not sent and addAsAdmin is false a SDK error should be returned", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-
-            GroupApi.create("groupID", "groupName", "", false, false, false).engage(
-                (e) => {
-                    expect(e.message).toContain("Failed to create group because group ownership must be held by a group adminastrator");
-                    expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE);
-                },
-                () => fail("Should not be able to create group with members if mamber list request contains non existent users")
-            );
-        });
-        it("if addAsMember is true, memberList sent to group create will contain the creator and users in userList", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-            const groupCreatorKeys = {id: "user-10", masterPublicKey: {x: "upkx", y: "upky"}};
-
-            GroupApi.create("groupID", "groupName", "", true, true, false).engage(
-                (e) => fail(e),
-                () => {
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(ApiState.signingKeys(), [groupCreatorKeys], [groupCreatorKeys]);
-                }
-            );
-        });
-        it("if addAsMember is true, and userList is provided memberList sent to group create will contain the creator and users in userList", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-            const groupCreatorKeys = {id: "user-10", masterPublicKey: {x: "upkx", y: "upky"}};
-            const userKeyList = [
-                {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-            ];
-
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi");
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
 
-            GroupApi.create("groupID", "groupName", "", true, true, false, {memberList: ["user1ID", "user2ID"], adminList: []}).engage(
+            GroupApi.create("groupID", "private group", true, ["user1", "user1"], ["user1", "user1", "user2"], "user1").engage(
                 (e) => fail(e),
                 () => {
-                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1ID", "user2ID"]);
+                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1, user2"]);
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
                         ApiState.signingKeys(),
+                        [{id: "user1", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
                         [
-                            groupCreatorKeys,
-                            {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                            {id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                            {id: "user1", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                            {id: "user2", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
                         ],
-                        [groupCreatorKeys]
+                        "user1"
                     );
                 }
-            );
-        });
-        it("if addAsAdmin is true and admin list is provided, adminsList sent to groupCreate will contain group creator and users in adminList", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-            const groupCreatorKeys = {id: "user-10", masterPublicKey: {x: "upkx", y: "upky"}};
-            const userKeyList = [
-                {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-            ];
-
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
-
-            GroupApi.create("groupID", "groupName", "", false, true, false, {memberList: [], adminList: ["user1ID", "user2ID"]}).engage(
-                (e) => fail(e),
-                () => {
-                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1ID", "user2ID"]);
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
-                        ApiState.signingKeys(),
-                        [],
-                        [
-                            groupCreatorKeys,
-                            {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                            {id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                        ]
-                    );
-                }
-            );
-        });
-        it("if an owner is not sent and addAsAdmin is true and the creator is in the provided adminList the creator will not be added to the adminList again", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-            const userKeyList = [
-                {id: "user-10", masterPublicKey: {x: "upkx", y: "upky"}},
-                {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-            ];
-
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
-
-            GroupApi.create("groupID", "groupName", "", false, true, false, {memberList: [], adminList: ["user-10", "user1ID", "user2ID"]}).engage(
-                (e) => fail(e),
-                () => {
-                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user-10", "user1ID", "user2ID"]);
-                    expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
-                        ApiState.signingKeys(),
-                        [],
-                        [
-                            {id: "user-10", masterPublicKey: {x: "upkx", y: "upky"}},
-                            {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                            {id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                        ]
-                    );
-                }
-            );
-        });
-        it("if an no existent user is sent as owner a SDK error should be returned", () => {
-            ApiState.setCurrentUser(TestUtils.getFullUser());
-            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-
-            GroupApi.create("groupID", "groupName", "user1ID", false, false, false).engage(
-                (e) => {
-                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1ID"]);
-                    expect(e.message).toContain("Failed to create group due to unknown users in user list. Missing user IDs: user1ID");
-                    expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE);
-                },
-                () => fail("Should not be able to create group with members if mamber list request contains non existent users")
             );
         });
         it("fails if memberList is sent and contains non existent user", () => {
@@ -408,7 +227,20 @@ describe("GroupApi", () => {
                 result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
             }) as any);
 
-            GroupApi.create("", "private group", "", false, true, false, {memberList: ["user1", "user2"], adminList: []}).engage(
+            GroupApi.create("", "private group", false, ["user1", "user2"], []).engage(
+                (e) => {
+                    expect(e.message).toContain(["user2"]);
+                    expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE);
+                },
+                () => fail("Should not be able to create group with members if mamber list request contains non existent users")
+            );
+        });
+        it("fails if adminList is sent and contains non existent user", () => {
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({
+                result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+            }) as any);
+
+            GroupApi.create("", "private group", false, [], ["user1", "user2"]).engage(
                 (e) => {
                     expect(e.message).toContain(["user2"]);
                     expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE);
@@ -427,16 +259,16 @@ describe("GroupApi", () => {
 
             jest.spyOn(GroupApiEndpoints, "callGroupCreateApi");
 
-            GroupApi.create("groupID", "private group", "owner", false, true, true).engage(
+            GroupApi.create("groupID", "private group", true, [], ["alwaysOwner"]).engage(
                 (e) => fail(e),
                 () => {
                     expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
                         "groupID",
                         "groupPublicKey",
-                        "owner",
                         "encryptedAccessKeys",
                         true,
                         "transformKeyGrantList",
+                        "ownerUserId",
                         "private group"
                     );
                 }

@@ -37,6 +37,7 @@ export function get(groupID: string) {
  */
 export function create(options: GroupCreateOptions = {groupName: "", addAsMember: true, addAsAdmin: true, needsRotation: false}) {
     ShimUtils.checkSDKInitialized();
+    ShimUtils.validateOwnership(options.addAsAdmin, options.ownerUserId);
     if (options.groupID) {
         ShimUtils.validateID(options.groupID);
     }
@@ -45,7 +46,7 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
         message: {
             groupID: options.groupID || "",
             groupName: options.groupName || "",
-            owner: options.owner || "",
+            ownerUserId: options.ownerUserId || "",
             addAsMember: options.addAsMember !== false,
             addAsAdmin: options.addAsAdmin !== false,
             needsRotation: options.needsRotation === true,

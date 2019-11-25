@@ -72,7 +72,6 @@ describe("GroupSDK", () => {
                 expect(() => GroupSDK.create({groupID: []} as any)).toThrow();
                 expect(() => GroupSDK.create({groupID: ",asega"})).toThrow();
             });
-
             it("sends create message to frame with default options if nothing is passed in", (done) => {
                 ShimUtils.setSDKInitialized();
                 GroupSDK.create()
@@ -83,7 +82,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                owner: "",
+                                ownerUserId: "",
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -108,7 +107,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "providedGroupID",
                                 groupName: "",
-                                owner: "",
+                                ownerUserId: "",
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -133,7 +132,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                owner: "",
+                                ownerUserId: "",
                                 addAsMember: false,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -147,7 +146,34 @@ describe("GroupSDK", () => {
                     })
                     .catch((e) => fail(e));
             });
-
+            it("fails validateOwnership if addAsAdmin id provided as false and no owner is specified", () => {
+                ShimUtils.setSDKInitialized();
+                expect(() => GroupSDK.create({addAsAdmin: false})).toThrow();
+            });
+            it("sends create message to frame with addAsAdmin value and ownerUserIdif that value is passed in as options", (done) => {
+                ShimUtils.setSDKInitialized();
+                GroupSDK.create({addAsAdmin: false, ownerUserId: "owner"})
+                    .then((result: any) => {
+                        expect(result).toEqual("messageResponse");
+                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                            type: "GROUP_CREATE",
+                            message: {
+                                groupID: "",
+                                groupName: "",
+                                ownerUserId: "owner",
+                                addAsMember: true,
+                                addAsAdmin: false,
+                                needsRotation: false,
+                                userLists: {
+                                    memberList: [],
+                                    adminList: [],
+                                },
+                            },
+                        });
+                        done();
+                    })
+                    .catch((e) => fail(e));
+            });
             it("sends create message to frame with groupName if that value is passed in as options", (done) => {
                 ShimUtils.setSDKInitialized();
                 GroupSDK.create({groupName: "abc"})
@@ -158,7 +184,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "abc",
-                                owner: "",
+                                ownerUserId: "",
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -172,10 +198,18 @@ describe("GroupSDK", () => {
                     })
                     .catch((e) => fail(e));
             });
-
             it("sends create message to frame with options passed in if provided", (done) => {
                 ShimUtils.setSDKInitialized();
-                GroupSDK.create({groupID: "providedID", groupName: "abc", addAsMember: true, needsRotation: true})
+                GroupSDK.create({
+                    groupID: "providedID",
+                    groupName: "abc",
+                    ownerUserId: "ownerUserId",
+                    addAsMember: true,
+                    addAsAdmin: true,
+                    needsRotation: true,
+                    memberList: ["user1Id"],
+                    adminList: ["user2Id"],
+                })
                     .then((result: any) => {
                         expect(result).toEqual("messageResponse");
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
@@ -183,13 +217,13 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "providedID",
                                 groupName: "abc",
-                                owner: "",
+                                ownerUserId: "ownerUserId",
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: true,
                                 userLists: {
-                                    memberList: [],
-                                    adminList: [],
+                                    memberList: ["user1Id"],
+                                    adminList: ["user2Id"],
                                 },
                             },
                         });
@@ -207,7 +241,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                owner: "",
+                                ownerUserId: "",
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -231,7 +265,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                owner: "",
+                                ownerUserId: "",
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
@@ -245,9 +279,9 @@ describe("GroupSDK", () => {
                     })
                     .catch((e) => fail(e));
             });
-            it("send create message to frame with owner if provided", (done) => {
+            it("send create message to frame with ownerUserId if provided", (done) => {
                 ShimUtils.setSDKInitialized();
-                GroupSDK.create({owner: "owner"})
+                GroupSDK.create({ownerUserId: "ownerUserId"})
                     .then((result: any) => {
                         expect(result).toEqual("messageResponse");
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
@@ -255,7 +289,7 @@ describe("GroupSDK", () => {
                             message: {
                                 groupID: "",
                                 groupName: "",
-                                owner: "owner",
+                                ownerUserId: "ownerUserId",
                                 addAsMember: true,
                                 addAsAdmin: true,
                                 needsRotation: false,
