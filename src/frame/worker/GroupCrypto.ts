@@ -7,8 +7,9 @@ import {publicKeyToBytes} from "../../lib/Utils";
 /**
  * Create the keys for a new group. Generates a new keypair for the group and encrypts the value used to generate the
  * group private key to the provided adminList public keys
- * @param {SigningKeyPair}        signingKeys   Current users signing keys used to sign transform key
- * @param {boolean}               addAsMember   Whether to add the current group admin as a member
+ * @param {SigningKeyPair}          signingKeys   Current users signing keys used to sign transform key
+ * @param {UserOrGroupPublicKey[]}  memberList   List of user public keys to generate transform grants for
+ * @param {UserOrGroupPublicKey[]}  addAsMember   List of user public keys to encrypt group private key to
  */
 export function createGroup(signingKeys: SigningKeyPair, memberList: UserOrGroupPublicKey[], adminList: UserOrGroupPublicKey[]) {
     return loadRecrypt()
