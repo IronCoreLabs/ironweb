@@ -27,6 +27,35 @@ describe("GroupOperations", () => {
         });
     });
 
+    describe("rotateAndEncryptNewGroupPrivateKeyToList", () => {
+        it("send message to worker to Rotate group private key and create new encryptedAccessKeys for all admins of that group", () => {
+            const encryptedGroupKey = TestUtils.getTransformedSymmetricKey();
+            const adminList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
+            const adminPrivateKey = new Uint8Array(32);
+            const signingKeys = TestUtils.getSigningKeyPair();
+
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of({
+                message: {encryptedAccessKeys: "accessKey", augmentationFactor: "augmentationFactor"},
+            }) as any);
+
+            GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList(encryptedGroupKey, adminList, adminPrivateKey, signingKeys).engage(
+                (e) => fail(e),
+                (result) => {
+                    expect(result).toEqual({encryptedAccessKeys: "accessKey", augmentationFactor: "augmentationFactor"});
+                    expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "ROTATE_GROUP_PRIVATE_KEY",
+                        message: {
+                            encryptedGroupKey,
+                            adminList,
+                            adminPrivateKey,
+                            signingKeys,
+                        },
+                    });
+                }
+            );
+        });
+    });
+
     describe("encryptGroupPrivateKeyToList", () => {
         it("sends message to worker to encrypt group encrypte private key to list", () => {
             spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "encrypted user keys"}));

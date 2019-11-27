@@ -79,7 +79,31 @@ describe("GroupCrypto", () => {
             );
         });
     });
+    describe("rotateGroupPrivateKey", () => {
+        it("rotate the current group private key, then return the augmentation factor and list of encrypted access keys for the admins in the adminList", () => {
+            const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
+            const adminList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
+            const adminPrivateKey = new Uint8Array(23);
+            const signingKeys = TestUtils.getSigningKeyPair();
 
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of(["decryptedPlaintext", new Uint8Array()]) as any);
+            jest.spyOn(Recrypt, "rotateGroupPrivateKeyWithRetry").mockReturnValue(Future.of({
+                newPrivateKey: "newPrivateKey",
+                augmentationFactor: "augmentationFactor",
+            }) as any);
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["accessKey1", "accessKey2"]) as any);
+
+            GroupCrypto.rotatePrivateKey(groupPrivateKey, adminList, adminPrivateKey, signingKeys).engage(
+                (e) => fail(e.message),
+                (result: any) => {
+                    expect(result).toEqual({encryptedAccessKeys: ["accessKey1", "accessKey2"], augmentationFactor: "augmentationFactor"});
+                    expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
+                    expect(Recrypt.rotateGroupPrivateKeyWithRetry).toHaveBeenCalledWith(new Uint8Array());
+                    expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith("newPrivateKey", adminList, signingKeys);
+                }
+            );
+        });
+    });
     describe("addAdminsToGroup", () => {
         it("decrypts group private key encrypts it to the provided list of public keys", () => {
             const signature = new Uint8Array(32);

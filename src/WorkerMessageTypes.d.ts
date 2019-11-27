@@ -167,7 +167,23 @@ export interface DocumentEncryptToKeysWorkerResponse {
         groupAccessKeys: EncryptedAccessKey[];
     };
 }
+export interface RotateGroupPrivateKeyWorkerRequest {
+    type: "ROTATE_GROUP_PRIVATE_KEY";
+    message: {
+        encryptedGroupKey: TransformedEncryptedMessage;
+        adminList: UserOrGroupPublicKey[];
+        adminPrivateKey: PrivateKey<Uint8Array>;
+        signingKeys: SigningKeyPair;
+    };
+}
 
+export interface RotateGroupPrivateKeyWorkerResponse {
+    type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE";
+    message: {
+        encryptedAccessKeys: EncryptedAccessKey[];
+        augmentationFactor: Uint8Array;
+    };
+}
 export interface GroupCreateWorkerRequest {
     type: "GROUP_CREATE";
     message: {
@@ -248,6 +264,7 @@ export interface ErrorResponse {
 }
 
 export type RequestMessage =
+    | RotateGroupPrivateKeyWorkerRequest
     | RotateUserPrivateKeyWorkerRequest
     | EncryptDocumentWorkerRequest
     | ReencryptDocumentWorkerRequest
@@ -264,6 +281,7 @@ export type RequestMessage =
     | SignatureGenerationWorkerRequest;
 
 export type ResponseMessage =
+    | RotateGroupPrivateKeyWorkerResponse
     | RotateUserPrivateKeyWorkerResponse
     | EncryptDocumentWorkerResponse
     | ReencryptDocumentWorkerResponse

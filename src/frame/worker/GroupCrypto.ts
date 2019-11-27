@@ -27,6 +27,36 @@ export function createGroup(signingKeys: SigningKeyPair, memberList: UserOrGroup
         })
         .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_KEY_GENERATION_FAILURE));
 }
+/**
+ *  Rotate current group private key. Then encrypts rotated private to the groups admins.
+ */
+export function rotatePrivateKey(
+    encryptedGroupKey: TransformedEncryptedMessage,
+    adminList: UserOrGroupPublicKey[],
+    adminPrivateKey: PrivateKey<Uint8Array>,
+    signingKeys: SigningKeyPair
+): Future<
+    SDKError,
+    {
+        encryptedAccessKeys: EncryptedAccessKey[];
+        augmentationFactor: Uint8Array;
+    }
+> {
+    return loadRecrypt()
+        .flatMap((Recrypt) => {
+            return Recrypt.decryptPlaintext(encryptedGroupKey, adminPrivateKey).flatMap(([_, key]) => {
+                return Recrypt.rotateGroupPrivateKeyWithRetry(key)
+                    .flatMap(({newPrivateKey, augmentationFactor}) => {
+                        return Recrypt.encryptPlaintextToList(newPrivateKey, adminList, signingKeys).map((newEncryptedPrivateGroupKey) => ({
+                            encryptedAccessKeys: newEncryptedPrivateGroupKey,
+                            augmentationFactor,
+                        }));
+                    })
+                    .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_FAILURE));
+            });
+        })
+        .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_FAILURE));
+}
 
 /**
  * Generate schnorr siganture and encrypted access keys to the groups private key for the provided list of users in order to make them admins of the group.

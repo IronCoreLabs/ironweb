@@ -146,6 +146,36 @@ export function create(
 }
 
 /**
+ * Rotate a groups current private key
+ */
+export function rotateGroupPrivateKey(
+    groupID: string
+): Future<
+    SDKError,
+    {
+        encryptedAccessKeys: EncryptedAccessKey[];
+        augmentationFactor: Uint8Array;
+    }
+> {
+    const {privateKey} = ApiState.deviceKeys();
+    return GroupApiEndpoints.callGroupGetApi(groupID).flatMap((group) => {
+        if (!isFullGroupResponse(group) || !group.encryptedPrivateKey) {
+            return Future.reject(
+                new SDKError(
+                    new Error("Current user is not authorized to rotate this group's private key as they are not a group administrator."),
+                    ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_REQUEST_FAILURE
+                )
+            );
+        }
+        return UserApiEndpoints.callUserKeyListApi(group.adminIds)
+            .flatMap((adminKeys) => Future.of(adminKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey}))))
+            .flatMap((adminKeys) => {
+                return GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList(group.encryptedPrivateKey, adminKeys, privateKey, ApiState.signingKeys());
+            });
+    });
+}
+
+/**
  * Update a group. Currently only allows updating the group name to a new value or clearing it via null.
  */
 export function update(groupID: string, groupName: string | null) {

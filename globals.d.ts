@@ -132,5 +132,6 @@ interface GroupApiFullResponse extends GroupApiBasicResponse {
 interface GroupApiFullDetailResponse extends GroupApiFullResponse {
     adminIds: string[];
     memberIds: string[];
+    encryptedPrivateKey: TransformedEncryptedMessage;
     needsRotation?: boolean;
 }

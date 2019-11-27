@@ -138,6 +138,13 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
             return GroupCrypto.createGroup(data.message.signingKeys, data.message.memberList, data.message.adminList).engage(errorHandler, (group) =>
                 callback({type: "GROUP_CREATE_RESPONSE", message: group})
             );
+        case "ROTATE_GROUP_PRIVATE_KEY":
+            return GroupCrypto.rotatePrivateKey(
+                data.message.encryptedGroupKey,
+                data.message.adminList,
+                data.message.adminPrivateKey,
+                data.message.signingKeys
+            ).engage(errorHandler, (result) => callback({type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE", message: result}));
         case "GROUP_ADD_ADMINS":
             return GroupCrypto.addAdminsToGroup(
                 data.message.encryptedGroupKey,

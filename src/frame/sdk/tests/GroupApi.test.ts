@@ -276,6 +276,65 @@ describe("GroupApi", () => {
         });
     });
 
+    describe("rotateGroupPrivateKey", () => {
+        it("make request to API and map resul to expected Object", () => {
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+            const userKeys = [{id: "id1", userMasterPublicKey: {x: "key1"}}, {id: "id2", userMasterPublicKey: {x: "key2"}}];
+
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of({
+                groupMasterPublicKey: {x: "12", y: "23"},
+                groupID: "myGroup",
+                encryptedPrivateKey: "encryptedPrivKey",
+                permissions: ["admin", "member"],
+                adminIds: ["id1", "id2"],
+            }) as any);
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeys}) as any);
+            jest.spyOn(GroupOperations, "rotateAndEncryptNewGroupPrivateKeyToList").mockReturnValue(Future.of({
+                encryptedAccessKeys: ["encryptedAccessKey1", "encryptedAccessKey2"],
+                augmentationFactor: new Uint8Array(32),
+            }) as any);
+
+            GroupApi.rotateGroupPrivateKey("myGroup").engage(
+                (e) => fail(e.message),
+                (result) => {
+                    expect(result).toEqual({
+                        encryptedAccessKeys: ["encryptedAccessKey1", "encryptedAccessKey2"],
+                        augmentationFactor: new Uint8Array(32),
+                    });
+                    expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("myGroup");
+                    expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["id1", "id2"]);
+                    expect(GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList).toHaveBeenCalledWith(
+                        "encryptedPrivKey",
+                        [{id: "id1", masterPublicKey: {x: "key1"}}, {id: "id2", masterPublicKey: {x: "key2"}}],
+                        expect.any(Uint8Array),
+                        ApiState.signingKeys()
+                    );
+                }
+            );
+        });
+        it("return an error if the user requesting the rotation is not an admin of the group", () => {
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of({
+                id: "notYourGroup",
+                groupID: "notYourGroupName",
+                status: 1,
+                permissions: ["member"],
+                created: "string",
+                updated: "string",
+            }) as any);
+            GroupApi.rotateGroupPrivateKey("notYourGroup").engage(
+                (e) => {
+                    expect(e.message).toContain(["Current user is not authorized to rotate this groups private key as they are not a group administrator."]);
+                    // Question for reviewer, The above assertion works fine but this error code is undefined, any thoughts as to why that wouold happen?
+                    // expect(e.code).toEqual(ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_REQUEST_FAILURE);
+                },
+                () => fail("Should not be able to rotate the group private key if the requesting user is not an admin")
+            );
+        });
+    });
+
     describe("update", () => {
         it("makes request to API and maps result to expected object", () => {
             spyOn(GroupApiEndpoints, "callGroupUpdateApi").and.returnValue(

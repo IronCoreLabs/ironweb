@@ -297,6 +297,28 @@ describe("worker index", () => {
             });
         });
 
+        it("ROTATE_GROUP_PRIVATE_KEY", (done) => {
+            jest.spyOn(GroupCrypto, "rotatePrivateKey").mockReturnValue(Future.of("rotate group key") as any);
+
+            const payload: any = {
+                type: "ROTATE_GROUP_PRIVATE_KEY",
+                message: {
+                    encryptedGroupKey: {
+                        foo: "bar",
+                    },
+                    adminList: ["32", "13"],
+                    adminPrivateKey: new Uint8Array(32),
+                    signingKeys: "signkeys",
+                },
+            };
+            messenger.onMessageCallback!(payload, (result: any) => {
+                expect(result.type).toEqual(expect.any(String));
+                expect(result.message).toEqual("rotate group key");
+                expect(GroupCrypto.rotatePrivateKey).toHaveBeenCalledWith({foo: "bar"}, ["32", "13"], new Uint8Array(32), "signkeys");
+                done();
+            });
+        });
+
         it("GROUP_ADD_ADMINS", (done) => {
             spyOn(GroupCrypto, "addAdminsToGroup").and.returnValue(Future.of("added admins"));
 

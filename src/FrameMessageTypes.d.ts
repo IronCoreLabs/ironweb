@@ -264,6 +264,18 @@ export interface DocumentRevokeResponse {
 }
 
 /* Group */
+export interface RotateGroupPrivateKey {
+    type: "ROTATE_GROUP_PRIVATE_KEY";
+    message: {
+        groupID: string;
+    };
+}
+
+export interface RotateGroupPrivateKeyResponse {
+    type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE";
+    message: null;
+}
+
 export interface GroupListRequest {
     type: "GROUP_LIST";
     message?: null;
@@ -429,6 +441,7 @@ export interface ErrorResponse {
 }
 
 export type RequestMessage =
+    | RotateGroupPrivateKey
     | RotateUserPrivateKey
     | FrameLoadedRequest
     | InitApiRequest
@@ -463,6 +476,7 @@ export type RequestMessage =
     | DocumentUnmanagedEncryptRequest;
 
 export type ResponseMessage =
+    | RotateGroupPrivateKeyResponse
     | RotateUserPrivateKeyResponse
     | FrameLoadedResponse
     | InitApiPasscodeResponse
