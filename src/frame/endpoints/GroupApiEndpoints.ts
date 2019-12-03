@@ -96,6 +96,29 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRo
     };
 }
 
+function groupPrivateKeyUpdate(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: Uint8Array, keyID: number) {
+    return {
+        url: `groups/${encodeURIComponent(groupID)}/keys/${keyID}`,
+        options: {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                augmentationFactor: fromByteArray(augmentationFactor),
+                admins: encryptedAccessKeys.map((admin) => ({
+                    user: {
+                        userId: admin.id,
+                        userMasterPublicKey: admin.publicKey,
+                    },
+                    ...admin.encryptedPlaintext,
+                })),
+            }),
+        },
+        errorCode: ErrorCodes.GROUP_UPDATE_KEY_REQUEST_FAILURE,
+    };
+}
+
 /**
  * Update a group. Currently only supports updating a group's name to a new value or clearing it.
  * @param {string}           groupID   ID of the group to update
@@ -290,6 +313,11 @@ export default {
             needsRotation
         );
         return makeAuthorizedApiRequest<GroupCreateResponseType>(url, errorCode, options);
+    },
+
+    callGroupPrivateKeyUpdateApi(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: Uint8Array, keyID: number) {
+        const {url, options, errorCode} = groupPrivateKeyUpdate(groupID, encryptedAccessKeys, augmentationFactor, keyID);
+        return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },
 
     /**

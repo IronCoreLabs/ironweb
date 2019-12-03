@@ -172,7 +172,7 @@ export interface RotateGroupPrivateKeyWorkerRequest {
     message: {
         encryptedGroupKey: TransformedEncryptedMessage;
         adminList: UserOrGroupPublicKey[];
-        adminPrivateKey: PrivateKey<Uint8Array>;
+        userPrivateMasterKey: PrivateKey<Uint8Array>;
         signingKeys: SigningKeyPair;
     };
 }

@@ -33,7 +33,7 @@ export function createGroup(signingKeys: SigningKeyPair, memberList: UserOrGroup
 export function rotatePrivateKey(
     encryptedGroupKey: TransformedEncryptedMessage,
     adminList: UserOrGroupPublicKey[],
-    adminPrivateKey: PrivateKey<Uint8Array>,
+    userPrivateMasterKey: PrivateKey<Uint8Array>,
     signingKeys: SigningKeyPair
 ): Future<
     SDKError,
@@ -44,7 +44,7 @@ export function rotatePrivateKey(
 > {
     return loadRecrypt()
         .flatMap((Recrypt) => {
-            return Recrypt.decryptPlaintext(encryptedGroupKey, adminPrivateKey).flatMap(([_, key]) => {
+            return Recrypt.decryptPlaintext(encryptedGroupKey, userPrivateMasterKey).flatMap(([_, key]) => {
                 return Recrypt.rotateGroupPrivateKeyWithRetry(key)
                     .flatMap(({newPrivateKey, augmentationFactor}) => {
                         return Recrypt.encryptPlaintextToList(newPrivateKey, adminList, signingKeys).map((newEncryptedPrivateGroupKey) => ({

@@ -35,7 +35,10 @@ class ParentThreadMessenger {
             replyID,
             data,
         };
-        postMessage(message, transferList.map((intByteArray) => intByteArray.buffer));
+        postMessage(
+            message,
+            transferList.map((intByteArray) => intByteArray.buffer)
+        );
     }
 
     /**
@@ -98,10 +101,11 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 callback({type: "ROTATE_USER_PRIVATE_KEY_RESPONSE", message: userRotationResult})
             );
         case "CHANGE_USER_PASSCODE":
-            return UserCrypto.changeUsersPasscode(data.message.currentPasscode, data.message.newPasscode, data.message.encryptedPrivateUserKey).engage(
-                errorHandler,
-                (encryptedPrivateKey) => callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: encryptedPrivateKey})
-            );
+            return UserCrypto.changeUsersPasscode(
+                data.message.currentPasscode,
+                data.message.newPasscode,
+                data.message.encryptedPrivateUserKey
+            ).engage(errorHandler, (encryptedPrivateKey) => callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: encryptedPrivateKey}));
         case "SIGNATURE_GENERATION":
             return UserCrypto.signRequestPayload(
                 data.message.segmentID,
@@ -112,9 +116,13 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 data.message.body
             ).engage(errorHandler, (signature) => callback({type: "SIGNATURE_GENERATION_RESPONSE", message: signature}));
         case "DOCUMENT_ENCRYPT":
-            return DocumentCrypto.encryptDocument(data.message.document, data.message.userKeyList, data.message.groupKeyList, data.message.signingKeys).engage(
-                errorHandler,
-                (encryptedContent) => callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedContent}, [encryptedContent.encryptedDocument.content])
+            return DocumentCrypto.encryptDocument(
+                data.message.document,
+                data.message.userKeyList,
+                data.message.groupKeyList,
+                data.message.signingKeys
+            ).engage(errorHandler, (encryptedContent) =>
+                callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedContent}, [encryptedContent.encryptedDocument.content])
             );
         case "DOCUMENT_DECRYPT":
             return DocumentCrypto.decryptDocument(data.message.document, data.message.encryptedSymmetricKey, data.message.privateKey).engage(
@@ -122,9 +130,12 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 (decryptedDocument) => callback({type: "DOCUMENT_DECRYPT_RESPONSE", message: {decryptedDocument}}, [decryptedDocument])
             );
         case "DOCUMENT_REENCRYPT":
-            return DocumentCrypto.reEncryptDocument(data.message.document, data.message.existingDocumentSymmetricKey, data.message.privateKey).engage(
-                errorHandler,
-                (encryptedDocument) => callback({type: "DOCUMENT_REENCRYPT_RESPONSE", message: {encryptedDocument}}, [encryptedDocument.content])
+            return DocumentCrypto.reEncryptDocument(
+                data.message.document,
+                data.message.existingDocumentSymmetricKey,
+                data.message.privateKey
+            ).engage(errorHandler, (encryptedDocument) =>
+                callback({type: "DOCUMENT_REENCRYPT_RESPONSE", message: {encryptedDocument}}, [encryptedDocument.content])
             );
         case "DOCUMENT_ENCRYPT_TO_KEYS":
             return DocumentCrypto.encryptToKeys(
@@ -142,7 +153,7 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
             return GroupCrypto.rotatePrivateKey(
                 data.message.encryptedGroupKey,
                 data.message.adminList,
-                data.message.adminPrivateKey,
+                data.message.userPrivateMasterKey,
                 data.message.signingKeys
             ).engage(errorHandler, (result) => callback({type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE", message: result}));
         case "GROUP_ADD_ADMINS":

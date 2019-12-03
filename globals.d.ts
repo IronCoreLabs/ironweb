@@ -130,6 +130,7 @@ interface GroupApiFullResponse extends GroupApiBasicResponse {
     encryptedPrivateKey?: TransformedEncryptedMessage;
 }
 interface GroupApiFullDetailResponse extends GroupApiFullResponse {
+    currentKeyId: number;
     adminIds: string[];
     memberIds: string[];
     encryptedPrivateKey: TransformedEncryptedMessage;

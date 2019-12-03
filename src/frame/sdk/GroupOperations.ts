@@ -21,7 +21,7 @@ export function groupCreate(signingKeys: SigningKeyPair, memberList: UserOrGroup
 export function rotateAndEncryptNewGroupPrivateKeyToList(
     encryptedGroupKey: TransformedEncryptedMessage,
     adminList: UserOrGroupPublicKey[],
-    myPrivateKey: PrivateKey<Uint8Array>,
+    userPrivateMasterKey: PrivateKey<Uint8Array>,
     signingKeys: SigningKeyPair
 ) {
     const payload: WMT.RotateGroupPrivateKeyWorkerRequest = {
@@ -29,7 +29,7 @@ export function rotateAndEncryptNewGroupPrivateKeyToList(
         message: {
             encryptedGroupKey,
             adminList,
-            adminPrivateKey: myPrivateKey,
+            userPrivateMasterKey,
             signingKeys,
         },
     };

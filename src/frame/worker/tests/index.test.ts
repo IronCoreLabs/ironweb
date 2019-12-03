@@ -307,7 +307,7 @@ describe("worker index", () => {
                         foo: "bar",
                     },
                     adminList: ["32", "13"],
-                    adminPrivateKey: new Uint8Array(32),
+                    userPrivateMasterKey: new Uint8Array(32),
                     signingKeys: "signkeys",
                 },
             };

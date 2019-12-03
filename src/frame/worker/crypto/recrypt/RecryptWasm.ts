@@ -131,25 +131,24 @@ export const rotateUsersPrivateKeyWithRetry = (userPrivateKey: Uint8Array): Futu
 };
 
 /**
- * Generates a new key pair and takes the private key as the new group private key, The existing private key is then subtracted from the newly
- * generated private key as the augmentation factor.
+ * Generates a new plaintext and takes the private key as the new group private key. The augmentation factor is calculated by subtracting the existing
+ * private key from the newly generated private.
  */
-const rotateGroupPrivateKey = (ExistingGroupPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
-    return generateKeyPair().flatMap(({privateKey}) => {
-        if (isBufferAllZero(privateKey)) {
-            return Future.reject(new Error("Key rotation failed."));
-        }
-        const newPrivateKey = RecryptApi.hash256(privateKey);
-        const augmentationFactor = Recrypt.subtractPrivateKeys(newPrivateKey, ExistingGroupPrivateKey);
-        if (isBufferAllZero(augmentationFactor)) {
-            return Future.reject(new Error("Key rotation failed."));
-        }
-        return Future.of({
-            newPrivateKey,
-            augmentationFactor,
-        });
+const rotateGroupPrivateKey = (existingGroupPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+    const newPrivateKey = RecryptApi.hash256(RecryptApi.generatePlaintext());
+    const augmentationFactor = Recrypt.subtractPrivateKeys(newPrivateKey, existingGroupPrivateKey);
+    if (isBufferAllZero(newPrivateKey)) {
+        return Future.reject(new Error("Key rotation failed."));
+    }
+    if (isBufferAllZero(augmentationFactor)) {
+        return Future.reject(new Error("Key rotation failed."));
+    }
+    return Future.of({
+        newPrivateKey,
+        augmentationFactor,
     });
 };
+
 /**
  * Calls rotateGroupPrivateKey, in the case that rotateGroupPrivateKey generates an augmentationFactor of zero or subtractPrivateKeys
  * results in zero an error is returned. This error is handled by calling rotateGroupPrivateKey again in an attempt produce valid results.

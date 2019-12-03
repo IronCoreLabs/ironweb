@@ -8,9 +8,9 @@ import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 
 /**
- * Type guard to determine if provided group contains the full response meaning the user is either an admin or member.
+ * Type guard to determine if provided group contains the full group detail response meaning the user is an admin.
  */
-function isFullGroupResponse(group: GroupApiBasicResponse | GroupApiFullDetailResponse): group is GroupApiFullDetailResponse {
+function isGroupAdminResponse(group: GroupApiBasicResponse | GroupApiFullDetailResponse): group is GroupApiFullDetailResponse {
     return Array.isArray((group as GroupApiFullDetailResponse).adminIds);
 }
 
@@ -51,7 +51,7 @@ function formatDetailedGroupResponse(group: GroupApiBasicResponse | GroupApiFull
         updated: group.updated,
     };
 
-    if (isFullGroupResponse(group)) {
+    if (isGroupAdminResponse(group)) {
         return {
             ...groupBase,
             groupAdmins: group.adminIds,
@@ -148,18 +148,10 @@ export function create(
 /**
  * Rotate a groups current private key
  */
-export function rotateGroupPrivateKey(
-    groupID: string
-): Future<
-    SDKError,
-    {
-        encryptedAccessKeys: EncryptedAccessKey[];
-        augmentationFactor: Uint8Array;
-    }
-> {
+export function rotateGroupPrivateKey(groupID: string) {
     const {privateKey} = ApiState.deviceKeys();
     return GroupApiEndpoints.callGroupGetApi(groupID).flatMap((group) => {
-        if (!isFullGroupResponse(group) || !group.encryptedPrivateKey) {
+        if (!isGroupAdminResponse(group)) {
             return Future.reject(
                 new SDKError(
                     new Error("Current user is not authorized to rotate this group's private key as they are not a group administrator."),
@@ -168,9 +160,12 @@ export function rotateGroupPrivateKey(
             );
         }
         return UserApiEndpoints.callUserKeyListApi(group.adminIds)
-            .flatMap((adminKeys) => Future.of(adminKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey}))))
-            .flatMap((adminKeys) => {
-                return GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList(group.encryptedPrivateKey, adminKeys, privateKey, ApiState.signingKeys());
+            .map((adminKeys) => adminKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})))
+            .flatMap((adminKeys) =>
+                GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList(group.encryptedPrivateKey, adminKeys, privateKey, ApiState.signingKeys())
+            )
+            .flatMap(({encryptedAccessKeys, augmentationFactor}) => {
+                return GroupApiEndpoints.callGroupPrivateKeyUpdateApi(groupID, encryptedAccessKeys, augmentationFactor, group.currentKeyId);
             });
     });
 }
@@ -196,7 +191,7 @@ export function addAdmins(groupID: string, userList: string[]) {
             if (userKeys.result.length === 0) {
                 return Future.of(mapOperationToSuccessAndFailureList(userList, [], []));
             }
-            if (!isFullGroupResponse(group) || !group.encryptedPrivateKey) {
+            if (!isGroupAdminResponse(group)) {
                 return Future.reject(
                     new SDKError(
                         new Error("Current user not allowed to add admins as they are not an admin of the group."),
@@ -244,7 +239,7 @@ export function addMembers(groupID: string, userList: string[]) {
             if (userKeys.result.length === 0) {
                 return Future.of(mapOperationToSuccessAndFailureList(userList, [], []));
             }
-            if (!isFullGroupResponse(group) || !group.encryptedPrivateKey) {
+            if (!isGroupAdminResponse(group)) {
                 return Future.reject(
                     new SDKError(
                         new Error("Current user not allowed to add members as they are not an admin of the group."),
