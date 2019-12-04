@@ -137,7 +137,7 @@ export const rotateUsersPrivateKeyWithRetry = (userPrivateKey: Uint8Array): Futu
 const rotateGroupPrivateKey = (existingGroupPrivateKey: Uint8Array): Future<Error, {plaintext: Uint8Array; augmentationFactor: Uint8Array}> => {
     const plaintext = RecryptApi.generatePlaintext();
     const newPrivateKey = RecryptApi.hash256(plaintext);
-    const augmentationFactor = Recrypt.subtractPrivateKeys(newPrivateKey, existingGroupPrivateKey);
+    const augmentationFactor = Recrypt.subtractPrivateKeys(existingGroupPrivateKey, newPrivateKey);
     if (isBufferAllZero(newPrivateKey)) {
         return Future.reject(new Error("Key rotation failed."));
     }
