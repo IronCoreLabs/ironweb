@@ -155,7 +155,7 @@ export function rotateGroupPrivateKey(groupID: string) {
             return Future.reject(
                 new SDKError(
                     new Error("Current user is not authorized to rotate this group's private key as they are not a group administrator."),
-                    ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_REQUEST_FAILURE
+                    ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_FAILURE
                 )
             );
         }

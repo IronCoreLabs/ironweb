@@ -64,7 +64,7 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
  * Rotates the current group private key
  * @param {string}  groupID ID of the group to have private key rotated.
  */
-export function rotateGroupPrivateKey(groupID: string) {
+export function rotatePrivateKey(groupID: string) {
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateID(groupID);
 
@@ -75,7 +75,7 @@ export function rotateGroupPrivateKey(groupID: string) {
         },
     };
     return FrameMediator.sendMessage<MT.RotateGroupPrivateKeyResponse>(payload)
-        .map(() => undefined)
+        .map(({message}) => message)
         .toPromise();
 }
 

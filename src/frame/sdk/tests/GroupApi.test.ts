@@ -352,7 +352,7 @@ describe("GroupApi", () => {
                 (e) => {
                     expect(e.message).toContain(["Current user is not authorized to rotate this groups private key as they are not a group administrator."]);
                     // Question for reviewer, The above assertion works fine but this error code is undefined, any thoughts as to why that would happen?
-                    // expect(e.code).toEqual(ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_REQUEST_FAILURE);
+                    // expect(e.code).toEqual(ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_FAILURE);
                 },
                 () => fail("Should not be able to rotate the group private key if the requesting user is not an admin")
             );

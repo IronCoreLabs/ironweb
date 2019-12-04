@@ -678,7 +678,7 @@ describe("frame index", () => {
             messenger.onMessageCallback(payload, (result: any) => {
                 expect(result).toEqual({
                     type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE",
-                    message: null,
+                    message: "rotateUserMasterKey",
                 });
             });
             expect(GroupApi.rotateGroupPrivateKey).toHaveBeenCalledWith("myGroup");

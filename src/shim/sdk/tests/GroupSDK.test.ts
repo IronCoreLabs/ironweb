@@ -300,16 +300,16 @@ describe("GroupSDK", () => {
                     .catch((e) => fail(e));
             });
         });
-        describe("rotateGroupPrivateKey", () => {
+        describe("rotatePrivateKey", () => {
             it("throw if SDK has not yet been initialized", () => {
                 ShimUtils.clearSDKInitialized();
-                expect(() => GroupSDK.rotateGroupPrivateKey("current")).toThrow();
+                expect(() => GroupSDK.rotatePrivateKey("current")).toThrow();
             });
             it("send rotate group private key payload to the frame", (done) => {
                 ShimUtils.setSDKInitialized();
-                GroupSDK.rotateGroupPrivateKey("myGroup")
+                GroupSDK.rotatePrivateKey("myGroup")
                     .then((result: any) => {
-                        expect(result).toBeUndefined();
+                        expect(result).toEqual("messageResponse");
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
                             type: "ROTATE_GROUP_PRIVATE_KEY",
                             message: {
@@ -318,7 +318,7 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e.message));
+                    .catch((e) => fail(e));
             });
         });
 

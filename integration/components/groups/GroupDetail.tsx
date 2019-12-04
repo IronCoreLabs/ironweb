@@ -8,7 +8,7 @@ import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
 import Refresh from "material-ui/svg-icons/navigation/refresh";
 import Delete from "material-ui/svg-icons/action/delete";
 import ImageRotateRight from "material-ui/svg-icons/image/rotate-right";
-import {lightGreenA700, red700} from "material-ui/styles/colors";
+import {lightGreenA700, red700, grey400} from "material-ui/styles/colors";
 import {GroupMetaResponse, GroupDetailResponse} from "../../../ironweb";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
@@ -141,12 +141,11 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
      * Verify the group ID the user typed is correct before making the actual delete call.
      */
     roatateGroupPrivateKey = () => {
-        logAction(`Retrieving group ${this.state.groupMeta.groupName}...`);
         IronWeb.group
-            .rotateGroupPrivateKey(this.props.group.groupID)
-            .then(() => {
-                logAction(`Group private key has been successfully rotated`);
-                this.setState({needsRotation: false});
+            .rotatePrivateKey(this.props.group.groupID)
+            .then((groupKeyUpdate) => {
+                logAction(`Group private key rotation was successful`);
+                this.setState({needsRotation: groupKeyUpdate.needsRotation});
                 this.getRotateGroupPrivateKeyIcon();
             })
             .catch((error: IronWeb.SDKError) => {
@@ -164,7 +163,7 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
                 );
             } else
                 return (
-                    <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={lightGreenA700}>
+                    <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={grey400}>
                         <ImageRotateRight />
                     </FloatingActionButton>
                 );
