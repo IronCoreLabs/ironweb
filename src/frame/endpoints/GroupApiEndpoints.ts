@@ -96,16 +96,15 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRo
     };
 }
 
-function groupPrivateKeyUpdate(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: Uint8Array, keyID: number) {
+function groupPrivateKeyUpdate(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: AugmentationFactor, groupKeyId: number) {
     return {
-        url: `groups/${encodeURIComponent(groupID)}/keys/${keyID}`,
+        url: `groups/${encodeURIComponent(groupID)}/keys/${groupKeyId}`,
         options: {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                augmentationFactor: fromByteArray(augmentationFactor),
                 admins: encryptedAccessKeys.map((admin) => ({
                     user: {
                         userId: admin.id,
@@ -113,6 +112,7 @@ function groupPrivateKeyUpdate(groupID: string, encryptedAccessKeys: EncryptedAc
                     },
                     ...admin.encryptedPlaintext,
                 })),
+                augmentationFactor: fromByteArray(augmentationFactor),
             }),
         },
         errorCode: ErrorCodes.GROUP_UPDATE_KEY_REQUEST_FAILURE,
@@ -315,7 +315,7 @@ export default {
         return makeAuthorizedApiRequest<GroupCreateResponseType>(url, errorCode, options);
     },
 
-    callGroupPrivateKeyUpdateApi(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: Uint8Array, keyID: number) {
+    callGroupPrivateKeyUpdateApi(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: AugmentationFactor, keyID: number) {
         const {url, options, errorCode} = groupPrivateKeyUpdate(groupID, encryptedAccessKeys, augmentationFactor, keyID);
         return makeAuthorizedApiRequest<GroupMemberModifyResponseType>(url, errorCode, options);
     },

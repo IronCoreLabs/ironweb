@@ -15,17 +15,21 @@ describe("GroupCrypto", () => {
             ];
             const memeberList = [{id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
 
-            jest.spyOn(Recrypt, "generateGroupKeyPair").mockReturnValue(Future.of({
-                publicKey: new Uint8Array(32),
-                plaintext: new Uint8Array(12),
-                privateKey: new Uint8Array(29),
-            }) as any);
+            jest.spyOn(Recrypt, "generateGroupKeyPair").mockReturnValue(
+                Future.of({
+                    publicKey: new Uint8Array(32),
+                    plaintext: new Uint8Array(12),
+                    privateKey: new Uint8Array(29),
+                }) as any
+            );
 
             jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["TransformKeyGrant"]) as any);
 
-            jest.spyOn(Recrypt, "generateTransformKeyToList").mockReturnValue(Future.of({
-                transformKeyGrant: [],
-            }) as any);
+            jest.spyOn(Recrypt, "generateTransformKeyToList").mockReturnValue(
+                Future.of({
+                    transformKeyGrant: [],
+                }) as any
+            );
 
             GroupCrypto.createGroup(signingKeys, memeberList, adminList).engage(
                 (e) => fail(e),
@@ -45,11 +49,13 @@ describe("GroupCrypto", () => {
                 {id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
             ];
 
-            jest.spyOn(Recrypt, "generateGroupKeyPair").mockReturnValue(Future.of({
-                publicKey: new Uint8Array(32),
-                plaintext: new Uint8Array(12),
-                privateKey: new Uint8Array(29),
-            }) as any);
+            jest.spyOn(Recrypt, "generateGroupKeyPair").mockReturnValue(
+                Future.of({
+                    publicKey: new Uint8Array(32),
+                    plaintext: new Uint8Array(12),
+                    privateKey: new Uint8Array(29),
+                }) as any
+            );
 
             jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["TransformKeyGrant"]) as any);
 
@@ -87,10 +93,12 @@ describe("GroupCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of(["decryptedPlaintext", new Uint8Array()]) as any);
-            jest.spyOn(Recrypt, "rotateGroupPrivateKeyWithRetry").mockReturnValue(Future.of({
-                newPrivateKey: "newPrivateKey",
-                augmentationFactor: "augmentationFactor",
-            }) as any);
+            jest.spyOn(Recrypt, "rotateGroupPrivateKeyWithRetry").mockReturnValue(
+                Future.of({
+                    plaintext: "plaintext",
+                    augmentationFactor: "augmentationFactor",
+                }) as any
+            );
             jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of(["accessKey1", "accessKey2"]) as any);
 
             GroupCrypto.rotatePrivateKey(groupPrivateKey, adminList, adminPrivateKey, signingKeys).engage(
@@ -99,7 +107,7 @@ describe("GroupCrypto", () => {
                     expect(result).toEqual({encryptedAccessKeys: ["accessKey1", "accessKey2"], augmentationFactor: "augmentationFactor"});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
                     expect(Recrypt.rotateGroupPrivateKeyWithRetry).toHaveBeenCalledWith(new Uint8Array());
-                    expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith("newPrivateKey", adminList, signingKeys);
+                    expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith("plaintext", adminList, signingKeys);
                 }
             );
         });

@@ -134,8 +134,9 @@ export const rotateUsersPrivateKeyWithRetry = (userPrivateKey: Uint8Array): Futu
  * Generates a new plaintext and takes the private key as the new group private key. The augmentation factor is calculated by subtracting the existing
  * private key from the newly generated private.
  */
-const rotateGroupPrivateKey = (existingGroupPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
-    const newPrivateKey = RecryptApi.hash256(RecryptApi.generatePlaintext());
+const rotateGroupPrivateKey = (existingGroupPrivateKey: Uint8Array): Future<Error, {plaintext: Uint8Array; augmentationFactor: Uint8Array}> => {
+    const plaintext = RecryptApi.generatePlaintext();
+    const newPrivateKey = RecryptApi.hash256(plaintext);
     const augmentationFactor = Recrypt.subtractPrivateKeys(newPrivateKey, existingGroupPrivateKey);
     if (isBufferAllZero(newPrivateKey)) {
         return Future.reject(new Error("Key rotation failed."));
@@ -144,7 +145,7 @@ const rotateGroupPrivateKey = (existingGroupPrivateKey: Uint8Array): Future<Erro
         return Future.reject(new Error("Key rotation failed."));
     }
     return Future.of({
-        newPrivateKey,
+        plaintext,
         augmentationFactor,
     });
 };
@@ -153,7 +154,7 @@ const rotateGroupPrivateKey = (existingGroupPrivateKey: Uint8Array): Future<Erro
  * Calls rotateGroupPrivateKey, in the case that rotateGroupPrivateKey generates an augmentationFactor of zero or subtractPrivateKeys
  * results in zero an error is returned. This error is handled by calling rotateGroupPrivateKey again in an attempt produce valid results.
  */
-export const rotateGroupPrivateKeyWithRetry = (groupPrivateKey: Uint8Array): Future<Error, {newPrivateKey: Uint8Array; augmentationFactor: Uint8Array}> => {
+export const rotateGroupPrivateKeyWithRetry = (groupPrivateKey: Uint8Array): Future<Error, {plaintext: Uint8Array; augmentationFactor: Uint8Array}> => {
     return rotateGroupPrivateKey(groupPrivateKey).handleWith(() => rotateGroupPrivateKey(groupPrivateKey));
 };
 

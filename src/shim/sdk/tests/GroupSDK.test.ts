@@ -303,11 +303,11 @@ describe("GroupSDK", () => {
         describe("rotateGroupPrivateKey", () => {
             it("throw if SDK has not yet been initialized", () => {
                 ShimUtils.clearSDKInitialized();
-                expect(() => GroupSDK.rotatePrivateKey("current")).toThrow();
+                expect(() => GroupSDK.rotateGroupPrivateKey("current")).toThrow();
             });
             it("send rotate group private key payload to the frame", (done) => {
                 ShimUtils.setSDKInitialized();
-                GroupSDK.rotatePrivateKey("myGroup")
+                GroupSDK.rotateGroupPrivateKey("myGroup")
                     .then((result: any) => {
                         expect(result).toBeUndefined();
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({

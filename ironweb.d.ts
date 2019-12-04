@@ -189,7 +189,7 @@ export interface Group {
     addMembers(groupID: string, userList: string[]): Promise<GroupUserEditResponse>;
     removeMembers(groupID: string, userList: string[]): Promise<GroupUserEditResponse>;
     removeSelfAsMember(groupID: string): Promise<void>;
-    rotatePrivateKey(groupID: string): Promise<void>;
+    rotateGroupPrivateKey(groupID: string): Promise<void>;
 }
 
 export interface Codec {
