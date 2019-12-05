@@ -44,8 +44,9 @@ export function rotatePrivateKey(
 > {
     return loadRecrypt()
         .flatMap((Recrypt) =>
-            Recrypt.decryptPlaintext(encryptedGroupKey, userPrivateMasterKey).flatMap(([_, key]) =>
-                Recrypt.rotateGroupPrivateKeyWithRetry(key).flatMap(({plaintext, augmentationFactor}) =>
+            Recrypt.decryptPlaintext(encryptedGroupKey, userPrivateMasterKey)
+                .flatMap(([_, key]) => Recrypt.rotateGroupPrivateKeyWithRetry(key))
+                .flatMap(({plaintext, augmentationFactor}) =>
                     Recrypt.encryptPlaintextToList(plaintext, adminList, signingKeys).map((encryptedAccessKeys) => {
                         return {
                             encryptedAccessKeys,
@@ -53,7 +54,6 @@ export function rotatePrivateKey(
                         };
                     })
                 )
-            )
         )
         .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_FAILURE));
 }
@@ -78,12 +78,10 @@ export function addAdminsToGroup(
     return loadRecrypt()
         .flatMap((Recrypt) => {
             return Recrypt.decryptPlaintext(encryptedGroupPrivateKey, adminPrivateKey).flatMap(([plaintext, key]) => {
-                return Recrypt.encryptPlaintextToList(plaintext, userKeyList, signingKeys).map((encryptedAccessKey) => {
-                    return {
-                        encryptedAccessKey,
-                        signature: Recrypt.schnorrSignUtf8String(key, publicKeyToBytes(groupPublicKey), groupID),
-                    };
-                });
+                return Recrypt.encryptPlaintextToList(plaintext, userKeyList, signingKeys).map((encryptedAccessKey) => ({
+                    encryptedAccessKey,
+                    signature: Recrypt.schnorrSignUtf8String(key, publicKeyToBytes(groupPublicKey), groupID),
+                }));
             });
         })
         .errorMap((error) => new SDKError(error, ErrorCodes.GROUP_KEY_DECRYPTION_FAILURE));

@@ -11,7 +11,6 @@ import {
     GroupUserEditResponse,
     Policy,
     UserOrGroup,
-    GroupKeyUpdateResponse,
 } from "../ironweb";
 
 export interface FrameLoadedRequest {
@@ -274,7 +273,9 @@ export interface RotateGroupPrivateKey {
 
 export interface RotateGroupPrivateKeyResponse {
     type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE";
-    message: GroupKeyUpdateResponse;
+    message: {
+        needsRotation: boolean;
+    };
 }
 
 export interface GroupListRequest {

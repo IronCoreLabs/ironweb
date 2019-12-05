@@ -138,10 +138,7 @@ const rotateGroupPrivateKey = (existingGroupPrivateKey: Uint8Array): Future<Erro
     const plaintext = RecryptApi.generatePlaintext();
     const newPrivateKey = RecryptApi.hash256(plaintext);
     const augmentationFactor = Recrypt.subtractPrivateKeys(existingGroupPrivateKey, newPrivateKey);
-    if (isBufferAllZero(newPrivateKey)) {
-        return Future.reject(new Error("Key rotation failed."));
-    }
-    if (isBufferAllZero(augmentationFactor)) {
+    if (isBufferAllZero(newPrivateKey) || isBufferAllZero(augmentationFactor)) {
         return Future.reject(new Error("Key rotation failed."));
     }
     return Future.of({

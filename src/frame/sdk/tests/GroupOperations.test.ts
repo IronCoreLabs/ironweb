@@ -27,7 +27,7 @@ describe("GroupOperations", () => {
         });
     });
 
-    describe("rotateAndEncryptNewGroupPrivateKeyToList", () => {
+    describe("rotateGroupPrivateKeyAndEncryptToAdmins", () => {
         it("send message to worker to Rotate group private key and create new encryptedAccessKeys for all admins of that group", () => {
             const encryptedGroupKey = TestUtils.getTransformedSymmetricKey();
             const adminList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
@@ -40,7 +40,7 @@ describe("GroupOperations", () => {
                 }) as any
             );
 
-            GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList(encryptedGroupKey, adminList, userPrivateMasterKey, signingKeys).engage(
+            GroupOperations.rotateGroupPrivateKeyAndEncryptToAdmins(encryptedGroupKey, adminList, userPrivateMasterKey, signingKeys).engage(
                 (e) => fail(e),
                 (result) => {
                     expect(result).toEqual({encryptedAccessKeys: "accessKey", augmentationFactor: "augmentationFactor"});

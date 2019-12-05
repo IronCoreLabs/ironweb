@@ -203,7 +203,7 @@ describe("UserApiEndpoints", () => {
                         id: "user-10",
                         foo: "bar",
                     });
-                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10/keys/1", expect.any(Number), expect.any(Object)); // keyId?
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10/keys/1", expect.any(Number), expect.any(Object));
                     const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPrivateKey: "Y2hv",
@@ -359,7 +359,10 @@ describe("UserApiEndpoints", () => {
         it("calls API and returns mapped response data", () => {
             (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
                 Future.of({
-                    result: [{id: "user-10", userMasterPublicKey: {x: ""}}, {id: "user-20", userMasterPublicKey: {x: ""}}],
+                    result: [
+                        {id: "user-10", userMasterPublicKey: {x: ""}},
+                        {id: "user-20", userMasterPublicKey: {x: ""}},
+                    ],
                 })
             );
             ApiState.setCurrentUser(TestUtils.getFullUser());
@@ -369,7 +372,10 @@ describe("UserApiEndpoints", () => {
                 (e) => fail(e),
                 (userList: any) => {
                     expect(userList).toEqual({
-                        result: [{id: "user-10", userMasterPublicKey: {x: ""}}, {id: "user-20", userMasterPublicKey: {x: ""}}],
+                        result: [
+                            {id: "user-10", userMasterPublicKey: {x: ""}},
+                            {id: "user-20", userMasterPublicKey: {x: ""}},
+                        ],
                     });
 
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users?id=user-10%2Cuser-20", expect.any(Number), expect.any(Object));
@@ -380,7 +386,10 @@ describe("UserApiEndpoints", () => {
         it("escapes all user IDs", () => {
             (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
                 Future.of({
-                    result: [{id: "user-10", userMasterPublicKey: {x: ""}}, {id: "user-20", userMasterPublicKey: {x: ""}}],
+                    result: [
+                        {id: "user-10", userMasterPublicKey: {x: ""}},
+                        {id: "user-20", userMasterPublicKey: {x: ""}},
+                    ],
                 })
             );
             ApiState.setCurrentUser(TestUtils.getFullUser());
@@ -390,7 +399,10 @@ describe("UserApiEndpoints", () => {
                 (e) => fail(e),
                 (userList: any) => {
                     expect(userList).toEqual({
-                        result: [{id: "user-10", userMasterPublicKey: {x: ""}}, {id: "user-20", userMasterPublicKey: {x: ""}}],
+                        result: [
+                            {id: "user-10", userMasterPublicKey: {x: ""}},
+                            {id: "user-20", userMasterPublicKey: {x: ""}},
+                        ],
                     });
 
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(

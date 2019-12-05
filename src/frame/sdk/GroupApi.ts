@@ -8,9 +8,16 @@ import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 
 /**
- * Type guard to determine if provided group contains the full group detail response meaning the user is an admin.
+ * Type guard to determine if provided group contains the full group detail response with encryptedPrivateKey meaning the user is an admin.
  */
 function isGroupAdminResponse(group: GroupApiBasicResponse | GroupApiFullDetailResponse): group is GroupApiFullDetailResponse {
+    return typeof (group as GroupApiFullDetailResponse).encryptedPrivateKey !== undefined;
+}
+
+/**
+ * Type guard to determine if provided group contains the full group detail response meaning the user is a member or admin.
+ */
+function isGroupAdminOrMemberResponse(group: GroupApiBasicResponse | GroupApiFullDetailResponse): group is GroupApiFullDetailResponse {
     return Array.isArray((group as GroupApiFullDetailResponse).adminIds);
 }
 
@@ -51,7 +58,7 @@ function formatDetailedGroupResponse(group: GroupApiBasicResponse | GroupApiFull
         updated: group.updated,
     };
 
-    if (isGroupAdminResponse(group)) {
+    if (isGroupAdminOrMemberResponse(group)) {
         return {
             ...groupBase,
             groupAdmins: group.adminIds,
@@ -162,11 +169,13 @@ export function rotateGroupPrivateKey(groupID: string) {
         return UserApiEndpoints.callUserKeyListApi(group.adminIds)
             .map((adminKeys) => adminKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})))
             .flatMap((adminKeys) =>
-                GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList(group.encryptedPrivateKey, adminKeys, privateKey, ApiState.signingKeys())
+                GroupOperations.rotateGroupPrivateKeyAndEncryptToAdmins(group.encryptedPrivateKey, adminKeys, privateKey, ApiState.signingKeys())
             )
-            .flatMap(({encryptedAccessKeys, augmentationFactor}) => {
-                return GroupApiEndpoints.callGroupPrivateKeyUpdateApi(groupID, encryptedAccessKeys, augmentationFactor, group.currentKeyId);
-            });
+            .flatMap(({encryptedAccessKeys, augmentationFactor}) =>
+                GroupApiEndpoints.callGroupPrivateKeyUpdateApi(groupID, encryptedAccessKeys, augmentationFactor, group.currentKeyId).map((result) => ({
+                    needsRotation: result.needsRotation,
+                }))
+            );
     });
 }
 

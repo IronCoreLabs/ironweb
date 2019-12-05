@@ -18,7 +18,7 @@ export function groupCreate(signingKeys: SigningKeyPair, memberList: UserOrGroup
 /**
  * Send message to the worker to rotate the group private key and encrypt the new private key to the provided list of admins
  */
-export function rotateAndEncryptNewGroupPrivateKeyToList(
+export function rotateGroupPrivateKeyAndEncryptToAdmins(
     encryptedGroupKey: TransformedEncryptedMessage,
     adminList: UserOrGroupPublicKey[],
     userPrivateMasterKey: PrivateKey<Uint8Array>,

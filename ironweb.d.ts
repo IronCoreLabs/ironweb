@@ -123,9 +123,6 @@ export interface GroupUserEditResponse {
         error: string;
     }[];
 }
-export interface GroupKeyUpdateResponse {
-    needsRotation: boolean;
-}
 
 /**
  * User SDK response types
@@ -192,7 +189,7 @@ export interface Group {
     addMembers(groupID: string, userList: string[]): Promise<GroupUserEditResponse>;
     removeMembers(groupID: string, userList: string[]): Promise<GroupUserEditResponse>;
     removeSelfAsMember(groupID: string): Promise<void>;
-    rotatePrivateKey(groupID: string): Promise<GroupKeyUpdateResponse>;
+    rotatePrivateKey(groupID: string): Promise<{needsRotation: boolean}>;
 }
 
 export interface Codec {

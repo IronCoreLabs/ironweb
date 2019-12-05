@@ -307,7 +307,7 @@ describe("GroupApi", () => {
                 }) as any
             );
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeys}) as any);
-            jest.spyOn(GroupOperations, "rotateAndEncryptNewGroupPrivateKeyToList").mockReturnValue(
+            jest.spyOn(GroupOperations, "rotateGroupPrivateKeyAndEncryptToAdmins").mockReturnValue(
                 Future.of({
                     encryptedAccessKeys: ["encryptedAccessKey1", "encryptedAccessKey2"],
                     augmentationFactor: new Uint8Array(32),
@@ -323,7 +323,7 @@ describe("GroupApi", () => {
                     });
                     expect(GroupApiEndpoints.callGroupGetApi).toHaveBeenCalledWith("myGroup");
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["id1", "id2"]);
-                    expect(GroupOperations.rotateAndEncryptNewGroupPrivateKeyToList).toHaveBeenCalledWith(
+                    expect(GroupOperations.rotateGroupPrivateKeyAndEncryptToAdmins).toHaveBeenCalledWith(
                         "encryptedPrivKey",
                         [
                             {id: "id1", masterPublicKey: {x: "key1"}},
