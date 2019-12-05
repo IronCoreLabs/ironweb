@@ -132,6 +132,19 @@ describe("worker index", () => {
             });
         });
 
+        it("ROTATE_USER_PRIVATE_KEY", (done) => {
+            spyOn(UserCrypto, "rotatePrivateKey").and.returnValue(Future.of("rotated user key"));
+            const payload: any = {
+                type: "ROTATE_USER_PRIVATE_KEY",
+                message: {passcode: "passcode", encryptedPrivateUserKey: "encryptedPrivateUserKey"},
+            };
+            messenger.onMessageCallback!(payload, (result: any) => {
+                expect(result).toEqual({type: "ROTATE_USER_PRIVATE_KEY_RESPONSE", message: "rotated user key"});
+                expect(UserCrypto.rotatePrivateKey).toHaveBeenCalledWith("passcode", "encryptedPrivateUserKey");
+                done();
+            });
+        });
+
         it("CHANGE_USER_PASSCODE", (done) => {
             spyOn(UserCrypto, "changeUsersPasscode").and.returnValue(Future.of("new encrypted private key"));
             const payload: any = {

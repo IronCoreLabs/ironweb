@@ -111,6 +111,22 @@ describe("GroupCrypto", () => {
                 }
             );
         });
+        it("maps errors to SDKError with expected error code", () => {
+            const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
+            const adminList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
+            const adminPrivateKey = new Uint8Array(23);
+            const signingKeys = TestUtils.getSigningKeyPair();
+
+            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
+
+            GroupCrypto.rotatePrivateKey(groupPrivateKey, adminList, adminPrivateKey, signingKeys).engage(
+                (error) => {
+                    expect(error.message).toEqual("plaintext decryption failed");
+                    expect(error.code).toEqual(ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_FAILURE);
+                },
+                () => fail("Success should not be invoked when operations fail")
+            );
+        });
     });
     describe("addAdminsToGroup", () => {
         it("decrypts group private key encrypts it to the provided list of public keys", () => {
