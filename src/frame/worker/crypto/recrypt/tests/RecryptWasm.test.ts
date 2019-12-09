@@ -55,7 +55,7 @@ describe("RecryptWasm", () => {
     describe("rotateGroupPrivateKeyWithRetry", () => {
         const groupPrivateKey = new Uint8Array([22, 33, 44]);
         it("should result in an error when mocked generateKeyPair returns Uint8Array of zeros for new privateKey", () => {
-            jest.spyOn(Recrypt.getApi(), "generatePlaintext");
+            jest.spyOn(Recrypt.getApi(), "generatePlaintext").mockReturnValue(new Uint8Array(32));
             Recrypt.rotateGroupPrivateKeyWithRetry(groupPrivateKey).engage(
                 () => {
                     expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(2);

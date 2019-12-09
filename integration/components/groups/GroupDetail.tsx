@@ -154,15 +154,8 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
 
     getRotateGroupPrivateKeyIcon() {
         if (this.state.groupMeta.isAdmin) {
-            if (this.state.needsRotation) {
-                return (
-                    <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={red700}>
-                        <ImageRotateRight />
-                    </FloatingActionButton>
-                );
-            }
             return (
-                <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={grey400}>
+                <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={this.state.needsRotation ? red700 : grey400}>
                     <ImageRotateRight />
                 </FloatingActionButton>
             );
