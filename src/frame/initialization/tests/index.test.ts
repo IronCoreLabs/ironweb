@@ -39,6 +39,7 @@ describe("init index", () => {
                     expect(user.id).toEqual("user-10");
                     expect(user.segmentId).toEqual(1);
                     expect(user.status).toEqual(1);
+                    expect(user.groupsNeedsRotation).toEqual([]);
                     done();
                 }
             );
