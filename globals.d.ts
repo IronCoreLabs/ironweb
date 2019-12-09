@@ -112,6 +112,7 @@ interface ApiUserResponse {
     userPrivateKey: PrivateKey<Base64String>;
     currentKeyId: number;
     needsRotation: boolean;
+    groupsNeedingRotation: string[];
 }
 interface UserOrGroupPublicKey {
     id: string;

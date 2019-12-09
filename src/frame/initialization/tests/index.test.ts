@@ -39,6 +39,7 @@ describe("init index", () => {
                     expect(user.id).toEqual("user-10");
                     expect(user.segmentId).toEqual(1);
                     expect(user.status).toEqual(1);
+                    expect(user.groupsNeedingRotation).toEqual([]);
                     done();
                 }
             );
@@ -138,6 +139,7 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
+                                groupsNeedingRotation: [],
                             },
                             symmetricKey: undefined,
                         },
@@ -164,6 +166,7 @@ describe("init index", () => {
                 userPrivateKey: fromByteArray(userKeys.privateKey),
                 currentKeyId: 1,
                 needsRotation: false,
+                groupsNeedingRotation: [],
             };
 
             spyOn(FrameUtils, "storeDeviceAndSigningKeys");
@@ -224,6 +227,7 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
+                                groupsNeedingRotation: [],
                             },
                         },
                     });
@@ -274,6 +278,7 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
+                                groupsNeedingRotation: [],
                             },
                         },
                     });

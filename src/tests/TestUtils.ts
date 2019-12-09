@@ -21,6 +21,7 @@ export function getFullUser(): ApiUserResponse {
         userPrivateKey: "",
         needsRotation: false,
         currentKeyId: 1,
+        groupsNeedingRotation: [],
     };
 }
 
