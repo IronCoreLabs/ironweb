@@ -21,6 +21,7 @@ const buildSDKInitCompleteResponse = (user: ApiUserResponse, deviceSymmetricKey?
             id: user.id,
             status: user.status,
             needsRotation: user.needsRotation,
+            groupsNeedsRotation: user.groupsNeedsRotation,
         },
         symmetricKey: deviceSymmetricKey ? fromByteArray(deviceSymmetricKey) : undefined,
     },

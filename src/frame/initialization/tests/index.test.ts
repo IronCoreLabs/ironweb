@@ -138,6 +138,7 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
+                                groupsNeedsRotation: [],
                             },
                             symmetricKey: undefined,
                         },
@@ -164,6 +165,7 @@ describe("init index", () => {
                 userPrivateKey: fromByteArray(userKeys.privateKey),
                 currentKeyId: 1,
                 needsRotation: false,
+                groupsNeedsRotation: [],
             };
 
             spyOn(FrameUtils, "storeDeviceAndSigningKeys");
@@ -224,6 +226,7 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
+                                groupsNeedsRotation: [],
                             },
                         },
                     });
@@ -274,6 +277,7 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
+                                groupsNeedsRotation: [],
                             },
                         },
                     });

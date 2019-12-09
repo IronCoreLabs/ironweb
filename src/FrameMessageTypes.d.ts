@@ -40,6 +40,7 @@ export interface InitApiSdkResponse {
             id: string;
             status: number;
             needsRotation: boolean;
+            groupsNeedsRotation: string[];
         };
         symmetricKey?: string;
     };
