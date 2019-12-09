@@ -207,7 +207,7 @@ export interface InitializedUser {
     id: string;
     status: number;
     needsRotation: boolean;
-    groupsNeedsRotation: string[];
+    groupsNeedingRotation: string[];
 }
 
 export interface SDKInitializationResult {
