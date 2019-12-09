@@ -26,7 +26,7 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
         super(props);
         this.state = {
             isAddAsMemberChecked: true,
-            isNeedsRotationChecked: true,
+            isNeedsRotationChecked: false,
         };
     }
 

@@ -57,8 +57,7 @@ describe("RecryptWasm", () => {
         it("should result in an error when mocked generateKeyPair returns Uint8Array of zeros for new privateKey", () => {
             jest.spyOn(Recrypt.getApi(), "generatePlaintext");
             Recrypt.rotateGroupPrivateKeyWithRetry(groupPrivateKey).engage(
-                (error) => {
-                    expect(error.message).toEqual("Key rotation failed.");
+                () => {
                     expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(2);
                 },
                 () => fail("Should not success when operation fails")
@@ -69,13 +68,12 @@ describe("RecryptWasm", () => {
             jest.spyOn(Recrypt.getApi(), "generatePlaintext").mockReturnValue(new Uint8Array([12, 23, 34]) as any);
             jest.spyOn(MockRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array(32));
             Recrypt.rotateGroupPrivateKeyWithRetry(groupPrivateKey).engage(
-                (error) => {
-                    expect(error.message).toEqual("Key rotation failed.");
+                () => {
+                    expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(2);
+                    expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(2);
                 },
                 () => fail("Should fail when private key subtraction results in zeroed private key")
             );
-
-            expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(2);
         });
 
         it("should success when valid augmentation factor is produced", () => {

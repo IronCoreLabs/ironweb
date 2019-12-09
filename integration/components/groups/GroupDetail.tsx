@@ -146,7 +146,6 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
             .then((groupKeyUpdate) => {
                 logAction(`Group private key rotation was successful`);
                 this.setState({needsRotation: groupKeyUpdate.needsRotation});
-                this.getRotateGroupPrivateKeyIcon();
             })
             .catch((error: IronWeb.SDKError) => {
                 logAction(`Group rotation error: ${error.message}. Error Code: ${error.code}`, "error");
@@ -161,12 +160,12 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
                         <ImageRotateRight />
                     </FloatingActionButton>
                 );
-            } else
-                return (
-                    <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={grey400}>
-                        <ImageRotateRight />
-                    </FloatingActionButton>
-                );
+            }
+            return (
+                <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={grey400}>
+                    <ImageRotateRight />
+                </FloatingActionButton>
+            );
         }
         return null;
     }
