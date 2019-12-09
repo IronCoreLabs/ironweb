@@ -14,7 +14,8 @@ interface NewGroupProps {
 }
 
 interface NewGroupState {
-    isChecked: boolean;
+    isAddAsMemberChecked: boolean;
+    isNeedsRotationChecked: boolean;
 }
 
 export default class NewGroup extends React.Component<NewGroupProps, NewGroupState> {
@@ -24,7 +25,8 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
     constructor(props: NewGroupProps) {
         super(props);
         this.state = {
-            isChecked: true,
+            isAddAsMemberChecked: true,
+            isNeedsRotationChecked: false,
         };
     }
 
@@ -33,7 +35,7 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
         const groupName = this.newGroupName.getValue();
         logAction(`Creating group with ID '${groupID}' and name '${groupName}'`);
         IronWeb.group
-            .create({groupID, groupName, addAsMember: this.state.isChecked})
+            .create({groupID, groupName, addAsMember: this.state.isAddAsMemberChecked, needsRotation: this.state.isNeedsRotationChecked})
             .then((group) => {
                 logAction(`New group successfully created.`, "success");
                 this.props.onGroupSelect(group);
@@ -65,9 +67,15 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
                     <TextField id="new-group-name" ref={this.setGroupNameRef} type="text" hintText="Group Name" style={{width: "100%", fontSize: "22px"}} />
                     <Checkbox
                         className="group-member-toggle"
-                        checked={this.state.isChecked}
-                        onCheck={() => this.setState({isChecked: !this.state.isChecked})}
+                        checked={this.state.isAddAsMemberChecked}
+                        onCheck={() => this.setState({isAddAsMemberChecked: !this.state.isAddAsMemberChecked})}
                         label="Add yourself as a member"
+                    />
+                    <Checkbox
+                        className="group-rotate-toggle"
+                        checked={this.state.isNeedsRotationChecked}
+                        onCheck={() => this.setState({isNeedsRotationChecked: !this.state.isNeedsRotationChecked})}
+                        label="Create group with pending private key rotation"
                     />
                 </div>
                 <div style={{textAlign: "center", marginTop: "15px"}}>

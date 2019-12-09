@@ -189,6 +189,7 @@ export interface Group {
     addMembers(groupID: string, userList: string[]): Promise<GroupUserEditResponse>;
     removeMembers(groupID: string, userList: string[]): Promise<GroupUserEditResponse>;
     removeSelfAsMember(groupID: string): Promise<void>;
+    rotatePrivateKey(groupID: string): Promise<{needsRotation: boolean}>;
 }
 
 export interface Codec {
@@ -274,6 +275,9 @@ export interface ErrorCodes {
     GROUP_UPDATE_REQUEST_FAILURE: 413;
     GROUP_DELETE_REQUEST_FAILURE: 414;
     GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE: 415;
+    GROUP_PRIVATE_KEY_ROTATION_FAILURE: 416;
+    GROUP_UPDATE_KEY_REQUEST_FAILURE: 417;
+    GROUP_ROTATE_PRIVATE_KEY_NOT_ADMIN_FAILURE: 418;
     REQUEST_RATE_LIMITED: 500;
 }
 

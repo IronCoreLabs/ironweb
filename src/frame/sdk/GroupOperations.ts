@@ -16,6 +16,27 @@ export function groupCreate(signingKeys: SigningKeyPair, memberList: UserOrGroup
 }
 
 /**
+ * Send message to the worker to rotate the group private key and encrypt the new private key to the provided list of admins
+ */
+export function rotateGroupPrivateKeyAndEncryptToAdmins(
+    encryptedGroupKey: TransformedEncryptedMessage,
+    adminList: UserOrGroupPublicKey[],
+    userPrivateMasterKey: PrivateKey<Uint8Array>,
+    signingKeys: SigningKeyPair
+) {
+    const payload: WMT.RotateGroupPrivateKeyWorkerRequest = {
+        type: "ROTATE_GROUP_PRIVATE_KEY",
+        message: {
+            encryptedGroupKey,
+            adminList,
+            userPrivateMasterKey,
+            signingKeys,
+        },
+    };
+    return WorkerMediator.sendMessage<WMT.RotateGroupPrivateKeyWorkerResponse>(payload).map(({message}) => message);
+}
+
+/**
  * Send message to worker to decrypt the groups priavte key and encrypt it to the provided list of user public keys. Used to add additional admins
  * to the group.
  * @param {TransformedEncryptedMessage} encryptedGroupPrivateKey Private key for group

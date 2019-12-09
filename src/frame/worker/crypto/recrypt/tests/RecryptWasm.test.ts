@@ -52,6 +52,46 @@ describe("RecryptWasm", () => {
         });
     });
 
+    describe("rotateGroupPrivateKeyWithRetry", () => {
+        const groupPrivateKey = new Uint8Array([22, 33, 44]);
+        it("should result in an error when mocked generateKeyPair returns Uint8Array of zeros for new privateKey", () => {
+            jest.spyOn(Recrypt.getApi(), "generatePlaintext").mockReturnValue(new Uint8Array(32));
+            Recrypt.rotateGroupPrivateKeyWithRetry(groupPrivateKey).engage(
+                () => {
+                    expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(2);
+                },
+                () => fail("Should not success when operation fails")
+            );
+        });
+
+        it("should result in an error when subtracting existing private key from the new private key", () => {
+            jest.spyOn(Recrypt.getApi(), "generatePlaintext").mockReturnValue(new Uint8Array([12, 23, 34]) as any);
+            jest.spyOn(MockRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array(32));
+            Recrypt.rotateGroupPrivateKeyWithRetry(groupPrivateKey).engage(
+                () => {
+                    expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(2);
+                    expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(2);
+                },
+                () => fail("Should fail when private key subtraction results in zeroed private key")
+            );
+        });
+
+        it("should success when valid augmentation factor is produced", () => {
+            jest.spyOn(Recrypt.getApi(), "generatePlaintext").mockReturnValue(new Uint8Array([12, 23, 34]) as any);
+            jest.spyOn(MockRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array([11, 22, 33]));
+            jest.spyOn(Recrypt.getApi(), "hash256").mockReturnValue(new Uint8Array([44, 55, 34]));
+            Recrypt.rotateGroupPrivateKeyWithRetry(groupPrivateKey).engage(
+                (e) => fail(e),
+                ({plaintext, augmentationFactor}) => {
+                    expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(1);
+                    expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(1);
+                    expect(plaintext).toEqual(new Uint8Array([12, 23, 34]));
+                    expect(augmentationFactor).toEqual(new Uint8Array([11, 22, 33]));
+                }
+            );
+        });
+    });
+
     describe("generatePasswordDerivedKey", () => {
         it("should generate random bytes and use WebCrypto pbkdf2 when available", () => {
             spyOn(nativePBKDF2, "generatePasscodeDerivedKey").and.returnValue(Future.of("derivedKey"));
@@ -118,7 +158,10 @@ describe("RecryptWasm", () => {
                         expect(publicKey).toEqual(signingKeys.publicKey);
                     });
                 })
-                .engage((e) => fail(e.message), () => null);
+                .engage(
+                    (e) => fail(e.message),
+                    () => null
+                );
         });
     });
 

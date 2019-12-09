@@ -60,6 +60,24 @@ export function create(options: GroupCreateOptions = {groupName: "", addAsMember
         .map(({message}) => message)
         .toPromise();
 }
+/**
+ * Rotates the current group private key
+ * @param {string}  groupID ID of the group to have private key rotated.
+ */
+export function rotatePrivateKey(groupID: string) {
+    ShimUtils.checkSDKInitialized();
+    ShimUtils.validateID(groupID);
+
+    const payload: MT.RotateGroupPrivateKey = {
+        type: "ROTATE_GROUP_PRIVATE_KEY",
+        message: {
+            groupID,
+        },
+    };
+    return FrameMediator.sendMessage<MT.RotateGroupPrivateKeyResponse>(payload)
+        .map(({message}) => message)
+        .toPromise();
+}
 
 /**
  * Update a group. Currently only supports updating the group name to a new value or clearing it out by passing in null.

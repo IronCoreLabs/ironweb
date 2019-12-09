@@ -7,7 +7,8 @@ import Dialog from "material-ui/Dialog";
 import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
 import Refresh from "material-ui/svg-icons/navigation/refresh";
 import Delete from "material-ui/svg-icons/action/delete";
-import {lightGreenA700, red700} from "material-ui/styles/colors";
+import ImageRotateRight from "material-ui/svg-icons/image/rotate-right";
+import {lightGreenA700, red700, grey400} from "material-ui/styles/colors";
 import {GroupMetaResponse, GroupDetailResponse} from "../../../ironweb";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
@@ -24,6 +25,7 @@ interface GroupDetailState {
     groupMeta: GroupMetaResponse;
     groupAdmins: string[];
     groupMembers: string[];
+    needsRotation: boolean;
     nameChanging: boolean;
     name: string | null;
     groupIDConfirmError: boolean;
@@ -38,6 +40,7 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
             groupMeta: props.group,
             groupAdmins: [],
             groupMembers: [],
+            needsRotation: false,
             nameChanging: false,
             name: props.group.groupName,
             groupIDConfirmError: false,
@@ -53,7 +56,8 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
             .then((group) => {
                 const groupAdmins = (group as GroupDetailResponse).groupAdmins || [];
                 const groupMembers = (group as GroupDetailResponse).groupMembers || [];
-                this.setState({groupAdmins, groupMembers, groupMeta: group});
+                const needsRotation = (group as GroupDetailResponse).needsRotation || false;
+                this.setState({groupAdmins, groupMembers, needsRotation, groupMeta: group});
             })
             .catch((error: IronWeb.SDKError) => {
                 logAction(`Group get error: ${error.message}. Error Code: ${error.code}`, "error");
@@ -133,6 +137,32 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
         return null;
     }
 
+    /**
+     * Verify the group ID the user typed is correct before making the actual delete call.
+     */
+    roatateGroupPrivateKey = () => {
+        IronWeb.group
+            .rotatePrivateKey(this.props.group.groupID)
+            .then((groupKeyUpdate) => {
+                logAction(`Group private key rotation was successful`);
+                this.setState({needsRotation: groupKeyUpdate.needsRotation});
+            })
+            .catch((error: IronWeb.SDKError) => {
+                logAction(`Group rotation error: ${error.message}. Error Code: ${error.code}`, "error");
+            });
+    };
+
+    getRotateGroupPrivateKeyIcon() {
+        if (this.state.groupMeta.isAdmin) {
+            return (
+                <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={this.state.needsRotation ? red700 : grey400}>
+                    <ImageRotateRight />
+                </FloatingActionButton>
+            );
+        }
+        return null;
+    }
+
     render() {
         const {groupMeta} = this.state;
         const modalAction = [<FlatButton key="groupDelete" className="submit-passcode-change" label="Delete Group" secondary onClick={this.deleteGroup} />];
@@ -145,6 +175,7 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
                     <FloatingActionButton onClick={this.loadGroup} mini backgroundColor={lightGreenA700}>
                         <Refresh />
                     </FloatingActionButton>
+                    {this.getRotateGroupPrivateKeyIcon()}
                     {this.getDeleteGroupIcon()}
                 </div>
                 <Dialog

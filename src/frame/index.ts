@@ -168,6 +168,13 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 standardFormResult.adminList,
                 standardFormResult.ownerUserId
             ).engage(errorHandler, (newGroup) => callback({type: "GROUP_CREATE_RESPONSE", message: newGroup}));
+        case "ROTATE_GROUP_PRIVATE_KEY":
+            return GroupApi.rotateGroupPrivateKey(data.message.groupID).engage(errorHandler, (updateGroupKey) =>
+                callback({
+                    type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE",
+                    message: updateGroupKey,
+                })
+            );
         case "GROUP_UPDATE":
             return GroupApi.update(data.message.groupID, data.message.groupName).engage(errorHandler, (updatedGroup) =>
                 callback({type: "GROUP_UPDATE_RESPONSE", message: updatedGroup})

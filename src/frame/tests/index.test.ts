@@ -665,6 +665,26 @@ describe("frame index", () => {
             });
         });
 
+        it("ROTATE_GROUP_PRIVATE_KEY", (done) => {
+            spyOn(GroupApi, "rotateGroupPrivateKey").and.returnValue(Future.of("rotateUserMasterKey"));
+
+            const payload: MT.RotateGroupPrivateKey = {
+                type: "ROTATE_GROUP_PRIVATE_KEY",
+                message: {
+                    groupID: "myGroup",
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "ROTATE_GROUP_PRIVATE_KEY_RESPONSE",
+                    message: "rotateUserMasterKey",
+                });
+            });
+            expect(GroupApi.rotateGroupPrivateKey).toHaveBeenCalledWith("myGroup");
+            done();
+        });
+
         it("GROUP_UPDATE", (done) => {
             spyOn(GroupApi, "update").and.returnValue(Future.of("updatedGroup"));
             const payload: MT.GroupUpdateRequest = {

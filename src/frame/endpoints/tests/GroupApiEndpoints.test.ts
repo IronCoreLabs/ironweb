@@ -269,7 +269,7 @@ describe("GroupApiEndpoints", () => {
             const encryptedPlaintext = TestUtils.getEncryptedSymmetricKey();
             const encryptedAccessKeys = [
                 {
-                    encryptedPlaintext: TestUtils.getEncryptedSymmetricKey(),
+                    encryptedPlaintext: encryptedPlaintext,
                     id: "ownerUserId",
                     publicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
                 },
@@ -301,6 +301,43 @@ describe("GroupApiEndpoints", () => {
                             },
                         ],
                         needsRotation: false,
+                    });
+                }
+            );
+        });
+    });
+
+    describe("callGroupPrivateKeyUpdateApi", () => {
+        it("invokes API with expected parameters", () => {
+            const encryptedPlaintext = TestUtils.getEncryptedSymmetricKey();
+            const encryptedAccessKeys = [
+                {
+                    encryptedPlaintext: encryptedPlaintext,
+                    id: "ownerUserId",
+                    publicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
+                },
+            ];
+            const augmentationFactor = new Uint8Array([98, 103, 110]);
+            GroupApiEndpoints.callGroupPrivateKeyUpdateApi("groupID", encryptedAccessKeys, augmentationFactor, 5).engage(
+                (e) => fail(e.message),
+                (result: any) => {
+                    expect(result).toEqual({foo: "bar"});
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/groupID/keys/5", expect.any(Number), expect.any(Object));
+                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    expect(JSON.parse(request.body)).toEqual({
+                        augmentationFactor: "Ymdu",
+                        admins: [
+                            {
+                                user: {
+                                    userId: "ownerUserId",
+                                    userMasterPublicKey: {
+                                        x: "firstpublickeyx",
+                                        y: "firstpublickeyy",
+                                    },
+                                },
+                                ...encryptedPlaintext,
+                            },
+                        ],
                     });
                 }
             );

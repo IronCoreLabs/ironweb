@@ -132,6 +132,19 @@ describe("worker index", () => {
             });
         });
 
+        it("ROTATE_USER_PRIVATE_KEY", (done) => {
+            spyOn(UserCrypto, "rotatePrivateKey").and.returnValue(Future.of("rotated user key"));
+            const payload: any = {
+                type: "ROTATE_USER_PRIVATE_KEY",
+                message: {passcode: "passcode", encryptedPrivateUserKey: "encryptedPrivateUserKey"},
+            };
+            messenger.onMessageCallback!(payload, (result: any) => {
+                expect(result).toEqual({type: "ROTATE_USER_PRIVATE_KEY_RESPONSE", message: "rotated user key"});
+                expect(UserCrypto.rotatePrivateKey).toHaveBeenCalledWith("passcode", "encryptedPrivateUserKey");
+                done();
+            });
+        });
+
         it("CHANGE_USER_PASSCODE", (done) => {
             spyOn(UserCrypto, "changeUsersPasscode").and.returnValue(Future.of("new encrypted private key"));
             const payload: any = {
@@ -293,6 +306,28 @@ describe("worker index", () => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("created group");
                 expect(GroupCrypto.createGroup).toHaveBeenCalledWith("signkeys", [creator], [creator]);
+                done();
+            });
+        });
+
+        it("ROTATE_GROUP_PRIVATE_KEY", (done) => {
+            jest.spyOn(GroupCrypto, "rotatePrivateKey").mockReturnValue(Future.of("rotate group key") as any);
+
+            const payload: any = {
+                type: "ROTATE_GROUP_PRIVATE_KEY",
+                message: {
+                    encryptedGroupKey: {
+                        foo: "bar",
+                    },
+                    adminList: ["32", "13"],
+                    userPrivateMasterKey: new Uint8Array(32),
+                    signingKeys: "signkeys",
+                },
+            };
+            messenger.onMessageCallback!(payload, (result: any) => {
+                expect(result.type).toEqual(expect.any(String));
+                expect(result.message).toEqual("rotate group key");
+                expect(GroupCrypto.rotatePrivateKey).toHaveBeenCalledWith({foo: "bar"}, ["32", "13"], new Uint8Array(32), "signkeys");
                 done();
             });
         });

@@ -23,6 +23,11 @@ export interface GroupMemberModifyResponseType {
     failedIds: {userId: string; errorMessage: string}[];
 }
 
+export interface GroupKeyUpdateResponse {
+    groupKeyId: number;
+    needsRotation: boolean;
+}
+
 /**
  * Get API request details for group list
  * @param {string[]} groupIDList Optional list of group IDs to retrieve. If omitted all groups will be returned.
@@ -93,6 +98,32 @@ function groupCreate(groupID: string, createPayload: GroupCreatePayload, needsRo
             }),
         },
         errorCode: ErrorCodes.GROUP_CREATE_REQUEST_FAILURE,
+    };
+}
+
+/**
+ * Generate an API request to rotate the group private key passing the augmentation factor and list of new encryptedAccessKeys for each admin of the group.
+ */
+function groupPrivateKeyUpdate(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: AugmentationFactor, groupKeyId: number) {
+    return {
+        url: `groups/${encodeURIComponent(groupID)}/keys/${groupKeyId}`,
+        options: {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                admins: encryptedAccessKeys.map((admin) => ({
+                    user: {
+                        userId: admin.id,
+                        userMasterPublicKey: admin.publicKey,
+                    },
+                    ...admin.encryptedPlaintext,
+                })),
+                augmentationFactor: fromByteArray(augmentationFactor),
+            }),
+        },
+        errorCode: ErrorCodes.GROUP_UPDATE_KEY_REQUEST_FAILURE,
     };
 }
 
@@ -290,6 +321,14 @@ export default {
             needsRotation
         );
         return makeAuthorizedApiRequest<GroupCreateResponseType>(url, errorCode, options);
+    },
+
+    /**
+     * Invoke group key update with augmentation factor and list of new encryptedAccessKeys for each admin of the group.
+     */
+    callGroupPrivateKeyUpdateApi(groupID: string, encryptedAccessKeys: EncryptedAccessKey[], augmentationFactor: AugmentationFactor, keyID: number) {
+        const {url, options, errorCode} = groupPrivateKeyUpdate(groupID, encryptedAccessKeys, augmentationFactor, keyID);
+        return makeAuthorizedApiRequest<GroupKeyUpdateResponse>(url, errorCode, options);
     },
 
     /**
