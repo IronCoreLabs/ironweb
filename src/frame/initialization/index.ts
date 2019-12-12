@@ -147,9 +147,9 @@ export const createDetachedUserDevice = (jwtToken: string, passcode: string): Fu
                 segmentId: segmentId,
                 devicePrivateKey: fromByteArray(userUpdateKeys.deviceKeys.privateKey),
                 signingPrivateKey: fromByteArray(userUpdateKeys.signingKeys.privateKey),
-                deviceId: addedDevice.deviceId,
+                id: addedDevice.id,
                 created: addedDevice.created,
-                deviceName: addedDevice.deviceName,
+                name: addedDevice.name,
             })
         );
     });

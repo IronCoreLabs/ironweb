@@ -43,10 +43,10 @@ type UserUpdateResponseType = ApiUserResponse;
 
 export interface DeviceAddResponse {
     devicePublicKey: PublicKey<Base64String>;
-    deviceId: number;
+    id: number;
     created: string;
     updated: string;
-    deviceName?: string;
+    name?: string;
 }
 
 export interface UserKeyListResponseType {

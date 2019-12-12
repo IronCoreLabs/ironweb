@@ -327,9 +327,9 @@ describe("init index", () => {
                         signingKeys: {privateKey: new Uint8Array([58, 101, 98])},
                     },
                     addedDevice: {
-                        deviceId: 1,
+                        id: 1,
                         created: "timestamp",
-                        deviceName: "deviceName",
+                        name: "deviceName",
                     },
                 })
             );
@@ -346,9 +346,9 @@ describe("init index", () => {
                         segmentId: 333,
                         devicePrivateKey: "YlGCxw==",
                         signingPrivateKey: "OmVi",
-                        deviceId: 1,
+                        id: 1,
                         created: "timestamp",
-                        deviceName: "deviceName",
+                        name: "deviceName",
                     });
                 }
             );

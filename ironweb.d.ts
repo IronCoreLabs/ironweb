@@ -144,9 +144,9 @@ export interface DeviceAddResponse {
     segmentId: number;
     devicePrivateKey: PrivateKey<Base64String>;
     signingPrivateKey: PrivateKey<Base64String>;
-    deviceId: number;
+    id: number;
     created: RFC3339Timestamp;
-    deviceName?: string;
+    name?: string;
 }
 
 export interface UserCreateOptions {
