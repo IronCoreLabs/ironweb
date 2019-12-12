@@ -139,11 +139,14 @@ export interface UserCreateResponse {
     userMasterPublicKey: PublicKey<Base64String>;
     needsRotation: boolean;
 }
-export interface DeviceKeys {
+export interface DeviceAddResponse {
     accountId: string;
     segmentId: number;
     devicePrivateKey: PrivateKey<Base64String>;
     signingPrivateKey: PrivateKey<Base64String>;
+    id: number;
+    created: RFC3339Timestamp;
+    name?: string;
 }
 
 export interface UserCreateOptions {
@@ -290,5 +293,5 @@ export const group: Group;
 
 export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback): Promise<SDKInitializationResult>;
 export function createNewUser(jwtCallback: JWTCallback, passcode: string, options?: UserCreateOptions): Promise<UserCreateResponse>;
-export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceKeys>;
+export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceAddResponse>;
 export function isInitialized(): boolean;
