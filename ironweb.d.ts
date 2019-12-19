@@ -139,7 +139,7 @@ export interface UserCreateResponse {
     userMasterPublicKey: PublicKey<Base64String>;
     needsRotation: boolean;
 }
-export interface DeviceAddResponse {
+export interface DeviceKeys {
     accountId: string;
     segmentId: number;
     devicePrivateKey: PrivateKey<Base64String>;
