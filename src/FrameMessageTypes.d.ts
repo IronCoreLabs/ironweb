@@ -1,6 +1,6 @@
 import {
     DecryptedDocumentResponse,
-    DeviceAddResponse,
+    DeviceKeys,
     DocumentAccessResponse,
     DocumentIDNameResponse,
     DocumentListResponse as ExposedDocumentListResponse,
@@ -67,7 +67,7 @@ export interface CreateDetachedUserDeviceRequest {
 }
 export interface CreateDetachedUserDeviceResponse {
     type: "CREATE_DETATCHED_USER_DEVICE_RESPONSE";
-    message: DeviceAddResponse;
+    message: DeviceKeys;
 }
 
 /**

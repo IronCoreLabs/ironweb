@@ -293,5 +293,5 @@ export const group: Group;
 
 export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeCallback): Promise<SDKInitializationResult>;
 export function createNewUser(jwtCallback: JWTCallback, passcode: string, options?: UserCreateOptions): Promise<UserCreateResponse>;
-export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceAddResponse>;
+export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceKeys>;
 export function isInitialized(): boolean;

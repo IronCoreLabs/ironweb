@@ -1,5 +1,5 @@
 import Future from "futurejs";
-import {DeviceAddResponse, SDKInitializationResult, UserCreateResponse} from "ironweb";
+import {DeviceKeys, SDKInitializationResult, UserCreateResponse} from "ironweb";
 import {ErrorCodes} from "../Constants";
 import {
     CreateDetachedUserDeviceRequest,
@@ -108,7 +108,7 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
 /**
  * Create a set of device keys that aren't stored in the browser and are returned to the caller.
  */
-export const createUserDeviceKeys = (jwtCallback: JWTCallbackToPromise, passcode: string): Promise<DeviceAddResponse> =>
+export const createUserDeviceKeys = (jwtCallback: JWTCallbackToPromise, passcode: string): Promise<DeviceKeys> =>
     getJWT(jwtCallback)
         .flatMap((jwtToken) => {
             const payload: CreateDetachedUserDeviceRequest = {type: "CREATE_DETATCHED_USER_DEVICE", message: {passcode, jwtToken}};
