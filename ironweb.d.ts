@@ -144,6 +144,9 @@ export interface DeviceKeys {
     segmentId: number;
     devicePrivateKey: PrivateKey<Base64String>;
     signingPrivateKey: PrivateKey<Base64String>;
+    id: number;
+    created: RFC3339Timestamp;
+    name?: string;
 }
 
 export interface UserCreateOptions {

@@ -118,7 +118,13 @@ describe("InitializationApi", () => {
                     },
                 })
             );
-            spyOn(UserApiEndpoints, "callUserDeviceAdd").and.returnValue(Future.of(""));
+            spyOn(UserApiEndpoints, "callUserDeviceAdd").and.returnValue(
+                Future.of({
+                    id: 1,
+                    created: "timestamp",
+                    name: "deviceName",
+                })
+            );
 
             InitApi.generateDeviceAndSigningKeys("jwtToken", "passcode", encryptedUserKey, userPublicKey).engage(
                 (e) => fail(e),
@@ -126,6 +132,7 @@ describe("InitializationApi", () => {
                     expect(keys).toEqual({
                         userUpdateKeys: userKeys,
                         encryptedLocalKeys: deviceAndSigning,
+                        addedDevice: {id: 1, created: "timestamp", name: "deviceName"},
                     });
 
                     expect(UserApiEndpoints.callUserDeviceAdd).toHaveBeenCalledWith(

@@ -68,10 +68,13 @@ export function generateDeviceAndSigningKeys(jwtToken: string, passcode: string,
 
     return WorkerMediator.sendMessage<WMT.DeviceKeygenWorkerResponse>(payload).flatMap(({message}) => {
         const {userKeys, deviceSignature, encryptedDeviceAndSigningKeys} = message;
-        return UserApiEndpoints.callUserDeviceAdd(jwtToken, publicUserKey, userKeys.transformKey, deviceSignature.signature, deviceSignature.ts).map(() => ({
-            userUpdateKeys: userKeys,
-            encryptedLocalKeys: encryptedDeviceAndSigningKeys,
-        }));
+        return UserApiEndpoints.callUserDeviceAdd(jwtToken, publicUserKey, userKeys.transformKey, deviceSignature.signature, deviceSignature.ts).map(
+            (addedDevice) => ({
+                userUpdateKeys: userKeys,
+                encryptedLocalKeys: encryptedDeviceAndSigningKeys,
+                addedDevice,
+            })
+        );
     });
 }
 

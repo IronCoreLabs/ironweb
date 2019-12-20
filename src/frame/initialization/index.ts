@@ -142,11 +142,14 @@ export const createDetachedUserDevice = (jwtToken: string, passcode: string): Fu
         }
         const {id, segmentId, userPrivateKey, userMasterPublicKey} = verifyResult.user;
         return InitializationApi.generateDeviceAndSigningKeys(jwtToken, passcode, toByteArray(userPrivateKey), publicKeyToBytes(userMasterPublicKey)).map(
-            ({userUpdateKeys}) => ({
+            ({userUpdateKeys, addedDevice}) => ({
                 accountId: id,
                 segmentId: segmentId,
                 devicePrivateKey: fromByteArray(userUpdateKeys.deviceKeys.privateKey),
                 signingPrivateKey: fromByteArray(userUpdateKeys.signingKeys.privateKey),
+                id: addedDevice.id,
+                created: addedDevice.created,
+                name: addedDevice.name,
             })
         );
     });

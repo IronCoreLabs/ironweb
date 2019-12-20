@@ -1,4 +1,4 @@
-import {SDKInitializationResult, UserCreateResponse, UserCreateOptions} from "../../ironweb";
+import {SDKInitializationResult, UserCreateResponse, UserCreateOptions, DeviceKeys} from "../../ironweb";
 import {ErrorCodes} from "../Constants";
 import SDKError from "../lib/SDKError";
 import * as Init from "./Initialize";
@@ -58,7 +58,7 @@ export function createNewUser(
  * Create a detached set of device keys for an existing user. These keys will not be stored in the browser and will just be returned
  * to the caller to use however they would like.
  */
-export function createNewDeviceKeys(jwtCallback: JWTCallbackToPromise, passcode: string): Promise<any> {
+export function createNewDeviceKeys(jwtCallback: JWTCallbackToPromise, passcode: string): Promise<DeviceKeys> {
     if (!jwtCallback || typeof jwtCallback !== "function") {
         throw new Error("You must provide a function which will generate a JWT as the first parameter to 'IronWeb.createNewUser'.");
     }

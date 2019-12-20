@@ -40,6 +40,15 @@ interface UserVerifyProcessedResult {
 type UserVerifyResponseType = ApiUserResponse | undefined;
 type UserCreateResponseType = ApiUserResponse;
 type UserUpdateResponseType = ApiUserResponse;
+
+export interface DeviceAddResponse {
+    devicePublicKey: PublicKey<Base64String>;
+    id: number;
+    created: string;
+    updated: string;
+    name?: string;
+}
+
 export interface UserKeyListResponseType {
     result: {
         id: string;
@@ -276,7 +285,7 @@ export default {
         transformKey: TransformKey,
         signature: Uint8Array,
         timestamp: number
-    ): Future<SDKError, UserUpdateResponseType> {
+    ): Future<SDKError, DeviceAddResponse> {
         const {url, options, errorCode} = userDeviceAdd(userPublicKey, transformKey, signature, timestamp);
         return makeJwtApiRequest(url, errorCode, options, jwtToken);
     },
