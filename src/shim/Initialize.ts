@@ -81,7 +81,7 @@ function setUserPasscode(doesUserExist: boolean, passcode: string): Future<Error
         .map((sdkResponse: InitApiSdkResponse) => {
             storeParentWindowSymmetricKey(sdkResponse.message.symmetricKey);
             setSDKInitialized();
-            return {user: sdkResponse.message.user};
+            return {user: sdkResponse.message.user, groupsNeedingRotation: sdkResponse.message.groupsNeedingRotation};
         });
 }
 
@@ -144,7 +144,10 @@ export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: 
             }
             storeParentWindowSymmetricKey(responsePayload.message.symmetricKey);
             setSDKInitialized();
-            return Future.of<SDKInitializationResult>({user: responsePayload.message.user});
+            return Future.of<SDKInitializationResult>({
+                user: responsePayload.message.user,
+                groupsNeedingRotation: responsePayload.message.groupsNeedingRotation,
+            });
         })
         .toPromise();
 }

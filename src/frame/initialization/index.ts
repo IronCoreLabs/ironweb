@@ -1,14 +1,14 @@
-import Future from "futurejs";
 import {fromByteArray, toByteArray} from "base64-js";
-import * as InitializationApi from "./InitializationApi";
-import ApiState from "../ApiState";
-import {ErrorCodes} from "../../Constants";
-import SDKError from "../../lib/SDKError";
-import UserApiEndpoints from "../endpoints/UserApiEndpoints";
-import {storeDeviceAndSigningKeys, clearDeviceAndSigningKeys} from "../FrameUtils";
-import {publicKeyToBytes} from "../../lib/Utils";
-import {InitApiPasscodeResponse, InitApiSdkResponse, CreateUserResponse} from "../../FrameMessageTypes";
+import Future from "futurejs";
 import {DeviceKeys} from "ironweb";
+import {ErrorCodes} from "../../Constants";
+import {CreateUserResponse, InitApiPasscodeResponse, InitApiSdkResponse} from "../../FrameMessageTypes";
+import SDKError from "../../lib/SDKError";
+import {publicKeyToBytes} from "../../lib/Utils";
+import ApiState from "../ApiState";
+import UserApiEndpoints from "../endpoints/UserApiEndpoints";
+import {clearDeviceAndSigningKeys, storeDeviceAndSigningKeys} from "../FrameUtils";
+import * as InitializationApi from "./InitializationApi";
 
 /**
  * Build response back to shim for when the SDK has been initialized. Include details about the current user as well as
@@ -21,8 +21,8 @@ const buildSDKInitCompleteResponse = (user: ApiUserResponse, deviceSymmetricKey?
             id: user.id,
             status: user.status,
             needsRotation: user.needsRotation,
-            groupsNeedingRotation: user.groupsNeedingRotation,
         },
+        groupsNeedingRotation: user.groupsNeedingRotation,
         symmetricKey: deviceSymmetricKey ? fromByteArray(deviceSymmetricKey) : undefined,
     },
 });

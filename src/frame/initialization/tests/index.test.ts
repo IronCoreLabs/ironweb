@@ -139,8 +139,8 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
-                                groupsNeedingRotation: [],
                             },
+                            groupsNeedingRotation: [],
                             symmetricKey: undefined,
                         },
                     });
@@ -227,8 +227,8 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
-                                groupsNeedingRotation: [],
                             },
+                            groupsNeedingRotation: [],
                         },
                     });
                     expect(InitializationApi.createUserAndDevice).toHaveBeenCalledWith("passcode", "jwt");
@@ -278,8 +278,8 @@ describe("init index", () => {
                                 id: "user-10",
                                 needsRotation: false,
                                 status: 1,
-                                groupsNeedingRotation: [],
                             },
+                            groupsNeedingRotation: [],
                         },
                     });
                     expect(InitializationApi.generateDeviceAndSigningKeys).toHaveBeenCalledWith(
