@@ -40,8 +40,8 @@ export interface InitApiSdkResponse {
             id: string;
             status: number;
             needsRotation: boolean;
-            groupsNeedingRotation: string[];
         };
+        groupsNeedingRotation: string[];
         symmetricKey?: string;
     };
 }

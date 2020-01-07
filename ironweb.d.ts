@@ -210,11 +210,11 @@ export interface InitializedUser {
     id: string;
     status: number;
     needsRotation: boolean;
-    groupsNeedingRotation: string[];
 }
 
 export interface SDKInitializationResult {
     user: InitializedUser;
+    groupsNeedingRotation: string[];
 }
 
 export class SDKError extends Error {
