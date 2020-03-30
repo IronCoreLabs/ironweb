@@ -2,7 +2,8 @@ import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import Future from "futurejs";
 import {generateRandomBytes, getCryptoSubtleApi} from "../CryptoUtils";
 
-const WASM_RAND_SEED_LENGTH = 32;
+//Seed with enough entropy for re-seeding and also for using EncryptedSearch class as well.
+const WASM_RAND_SEED_LENGTH = 128;
 
 export interface TransformKeyGrant {
     transformKey: TransformKey;
@@ -28,7 +29,10 @@ const randomSeed = generateRandomBytes(WASM_RAND_SEED_LENGTH).toPromise();
  * is successfully loaded.
  */
 export default function loadRecrypt() {
-    return Future.gather2(Future.tryP(() => recrypt), Future.tryP(() => randomSeed)).map(([shim, seed]) => {
+    return Future.gather2(
+        Future.tryP(() => recrypt),
+        Future.tryP(() => randomSeed)
+    ).map(([shim, seed]) => {
         shim.instantiateApi(getCryptoSubtleApi() ? undefined : seed);
         return shim;
     });

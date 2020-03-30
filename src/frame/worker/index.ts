@@ -2,6 +2,7 @@ import SDKError from "../../lib/SDKError";
 import {ErrorResponse, RequestMessage, ResponseMessage} from "../../WorkerMessageTypes";
 import * as DocumentCrypto from "./DocumentCrypto";
 import * as GroupCrypto from "./GroupCrypto";
+import * as SearchCrypto from "./SearchCrypto";
 import * as UserCrypto from "./UserCrypto";
 
 type WorkerMessageCallback = (message: RequestMessage, callback: (response: ResponseMessage, transferList?: Uint8Array[]) => void) => void;
@@ -174,6 +175,18 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 data.message.adminPrivateKey,
                 data.message.signingKeys
             ).engage(errorHandler, (result) => callback({type: "GROUP_ADD_MEMBERS_RESPONSE", message: result}));
+        case "SEARCH_TOKENIZE_DATA":
+            return SearchCrypto.tokenizeData(data.message.value, data.message.salt, data.message.partitionId).engage(errorHandler, (result) =>
+                callback({type: "SEARCH_TOKENIZE_STRING_RESPONSE", message: result})
+            );
+        case "SEARCH_TOKENIZE_QUERY":
+            return SearchCrypto.tokenizeQuery(data.message.value, data.message.salt, data.message.partitionId).engage(errorHandler, (result) =>
+                callback({type: "SEARCH_TOKENIZE_STRING_RESPONSE", message: result})
+            );
+        case "SEARCH_TRANSLITERATE_STRING":
+            return SearchCrypto.transliterateString(data.message).engage(errorHandler, (message) =>
+                callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message})
+            );
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;

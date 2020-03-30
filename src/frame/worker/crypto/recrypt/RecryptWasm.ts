@@ -13,6 +13,7 @@ const {SALT_LENGTH, PBKDF2_ITERATIONS} = CryptoConstants;
 
 type Plaintext = Uint8Array;
 let RecryptApi: Recrypt.Api256;
+let EncryptedSearchApi: Recrypt.EncryptedSearch;
 
 /**
  * Convert the components of an encrypted symmetric key into base64 strings for submission to the API
@@ -77,6 +78,7 @@ export const instantiateApi = (seed?: Uint8Array) => {
         Recrypt.setRandomSeed(seed);
     }
     RecryptApi = new Recrypt.Api256();
+    EncryptedSearchApi = new Recrypt.EncryptedSearch();
 };
 
 /**
@@ -337,3 +339,21 @@ export const generateDeviceAddSignature = (jwtToken: string, userMasterKeyPair: 
         };
     });
 };
+
+/**
+ * Given a string to index, random salt, and optional partition ID, generate an array of 32 bit hashes which represent an index
+ * of all the tri-grams in the provided string.
+ */
+export const tokenizeQuery = (query: string, salt: Uint8Array, paritionId?: string): Uint32Array =>
+    EncryptedSearchApi.generateHashesForString(query, salt, paritionId);
+
+/**
+ * Same as method above but also adds in random entries into result set as to not expose how many tri-grams were found.
+ */
+export const tokenizeData = (data: string, salt: Uint8Array, paritionId?: string): Uint32Array =>
+    EncryptedSearchApi.generateHashesForStringWithPadding(data, salt, paritionId);
+
+/**
+ * Transliterate the provided string to latinize it and remove special characters
+ */
+export const transliterateString = (value: string): string => Recrypt.EncryptedSearch.transliterateString(value);
