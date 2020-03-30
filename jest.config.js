@@ -4,7 +4,7 @@ module.exports = {
     errorOnDeprecated: true,
     coverageThreshold: {
         global: {
-            branches: 93,
+            branches: 90,
             functions: 93,
             lines: 93,
         },

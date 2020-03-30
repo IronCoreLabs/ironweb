@@ -17,7 +17,7 @@ export const tokenizeData = (data: string, salt: Uint8Array, partitionId?: strin
 export const tokenizeQuery = (query: string, salt: Uint8Array, partitionId?: string): Future<SDKError, Uint32Array> =>
     loadRecrypt()
         .map((recrypt) => recrypt.tokenizeQuery(query, salt, partitionId))
-        .errorMap((e) => new SDKError(e, ErrorCodes.SEARCH_TOKENIZE_DATA_FAILURE));
+        .errorMap((e) => new SDKError(e, ErrorCodes.SEARCH_TOKENIZE_QUERY_FAILURE));
 
 /**
  * Load Recrypt and then transliterate the provided string.

@@ -1,10 +1,10 @@
+import * as MockRecrypt from "@ironcorelabs/recrypt-wasm-binding";
 import {toByteArray} from "base64-js";
 import Future from "futurejs";
 import * as TestUtils from "../../../../../tests/TestUtils";
 import * as CryptoUtils from "../../CryptoUtils";
 import * as nativePBKDF2 from "../../pbkdf2/native";
 import * as Recrypt from "../RecryptWasm";
-import * as MockRecrypt from "@ironcorelabs/recrypt-wasm-binding";
 
 describe("RecryptWasm", () => {
     beforeAll(() => {
@@ -499,6 +499,27 @@ describe("RecryptWasm", () => {
                     done();
                 }
             );
+        });
+    });
+
+    describe("tokenizeQuery", () => {
+        it("calls into Recrypt to tokenize query", () => {
+            //Result comes from Recrypt mock
+            expect(Recrypt.tokenizeQuery("query", new Uint8Array([99]), "partition")).toEqual(new Uint32Array([0, 1, 2]));
+        });
+    });
+
+    describe("tokenizeData", () => {
+        it("calls into Recrypt to tokenize query", () => {
+            //Result comes from Recrypt mock
+            expect(Recrypt.tokenizeData("query", new Uint8Array([99]), "partition")).toEqual(new Uint32Array([3, 4, 5, 6, 7, 8, 9, 10]));
+        });
+    });
+
+    describe("transliterateString", () => {
+        it("calls into Recrypt to transliterate string", () => {
+            //Result comes from Recrypt mock
+            expect(Recrypt.transliterateString("my string")).toEqual("my string-transliterated");
         });
     });
 });
