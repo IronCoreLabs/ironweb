@@ -1,4 +1,3 @@
-import {Promise} from "es6-promise";
 import Future from "futurejs";
 import {ErrorCodes, Frame, Versions} from "../Constants";
 import {ErrorResponse, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
@@ -39,7 +38,10 @@ export class ShimMessenger {
             data,
         };
         try {
-            this.messagePort.postMessage(message, transferList.map(({buffer}) => buffer));
+            this.messagePort.postMessage(
+                message,
+                transferList.map(({buffer}) => buffer)
+            );
             return new Future<SDKError, ResponseMessage>((_, resolve) => {
                 this.callbacks[message.replyID] = resolve;
             });

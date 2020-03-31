@@ -1,6 +1,3 @@
-//Polyfill Promises and fetch for browsers which don't support them
-import "es6-promise/auto";
-import "whatwg-fetch";
 import {ErrorResponse, GroupCreateRequest, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
 import SDKError from "../lib/SDKError";
 import ApiState from "./ApiState";

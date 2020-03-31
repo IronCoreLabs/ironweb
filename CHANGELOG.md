@@ -13,6 +13,7 @@ Encrypted search index feature. Adds methods to create a blind encrypted search 
   + Initialize an existing search index via `IronWeb.search.initializeBlindSearchIndex(index: BlindIndex): InitializedSearchIndex` which takes the result of the `createBlindSearchIndex` call and returns an `InitializedSearchIndex` which contains methods for tokenizing data
   + The `tokenizeData` method on `InitializedSearchIndex` creates an index for the provided plaintext data. The resulting `Uint32Array` is the index of all the trigrams in the provided plaintext.
   + The `tokenizeQuery` method on `InitializedSearchIndex` tokenizes the provided search query into trigrams and returns a `Uint32Array` which can be compared against the result of `tokenizeData` to find matches.
++ Removed need for `peerDependency` of `es6-promise` as Promise polyfill is no longer needed for modern browsers.
 
 ## v3.3.3
 
