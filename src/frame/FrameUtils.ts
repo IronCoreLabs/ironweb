@@ -148,4 +148,4 @@ export function encryptedDocumentToBase64(documentID: string, segmentID: number,
 /**
  * Encode the provided bytes as hex
  */
-export const encodeBytesAsHex = (byteSource: Uint8Array): string => Array.prototype.map.call(byteSource, (byte) => `00${byte.toString(16)}`.slice(-2)).join("");
+export const encodeBytesAsHex = (byteSource: Uint8Array): string => Array.from(byteSource, (byte) => `00${byte.toString(16)}`.slice(-2)).join("");
