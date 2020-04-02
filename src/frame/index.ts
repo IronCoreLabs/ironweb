@@ -1,15 +1,13 @@
-//Polyfill Promises and fetch for browsers which don't support them
-import "es6-promise/auto";
-import "whatwg-fetch";
-import {ErrorResponse, RequestMessage, ResponseMessage, GroupCreateRequest} from "../FrameMessageTypes";
+import {ErrorResponse, GroupCreateRequest, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
 import SDKError from "../lib/SDKError";
+import ApiState from "./ApiState";
 import FrameMessenger from "./FrameMessenger";
 import * as Init from "./initialization";
 import * as DocumentAdvancedApi from "./sdk/DocumentAdvancedApi";
 import * as DocumentApi from "./sdk/DocumentApi";
 import * as GroupApi from "./sdk/GroupApi";
+import * as SearchApi from "./sdk/SearchApi";
 import * as UserApi from "./sdk/UserApi";
-import ApiState from "./ApiState";
 
 /**
  * Generic method to convert SDK error messages down into the message/code parts for transfer back to the parent window
@@ -202,6 +200,26 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
         case "GROUP_DELETE":
             return GroupApi.deleteGroup(data.message.groupID).engage(errorHandler, (deleteResult) =>
                 callback({type: "GROUP_DELETE_RESPONSE", message: deleteResult})
+            );
+        case "BLIND_SEARCH_INDEX_CREATE":
+            return SearchApi.createBlindSearchIndex(data.message.groupId).engage(errorHandler, (message) =>
+                callback({type: "BLIND_SEARCH_INDEX_CREATE_RESPONSE", message})
+            );
+        case "BLIND_SEARCH_INDEX_INIT":
+            return SearchApi.initializeBlindSearchIndex(data.message.searchIndexEncryptedSalt, data.message.searchIndexEdeks).engage(errorHandler, (message) =>
+                callback({type: "BLIND_SEARCH_INDEX_INIT_RESPONSE", message: {searchIndexId: message}})
+            );
+        case "BLIND_SEARCH_INDEX_TOKENIZE_DATA":
+            return SearchApi.tokenizeData(data.message.searchIndexId, data.message.data, data.message.partitionId).engage(errorHandler, (message) =>
+                callback({type: "BLIND_SEARCH_INDEX_TOKENIZE_DATA_RESPONSE", message})
+            );
+        case "BLIND_SEARCH_INDEX_TOKENIZE_QUERY":
+            return SearchApi.tokenizeQuery(data.message.searchIndexId, data.message.query, data.message.partitionId).engage(errorHandler, (message) =>
+                callback({type: "BLIND_SEARCH_INDEX_TOKENIZE_QUERY_RESPONSE", message})
+            );
+        case "SEARCH_TRANSLITERATE_STRING":
+            return SearchApi.transliterateString(data.message).engage(errorHandler, (message) =>
+                callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message})
             );
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here

@@ -1,7 +1,7 @@
-import {fromByteArray, toByteArray} from "base64-js";
 import {encode} from "@stablelib/utf8";
+import {fromByteArray, toByteArray} from "base64-js";
 import Future from "futurejs";
-import {DOCUMENT_ENCRYPTION_DETAILS_VERSION_NUMBER, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH, CryptoConstants} from "../Constants";
+import {CryptoConstants, DOCUMENT_ENCRYPTION_DETAILS_VERSION_NUMBER, HEADER_META_LENGTH_LENGTH, VERSION_HEADER_LENGTH} from "../Constants";
 import {concatArrayBuffers, sliceArrayBuffer} from "../lib/Utils";
 
 const ENCRYPTED_DEVICE_KEY_LOCAL_STORAGE_VERSION = "1";
@@ -144,3 +144,8 @@ export function combineDocumentParts(documentID: string, segmentID: number, docu
 export function encryptedDocumentToBase64(documentID: string, segmentID: number, document: EncryptedDocument) {
     return fromByteArray(combineDocumentParts(documentID, segmentID, document));
 }
+
+/**
+ * Encode the provided bytes as hex
+ */
+export const encodeBytesAsHex = (byteSource: Uint8Array): string => Array.from(byteSource, (byte) => `00${byte.toString(16)}`.slice(-2)).join("");

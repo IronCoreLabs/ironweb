@@ -4,7 +4,7 @@ module.exports = {
     errorOnDeprecated: true,
     coverageThreshold: {
         global: {
-            branches: 93,
+            branches: 90,
             functions: 93,
             lines: 93,
         },
@@ -20,9 +20,13 @@ module.exports = {
             diagnostics: {
                 ignoreCodes: [151001],
             },
+            //This can be removed once https://github.com/kulshekhar/ts-jest/issues/1471 is released, probably in ts-jest 25.3.0
+            tsConfig: {
+                outDir: "$$ts-jest$$",
+            },
         },
     },
-    testPathIgnorePatterns: ["/node_modules/", "/nightwatch/"],
+    testPathIgnorePatterns: ["/node_modules/", "/nightwatch/", "/protobuf/"],
     coveragePathIgnorePatterns: ["EncryptedDeks.js"],
     setupFilesAfterEnv: ["./src/tests/jestSetup.ts"],
 };

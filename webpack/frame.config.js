@@ -61,7 +61,7 @@ module.exports = (_, argv) => {
     const workerConfig = {
         ...sharedConfig,
         entry: {
-            worker: ["es6-promise/auto", path.join(__dirname, "../src/frame/worker/index.ts")],
+            worker: [path.join(__dirname, "../src/frame/worker/index.ts")],
         },
         output: {
             filename: "./frame/ironweb-[name].min.js",

@@ -116,7 +116,7 @@ const workerConfig = {
     ...sharedConfig,
     target: "webworker",
     entry: {
-        worker: ['es6-promise/auto', path.join(__dirname, "../src/frame/worker/index.ts")],
+        worker: [path.join(__dirname, "../src/frame/worker/index.ts")],
     },
 };
 

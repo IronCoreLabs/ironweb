@@ -1,10 +1,12 @@
 import {
+    BlindSearchIndex,
     DecryptedDocumentResponse,
     DeviceKeys,
     DocumentAccessResponse,
     DocumentIDNameResponse,
     DocumentListResponse as ExposedDocumentListResponse,
     DocumentMetaResponse,
+    EncryptedUnmanagedDocumentResponse,
     GroupDetailResponse,
     GroupListResponse as GroupListResult,
     GroupMetaResponse,
@@ -187,11 +189,7 @@ export interface DocumentUnmanagedEncryptRequest {
 }
 export interface DocumentUnmanagedEncryptResponse {
     type: "DOCUMENT_UNMANAGED_ENCRYPT_RESPONSE";
-    message: {
-        documentID: string;
-        edeks: Uint8Array;
-        document: Uint8Array;
-    };
+    message: EncryptedUnmanagedDocumentResponse;
 }
 
 /* Update/reencrypt */
@@ -435,6 +433,60 @@ export interface DeauthorizeDeviceResponse {
     message: boolean;
 }
 
+// Blind index search methods
+export interface BlindSearchIndexCreate {
+    type: "BLIND_SEARCH_INDEX_CREATE";
+    message: {
+        groupId: string;
+    };
+}
+export interface BlindSearchIndexCreateResponse {
+    type: "BLIND_SEARCH_INDEX_CREATE_RESPONSE";
+    message: BlindSearchIndex;
+}
+export interface BlindSearchIndexInit {
+    type: "BLIND_SEARCH_INDEX_INIT";
+    message: BlindSearchIndex;
+}
+export interface BlindSearchIndexInitResponse {
+    type: "BLIND_SEARCH_INDEX_INIT_RESPONSE";
+    message: {
+        searchIndexId: string;
+    };
+}
+export interface BlindSearchIndexTokenizeData {
+    type: "BLIND_SEARCH_INDEX_TOKENIZE_DATA";
+    message: {
+        searchIndexId: string;
+        data: string;
+        partitionId?: string;
+    };
+}
+export interface BlindSearchIndexTokenizeDataResponse {
+    type: "BLIND_SEARCH_INDEX_TOKENIZE_DATA_RESPONSE";
+    message: Uint32Array;
+}
+export interface BlindSearchIndexTokenizeQuery {
+    type: "BLIND_SEARCH_INDEX_TOKENIZE_QUERY";
+    message: {
+        searchIndexId: string;
+        query: string;
+        partitionId?: string;
+    };
+}
+export interface BlindSearchIndexTokenizeQueryResponse {
+    type: "BLIND_SEARCH_INDEX_TOKENIZE_QUERY_RESPONSE";
+    message: Uint32Array;
+}
+export interface SearchTransliterateString {
+    type: "SEARCH_TRANSLITERATE_STRING";
+    message: string;
+}
+export interface SearchTransliterateStringResponse {
+    type: "SEARCH_TRANSLITERATE_STRING_RESPONSE";
+    message: string;
+}
+
 export interface ErrorResponse {
     type: "ERROR_RESPONSE";
     message: {
@@ -476,7 +528,12 @@ export type RequestMessage =
     | ChangeUserPasscode
     | DeauthorizeDevice
     | DocumentUnmanagedDecryptRequest
-    | DocumentUnmanagedEncryptRequest;
+    | DocumentUnmanagedEncryptRequest
+    | BlindSearchIndexCreate
+    | BlindSearchIndexInit
+    | BlindSearchIndexTokenizeData
+    | BlindSearchIndexTokenizeQuery
+    | SearchTransliterateString;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyResponse
@@ -511,4 +568,9 @@ export type ResponseMessage =
     | GroupDeleteResponse
     | ErrorResponse
     | DocumentUnmanagedDecryptResponse
-    | DocumentUnmanagedEncryptResponse;
+    | DocumentUnmanagedEncryptResponse
+    | BlindSearchIndexCreateResponse
+    | BlindSearchIndexInitResponse
+    | BlindSearchIndexTokenizeDataResponse
+    | BlindSearchIndexTokenizeQueryResponse
+    | SearchTransliterateStringResponse;

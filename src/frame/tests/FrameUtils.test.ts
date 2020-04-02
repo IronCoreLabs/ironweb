@@ -186,4 +186,11 @@ describe("FrameUtils", () => {
             expect(headerBytes).toEqual(new Uint8Array([2, 0, 33, 123, 34, 95, 100, 105, 100, 95, 34, 58, 34, 100, 111, 99, 73, 68, 86, 97, 108, 117, 101, 34, 44, 34, 95, 115, 105, 100, 95, 34, 58, 51, 49, 125]));
         });
     });
+
+    describe("encodeBytesAsHex", () => {
+        it("returns the expected hex string", () => {
+            expect(FrameUtils.encodeBytesAsHex(new Uint8Array([92, 97, 93, 91, 102, 199, 37]))).toEqual("5c615d5b66c725");
+            expect(FrameUtils.encodeBytesAsHex(new Uint8Array([]))).toEqual("");
+        });
+    });
 });

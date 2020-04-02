@@ -7,8 +7,5 @@
     "main": "commonjs/shim/index.js",
     "module": "es/shim/index.js",
     "jsnext:main": "es/shim/index.js",
-    "types": "ironweb.d.ts",
-    "peerDependencies": {
-        "es6-promise": "^4.0.0"
-    }
+    "types": "ironweb.d.ts"
 }

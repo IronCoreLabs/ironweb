@@ -255,6 +255,32 @@ export interface SignatureGenerationWorkerResponse {
     message: MessageSignature;
 }
 
+interface SearchTokenizeString {
+    value: string;
+    salt: Uint8Array;
+    partitionId?: string;
+}
+export interface SearchTokenizeQueryRequest {
+    type: "SEARCH_TOKENIZE_QUERY";
+    message: SearchTokenizeString;
+}
+export interface SearchTokenizeDataRequest {
+    type: "SEARCH_TOKENIZE_DATA";
+    message: SearchTokenizeString;
+}
+export interface SearchTokenizeStringResponse {
+    type: "SEARCH_TOKENIZE_STRING_RESPONSE";
+    message: Uint32Array;
+}
+export interface SearchTransliterateString {
+    type: "SEARCH_TRANSLITERATE_STRING";
+    message: string;
+}
+export interface SearchTransliterateStringResponse {
+    type: "SEARCH_TRANSLITERATE_STRING_RESPONSE";
+    message: string;
+}
+
 export interface ErrorResponse {
     type: "ERROR_RESPONSE";
     message: {
@@ -278,7 +304,10 @@ export type RequestMessage =
     | DecryptLocalKeysWorkerRequest
     | GroupAddAdminWorkerRequest
     | GroupAddMemberWorkerRequest
-    | SignatureGenerationWorkerRequest;
+    | SignatureGenerationWorkerRequest
+    | SearchTokenizeQueryRequest
+    | SearchTokenizeDataRequest
+    | SearchTransliterateString;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyWorkerResponse
@@ -296,6 +325,8 @@ export type ResponseMessage =
     | GroupAddAdminWorkerResponse
     | GroupAddMemberWorkerResponse
     | SignatureGenerationWorkerResponse
+    | SearchTokenizeStringResponse
+    | SearchTransliterateStringResponse
     | ErrorResponse;
 
 //These two interfaces are for handling random number generation if it needs to happen outside of a WebWorker. They aren't part of the

@@ -87,6 +87,20 @@ exports.Api256 = class Api256 {
         return new Uint8Array(64);
     }
 };
+exports.EncryptedSearch = class EncryptedSearch {
+    static transliterateString(s) {
+        return `${s}-transliterated`;
+    }
+
+    generateHashesForString() {
+        return new Uint32Array([0, 1, 2]);
+    }
+
+    generateHashesForStringWithPadding() {
+        return new Uint32Array([3, 4, 5, 6, 7, 8, 9, 10]);
+    }
+};
+
 exports.transformKeyToBytes256 = () => new Uint8Array(672);
 exports.pbkdf2SHA256 = () => new Uint8Array(32);
 exports.subtractPrivateKeys = () => new Uint8Array(32);

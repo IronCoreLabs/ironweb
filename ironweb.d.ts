@@ -148,9 +148,16 @@ export interface DeviceKeys {
     created: RFC3339Timestamp;
     name?: string;
 }
-
 export interface UserCreateOptions {
     needsRotation?: boolean;
+}
+
+/**
+ * Search SDK response types
+ */
+export interface BlindSearchIndex {
+    searchIndexEncryptedSalt: Uint8Array;
+    searchIndexEdeks: Uint8Array;
 }
 
 /**
@@ -193,6 +200,16 @@ export interface Group {
     removeMembers(groupID: string, userList: string[]): Promise<GroupUserEditResponse>;
     removeSelfAsMember(groupID: string): Promise<void>;
     rotatePrivateKey(groupID: string): Promise<{needsRotation: boolean}>;
+}
+
+export interface Search {
+    createBlindSearchIndex(groupId: string): Promise<BlindSearchIndex>;
+    initializeBlindSearchIndex(index: BlindSearchIndex): Promise<InitializedSearchIndex>;
+    transliterateString(string: string): Promise<string>;
+}
+export interface InitializedSearchIndex {
+    tokenizeData(data: string, partitionId?: string): Promise<Uint32Array>;
+    tokenizeQuery(query: string, partitionId?: string): Promise<Uint32Array>;
 }
 
 export interface Codec {
@@ -283,6 +300,11 @@ export interface ErrorCodes {
     GROUP_UPDATE_KEY_REQUEST_FAILURE: 417;
     GROUP_ROTATE_PRIVATE_KEY_NOT_ADMIN_FAILURE: 418;
     REQUEST_RATE_LIMITED: 500;
+    POLICY_APPLY_REQUEST_FAILURE: 600;
+    SEARCH_CREATE_INDEX_FAILURE: 700;
+    SEARCH_INIT_INDEX_FAILURE: 701;
+    SEARCH_TOKENIZE_DATA_FAILURE: 702;
+    SEARCH_TOKENIZE_QUERY_FAILURE: 703;
 }
 
 export const ErrorCodes: ErrorCodes;
