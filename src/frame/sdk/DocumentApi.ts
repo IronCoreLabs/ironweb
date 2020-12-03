@@ -13,7 +13,7 @@ import SDKError from "../../lib/SDKError";
 import * as Utils from "../../lib/Utils";
 import ApiState from "../ApiState";
 import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetResponseType} from "../endpoints/DocumentApiEndpoints";
-import GroupApiEndpoints, {GroupListResponseType} from "../endpoints/GroupApiEndpoints";
+import GroupApiEndpoints, {GroupListResponseType, GroupPublicKeyObject} from "../endpoints/GroupApiEndpoints";
 import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoints";
 import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
 import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64} from "../FrameUtils";
@@ -24,13 +24,13 @@ import * as DocumentOperations from "./DocumentOperations";
  */
 function createErrorForInvalidUsersOrGroups(
     userKeys: UserKeyListResponseType,
-    groupKeys: GroupListResponseType,
+    groupKeys: GroupPublicKeyObject[],
     invalidPolicyUsersAndGroups: UserOrGroup[],
     userGrants: string[],
     groupGrants: string[]
 ) {
     const existingUserIDs = userKeys.result.map(({id}) => id);
-    const existingGroupIDs = groupKeys.result.map(({id}) => id);
+    const existingGroupIDs = groupKeys.map(({id}) => id);
     const missingPolicyUsers = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "user").map(({id}) => id);
     const missingPolicyGroups = invalidPolicyUsersAndGroups.filter((userOrGroup) => userOrGroup.type === "group").map(({id}) => id);
     const missingUsersString = userGrants
@@ -56,10 +56,10 @@ function normalizePolicyApply(usersOrGroups: UserOrGroupWithKey[]) {
  * @param {UserKeyListResponseType} userKeys  List of user keys from user key list response
  * @param {GroupListResponseType}   groupKeys List of groups from group list response
  */
-function normalizeUserAndGroupPublicKeyList(userKeys: UserKeyListResponseType, groupKeys: GroupListResponseType) {
+function normalizeUserAndGroupPublicKeyList(userKeys: UserKeyListResponseType, groupKeys: GroupPublicKeyObject[]) {
     return [
         userKeys.result.map((user) => ({id: user.id, masterPublicKey: user.userMasterPublicKey})),
-        groupKeys.result.map((group) => ({id: group.id, masterPublicKey: group.groupMasterPublicKey})),
+        groupKeys.map(({id, groupMasterPublicKey}) => ({id, masterPublicKey: groupMasterPublicKey})),
     ];
 }
 
@@ -173,10 +173,10 @@ export function getKeyListsForUsersAndGroups(
 ): Future<SDKError, {userKeys: UserOrGroupPublicKey[]; groupKeys: UserOrGroupPublicKey[]}> {
     return Future.gather3(
         UserApiEndpoints.callUserKeyListApi(userGrants),
-        GroupApiEndpoints.callGroupKeyListApi(groupGrants),
+        GroupApiEndpoints.getGroupPublicKeyList(groupGrants),
         PolicyEndpoints.callApplyPolicyApi(policy)
     ).flatMap(([userKeys, groupKeys, policyResults]) => {
-        if (userKeys.result.length !== userGrants.length || groupKeys.result.length !== groupGrants.length || policyResults.invalidUsersAndGroups.length > 0) {
+        if (userKeys.result.length !== userGrants.length || groupKeys.length !== groupGrants.length || policyResults.invalidUsersAndGroups.length > 0) {
             //One of the user or groups in the list here doesn't exist. Fail the create call.
             const {missingUsersString, missingGroupsString} = createErrorForInvalidUsersOrGroups(
                 userKeys,
@@ -195,7 +195,7 @@ export function getKeyListsForUsersAndGroups(
             );
         }
 
-        if (userKeys.result.length === 0 && groupKeys.result.length === 0 && !grantToAuthor && policyResults.usersAndGroups.length === 0) {
+        if (userKeys.result.length === 0 && groupKeys.length === 0 && !grantToAuthor && policyResults.usersAndGroups.length === 0) {
             return Future.reject(
                 new SDKError(new Error(`Failed to create document due to no users or groups to share with.`), ErrorCodes.DOCUMENT_CREATE_WITH_ACCESS_FAILURE)
             );
@@ -401,11 +401,11 @@ export function grantDocumentAccess(documentID: string, userGrants: string[], gr
 
     return Future.gather3(
         UserApiEndpoints.callUserKeyListApi(userGrants),
-        GroupApiEndpoints.callGroupKeyListApi(groupGrants),
+        GroupApiEndpoints.getGroupPublicKeyList(groupGrants),
         DocumentApiEndpoints.callDocumentMetadataGetApi(documentID)
     ).flatMap(([userKeys, groupKeys, documentMetadata]) => {
         //If we didn't get back keys for either users or groups, bail early
-        if (!userKeys.result.length && !groupKeys.result.length) {
+        if (!userKeys.result.length && !groupKeys.length) {
             return Future.of(accessResponseToSDKResult({succeededIds: [], failedIds: []}, userGrants, groupGrants));
         }
         //Otherwise decrypt the document key and encrypt it to each user/group

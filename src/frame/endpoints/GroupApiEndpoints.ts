@@ -1,10 +1,10 @@
+import {fromByteArray} from "base64-js";
 import Future from "futurejs";
 import {ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
 import {makeAuthorizedApiRequest} from "../ApiRequest";
 import {TransformKeyGrant} from "../worker/crypto/recrypt";
-import {fromByteArray} from "base64-js";
 
 export interface GroupListResponseType {
     result: GroupApiFullResponse[];
@@ -26,6 +26,15 @@ export interface GroupMemberModifyResponseType {
 export interface GroupKeyUpdateResponse {
     groupKeyId: number;
     needsRotation: boolean;
+}
+
+export interface GroupPublicKeyCache {
+    [groupId: string]: GroupPublicKeyObject;
+}
+
+export interface GroupPublicKeyObject {
+    id: string;
+    groupMasterPublicKey: PublicKey<string>;
 }
 
 /**
@@ -260,6 +269,11 @@ function groupDelete(groupID: string) {
     };
 }
 
+/**
+ * Cache of group public keys that have been retrieved. Used as an alternative to groupKeyList where possible.
+ */
+const groupPublicKeyCache: GroupPublicKeyCache = {};
+
 export default {
     /**
      * Invokes the group list API
@@ -272,14 +286,42 @@ export default {
     /**
      * Eventually this will allow us to get a filtered list of groups based on the provided list of group IDs. But for now it's
      * just getting the entire list of groups available to the current user.
-     * @param {string[]} groupIDs List of group IDs to retrieve
+     * @param {string[]} groupIds List of group IDs to retrieve
      */
-    callGroupKeyListApi(groupIDs: string[]): Future<SDKError, GroupListResponseType> {
-        if (!groupIDs.length) {
+    callGroupKeyListApi(groupIds: string[]): Future<SDKError, GroupListResponseType> {
+        if (!groupIds.length) {
             return Future.of({result: []});
         }
-        const {url, options, errorCode} = groupList(groupIDs);
-        return makeAuthorizedApiRequest<GroupListResponseType>(url, errorCode, options);
+        const {url, options, errorCode} = groupList(groupIds);
+        return makeAuthorizedApiRequest<GroupListResponseType>(url, errorCode, options).map((groupKeyListResponse) => {
+            // cache off the public keys for everything we just requests
+            groupKeyListResponse.result.forEach((fullGroupResponse) => {
+                groupPublicKeyCache[fullGroupResponse.id] = {id: fullGroupResponse.id, groupMasterPublicKey: fullGroupResponse.groupMasterPublicKey};
+            });
+            return groupKeyListResponse;
+        });
+    },
+
+    getGroupPublicKeyList(groupIds: string[]): Future<SDKError, GroupPublicKeyObject[]> {
+        if (!groupIds.length) {
+            return Future.of([]);
+        }
+
+        // try to get keys from the cache
+        const cacheHits: GroupPublicKeyObject[] = [];
+        groupIds.forEach((groupId) => {
+            cacheHits.push(groupPublicKeyCache[groupId]);
+        });
+
+        // if all the group ids were cached, then we should just return those
+        // otherwise call through to the API (which will update the cache)
+        if (cacheHits.length === groupIds.length) {
+            return Future.of(cacheHits);
+        } else {
+            return this.callGroupKeyListApi(groupIds).map((groupListResponse) =>
+                groupListResponse.result.map(({id, groupMasterPublicKey}) => ({id, groupMasterPublicKey}))
+            );
+        }
     },
 
     /**
