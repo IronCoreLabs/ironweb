@@ -310,7 +310,10 @@ export default {
         // try to get keys from the cache
         const cacheHits: GroupPublicKeyObject[] = [];
         groupIds.forEach((groupId) => {
-            cacheHits.push(groupPublicKeyCache[groupId]);
+            const cacheValue = groupPublicKeyCache[groupId];
+            if (cacheValue) {
+                cacheHits.push(cacheValue);
+            }
         });
 
         // if all the group ids were cached, then we should just return those

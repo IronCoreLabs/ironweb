@@ -229,13 +229,6 @@ const userKeyList = (userList: string[]): RequestMeta => ({
  * Cache of user public keys that have been retrieved. Used to speed up calls to userKeyList where possible.
  */
 const userPublicKeyCache: UserPublicKeyCache = {};
-const mergeUserKeyListResponses = (...userKeyListResponses: UserKeyListResponseObject[][]): UserKeyListResponseType => {
-    const mergedResponses = userKeyListResponses.reduce((acc, val) => acc.concat(val), []);
-
-    // deduplicate by assigning all the keys to a map, then turning it back into an array of the values.
-    const result = [...new Map(mergedResponses.map((key) => [key.id, key])).values()];
-    return {result};
-};
 
 export default {
     /**
@@ -327,30 +320,26 @@ export default {
         }
 
         // Check the list for any users we already have the public key cached for
-        const cachedUserIdKeys: UserKeyListResponseObject[] = [];
-        const userIdsToFetch: string[] = [];
+        const cacheHits: UserKeyListResponseObject[] = [];
         userList.forEach((userId) => {
             const userMasterPublicKey = userPublicKeyCache[userId];
             if (userMasterPublicKey) {
-                cachedUserIdKeys.push(userMasterPublicKey);
-            } else {
-                userIdsToFetch.push(userId);
+                cacheHits.push(userMasterPublicKey);
             }
         });
 
-        // If we have any userIds that weren't cached, fetch them and merge with the cached ones
-        // otherwise we can just return the cached ones
-        if (userIdsToFetch.length !== 0) {
-            const {url, options, errorCode} = userKeyList(userIdsToFetch);
+        // If we have any userIds that weren't cached, fetch all of them
+        if (cacheHits.length === userList.length) {
+            return Future.of({result: cacheHits});
+        } else {
+            const {url, options, errorCode} = userKeyList(userList);
             return makeAuthorizedApiRequest<UserKeyListResponseType>(url, errorCode, options).map((userListResponse) => {
                 // cache the retrieved keys
                 userListResponse.result.forEach((userKey) => {
                     userPublicKeyCache[userKey.id] = userKey;
                 });
-                return mergeUserKeyListResponses(userListResponse.result, cachedUserIdKeys);
+                return userListResponse;
             });
-        } else {
-            return Future.of({result: cachedUserIdKeys});
         }
     },
 };

@@ -13,7 +13,7 @@ import SDKError from "../../lib/SDKError";
 import * as Utils from "../../lib/Utils";
 import ApiState from "../ApiState";
 import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetResponseType} from "../endpoints/DocumentApiEndpoints";
-import GroupApiEndpoints, {GroupListResponseType, GroupPublicKeyObject} from "../endpoints/GroupApiEndpoints";
+import GroupApiEndpoints, {GroupPublicKeyObject} from "../endpoints/GroupApiEndpoints";
 import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoints";
 import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
 import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64} from "../FrameUtils";
@@ -54,7 +54,7 @@ function normalizePolicyApply(usersOrGroups: UserOrGroupWithKey[]) {
 /**
  * Take the result of listing a user/groups public keys and normalize them into a similar structure.
  * @param {UserKeyListResponseType} userKeys  List of user keys from user key list response
- * @param {GroupListResponseType}   groupKeys List of groups from group list response
+ * @param {GroupPublicKeyObject[]}  groupKeys List of groups from group list response
  */
 function normalizeUserAndGroupPublicKeyList(userKeys: UserKeyListResponseType, groupKeys: GroupPublicKeyObject[]) {
     return [
