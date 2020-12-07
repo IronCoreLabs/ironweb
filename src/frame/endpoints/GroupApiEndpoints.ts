@@ -269,9 +269,6 @@ function groupDelete(groupID: string) {
     };
 }
 
-/**
- * Cache of group public keys that have been retrieved. Used as an alternative to groupKeyList where possible.
- */
 const groupPublicKeyCache: GroupPublicKeyCache = {};
 
 export default {
@@ -284,6 +281,11 @@ export default {
     },
 
     /**
+     * Cache of group public keys that have been retrieved. Used as an alternative to groupKeyList where possible.
+     */
+    groupPublicKeyCache,
+
+    /**
      * Eventually this will allow us to get a filtered list of groups based on the provided list of group IDs. But for now it's
      * just getting the entire list of groups available to the current user.
      * @param {string[]} groupIds List of group IDs to retrieve
@@ -294,9 +296,9 @@ export default {
         }
         const {url, options, errorCode} = groupList(groupIds);
         return makeAuthorizedApiRequest<GroupListResponseType>(url, errorCode, options).map((groupKeyListResponse) => {
-            // cache off the public keys for everything we just requests
-            groupKeyListResponse.result.forEach((fullGroupResponse) => {
-                groupPublicKeyCache[fullGroupResponse.id] = {id: fullGroupResponse.id, groupMasterPublicKey: fullGroupResponse.groupMasterPublicKey};
+            // cache off the public keys for everything we just requested
+            groupKeyListResponse.result.forEach(({id, groupMasterPublicKey}) => {
+                groupPublicKeyCache[id] = {id, groupMasterPublicKey};
             });
             return groupKeyListResponse;
         });
