@@ -53,13 +53,16 @@ export interface UserKeyListResponseType {
     result: UserKeyListResponseObject[];
 }
 
-export interface UserKeyListResponseObject {
-    id: string;
+export interface UserCachedPublicKey {
     userMasterPublicKey: PublicKey<Base64String>;
 }
 
+export type UserKeyListResponseObject = {
+    id: string;
+} & UserCachedPublicKey;
+
 interface UserPublicKeyCache {
-    [userId: string]: UserKeyListResponseObject;
+    [userId: string]: UserCachedPublicKey;
 }
 
 /**
@@ -324,7 +327,7 @@ export default {
         userList.forEach((userId) => {
             const userMasterPublicKey = userPublicKeyCache[userId];
             if (userMasterPublicKey) {
-                cacheHits.push(userMasterPublicKey);
+                cacheHits.push({id: userId, ...userMasterPublicKey});
             }
         });
 

@@ -85,6 +85,38 @@ describe("GroupApiEndpoints", () => {
             );
         });
     });
+    // TODO: figure out how to get this test to work
+    describe("getGroupPublicKeyList", () => {
+        it("only calls to API the first time for a list of group keys.", () => {
+            const id1 = "group-10";
+            const key1 = "group-10-key";
+            const id2 = "group-20";
+            const key2 = "group-20-key";
+            const apiResp = [
+                {id: id1, groupMasterPublicKey: key1},
+                {id: id2, groupMasterPublicKey: key2},
+            ];
+            for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
+            console.log(JSON.stringify(GroupApiEndpoints.groupPublicKeyCache));
+            apiSpy.and.returnValue(Future.of(apiResp));
+            GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
+                (e) => fail(e),
+                (groups: any) => {
+                    console.log(`resp1: ${JSON.stringify(groups)}`);
+                    expect(groups).toEqual(apiResp);
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
+                }
+            );
+            GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
+                (e) => fail(e),
+                (groups: any) => {
+                    console.log(`resp2: ${JSON.stringify(groups)}`);
+                    expect(groups).toEqual(apiResp);
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
+                }
+            );
+        });
+    });
 
     describe("callGroupGetApi", () => {
         it("requests group get with specific ID and maps response to data result", () => {

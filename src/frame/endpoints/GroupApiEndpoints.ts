@@ -29,13 +29,16 @@ export interface GroupKeyUpdateResponse {
 }
 
 export interface GroupPublicKeyCache {
-    [groupId: string]: GroupPublicKeyObject;
+    [groupId: string]: CachedGroupPublicKey;
 }
 
-export interface GroupPublicKeyObject {
-    id: string;
+export interface CachedGroupPublicKey {
     groupMasterPublicKey: PublicKey<string>;
 }
+
+export type GroupPublicKeyObject = {
+    id: string;
+} & CachedGroupPublicKey;
 
 /**
  * Get API request details for group list
@@ -298,7 +301,7 @@ export default {
         return makeAuthorizedApiRequest<GroupListResponseType>(url, errorCode, options).map((groupKeyListResponse) => {
             // cache off the public keys for everything we just requested
             groupKeyListResponse.result.forEach(({id, groupMasterPublicKey}) => {
-                groupPublicKeyCache[id] = {id, groupMasterPublicKey};
+                groupPublicKeyCache[id] = {groupMasterPublicKey};
             });
             return groupKeyListResponse;
         });
@@ -314,7 +317,7 @@ export default {
         groupIds.forEach((groupId) => {
             const cacheValue = groupPublicKeyCache[groupId];
             if (cacheValue) {
-                cacheHits.push(cacheValue);
+                cacheHits.push({id: groupId, ...cacheValue});
             }
         });
 
