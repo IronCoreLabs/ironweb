@@ -722,7 +722,7 @@ describe("DocumentApi", () => {
                     });
 
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["userID", "userID2"]);
-                    expect(GroupApiEndpoints.callGroupKeyListApi).toHaveBeenCalledWith([]);
+                    expect(GroupApiEndpoints.getGroupPublicKeyList).toHaveBeenCalledWith([]);
                     expect(DocumentApiEndpoints.callDocumentMetadataGetApi).toHaveBeenCalledWith("docID");
                     expect(DocumentOperations.encryptDocumentToKeys).toHaveBeenCalledWith(
                         docSymKey,
