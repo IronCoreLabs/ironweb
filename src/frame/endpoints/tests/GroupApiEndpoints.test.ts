@@ -85,34 +85,91 @@ describe("GroupApiEndpoints", () => {
             );
         });
     });
-    // TODO: figure out how to get this test to work
+
     describe("getGroupPublicKeyList", () => {
         it("only calls to API the first time for a list of group keys.", () => {
             const id1 = "group-10";
             const key1 = "group-10-key";
             const id2 = "group-20";
             const key2 = "group-20-key";
-            const apiResp = [
-                {id: id1, groupMasterPublicKey: key1},
-                {id: id2, groupMasterPublicKey: key2},
-            ];
+            const apiResp = {
+                result: [
+                    {id: id1, groupMasterPublicKey: key1},
+                    {id: id2, groupMasterPublicKey: key2},
+                ],
+            };
+            // clear the module cache for this test
             for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
-            console.log(JSON.stringify(GroupApiEndpoints.groupPublicKeyCache));
             apiSpy.and.returnValue(Future.of(apiResp));
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
                 (e) => fail(e),
                 (groups: any) => {
-                    console.log(`resp1: ${JSON.stringify(groups)}`);
-                    expect(groups).toEqual(apiResp);
+                    expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
                 }
             );
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
                 (e) => fail(e),
                 (groups: any) => {
-                    console.log(`resp2: ${JSON.stringify(groups)}`);
-                    expect(groups).toEqual(apiResp);
+                    expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
+                }
+            );
+        });
+
+        it("the cache is filled as expected.", () => {
+            const id1 = "group-10";
+            const key1 = "group-10-key";
+            const id2 = "group-20";
+            const key2 = "group-20-key";
+            const apiResp = {
+                result: [
+                    {id: id1, groupMasterPublicKey: key1},
+                    {id: id2, groupMasterPublicKey: key2},
+                ],
+            };
+            // clear the module cache for this test
+            for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
+            apiSpy.and.returnValue(Future.of(apiResp));
+            GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
+                (e) => fail(e),
+                (groups: any) => {
+                    expect(groups).toEqual(apiResp.result);
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
+                    expect(GroupApiEndpoints.groupPublicKeyCache).toEqual({[id1]: {groupMasterPublicKey: key1}, [id2]: {groupMasterPublicKey: key2}});
+                }
+            );
+        });
+
+        it("calls with everything to the API if any keys weren't in the cache.", () => {
+            const id1 = "group-10";
+            const key1 = "group-10-key";
+            const id2 = "group-20";
+            const key2 = "group-20-key";
+            const apiResp = {
+                result: [
+                    {id: id1, groupMasterPublicKey: key1},
+                    {id: id2, groupMasterPublicKey: key2},
+                ],
+            };
+            // clear the module cache for this test
+            for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
+            apiSpy.and.returnValue(Future.of(apiResp));
+            GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
+                (e) => fail(e),
+                (groups: any) => {
+                    expect(groups).toEqual(apiResp.result);
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
+                }
+            );
+            GroupApiEndpoints.getGroupPublicKeyList([id1, "group-30"]).engage(
+                (e) => fail(e),
+                (_) => {
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-30", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(2);
                 }
             );
         });
