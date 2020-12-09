@@ -228,9 +228,6 @@ const userKeyList = (userList: string[]): RequestMeta => ({
     errorCode: ErrorCodes.USER_KEY_LIST_REQUEST_FAILURE,
 });
 
-/**
- * Cache of user public keys that have been retrieved. Used to speed up calls to userKeyList where possible.
- */
 const userPublicKeyCache: UserPublicKeyCache = {};
 
 export default {
@@ -312,6 +309,11 @@ export default {
         const {url, options, errorCode} = deleteCurrentDevice(id);
         return makeAuthorizedApiRequest(url, errorCode, options);
     },
+
+    /**
+     * Cache of user public keys that have been retrieved. Used to speed up calls to userKeyList where possible.
+     */
+    userPublicKeyCache,
 
     /**
      * Get a list of public keys for the provided list of users

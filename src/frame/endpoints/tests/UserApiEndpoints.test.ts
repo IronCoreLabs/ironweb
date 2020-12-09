@@ -383,6 +383,101 @@ describe("UserApiEndpoints", () => {
             );
         });
 
+        it("caches the response in memory.", () => {
+            const id1 = "user-10";
+            const id2 = "user-20";
+            const resp = {
+                result: [
+                    {id: id1, userMasterPublicKey: {x: ""}},
+                    {id: id2, userMasterPublicKey: {x: ""}},
+                ],
+            };
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+
+            // clear the module cache for this test
+            for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
+            expect(UserApiEndpoints.userPublicKeyCache).toEqual({});
+            UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
+                (e) => fail(e),
+                (userList: any) => {
+                    expect(userList).toEqual(resp);
+
+                    expect(UserApiEndpoints.userPublicKeyCache).toEqual({[id1]: resp.result[0], [id2]: resp.result[1]});
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users?id=user-10%2Cuser-20", expect.any(Number), expect.any(Object));
+                }
+            );
+        });
+
+        it("cached values prevent extra calls to the API.", () => {
+            const id1 = "user-10";
+            const id2 = "user-20";
+            const resp = {
+                result: [
+                    {id: id1, userMasterPublicKey: {x: ""}},
+                    {id: id2, userMasterPublicKey: {x: ""}},
+                ],
+            };
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+
+            // clear the module cache for this test
+            for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
+            UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
+                (e) => fail(e),
+                (userList: any) => {
+                    expect(userList).toEqual(resp);
+
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users?id=user-10%2Cuser-20", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
+                }
+            );
+            UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
+                (e) => fail(e),
+                (userList: any) => {
+                    expect(userList).toEqual(resp);
+
+                    // make sure it wasn't actually called a second time
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
+                }
+            );
+        });
+
+        it("any non cached values result in extra calls to the API.", () => {
+            const id1 = "user-10";
+            const id2 = "user-20";
+            const resp = {
+                result: [
+                    {id: id1, userMasterPublicKey: {x: ""}},
+                    {id: id2, userMasterPublicKey: {x: ""}},
+                ],
+            };
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
+
+            // clear the module cache for this test
+            for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
+            UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
+                (e) => fail(e),
+                (userList: any) => {
+                    expect(userList).toEqual(resp);
+
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users?id=user-10%2Cuser-20", expect.any(Number), expect.any(Object));
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
+                }
+            );
+            UserApiEndpoints.callUserKeyListApi([id1, "user-30"]).engage(
+                (e) => fail(e),
+                (_) => {
+                    // make sure it was actually called a second time
+                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(2);
+                }
+            );
+        });
+
         it("escapes all user IDs", () => {
             (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
                 Future.of({
