@@ -340,8 +340,8 @@ export default {
             const {url, options, errorCode} = userKeyList(userList);
             return makeAuthorizedApiRequest<UserKeyListResponseType>(url, errorCode, options).map((userListResponse) => {
                 // cache the retrieved keys
-                userListResponse.result.forEach((userKey) => {
-                    userPublicKeyCache[userKey.id] = userKey;
+                userListResponse.result.forEach(({userMasterPublicKey, id}) => {
+                    userPublicKeyCache[id] = {userMasterPublicKey};
                 });
                 return userListResponse;
             });
