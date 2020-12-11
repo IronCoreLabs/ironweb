@@ -404,7 +404,10 @@ describe("UserApiEndpoints", () => {
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
-                    expect(UserApiEndpoints.userPublicKeyCache).toEqual({[id1]: resp.result[0], [id2]: resp.result[1]});
+                    expect(UserApiEndpoints.userPublicKeyCache).toEqual({
+                        [id1]: {userMasterPublicKey: resp.result[0].userMasterPublicKey},
+                        [id2]: {userMasterPublicKey: resp.result[1].userMasterPublicKey},
+                    });
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users?id=user-10%2Cuser-20", expect.any(Number), expect.any(Object));
                 }
             );
