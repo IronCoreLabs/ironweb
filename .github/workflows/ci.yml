@@ -1,0 +1,21 @@
+name: IronWeb CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.1.2
+        with:
+          version: 10.x
+      - name: build and unit test
+        run: |
+          yarn
+          yarn test
+
