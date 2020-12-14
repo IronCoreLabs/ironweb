@@ -1,6 +1,6 @@
 # IronCore Labs JavaScript SDK
 
-[![Build Status](https://travis-ci.org/IronCoreLabs/ironweb.svg?branch=master)](https://travis-ci.org/IronCoreLabs/ironweb)
+![Build Status](https://github.com/IronCoreLabs/ironweb/workflows/IronWeb%20CI/badge.svg)
 [![NPM Version](https://badge.fury.io/js/%40ironcorelabs%2Fironweb.svg)](https://www.npmjs.com/package/@ironcorelabs/ironweb)
 
 SDK for using IronCore from your browser-based JavaScript application. Read [our documentation](https://docs.ironcorelabs.com) for further information about how to integrate this library into your client side application.
