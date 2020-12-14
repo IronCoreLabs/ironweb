@@ -1,0 +1,30 @@
+name: IronWeb Snapshot
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2.1.2
+        with:
+          version: 10.x
+      - name: build and unit test
+        run: |
+          yarn
+          yarn test
+      - name: release snapshot
+        env:
+          GIT_PROJECT_NAME: "ironweb"
+          # $GIT_ACCESS_TOKEN Allows bumping version on build and pushing back to repo
+          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # $NPM_TOKEN Allows publishing to NPM on build
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          BRANCH: "master"
+        run: |
+          npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+          node ./.github/scripts/snapshot.js
