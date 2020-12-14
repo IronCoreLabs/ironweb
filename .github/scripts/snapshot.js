@@ -52,7 +52,7 @@ shell.echo("\n\nRunning build process to generate dist output and bump version..
 shell.exec("node ./scripts/build.js --bump");
 
 //Get the latest version that was bumped to so that we can use it in our commit messages
-const updatedVersion = require("../package.json").version;
+const updatedVersion = require("../../package.json").version;
 
 shell.echo(`\n\nBuild successful, version is now set to ${updatedVersion}`);
 
