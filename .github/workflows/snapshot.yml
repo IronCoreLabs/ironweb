@@ -21,10 +21,10 @@ jobs:
         env:
           GIT_PROJECT_NAME: "ironweb"
           # $GIT_ACCESS_TOKEN Allows bumping version on build and pushing back to repo
-          GIT_ACCESS_TOKEN: "TODO: secure setup"
+          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # $NPM_TOKEN Allows publishing to NPM on build
-          NPM_TOKEN: "TODO: secure setup"
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          BRANCH: "master"
         run: |
           npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
-          export BRANCH=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then echo $TRAVIS_BRANCH; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi)
-          node ./.travis_scripts/snapshot.js
+          node ./.github/scripts/snapshot.js
