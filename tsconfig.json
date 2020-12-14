@@ -4,6 +4,7 @@
         "sourceMap": true,
         "noImplicitReturns": true,
         "noUnusedParameters": true,
+        "downlevelIteration": true,
         "noEmitOnError": true,
         "noUnusedLocals": true,
         "declaration": false,

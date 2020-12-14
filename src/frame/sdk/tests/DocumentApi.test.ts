@@ -1,13 +1,13 @@
-import * as DocumentApi from "../DocumentApi";
-import * as TestUtils from "../../../tests/TestUtils";
-import * as DocumentOperations from "../DocumentOperations";
 import Future from "futurejs";
-import DocumentApiEndpoints from "../../endpoints/DocumentApiEndpoints";
-import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
-import GroupApiEndpoints from "../../endpoints/GroupApiEndpoints";
-import ApiState from "../../ApiState";
 import {ErrorCodes} from "../../../Constants";
+import * as TestUtils from "../../../tests/TestUtils";
+import ApiState from "../../ApiState";
+import DocumentApiEndpoints from "../../endpoints/DocumentApiEndpoints";
+import GroupApiEndpoints from "../../endpoints/GroupApiEndpoints";
 import PolicyApiEndpoints from "../../endpoints/PolicyApiEndpoints";
+import UserApiEndpoints from "../../endpoints/UserApiEndpoints";
+import * as DocumentApi from "../DocumentApi";
+import * as DocumentOperations from "../DocumentOperations";
 
 describe("DocumentApi", () => {
     const privateDeviceKey = new Uint8Array([23]);
@@ -694,7 +694,7 @@ describe("DocumentApi", () => {
                     ],
                 })
             );
-            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(Future.of({result: []}));
+            spyOn(GroupApiEndpoints, "getGroupPublicKeyList").and.returnValue(Future.of([]));
             spyOn(DocumentOperations, "encryptDocumentToKeys").and.returnValue(
                 Future.of({
                     userAccessKeys: ["encryptedUserKey"],
@@ -722,7 +722,7 @@ describe("DocumentApi", () => {
                     });
 
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["userID", "userID2"]);
-                    expect(GroupApiEndpoints.callGroupKeyListApi).toHaveBeenCalledWith([]);
+                    expect(GroupApiEndpoints.getGroupPublicKeyList).toHaveBeenCalledWith([]);
                     expect(DocumentApiEndpoints.callDocumentMetadataGetApi).toHaveBeenCalledWith("docID");
                     expect(DocumentOperations.encryptDocumentToKeys).toHaveBeenCalledWith(
                         docSymKey,
@@ -795,8 +795,14 @@ describe("DocumentApi", () => {
         });
 
         it("runs all of the above for lists of users and lists of groups", (done) => {
-            const userKeys = [{id: "userID1", userMasterPublicKey: {x: "firstuserkey"}}, {id: "userID2", userMasterPublicKey: {x: "seconduserkey"}}];
-            const groupKeys = [{id: "groupID1", groupMasterPublicKey: {x: "firstgroupkey"}}, {id: "groupID2", groupMasterPublicKey: {x: "secondgroupkey"}}];
+            const userKeys = [
+                {id: "userID1", userMasterPublicKey: {x: "firstuserkey"}},
+                {id: "userID2", userMasterPublicKey: {x: "seconduserkey"}},
+            ];
+            const groupKeys = [
+                {id: "groupID1", groupMasterPublicKey: {x: "firstgroupkey"}},
+                {id: "groupID2", groupMasterPublicKey: {x: "secondgroupkey"}},
+            ];
             const docSymKey = {
                 encryptedSymmetricKey: "esk",
                 ephemeralPublicKey: "epk",
@@ -830,8 +836,14 @@ describe("DocumentApi", () => {
                 (e) => fail(e.message),
                 (data: any) => {
                     expect(data).toEqual({
-                        succeeded: [{id: "groupID1", type: "group"}, {id: "userID2", type: "user"}],
-                        failed: [{id: "groupID2", type: "group", error: "foo"}, {id: "userID1", type: "user", error: "bar"}],
+                        succeeded: [
+                            {id: "groupID1", type: "group"},
+                            {id: "userID2", type: "user"},
+                        ],
+                        failed: [
+                            {id: "groupID2", type: "group", error: "foo"},
+                            {id: "userID1", type: "user", error: "bar"},
+                        ],
                     });
 
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["userID1", "userID2"]);
@@ -839,8 +851,14 @@ describe("DocumentApi", () => {
                     expect(DocumentApiEndpoints.callDocumentMetadataGetApi).toHaveBeenCalledWith("docID");
                     expect(DocumentOperations.encryptDocumentToKeys).toHaveBeenCalledWith(
                         docSymKey,
-                        [{id: "userID1", masterPublicKey: {x: "firstuserkey"}}, {id: "userID2", masterPublicKey: {x: "seconduserkey"}}],
-                        [{id: "groupID1", masterPublicKey: {x: "firstgroupkey"}}, {id: "groupID2", masterPublicKey: {x: "secondgroupkey"}}],
+                        [
+                            {id: "userID1", masterPublicKey: {x: "firstuserkey"}},
+                            {id: "userID2", masterPublicKey: {x: "seconduserkey"}},
+                        ],
+                        [
+                            {id: "groupID1", masterPublicKey: {x: "firstgroupkey"}},
+                            {id: "groupID2", masterPublicKey: {x: "secondgroupkey"}},
+                        ],
                         privateDeviceKey,
                         ApiState.signingKeys()
                     );
@@ -851,7 +869,10 @@ describe("DocumentApi", () => {
         });
 
         it("returns failures for users or groups that dont exist", (done) => {
-            const userKeys = [{id: "userID1", userMasterPublicKey: {x: "firstuserkey"}}, {id: "userID2", userMasterPublicKey: {x: "seconduserkey"}}];
+            const userKeys = [
+                {id: "userID1", userMasterPublicKey: {x: "firstuserkey"}},
+                {id: "userID2", userMasterPublicKey: {x: "seconduserkey"}},
+            ];
             const groupKeys = [{id: "groupID1", groupMasterPublicKey: {x: "firstgroupkey"}}];
             const docSymKey = {
                 encryptedSymmetricKey: "esk",
@@ -887,7 +908,10 @@ describe("DocumentApi", () => {
                 (e) => fail(e.message),
                 (data: any) => {
                     expect(data).toEqual({
-                        succeeded: [{id: "groupID1", type: "group"}, {id: "userID2", type: "user"}],
+                        succeeded: [
+                            {id: "groupID1", type: "group"},
+                            {id: "userID2", type: "user"},
+                        ],
                         failed: [
                             {id: "groupID2", type: "group", error: "foo"},
                             {id: "userID1", type: "user", error: "bar"},
@@ -946,8 +970,14 @@ describe("DocumentApi", () => {
                 (e) => fail(e.message),
                 (result) => {
                     expect(result).toEqual({
-                        succeeded: [{id: "groupID1", type: "group"}, {id: "userID2", type: "user"}],
-                        failed: [{id: "groupID2", type: "group", error: "foo"}, {id: "userID1", type: "user", error: "bar"}],
+                        succeeded: [
+                            {id: "groupID1", type: "group"},
+                            {id: "userID2", type: "user"},
+                        ],
+                        failed: [
+                            {id: "groupID2", type: "group", error: "foo"},
+                            {id: "userID1", type: "user", error: "bar"},
+                        ],
                     });
                 }
             );
