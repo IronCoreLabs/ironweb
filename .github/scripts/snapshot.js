@@ -45,7 +45,7 @@ if (lastCommitAuthor.stdout === "Leeroy Travis") {
 }
 
 //Ensure that our directory is set to the root of this project repo
-shell.cd(`${path.dirname(process.argv[1])}/../`);
+shell.cd(`${path.dirname(process.argv[1])}/../../`);
 
 //Run the build. This will cause the dist directory to be generated and also modify the package.json to bump it by a patch version
 shell.echo("\n\nRunning build process to generate dist output and bump version...\n");
