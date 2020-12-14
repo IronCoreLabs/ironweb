@@ -50,10 +50,19 @@ export interface DeviceAddResponse {
 }
 
 export interface UserKeyListResponseType {
-    result: {
-        id: string;
-        userMasterPublicKey: PublicKey<Base64String>;
-    }[];
+    result: UserKeyListResponseObject[];
+}
+
+export interface UserCachedPublicKey {
+    userMasterPublicKey: PublicKey<Base64String>;
+}
+
+export type UserKeyListResponseObject = {
+    id: string;
+} & UserCachedPublicKey;
+
+interface UserPublicKeyCache {
+    [userId: string]: UserCachedPublicKey;
 }
 
 /**
@@ -219,6 +228,8 @@ const userKeyList = (userList: string[]): RequestMeta => ({
     errorCode: ErrorCodes.USER_KEY_LIST_REQUEST_FAILURE,
 });
 
+const userPublicKeyCache: UserPublicKeyCache = {};
+
 export default {
     /**
      * Invoke user verify API and maps result to determine if we got back a user or not
@@ -300,6 +311,11 @@ export default {
     },
 
     /**
+     * Cache of user public keys that have been retrieved. Used to speed up calls to userKeyList where possible.
+     */
+    userPublicKeyCache,
+
+    /**
      * Get a list of public keys for the provided list of users
      * @param {string[]} userList List of user IDs to retrieve
      */
@@ -307,7 +323,28 @@ export default {
         if (!userList.length) {
             return Future.of({result: []});
         }
-        const {url, options, errorCode} = userKeyList(userList);
-        return makeAuthorizedApiRequest(url, errorCode, options);
+
+        // Check the list for any users we already have the public key cached for
+        const cacheHits: UserKeyListResponseObject[] = [];
+        userList.forEach((userId) => {
+            const userMasterPublicKey = userPublicKeyCache[userId];
+            if (userMasterPublicKey) {
+                cacheHits.push({id: userId, ...userMasterPublicKey});
+            }
+        });
+
+        // If we have any userIds that weren't cached, fetch all of them
+        if (cacheHits.length === userList.length) {
+            return Future.of({result: cacheHits});
+        } else {
+            const {url, options, errorCode} = userKeyList(userList);
+            return makeAuthorizedApiRequest<UserKeyListResponseType>(url, errorCode, options).map((userListResponse) => {
+                // cache the retrieved keys
+                userListResponse.result.forEach(({userMasterPublicKey, id}) => {
+                    userPublicKeyCache[id] = {userMasterPublicKey};
+                });
+                return userListResponse;
+            });
+        }
     },
 };

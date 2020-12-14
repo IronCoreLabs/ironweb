@@ -4,6 +4,10 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v3.5.1
+
+Public key caching for groups and users. There are no API impacting changes in this release. Internal calls to list groups or users will now go through a public key cache, reducing the number of roundtrips to IronCore services.
+
 ## v3.4.1
 
 Encrypted search index feature. Adds methods to create a blind encrypted search index that allows for searching over encrypted data.
