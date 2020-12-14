@@ -49,7 +49,7 @@ shell.cd(`${path.dirname(process.argv[1])}/../`);
 
 //Run the build. This will cause the dist directory to be generated and also modify the package.json to bump it by a patch version
 shell.echo("\n\nRunning build process to generate dist output and bump version...\n");
-shell.exec("node ./.github/scripts/build.js --bump");
+shell.exec("node ./scripts/build.js --bump");
 
 //Get the latest version that was bumped to so that we can use it in our commit messages
 const updatedVersion = require("../package.json").version;

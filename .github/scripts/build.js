@@ -39,9 +39,9 @@
 const fs = require("fs");
 const path = require("path");
 const shell = require("shelljs");
-const mainPackage = require("../package.json");
-const shimPackage = require("../src/shim/package.json");
-const framePackage = require("../src/frame/package.json");
+const mainPackage = require("../../package.json");
+const shimPackage = require("../../src/shim/package.json");
+const framePackage = require("../../src/frame/package.json");
 
 //Fail this script if any of these commands fail
 shell.set("-e");
@@ -51,7 +51,7 @@ const shouldBumpVersion = args.indexOf("--bump") !== -1;
 
 //Ensure that our directory is set to the root of the repo
 const rootDirectory = path.dirname(process.argv[1]);
-shell.cd(`${rootDirectory}/../`);
+shell.cd(`${rootDirectory}/../../`);
 
 //Cleanup the previous build, if it exists
 shell.rm("-rf", "./dist");
