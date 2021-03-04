@@ -3,7 +3,7 @@ name: IronWeb Snapshot
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   snapshot:
@@ -24,7 +24,7 @@ jobs:
           GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # $NPM_TOKEN Allows publishing to NPM on build
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          BRANCH: "master"
+          BRANCH: "main"
         run: |
           npm config set //registry.npmjs.org/:_authToken=$NPM_TOKEN
           node ./.github/scripts/snapshot.js

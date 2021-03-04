@@ -32,7 +32,7 @@
  * In order to avoid multiple locations where version numbers are defined, we take the version field from the main package.json file and update it's patch version before
  * we find/replace it's value in each of the generated/compiled files. This version will be used in production to make sure we use the same shim+frame version combo.
  *
- * At this point the two packages are ready for publishing. That doesn't happen in this script directly as it's only meant to happen from our Travis CI job. This script can
+ * At this point the two packages are ready for publishing. That doesn't happen in this script directly as it's only meant to happen from our CI job. This script can
  * be safely run locally to test out the build process without publishing actually occuring as a result.
  */
 
@@ -110,7 +110,7 @@ shell.rm("-R", "./dist/shim/commonjs/frame");
 shell.mkdir("-p", "./dist/frame/");
 
 //Calculate a new release version by bumping the patch version. Then if we're performing a publish, update the main repos package.json file with this new version
-//so that Travis can commit that file back on build to master
+//so that CI can commit that file back on build to main
 const newReleaseVersion = getUpdatedReleaseVersion(mainPackage.version);
 mainPackage.version = newReleaseVersion;
 if (shouldBumpVersion) {

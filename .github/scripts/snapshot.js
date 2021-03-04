@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 /*
- * Travis Snapshot Builds
+ * CI Snapshot Builds
  * ========================
  * The purpose of this script is to perform automatic version bumping and publishing of our private NPM packages for the SDK shim and frame. You can read more
  * about the full release process of this repo within the README.
  *
- * This script is meant to only be executed via Travis upon merges into the master branch. If any other branch is in use, nothing will occur. When merges to master
+ * This script is meant to only be executed via CI upon merges into the main branch. If any other branch is in use, nothing will occur. When merges to main
  * happen and this script is run, we trigger the build script. This creates the necessary directory for both our NPM packages as well as bumps the version of each
  * by a patch version (i.e. the z in the x.y.z semver). Once that build is complete we then setup git correctly so that we commit the version bump back to the
  * repos package.json file. We also then push up a git tag for that version as well so we can go back at anytime to know what code was released per version. Once
@@ -30,9 +30,9 @@ function publishNPMModule(publishDirectory) {
     shell.popd();
 }
 
-//If we're not on the master branch, don't do anything. We only want to do automatic NPM publishing upon push to master
-if (process.env.BRANCH !== "master") {
-    shell.echo("\n\nNot on master branch, nothing to do for snapshot build.");
+//If we're not on the main branch, don't do anything. We only want to do automatic NPM publishing upon push to main
+if (process.env.BRANCH !== "main") {
+    shell.echo("\n\nNot on main branch, nothing to do for snapshot build.");
     shell.exit(0);
 }
 
@@ -56,8 +56,8 @@ const updatedVersion = require("../../package.json").version;
 
 shell.echo(`\n\nBuild successful, version is now set to ${updatedVersion}`);
 
-//Setup git user to our Travis user
-shell.echo("\n\nSetting up git so Leeroy can commit our version bump back to master\n");
+//Setup git user to our CI user
+shell.echo("\n\nSetting up git so Leeroy can commit our version bump back to main\n");
 shell.exec('git config --global user.email "leeroytravis@ironcorelabs.com"');
 shell.exec('git config --global user.name "Leeroy Travis"');
 shell.exec(`git remote add release "https://${process.env.GIT_ACCESS_TOKEN}@github.com/IronCoreLabs/${process.env.GIT_PROJECT_NAME}.git"`);
