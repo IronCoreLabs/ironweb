@@ -1,4 +1,3 @@
-//Polyfill TextEncoder/TextDecoder for MSEdge
 import * as Recrypt from "@ironcorelabs/recrypt-wasm-binding";
 import {encode} from "@stablelib/utf8";
 import {fromByteArray, toByteArray} from "base64-js";
@@ -63,20 +62,16 @@ export const generatePasswordDerivedKey = (password: string, saltUsedDuringPrior
         if (getCryptoSubtleApi()) {
             return PBKDF2.generatePasscodeDerivedKey(passwordBytes, salt).map<DerivedKeyResults>((key) => ({key, salt}));
         }
+        // Q: Should we remove this fallback?
         const derivedKey = Recrypt.pbkdf2SHA256(salt, passwordBytes, PBKDF2_ITERATIONS());
         return Future.of({key: derivedKey, salt});
     });
 };
 
 /**
- * Create an instance of the WASM API class. This is delayed so that, if necessary, we can inject a random seed
- * into the WASM module prior to creating an instance. This will allow the WASM module to work propertly within
- * MS Edge.
+ * Create an instance of the WASM Recrypt and EncryptedSearch Apis.  
  */
-export const instantiateApi = (seed?: Uint8Array) => {
-    if (seed) {
-        Recrypt.setRandomSeed(seed);
-    }
+export const instantiateApi = () => {
     RecryptApi = new Recrypt.Api256();
     EncryptedSearchApi = new Recrypt.EncryptedSearch();
 };

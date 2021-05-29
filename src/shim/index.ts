@@ -8,7 +8,7 @@ import {checkSDKInitialized} from "./ShimUtils";
  * Checks bowser functionality to ensure random number generation is supported.
  */
 function supportsRandomNumGen() {
-    const nativeCrypto: Crypto = window.msCrypto || window.crypto;
+    const nativeCrypto: Crypto = window.crypto;
     return typeof nativeCrypto === "object" && typeof nativeCrypto.getRandomValues === "function";
 }
 

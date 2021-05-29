@@ -1,9 +1,7 @@
 import Future from "futurejs";
 import SDKError from "../lib/SDKError";
-import {ErrorResponse, GenerateRandomBytesFrameRequest, GenerateRandomBytesWorkerResponse, RequestMessage, ResponseMessage} from "../WorkerMessageTypes";
+import {ErrorResponse, RequestMessage, ResponseMessage} from "../WorkerMessageTypes";
 import worker from "./WorkerLoader";
-
-const nativeCrypto: Crypto = (window as any).msCrypto || window.crypto;
 
 class WorkerMessenger {
     readonly worker: Worker;
@@ -35,35 +33,13 @@ class WorkerMessenger {
      * @param {MessageEvent} event Window postMessage event object
      */
     processMessage = (event: MessageEvent) => {
-        const {data, replyID} = event.data as WorkerEvent<ResponseMessage | GenerateRandomBytesFrameRequest>;
-        if (data.type === "RANDOM_BYTES_REQUEST") {
-            return this.generateRandomBytesForWorker(replyID, data.message.size);
-        }
-
+        const {data, replyID} = event.data as WorkerEvent<ResponseMessage>;
         const callback = this.callbacks[replyID];
         if (callback) {
             delete this.callbacks[replyID];
             callback(data);
         }
     };
-
-    /**
-     * Generate a requested amount of random bytes for when the web worker can't generate it's own random bytes
-     * @param {number} replyID ID of random byte request
-     * @param {number} size    Number of random bytes to generate
-     */
-    generateRandomBytesForWorker(replyID: number, size: number) {
-        const payload: GenerateRandomBytesWorkerResponse = {
-            type: "RANDOM_BYTES_RESPONSE",
-            message: {
-                bytes: nativeCrypto.getRandomValues(new Uint8Array(size)),
-            },
-        };
-        this.worker.postMessage({
-            replyID,
-            data: payload,
-        });
-    }
 }
 
 export const messenger = new WorkerMessenger(worker);

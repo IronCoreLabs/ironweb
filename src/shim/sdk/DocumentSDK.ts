@@ -22,7 +22,7 @@ const MAX_DOCUMENT_SIZE = 1024 * 2 * 1000; //2MB
  */
 function calculateDocumentCreateOptionsDefault(options?: DocumentCreateOptions) {
     //Generate a random ID for the document if the user didn't provide one
-    const randomBytes = (window.msCrypto || window.crypto).getRandomValues(new Uint8Array(16));
+    const randomBytes = window.crypto.getRandomValues(new Uint8Array(16));
     const hexID = Array.prototype.map.call(randomBytes, (byte: number) => `00${byte.toString(16)}`.slice(-2)).join("");
     if (!options) {
         return {documentID: hexID, documentName: "", accessList: {users: [], groups: [], grantToAuthor: true}};

@@ -4,7 +4,7 @@ import {sliceArrayBuffer} from "../../../../lib/Utils";
 import Future from "futurejs";
 import * as NativeAes from "./NativeAes";
 import * as PolyfillAes from "./PolyfillAes";
-import {generateRandomBytes, isNativeCryptoSupported} from "../CryptoUtils";
+import {generateRandomBytes} from "../CryptoUtils";
 
 /**
  * Decrypt the user and device keys using the provided passcode derived key
@@ -41,12 +41,9 @@ export function encryptUserKey(decryptedPrivateUserKey: Uint8Array, derivedKey: 
  */
 export function encryptDocument(decryptedDocument: Uint8Array, documentSymmetricKey: Uint8Array): Future<Error, EncryptedDocument> {
     return generateRandomBytes(IV_LENGTH).flatMap((iv) => {
-        if (isNativeCryptoSupported()) {
             return NativeAes.encryptDocument(decryptedDocument, documentSymmetricKey, iv).handleWith(() =>
                 PolyfillAes.encryptDocument(decryptedDocument, documentSymmetricKey, iv)
             );
-        }
-        return PolyfillAes.encryptDocument(decryptedDocument, documentSymmetricKey, iv);
     });
 }
 
@@ -57,7 +54,6 @@ export function encryptDocument(decryptedDocument: Uint8Array, documentSymmetric
  * @param {Uint8Array} dataNonce            Nonce/IV to use to decrypt
  */
 export function decryptDocument(encryptedDocument: Uint8Array, documentSymmetricKey: Uint8Array, dataNonce: Uint8Array) {
-    if (isNativeCryptoSupported()) {
         return NativeAes.decryptDocument(encryptedDocument, documentSymmetricKey, dataNonce).handleWith((error) => {
             //Don't attempt to invoke polyfill if decryption failed because the key was wrong. In that case the polyfill
             //will obviously fail as well and we'll just waste cycles trying to decrypt.
@@ -66,9 +62,7 @@ export function decryptDocument(encryptedDocument: Uint8Array, documentSymmetric
                 return Future.reject(new Error("Decryption of document content failed.")) as any;
             }
             return PolyfillAes.decryptDocument(encryptedDocument, documentSymmetricKey, dataNonce);
-        });
-    }
-    return PolyfillAes.decryptDocument(encryptedDocument, documentSymmetricKey, dataNonce);
+        })
 }
 
 /**
@@ -83,12 +77,9 @@ export function encryptDeviceAndSigningKeys(devicePrivateKey: Uint8Array, signin
             iv: sliceArrayBuffer(symmetricKeyAndIVBytes, AES_SYMMETRIC_KEY_LENGTH),
         }))
         .flatMap(({symmetricKey, iv}) => {
-            if (isNativeCryptoSupported()) {
-                return NativeAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv).handleWith(() =>
-                    PolyfillAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv)
-                );
-            }
-            return PolyfillAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv);
+            return NativeAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv).handleWith(() =>
+                PolyfillAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv)
+            )
         });
 }
 
@@ -100,10 +91,7 @@ export function encryptDeviceAndSigningKeys(devicePrivateKey: Uint8Array, signin
  * @param {Uint8Array} iv                IV/nonce to use for encryption
  */
 export function decryptDeviceAndSigningKeys(devicePrivateKey: Uint8Array, signingPrivateKey: Uint8Array, symmetricKey: Uint8Array, iv: Uint8Array) {
-    if (isNativeCryptoSupported()) {
-        return NativeAes.decryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv).handleWith(() =>
-            PolyfillAes.decryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv)
-        );
-    }
-    return PolyfillAes.decryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv);
+    return NativeAes.decryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv).handleWith(() =>
+        PolyfillAes.decryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, iv)
+    )
 }

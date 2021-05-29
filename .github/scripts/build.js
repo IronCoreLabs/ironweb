@@ -77,6 +77,7 @@ function getUpdatedReleaseVersion(currentVersion) {
 //So, time for some good hacky hacks. We'll take the same technique we used for the unit tests to regex away all of the dynamic import business in that
 //file while still keeping the same types exported from it. That way when we TS compile things, it won't see any dynamic imports and will compile things
 //correctly. Unfortunately we have multiple lines to blow away in the file which all have to be done within their own regex.
+// Q: Do we still need this?
 const addedWasmInclude = `import * as Recrypt from "./RecryptWasm";`;
 //First, make a backup of the file so we can restore it later.
 shell.cp("./src/frame/worker/crypto/recrypt/index.ts", "./src/frame/worker/crypto/recrypt/index.tsb");

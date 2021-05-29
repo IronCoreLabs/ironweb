@@ -1,6 +1,5 @@
 import {decryptUserKey, encryptUserKey, encryptDocument, decryptDocument, encryptDeviceAndSigningKeys, decryptDeviceAndSigningKeys} from "../index";
 import * as NativeAes from "../NativeAes";
-import * as CryptoUtils from "../../CryptoUtils";
 import * as PolyfillAes from "../PolyfillAes";
 import Future from "futurejs";
 import {CryptoConstants} from "../../../../../Constants";
@@ -68,7 +67,6 @@ describe("AES", () => {
 
     describe("encryptDocument", () => {
         it("uses native API if available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(NativeAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const document = new Uint8Array(40);
@@ -84,7 +82,6 @@ describe("AES", () => {
         });
 
         it("uses polyfill API if native is not available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(false);
             spyOn(PolyfillAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const document = new Uint8Array(40);
@@ -100,7 +97,6 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(NativeAes, "encryptDocument").and.returnValue(Future.reject(new Error("forced failure")));
             spyOn(PolyfillAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
@@ -120,7 +116,6 @@ describe("AES", () => {
 
     describe("decryptDocument", () => {
         it("uses native API if available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(NativeAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const doc = new Uint8Array(40);
@@ -137,7 +132,6 @@ describe("AES", () => {
         });
 
         it("uses polyfill API if native is not available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(false);
             spyOn(PolyfillAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const doc = new Uint8Array(40);
@@ -154,7 +148,6 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(PolyfillAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
             spyOn(NativeAes, "decryptDocument").and.returnValue(Future.reject(new Error("forced failure")));
 
@@ -173,7 +166,6 @@ describe("AES", () => {
         });
 
         it("doesnt try polyfill if native fails because decryption failed", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(PolyfillAes, "decryptDocument");
             const incorrectKeyError = new Error("");
             incorrectKeyError.name = CryptoConstants.NATIVE_DECRYPT_FAILURE_ERROR;
@@ -196,7 +188,6 @@ describe("AES", () => {
 
     describe("encryptDeviceAndSigningKeys", () => {
         it("uses native API if available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(NativeAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
 
             const deviceKey = new Uint8Array(40);
@@ -212,7 +203,6 @@ describe("AES", () => {
         });
 
         it("uses polyfill API if native is not available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(false);
             spyOn(PolyfillAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
 
             const deviceKey = new Uint8Array(40);
@@ -233,7 +223,6 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(PolyfillAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
             spyOn(NativeAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("forced failure")));
 
@@ -258,7 +247,6 @@ describe("AES", () => {
 
     describe("decryptDeviceAndSigningKeys", () => {
         it("uses native API if available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(NativeAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
 
             const deviceKey = new Uint8Array(40);
@@ -276,7 +264,6 @@ describe("AES", () => {
         });
 
         it("uses polyfill API if native is not available", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(false);
             spyOn(PolyfillAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
 
             const deviceKey = new Uint8Array(40);
@@ -294,7 +281,6 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(CryptoUtils, "isNativeCryptoSupported").and.returnValue(true);
             spyOn(PolyfillAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
             spyOn(NativeAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("forced failure")));
 
