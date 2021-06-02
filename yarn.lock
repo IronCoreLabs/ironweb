@@ -278,10 +278,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@ironcorelabs/recrypt-wasm-binding@^0.5.7":
-  version "0.5.8"
-  resolved "https://registry.yarnpkg.com/@ironcorelabs/recrypt-wasm-binding/-/recrypt-wasm-binding-0.5.8.tgz#f4dfcfabaaa5633d38a3530be30f119641970cd5"
-  integrity sha512-cGEihNZcxeCzuX9A60GpQPGMvscXxthAV20TCElAvZWYgdwbTGBB9iSaeWHwWIDITiJUQ/YPziYRaI/gIwQ1gQ==
+"@ironcorelabs/recrypt-wasm-binding@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@ironcorelabs/recrypt-wasm-binding/-/recrypt-wasm-binding-0.6.0.tgz#d69eef05cd294644674f9288ceb02f0b7d6f40dc"
+  integrity sha512-3kWKzmvegUPOLFN7uPsS0JhjN4jDBcDk4UQv7XYp4EDvkHf+pQCS3fQ5yCLhTKC0BnfsNrXOLg+OreS4w+2O3Q==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"

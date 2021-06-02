@@ -328,18 +328,3 @@ export type ResponseMessage =
     | SearchTokenizeStringResponse
     | SearchTransliterateStringResponse
     | ErrorResponse;
-
-//These two interfaces are for handling random number generation if it needs to happen outside of a WebWorker. They aren't part of the
-//main list of request/resonse types as they're special.
-export interface GenerateRandomBytesFrameRequest {
-    type: "RANDOM_BYTES_REQUEST";
-    message: {
-        size: number;
-    };
-}
-export interface GenerateRandomBytesWorkerResponse {
-    type: "RANDOM_BYTES_RESPONSE";
-    message: {
-        bytes: Uint8Array;
-    };
-}

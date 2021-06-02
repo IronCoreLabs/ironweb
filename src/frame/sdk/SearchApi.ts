@@ -17,7 +17,7 @@ const searchIndexCache: {[documentId: string]: Uint8Array} = {};
  * an unmanaged encryption of that to return the document ID, edeks, and document ciphertext.
  */
 export const createBlindSearchIndex = (groupId: string): Future<SDKError, BlindSearchIndex> => {
-    const randomBytes = (window.msCrypto || window.crypto).getRandomValues(new Uint8Array(CryptoConstants.SALT_LENGTH + 16));
+    const randomBytes = window.crypto.getRandomValues(new Uint8Array(CryptoConstants.SALT_LENGTH + 16));
     const salt = randomBytes.slice(0, CryptoConstants.SALT_LENGTH);
     const randomHexDocId = encodeBytesAsHex(randomBytes.slice(CryptoConstants.SALT_LENGTH));
     return encrypt(randomHexDocId, salt, [], [groupId], false)
@@ -33,7 +33,7 @@ export const createBlindSearchIndex = (groupId: string): Future<SDKError, BlindS
  * keyed by the document ID of the blind index.
  */
 export const initializeBlindSearchIndex = (encryptedSalt: Uint8Array, searchIndexEdeks: Uint8Array): Future<SDKError, string> => {
-    const searchIndexId = encodeBytesAsHex((window.msCrypto || window.crypto).getRandomValues(new Uint8Array(8)));
+    const searchIndexId = encodeBytesAsHex(window.crypto.getRandomValues(new Uint8Array(8)));
     return decryptWithProvidedEdeks(encryptedSalt, searchIndexEdeks)
         .map((index) => {
             searchIndexCache[searchIndexId] = index.data;

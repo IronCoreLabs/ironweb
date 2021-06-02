@@ -93,7 +93,7 @@ describe("RecryptWasm", () => {
     });
 
     describe("generatePasswordDerivedKey", () => {
-        it("should generate random bytes and use WebCrypto pbkdf2 when available", () => {
+        it("should generate random bytes and use WebCrypto pbkdf2", () => {
             spyOn(nativePBKDF2, "generatePasscodeDerivedKey").and.returnValue(Future.of("derivedKey"));
             spyOn(CryptoUtils, "getCryptoSubtleApi").and.returnValue(true);
 
@@ -102,19 +102,6 @@ describe("RecryptWasm", () => {
                 (result: any) => {
                     expect(result.salt).toEqual(new Uint8Array(32));
                     expect(result.key).toEqual("derivedKey");
-                }
-            );
-        });
-
-        it("should use previous salt and use Recrypt PBKDF2 when no WebCrypto", () => {
-            spyOn(CryptoUtils, "generateRandomBytes").and.returnValue(Future.of("salt"));
-            spyOn(CryptoUtils, "getCryptoSubtleApi").and.returnValue(false);
-
-            Recrypt.generatePasswordDerivedKey("password").engage(
-                (e) => fail(e),
-                (result: any) => {
-                    expect(result.key).toEqual(new Uint8Array(32));
-                    expect(result.salt).toEqual("salt");
                 }
             );
         });

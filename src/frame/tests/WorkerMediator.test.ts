@@ -111,36 +111,5 @@ describe("WorkerMediator", () => {
                 expect(messenger.callbacks[7]).toBeUndefined();
             });
         });
-
-        describe("generateRandomBytesForWorker", () => {
-            it("posts message with reply ID and expected number of bytes", () => {
-                (messenger as any).worker = {
-                    postMessage: jasmine.createSpy("postMessage"),
-                };
-
-                messenger.processMessage({
-                    data: {
-                        data: {
-                            type: "RANDOM_BYTES_REQUEST",
-                            message: {size: 18},
-                        },
-                        replyID: 63,
-                    },
-                } as any);
-
-                expect(messenger.worker.postMessage).toHaveBeenCalledWith({
-                    replyID: 63,
-                    data: {
-                        type: "RANDOM_BYTES_RESPONSE",
-                        message: {
-                            bytes: expect.any(Uint8Array),
-                        },
-                    },
-                });
-
-                const message = (messenger.worker.postMessage as jasmine.Spy).calls.argsFor(0)[0];
-                expect(message.data.message.bytes.length).toEqual(18);
-            });
-        });
     });
 });
