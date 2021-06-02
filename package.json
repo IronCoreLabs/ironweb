@@ -15,7 +15,7 @@
         "nightwatch": "nightwatch"
     },
     "dependencies": {
-        "@ironcorelabs/recrypt-wasm-binding": "https://drive.google.com/uc?export=download&id=1gSv3s59BCo38wASfp3_-P2vhPiz0psLY",
+        "@ironcorelabs/recrypt-wasm-binding": "https://drive.google.com/uc?export=download&id=1ovlhJ1oSUh1JA8CLdNTOmEFDFLd82hYP",
         "@stablelib/ed25519": "1.0.1",
         "@stablelib/utf8": "1.0.0",
         "base64-js": "1.3.1",
