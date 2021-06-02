@@ -5,10 +5,10 @@ import "fast-text-encoding";
 import Future from "futurejs";
 import {CryptoConstants} from "../../../../Constants";
 import {concatArrayBuffers, publicKeyToBase64, publicKeyToBytes, utf8StringToArrayBuffer} from "../../../../lib/Utils";
-import {generateRandomBytes, getCryptoSubtleApi} from "../CryptoUtils";
+import {generateRandomBytes} from "../CryptoUtils";
 import * as PBKDF2 from "../pbkdf2/native";
 import {TransformKeyGrant} from "./index";
-const {SALT_LENGTH, PBKDF2_ITERATIONS} = CryptoConstants;
+const {SALT_LENGTH} = CryptoConstants;
 
 type Plaintext = Uint8Array;
 let RecryptApi: Recrypt.Api256;
@@ -52,19 +52,13 @@ export const getApi = () => RecryptApi;
 
 /**
  * Use PBKDF2 with SHA-256 to derive a key from the provided password. We'll either use the provided salt or generate a new salt
- * depending on whether we're deriving a new key or verifying an existing key. Uses the WebCrypto API if available or otherwise
- * falls back to a WASM function for MSEdge.
+ * depending on whether we're deriving a new key or verifying an existing key. 
  */
 export const generatePasswordDerivedKey = (password: string, saltUsedDuringPriorDerivation?: Uint8Array) => {
     const saltGeneration = saltUsedDuringPriorDerivation ? Future.of(saltUsedDuringPriorDerivation) : generateRandomBytes(SALT_LENGTH);
     return saltGeneration.flatMap((salt) => {
         const passwordBytes = utf8StringToArrayBuffer(password);
-        if (getCryptoSubtleApi()) {
-            return PBKDF2.generatePasscodeDerivedKey(passwordBytes, salt).map<DerivedKeyResults>((key) => ({key, salt}));
-        }
-        // Q: Should we remove this fallback?
-        const derivedKey = Recrypt.pbkdf2SHA256(salt, passwordBytes, PBKDF2_ITERATIONS());
-        return Future.of({key: derivedKey, salt});
+        return PBKDF2.generatePasscodeDerivedKey(passwordBytes, salt).map<DerivedKeyResults>((key) => ({key, salt}));
     });
 };
 

@@ -1,5 +1,4 @@
 import Future from "futurejs";
-// declare function postMessage(message: any): void;
 
 const nativeCrypto: Crypto = (self as any).crypto;
 

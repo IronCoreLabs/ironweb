@@ -131,22 +131,6 @@ describe("AES", () => {
             );
         });
 
-        it("uses polyfill API if native is not available", () => {
-            spyOn(PolyfillAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
-
-            const doc = new Uint8Array(40);
-            const symKey = new Uint8Array(32);
-            const nonce = new Uint8Array(12);
-
-            decryptDocument(doc, symKey, nonce).engage(
-                () => fail("document decryption should not fail"),
-                (decryptedDoc: any) => {
-                    expect(decryptedDoc).toEqual({foo: "bar"});
-                    expect(PolyfillAes.decryptDocument).toHaveBeenCalledWith(doc, symKey, nonce);
-                }
-            );
-        });
-
         it("falls back to polyfill API if native fails", () => {
             spyOn(PolyfillAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
             spyOn(NativeAes, "decryptDocument").and.returnValue(Future.reject(new Error("forced failure")));
@@ -202,26 +186,6 @@ describe("AES", () => {
             );
         });
 
-        it("uses polyfill API if native is not available", () => {
-            spyOn(PolyfillAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
-
-            const deviceKey = new Uint8Array(40);
-            const signingKey = new Uint8Array(32);
-
-            encryptDeviceAndSigningKeys(deviceKey, signingKey).engage(
-                () => fail("document decryption should not fail"),
-                (decryptedDoc: any) => {
-                    expect(decryptedDoc).toEqual({foo: "bar"});
-                    expect(PolyfillAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(
-                        deviceKey,
-                        signingKey,
-                        expect.any(Uint8Array),
-                        expect.any(Uint8Array)
-                    );
-                }
-            );
-        });
-
         it("falls back to polyfill API if native fails", () => {
             spyOn(PolyfillAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
             spyOn(NativeAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("forced failure")));
@@ -259,23 +223,6 @@ describe("AES", () => {
                 (decryptedDoc: any) => {
                     expect(decryptedDoc).toEqual({foo: "bar"});
                     expect(NativeAes.decryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, symKey, nonce);
-                }
-            );
-        });
-
-        it("uses polyfill API if native is not available", () => {
-            spyOn(PolyfillAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
-
-            const deviceKey = new Uint8Array(40);
-            const signingKey = new Uint8Array(32);
-            const symKey = new Uint8Array(30);
-            const nonce = new Uint8Array(12);
-
-            decryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, nonce).engage(
-                () => fail("document decryption should not fail"),
-                (decryptedDoc: any) => {
-                    expect(decryptedDoc).toEqual({foo: "bar"});
-                    expect(PolyfillAes.decryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, symKey, nonce);
                 }
             );
         });
