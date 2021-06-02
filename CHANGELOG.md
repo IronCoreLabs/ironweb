@@ -6,7 +6,7 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 ## v4.0.x (unreleased)
 
-Support for MS Edge Legacy has been removed. All currently supported versions of MS Edge should work.
+Support for MS Edge Legacy (version <= 44) has been removed. All currently supported versions of MS Edge should work.
 
 ## v3.5.3
 
