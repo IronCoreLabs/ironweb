@@ -108,14 +108,17 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 data.message.encryptedPrivateUserKey
             ).engage(errorHandler, (encryptedPrivateKey) => callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: encryptedPrivateKey}));
         case "SIGNATURE_GENERATION":
-            return UserCrypto.signRequestPayload(
-                data.message.segmentID,
-                data.message.userID,
-                data.message.signingKeys,
-                data.message.method,
-                data.message.url,
-                data.message.body
-            ).engage(errorHandler, (signature) => callback({type: "SIGNATURE_GENERATION_RESPONSE", message: signature}));
+            {
+                const signature = UserCrypto.signRequestPayload(
+                    data.message.segmentID,
+                    data.message.userID,
+                    data.message.signingKeys,
+                    data.message.method,
+                    data.message.url,
+                    data.message.body
+                );
+                return callback({type: "SIGNATURE_GENERATION_RESPONSE", message: signature});
+            }
         case "DOCUMENT_ENCRYPT":
             return DocumentCrypto.encryptDocument(
                 data.message.document,
@@ -176,17 +179,20 @@ messenger.onMessage((data: RequestMessage, callback: (message: ResponseMessage, 
                 data.message.signingKeys
             ).engage(errorHandler, (result) => callback({type: "GROUP_ADD_MEMBERS_RESPONSE", message: result}));
         case "SEARCH_TOKENIZE_DATA":
-            return SearchCrypto.tokenizeData(data.message.value, data.message.salt, data.message.partitionId).engage(errorHandler, (message) =>
-                callback({type: "SEARCH_TOKENIZE_STRING_RESPONSE", message})
-            );
+            {
+                const message = SearchCrypto.tokenizeData(data.message.value, data.message.salt, data.message.partitionId);
+                return callback({type: "SEARCH_TOKENIZE_STRING_RESPONSE", message});
+            }
         case "SEARCH_TOKENIZE_QUERY":
-            return SearchCrypto.tokenizeQuery(data.message.value, data.message.salt, data.message.partitionId).engage(errorHandler, (message) =>
-                callback({type: "SEARCH_TOKENIZE_STRING_RESPONSE", message})
-            );
+            {
+                const message = SearchCrypto.tokenizeQuery(data.message.value, data.message.salt, data.message.partitionId);
+                return callback({type: "SEARCH_TOKENIZE_STRING_RESPONSE", message});
+            }
         case "SEARCH_TRANSLITERATE_STRING":
-            return SearchCrypto.transliterateString(data.message).engage(errorHandler, (message) =>
-                callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message})
-            );
+            {
+                const message = SearchCrypto.transliterateString(data.message);
+                return callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message});
+            }
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;

@@ -165,7 +165,7 @@ describe("worker index", () => {
         });
 
         it("SIGNATURE_GENERATION", (done) => {
-            spyOn(UserCrypto, "signRequestPayload").and.returnValue(Future.of("signature"));
+            spyOn(UserCrypto, "signRequestPayload").and.returnValue("signature");
             const payload: any = {
                 type: "SIGNATURE_GENERATION",
                 message: {

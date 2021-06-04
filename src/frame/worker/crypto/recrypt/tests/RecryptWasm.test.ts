@@ -4,13 +4,9 @@ import Future from "futurejs";
 import * as TestUtils from "../../../../../tests/TestUtils";
 import * as CryptoUtils from "../../CryptoUtils";
 import * as nativePBKDF2 from "../../pbkdf2/native";
-import * as Recrypt from "../RecryptWasm";
+import * as Recrypt from "../";
 
 describe("RecryptWasm", () => {
-    beforeAll(() => {
-        Recrypt.instantiateApi();
-    });
-
     describe("rotateUsersPrivateKeyWithRetry", () => {
         const userPrivateKey = new Uint8Array([22, 33, 44]);
         it("should result in an error when mocked generateKeyPair returns Uint8Array of zeros for augmentationFactor", () => {

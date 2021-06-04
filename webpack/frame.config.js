@@ -74,7 +74,7 @@ module.exports = (_, argv) => {
             minimizer: [new TerserPlugin()],
             splitChunks: {
                 cacheGroups: {
-                    vendors: {
+                    defaultVendors: {
                         //By default when you use dynamic imports any other modules included in the resulting import that come from the
                         //node_modules directory are shoved into another "vendor" bundle. This means that our minimal RecryptJS shim gets
                         //separated from the actual recryptjs file. There's no reason not to combine those files, so intead we tell webpack

@@ -118,10 +118,12 @@ module.exports = {
             },
         ],
     },
+    optimization: {
+        moduleIds: "named",
+        emitOnErrors: false,
+    },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoEmitOnErrorsPlugin(),
-        new webpack.NamedModulesPlugin(),
         new webpack.DefinePlugin({
             NODE_ENV: JSON.stringify(runtimeEnvironment),
             "process.env.NODE_ENV": JSON.stringify(runtimeEnvironment),

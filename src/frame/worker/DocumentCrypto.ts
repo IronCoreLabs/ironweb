@@ -1,4 +1,4 @@
-import loadRecrypt from "./crypto/recrypt";
+import * as Recrypt from "./crypto/recrypt";
 import * as AES from "./crypto/aes";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
@@ -11,8 +11,7 @@ import {ErrorCodes} from "../../Constants";
  * @param {Uint8Array}                    myPrivateKey The private key of the current user decrypting the document
  */
 export function decryptDocument(document: EncryptedDocument, symmetricKey: TransformedEncryptedMessage, myPrivateKey: Uint8Array) {
-    return loadRecrypt()
-        .flatMap((Recrypt) => Recrypt.decryptPlaintext(symmetricKey, myPrivateKey))
+    return Recrypt.decryptPlaintext(symmetricKey, myPrivateKey)
         .flatMap(([_, documentSymmetricKey]) => AES.decryptDocument(document.content, documentSymmetricKey, document.iv))
         .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_DECRYPT_FAILURE));
 }
@@ -24,22 +23,19 @@ export function decryptDocument(document: EncryptedDocument, symmetricKey: Trans
  * @param {SigningKeyPair}        signingKeys    Current users signing keys used to sign transform key
  */
 export function encryptDocument(document: Uint8Array, userKeyList: UserOrGroupPublicKey[], groupKeyList: UserOrGroupPublicKey[], signingKeys: SigningKeyPair) {
-    return loadRecrypt()
-        .flatMap((Recrypt) => {
-            return Recrypt.generateDocumentKey()
-                .flatMap(([documentKeyPlaintext, documentSymmetricKey]) => {
-                    return Future.gather3(
-                        Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
-                        Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys),
-                        AES.encryptDocument(document, documentSymmetricKey)
-                    );
-                })
-                .map(([encryptedUserKeys, encryptedGroupKeys, encryptedDocument]) => ({
-                    userAccessKeys: encryptedUserKeys,
-                    groupAccessKeys: encryptedGroupKeys,
-                    encryptedDocument,
-                }));
+    return Recrypt.generateDocumentKey()
+        .flatMap(([documentKeyPlaintext, documentSymmetricKey]) => {
+            return Future.gather3(
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys),
+                AES.encryptDocument(document, documentSymmetricKey)
+            );
         })
+        .map(([encryptedUserKeys, encryptedGroupKeys, encryptedDocument]) => ({
+            userAccessKeys: encryptedUserKeys,
+            groupAccessKeys: encryptedGroupKeys,
+            encryptedDocument,
+        }))
         .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_ENCRYPT_FAILURE));
 }
 
@@ -51,8 +47,7 @@ export function encryptDocument(document: Uint8Array, userKeyList: UserOrGroupPu
  * @param {Uint8Array}                  myPrivateKey                 Users private key to decrypt existing document
  */
 export function reEncryptDocument(newDocumentData: Uint8Array, existingDocumentSymmetricKey: TransformedEncryptedMessage, myPrivateKey: Uint8Array) {
-    return loadRecrypt()
-        .flatMap((Recrypt) => Recrypt.decryptPlaintext(existingDocumentSymmetricKey, myPrivateKey))
+    return Recrypt.decryptPlaintext(existingDocumentSymmetricKey, myPrivateKey)
         .flatMap(([_, documentSymmetricKey]) => AES.encryptDocument(newDocumentData, documentSymmetricKey))
         .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_REENCRYPT_FAILURE));
 }
@@ -73,17 +68,15 @@ export function encryptToKeys(
     myPrivateKey: Uint8Array,
     signingKeys: SigningKeyPair
 ) {
-    return loadRecrypt()
-        .flatMap((Recrypt) => {
-            return Recrypt.decryptPlaintext(symmetricKey, myPrivateKey).flatMap(([documentKeyPlaintext]) => {
-                return Future.gather2(
-                    Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
-                    Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys)
-                ).map(([encryptedUserKeys, encryptedGroupKeys]) => ({
-                    userAccessKeys: encryptedUserKeys,
-                    groupAccessKeys: encryptedGroupKeys,
-                }));
-            });
+    return Recrypt.decryptPlaintext(symmetricKey, myPrivateKey)
+        .flatMap(([documentKeyPlaintext]) => {
+            return Future.gather2(
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys)
+            ).map(([encryptedUserKeys, encryptedGroupKeys]) => ({
+                userAccessKeys: encryptedUserKeys,
+                groupAccessKeys: encryptedGroupKeys,
+            }));
         })
         .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_GRANT_ACCESS_FAILURE));
 }
