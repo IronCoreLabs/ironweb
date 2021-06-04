@@ -91,7 +91,7 @@ recryptShim = recryptShim
     //Replace the return value of the `loadRecrypt` function to just wrap the Recrypt type in a Future so the type remains the same
     .replace(
         /export default function loadRecrypt[()]+\s*{[^\Z]*/,
-        `getCryptoSubtleApi; randomSeed; export default function loadRecrypt(): Future<Error, typeof Recrypt> {return Future.of(Recrypt);}`
+        `export default function loadRecrypt(): Future<Error, typeof Recrypt> {return Future.of(Recrypt);}`
     );
 
 fs.writeFileSync("./src/frame/worker/crypto/recrypt/index.ts", recryptShim, "utf8");
