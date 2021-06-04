@@ -108,7 +108,7 @@ module.exports = {
         modules: ["node_modules"],
         extensions: [".ts", ".tsx", ".js"],
     },
-    devtool: "cheap-module-source-map",
+    devtool: "eval-source-map",
     module: {
         rules: [
             {
@@ -131,4 +131,7 @@ module.exports = {
             _ICL_FRAME_DOMAIN_REPLACEMENT_: JSON.stringify(getFrameDomain()),
         }),
     ],
+    experiments: {
+        asyncWebAssembly: true,
+    },
 };

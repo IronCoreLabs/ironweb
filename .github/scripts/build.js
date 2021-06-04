@@ -68,8 +68,6 @@ function getUpdatedReleaseVersion(currentVersion) {
 //Convert TS into JS for full source. Output both as ES6 and as CommonJS and remove all unit test files
 shell.exec("./node_modules/typescript/bin/tsc --target ES5 --sourceMap false --module ES6 --outDir ./dist/shim/es && yarn run cleanTest");
 shell.exec("./node_modules/typescript/bin/tsc --target ES5 --sourceMap false --module CommonJS --outDir ./dist/shim/commonjs && yarn run cleanTest");
-//After TS compile, move our hacked up Recrypt loader file back into place for future compile steps.
-shell.mv("./src/frame/worker/crypto/recrypt/index.tsb", "./src/frame/worker/crypto/recrypt/index.ts");
 
 //Delete all compiled but unminified/uncombined JS source files for the frame. Since nobody will be importing these source files as part of app development, we
 //only ever need the minified combined files to be able to serve from the identity server. It also reduces the tar size for each version which is helpful when

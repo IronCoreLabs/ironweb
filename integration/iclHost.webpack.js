@@ -55,7 +55,7 @@ const sharedConfig = {
             },
         },
     },
-    devtool: "cheap-module-source-map",
+    devtool: "eval-source-map",
     resolve: {
         modules: ["node_modules"],
         extensions: [".ts", ".js", ".wasm"],
@@ -76,6 +76,9 @@ const sharedConfig = {
             _WORKER_PATH_LOCATION_: JSON.stringify("./webpack/dist/worker.js"),
         }),
     ],
+    experiments: {
+        asyncWebAssembly: true,
+    },
 };
 
 const frameConfig = {
