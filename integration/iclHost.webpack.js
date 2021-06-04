@@ -37,9 +37,6 @@ const sharedConfig = {
         //https://github.com/webpack/webpack/issues/6642
         globalObject: "this",
     },
-    node: {
-        crypto: "empty",
-    },
     optimization: {
         moduleIds: "named",
         emitOnErrors: false,
@@ -59,6 +56,9 @@ const sharedConfig = {
     resolve: {
         modules: ["node_modules"],
         extensions: [".ts", ".js", ".wasm"],
+        fallback: {
+            crypto: false,
+        },
     },
     module: {
         rules: [
