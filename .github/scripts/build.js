@@ -65,42 +65,9 @@ function getUpdatedReleaseVersion(currentVersion) {
     return `${major}.${minor}.${parseInt(nano) + 1}`;
 }
 
-//Sigh. This is a huge hacky mess unfortunately. What we're trying to do here is compile the shim TS code into JS code using two different module formats,
-//CommonJS, and ES6. We ship both to provide consumers with options depending on their environment. This code ends up compiling *all* of the repo source
-//because of the interdependency of types/constants/etc between the shim and the frame. But in reality, all we care about for this step is the resulting
-//shim code in various module formats.
-
-//This worked out just fine before we added WebAssembly and our dynamic split points. When we try to compile the entire source with the different module
-//formats, TS complains when it sees the `import()` calls it because we told it to use `ES6` or `CommonJS` which don't support dynamic imports. The
-//dynamic import calls are contained within the frame code, which we really don't actually care about compiling here which is frustrating.
-
-//So, time for some good hacky hacks. We'll take the same technique we used for the unit tests to regex away all of the dynamic import business in that
-//file while still keeping the same types exported from it. That way when we TS compile things, it won't see any dynamic imports and will compile things
-//correctly. Unfortunately we have multiple lines to blow away in the file which all have to be done within their own regex.
-const addedWasmInclude = `import * as Recrypt from "./RecryptWasm";`;
-//First, make a backup of the file so we can restore it later.
-shell.cp("./src/frame/worker/crypto/recrypt/index.ts", "./src/frame/worker/crypto/recrypt/index.tsb");
-let recryptShim = fs.readFileSync("./src/frame/worker/crypto/recrypt/index.ts", "utf8");
-recryptShim = recryptShim
-    //Add in an import to include the RecryptWasm file synchronously so that we can return it in the file later to keep the types consistent
-    .replace(/(import\sFuture\sfrom\s[^;]*;)/, `$1\n${addedWasmInclude}`)
-    .replace(/const\srecrypt:\sPromise[^\n]*/, "")
-    //Now we have to replace all of the dynamic Promise import lines and replace them with references to the two functions they call so that we don't get
-    //the TS "unused function" errors on compile.
-    .replace(/\s+[:?]\simport[^\n]*/g, "")
-    //Replace the return value of the `loadRecrypt` function to just wrap the Recrypt type in a Future so the type remains the same
-    .replace(
-        /export default function loadRecrypt[()]+\s*{[^\Z]*/,
-        `getCryptoSubtleApi; randomSeed; export default function loadRecrypt(): Future<Error, typeof Recrypt> {return Future.of(Recrypt);}`
-    );
-
-fs.writeFileSync("./src/frame/worker/crypto/recrypt/index.ts", recryptShim, "utf8");
-
 //Convert TS into JS for full source. Output both as ES6 and as CommonJS and remove all unit test files
 shell.exec("./node_modules/typescript/bin/tsc --target ES5 --sourceMap false --module ES6 --outDir ./dist/shim/es && yarn run cleanTest");
 shell.exec("./node_modules/typescript/bin/tsc --target ES5 --sourceMap false --module CommonJS --outDir ./dist/shim/commonjs && yarn run cleanTest");
-//After TS compile, move our hacked up Recrypt loader file back into place for future compile steps.
-shell.mv("./src/frame/worker/crypto/recrypt/index.tsb", "./src/frame/worker/crypto/recrypt/index.ts");
 
 //Delete all compiled but unminified/uncombined JS source files for the frame. Since nobody will be importing these source files as part of app development, we
 //only ever need the minified combined files to be able to serve from the identity server. It also reduces the tar size for each version which is helpful when

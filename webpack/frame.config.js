@@ -9,14 +9,6 @@ module.exports = (_, argv) => {
     //Shared Webpack config for both the frame bundle and the WebWorker bundle
     const sharedConfig = {
         mode: "production",
-        //The code in our ed25519 library attempts to determine if we're running in a Node environment and tries to do a `require("crypto")`. That
-        //will cause Webpack to try and polyfill the entire library with a few hundred K of crypto libraries. We don't need that, so this
-        //object is used to make it so that when someone does a `require("crypto")` it just returns an empty object
-        node: {
-            crypto: "empty",
-            process: false,
-            path: false,
-        },
         module: {
             rules: [
                 {
@@ -29,6 +21,11 @@ module.exports = (_, argv) => {
         resolve: {
             extensions: [".ts", ".js", ".wasm"],
             modules: ["node_modules"],
+            fallback: {
+                crypto: false,
+                path: false,
+                process: false,
+            },
         },
         plugins: [
             new ATL.CheckerPlugin(),
@@ -38,6 +35,9 @@ module.exports = (_, argv) => {
                 _WORKER_PATH_LOCATION_: JSON.stringify(`${argv.outputPublicPath}ironweb-worker.min.js`),
             }),
         ],
+        experiments: {
+            asyncWebAssembly: true,
+        },
     };
 
     //Config unique to generating the frame bundle
@@ -74,7 +74,7 @@ module.exports = (_, argv) => {
             minimizer: [new TerserPlugin()],
             splitChunks: {
                 cacheGroups: {
-                    vendors: {
+                    defaultVendors: {
                         //By default when you use dynamic imports any other modules included in the resulting import that come from the
                         //node_modules directory are shoved into another "vendor" bundle. This means that our minimal RecryptJS shim gets
                         //separated from the actual recryptjs file. There's no reason not to combine those files, so intead we tell webpack

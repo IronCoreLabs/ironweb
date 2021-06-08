@@ -16,8 +16,9 @@ const config = {
         modules: ["node_modules"],
         extensions: [".ts", ".js"],
     },
+    devtool: "source-map",
     optimization: {
-        minimizer: [new TerserPlugin({sourceMap: true})],
+        minimizer: [new TerserPlugin()],
     },
     module: {
         rules: [

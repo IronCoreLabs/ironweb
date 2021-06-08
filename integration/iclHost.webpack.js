@@ -37,13 +37,12 @@ const sharedConfig = {
         //https://github.com/webpack/webpack/issues/6642
         globalObject: "this",
     },
-    node: {
-        crypto: "empty",
-    },
     optimization: {
+        moduleIds: "named",
+        emitOnErrors: false,
         splitChunks: {
             cacheGroups: {
-                vendors: {
+                defaultVendors: {
                     //By default when you use dynamic imports any other modules included in the resulting import that come from the
                     //node_modules directory are shoved into another "vendor" bundle. This means that our minimal RecryptJS shim gets
                     //separated from the actual recryptjs file. There's no reason not to combine those files, so intead we tell webpack
@@ -53,10 +52,13 @@ const sharedConfig = {
             },
         },
     },
-    devtool: "cheap-module-source-map",
+    devtool: "eval-source-map",
     resolve: {
         modules: ["node_modules"],
         extensions: [".ts", ".js", ".wasm"],
+        fallback: {
+            crypto: false,
+        },
     },
     module: {
         rules: [
@@ -69,13 +71,14 @@ const sharedConfig = {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoEmitOnErrorsPlugin(),
-        new webpack.NamedModulesPlugin(),
         new webpack.DefinePlugin({
             SDK_NPM_VERSION_PLACEHOLDER: JSON.stringify("SDK_NPM_VERSION_PLACEHOLDER"),
             _WORKER_PATH_LOCATION_: JSON.stringify("./webpack/dist/worker.js"),
         }),
     ],
+    experiments: {
+        asyncWebAssembly: true,
+    },
 };
 
 const frameConfig = {

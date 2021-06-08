@@ -1,5 +1,5 @@
 import * as GroupCrypto from "../GroupCrypto";
-import * as Recrypt from "../crypto/recrypt/RecryptWasm";
+import * as Recrypt from "../crypto/recrypt";
 import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import {ErrorCodes} from "../../../Constants";

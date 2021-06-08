@@ -2,7 +2,7 @@ import * as DocumentCrypto from "../DocumentCrypto";
 import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import * as AES from "../crypto/aes";
-import * as Recrypt from "../crypto/recrypt/RecryptWasm";
+import * as Recrypt from "../crypto/recrypt";
 import {ErrorCodes} from "../../../Constants";
 
 describe("DocumentCrypto", () => {
@@ -256,7 +256,10 @@ describe("DocumentCrypto", () => {
             spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([decryptPlaintext, decryptKey]));
             spyOn(Recrypt, "encryptPlaintextToList").and.returnValue(Future.of(EncryptedAccessKeyList));
 
-            const userList = [{id: "abc-123", masterPublicKey: {x: "", y: ""}}, {id: "def-456", masterPublicKey: {x: "", y: ""}}];
+            const userList = [
+                {id: "abc-123", masterPublicKey: {x: "", y: ""}},
+                {id: "def-456", masterPublicKey: {x: "", y: ""}},
+            ];
             const groupList = [{id: "group-353", masterPublicKey: {x: "", y: ""}}];
             const encryptedSymKey = TestUtils.getTransformedSymmetricKey();
             const signingKeys = TestUtils.getSigningKeyPair();
