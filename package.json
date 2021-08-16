@@ -1,6 +1,6 @@
 {
     "license": "AGPL-3.0-only",
-    "version": "4.0.3",
+    "version": "4.0.4",
     "scripts": {
         "cleanTest": "find dist -type d -name tests -prune -exec rm -rf {} \\;",
         "lint": "eslint . --ext .ts,.tsx",
