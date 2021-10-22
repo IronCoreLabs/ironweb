@@ -14,6 +14,9 @@
         "integrate": "yarn start",
         "nightwatch": "nightwatch"
     },
+    "resolutions": {
+        "**/ua-parser-js": "0.7.28"
+    },
     "dependencies": {
         "@ironcorelabs/recrypt-wasm-binding": "0.6.0",
         "@stablelib/ed25519": "1.0.1",
