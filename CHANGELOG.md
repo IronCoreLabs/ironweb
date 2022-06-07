@@ -4,9 +4,11 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
-## v4.0.x (unreleased)
+## v4.0.14
 
-Support for MS Edge Legacy (version <= 44) has been removed. All currently supported versions of MS Edge should work.
+- Support for MS Edge Legacy (version <= 44) has been removed. All currently supported versions of MS Edge should work.
+
+- Fixed a bug where local state in browser wouldn't be updated after a `changePasscode` call.
 
 ## v3.5.3
 
