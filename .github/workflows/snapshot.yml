@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.WORKFLOW_PAT }}
       - uses: actions/setup-node@v2.1.2
         with:
           version: 10.x
@@ -20,8 +22,6 @@ jobs:
       - name: release snapshot
         env:
           GIT_PROJECT_NAME: "ironweb"
-          # $WORKFLOW_PAT Allows bumping version on build and pushing back to repo
-          WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
           # $NPM_TOKEN Allows publishing to NPM on build
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           BRANCH: "main"

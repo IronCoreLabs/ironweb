@@ -60,12 +60,6 @@ shell.echo(`\n\nBuild successful, version is now set to ${updatedVersion}`);
 shell.echo("\n\nSetting up git so Leeroy can commit our version bump back to main\n");
 shell.exec('git config --global user.email "ops@ironcorelabs.com"');
 shell.exec('git config --global user.name "Leeroy Travis"');
-shell.exec(`git remote add release "https://leeroy-jenkins:${process.env.WORKFLOW_PAT}@github.com/IronCoreLabs/${process.env.GIT_PROJECT_NAME}.git"`);
-shell.exec(`git config --global url."https://leeroy-jenkins:${process.env.WORKFLOW_PAT}@github.com".insteadOf "https://github.com"`);
-shell.exec(`git fetch release`);
-shell.exec(`git checkout "${process.env.BRANCH}"`);
-
-shell.exec(`git branch --set-upstream-to=release/"$BRANCH"`);
 shell.exec("git status");
 shell.echo("\n\nComitting version changes back to repo and tagging release...\n");
 
