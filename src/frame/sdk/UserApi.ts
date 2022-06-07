@@ -65,7 +65,10 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
         },
     };
 
-    return WorkerMediator.sendMessage<WMT.ChangeUserPasscodeWorkerResponse>(payload).flatMap(({message}) =>
-        UserApiEndpoints.callUserUpdateApi(message.encryptedPrivateUserKey)
-    );
+    return WorkerMediator.sendMessage<WMT.ChangeUserPasscodeWorkerResponse>(payload).flatMap(({message}: WMT.ChangeUserPasscodeWorkerResponse) => {
+        //Since the users encrypted private key is now different, store it off in case the user performs any operations
+        //that need it (e.g. change password, rotate master key) within this existing session.
+        ApiState.setEncryptedPrivateUserKey(message.encryptedPrivateUserKey);
+        return UserApiEndpoints.callUserUpdateApi(message.encryptedPrivateUserKey);
+    });
 }
