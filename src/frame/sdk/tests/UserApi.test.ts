@@ -79,13 +79,14 @@ describe("UserApi", () => {
                     message: {encryptedPrivateUserKey: "encrypted private user key"},
                 })
             );
+            spyOn(ApiState, "setEncryptedPrivateUserKey");
 
             UserApi.changeUsersPasscode("current", "new").engage(
                 (e) => fail(e.message),
                 (result: any) => {
                     expect(result).toEqual("user update result");
-
                     expect(UserApiEndpoints.callUserUpdateApi).toHaveBeenCalledWith("encrypted private user key");
+                    expect(ApiState.setEncryptedPrivateUserKey).toHaveBeenCalledWith("encrypted private user key");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
                         type: "CHANGE_USER_PASSCODE",
                         message: {
