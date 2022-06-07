@@ -20,8 +20,8 @@ jobs:
       - name: release snapshot
         env:
           GIT_PROJECT_NAME: "ironweb"
-          # $GIT_ACCESS_TOKEN Allows bumping version on build and pushing back to repo
-          GIT_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # $WORKFLOW_PAT Allows bumping version on build and pushing back to repo
+          WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
           # $NPM_TOKEN Allows publishing to NPM on build
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           BRANCH: "main"
