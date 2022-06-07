@@ -58,7 +58,7 @@ shell.echo(`\n\nBuild successful, version is now set to ${updatedVersion}`);
 
 //Setup git user to our CI user
 shell.echo("\n\nSetting up git so Leeroy can commit our version bump back to main\n");
-shell.exec('git config --global user.email "leeroytravis@ironcorelabs.com"');
+shell.exec('git config --global user.email "ops@ironcorelabs.com"');
 shell.exec('git config --global user.name "Leeroy Travis"');
 shell.exec(`git remote add release "https://${process.env.GIT_ACCESS_TOKEN}@github.com/IronCoreLabs/${process.env.GIT_PROJECT_NAME}.git"`);
 shell.exec(`git fetch release`);
