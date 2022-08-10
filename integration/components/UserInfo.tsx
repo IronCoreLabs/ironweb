@@ -22,6 +22,15 @@ const buttonStyle: React.CSSProperties = {
     margin: "5px",
 };
 
+declare global {
+    interface Window {
+        User: {
+            id: string;
+            name: string;
+        };
+    }
+}
+
 interface UserInfoState {
     showingDialog: boolean;
     changingPasscode: boolean;
@@ -82,7 +91,7 @@ export default class UserInfo extends React.Component<{}, UserInfoState> {
                 logAction(`User device successfully deauthorized. Deleted transform key: ${result.transformKeyDeleted}`);
                 window.location.reload();
             });
-        } catch (e) {
+        } catch (e: any) {
             logAction(`User device deauthorize error: ${e.message}. Error Code: ${e.code}`, "error");
         }
     }

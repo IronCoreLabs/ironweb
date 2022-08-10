@@ -73,7 +73,7 @@ export class ShimMessenger {
  */
 const frame = window.document.createElement("iframe");
 export const messenger = new ShimMessenger(frame);
-const frameLoadedPromise = new Promise<any>((resolve, reject) => {
+const frameLoadedPromise = new Promise<void>((resolve, reject) => {
     //The frame "load" even fires even if the frame failed to load (e.g. 404). So once it loads, we want to verify that it is actually
     //responding to messages we pass it. So pass a test message and verify we get a response within a second. If it does, we resolve
     //this Promise for all future messages. If it fails we reject with the appropriate SDK error message.
@@ -102,7 +102,7 @@ window.document.body.appendChild(frame);
  * `then` callback immediately. This allows subsequent calls to resolve immediately after the iFrame has finished loading.
  */
 function ensureFrameLoaded() {
-    return Future.tryP<Error, undefined>(() => frameLoadedPromise);
+    return Future.tryP<Error, void>(() => frameLoadedPromise);
 }
 
 /**

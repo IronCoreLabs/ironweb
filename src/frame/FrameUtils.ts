@@ -76,7 +76,7 @@ export function getDeviceAndSigningKeys(
             encryptedSigningKey: toByteArray(keys.signingKey),
             nonce: toByteArray(keys.nonce),
         });
-    } catch (e) {
+    } catch (e: any) {
         clearDeviceAndSigningKeys(userID, segmentID);
         return Future.reject(e);
     }

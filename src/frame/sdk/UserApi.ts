@@ -1,4 +1,5 @@
 import Future from "futurejs";
+import SDKError from "src/lib/SDKError";
 import * as WMT from "../../WorkerMessageTypes";
 import ApiState from "../ApiState";
 import UserApiEndpoints from "../endpoints/UserApiEndpoints";
@@ -15,7 +16,9 @@ export function deauthorizeDevice() {
             //their device private key from local storage. So mock out a fake ID here that we can use to decision off of.
             .handleWith(() => Future.of({id: -1}))
             .map((deleteResponse) => {
-                const {id, segmentId} = ApiState.user();
+                const user = ApiState.user();
+
+                const {id, segmentId} = user;
                 clearDeviceAndSigningKeys(id, segmentId);
                 ApiState.clearCurrentUser();
                 return deleteResponse.id > 0;
@@ -30,8 +33,9 @@ export function deauthorizeDevice() {
  * validates the request and augments the server side private key.
  * @param {string} passcode Users current passcode
  */
-export function rotateUserMasterKey(passcode: string) {
+export function rotateUserMasterKey(passcode: string): Future<SDKError, ApiUserResponse> {
     const encryptedPrivateUserKey = ApiState.encryptedUserKey();
+
     const payload: WMT.RotateUserPrivateKeyWorkerRequest = {
         type: "ROTATE_USER_PRIVATE_KEY",
         message: {

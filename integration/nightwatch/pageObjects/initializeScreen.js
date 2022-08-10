@@ -3,7 +3,7 @@
  */
 const initializeActions = {
     clickInitializeAppButton(){
-        return this.click('@initializeButton').waitForElementVisible('@enterPasscodeInput');
+        return this.click("@initializeButton").waitForElementVisible("@enterPasscodeInput");
     },
     enterUserPasscode(passcode){
         return this.setValue('@enterPasscodeInput', passcode);

@@ -4,11 +4,8 @@
 interface Window {
     Promise: PromiseConstructor;
     msCrypto: Crypto;
-    User: {
-        id: string;
-        name: string;
-    };
 }
+
 
 /*
  * Declare types for modules without build in types
