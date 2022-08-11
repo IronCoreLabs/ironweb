@@ -80,7 +80,7 @@ describe("ApiRequest", () => {
         });
 
         it("converts failed request to SDK error", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() => Promise.reject(new Error("forced error")));
+            (window.fetch as jasmine.Spy).mockImplementation(() => Promise.reject(new Error("forced error")));
 
             ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
@@ -93,7 +93,7 @@ describe("ApiRequest", () => {
         });
 
         it("converts failed request with JSON error into SDK Error", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     statusText: "not good",
@@ -112,7 +112,7 @@ describe("ApiRequest", () => {
         });
 
         it("returns special failure error if request was rate limited", () => {
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     status: 429,
@@ -129,7 +129,7 @@ describe("ApiRequest", () => {
         });
 
         it("falls back to status text if response JSON is not in the expected format", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     statusText: "not good",
@@ -148,7 +148,7 @@ describe("ApiRequest", () => {
         });
 
         it("falls back to status text if response body cannot be JSON parsed", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     statusText: "not good",
@@ -167,10 +167,12 @@ describe("ApiRequest", () => {
         });
 
         it("returns empty object if request status is a 204", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() => Promise.resolve({ok: true, status: 204}));
+            (window.fetch as jasmine.Spy).mockImplementation(() => Promise.resolve({ok: true, status: 204}));
 
             ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (response: any) => {
                     expect(response).toBeUndefined();
                     done();
@@ -179,7 +181,7 @@ describe("ApiRequest", () => {
         });
 
         it("falls back to hardcoded message text when response is success but JSON parsing fails", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 200,
@@ -198,7 +200,7 @@ describe("ApiRequest", () => {
         });
 
         it("invokes response.json on result and maps data to result and response", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 200,
@@ -207,7 +209,9 @@ describe("ApiRequest", () => {
             );
 
             ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (response: any) => {
                     expect(response).toEqual({
                         foo: "bar",
@@ -220,8 +224,8 @@ describe("ApiRequest", () => {
 
     describe("makeAuthorizedApiRequest", () => {
         it("calculates custom header signaturtes and auth signature", (done) => {
-            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(
-                Future.of({
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
                     message: {
                         userContextHeader: "context",
                         requestHeaderSignature: "sig1",
@@ -230,7 +234,7 @@ describe("ApiRequest", () => {
                 })
             );
 
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 204,
@@ -239,7 +243,9 @@ describe("ApiRequest", () => {
             );
 
             ApiRequest.makeAuthorizedApiRequest("api/method", -1, {headers: {foo: "bar"}, method: "POST"}).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 () => {
                     expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
                         method: "POST",
@@ -259,7 +265,7 @@ describe("ApiRequest", () => {
 
     describe("makeJwtApiRequest", () => {
         it("formats provided JWT to expected auth header", (done) => {
-            (window.fetch as jasmine.Spy).and.callFake(() =>
+            (window.fetch as jasmine.Spy).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 204,
@@ -268,7 +274,9 @@ describe("ApiRequest", () => {
             );
 
             ApiRequest.makeJwtApiRequest("api/method", -1, {method: "GET"}, "jwt").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 () => {
                     expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
                         method: "GET",

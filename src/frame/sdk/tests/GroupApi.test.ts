@@ -10,8 +10,8 @@ import {ErrorCodes} from "../../../Constants";
 describe("GroupApi", () => {
     describe("list", () => {
         it("requests group list from API and maps over result", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupListApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callGroupListApi").mockReturnValue(
+                Future.of<any>({
                     result: [
                         {
                             foo: "bar",
@@ -34,7 +34,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.list().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         result: [
@@ -65,8 +67,8 @@ describe("GroupApi", () => {
 
     describe("get", () => {
         it("requests get endpoint for specific ID and maps response", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({
                     groupPublicKey: "bar",
                     name: "private group",
                     id: "87",
@@ -80,7 +82,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.get("87").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         groupID: "87",
@@ -100,8 +104,8 @@ describe("GroupApi", () => {
         });
 
         it("returns partial response if only meta info is returned", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({
                     groupPublicKey: "bar",
                     name: "private group",
                     id: "87",
@@ -113,7 +117,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.get("87").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         groupID: "87",
@@ -144,9 +150,9 @@ describe("GroupApi", () => {
                 {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
                 {id: "user3ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
             ];
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: userKeyList}) as any);
             jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     encryptedAccessKeys: "encryptedAccessKeys",
                     groupPublicKey: "groupPublicKey",
                     transformKeyGrantList: "transformKeyGrantList",
@@ -154,7 +160,7 @@ describe("GroupApi", () => {
             );
 
             jest.spyOn(GroupApiEndpoints, "callGroupCreateApi").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     groupPublicKey: "groupPublicKey",
                     name: "groupName",
                     id: "groupID",
@@ -168,7 +174,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.create("groupID", "groupName", false, ["user2ID"], ["user3ID"], "user1ID").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         groupID: "groupID",
@@ -202,7 +210,7 @@ describe("GroupApi", () => {
                 {id: "user2", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
             ];
             jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     encryptedAccessKeys: [],
                     groupPublicKey: TestUtils.getEmptyPublicKeyString(),
                     transformKeyGrantList: [],
@@ -210,10 +218,12 @@ describe("GroupApi", () => {
             );
 
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi");
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeyList}) as any);
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: userKeyList}) as any);
 
             GroupApi.create("groupID", "private group", true, ["user1", "user1"], ["user1", "user1", "user2"], "user1").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 () => {
                     expect(UserApiEndpoints.callUserKeyListApi).toHaveBeenCalledWith(["user1, user2"]);
                     expect(GroupOperations.groupCreate).toHaveBeenCalledWith(
@@ -230,7 +240,7 @@ describe("GroupApi", () => {
         });
         it("fails if memberList is sent and contains non existent user", () => {
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
                 }) as any
             );
@@ -245,7 +255,7 @@ describe("GroupApi", () => {
         });
         it("fails if adminList is sent and contains non existent user", () => {
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
                 }) as any
             );
@@ -262,7 +272,7 @@ describe("GroupApi", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
             jest.spyOn(GroupOperations, "groupCreate").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     encryptedAccessKeys: [],
                     groupPublicKey: TestUtils.getEmptyPublicKeyString(),
                     transformKeyGrantList: [],
@@ -272,7 +282,9 @@ describe("GroupApi", () => {
             jest.spyOn(GroupApiEndpoints, "callGroupCreateApi");
 
             GroupApi.create("groupID", "private group", true, [], ["alwaysOwner"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 () => {
                     expect(GroupApiEndpoints.callGroupCreateApi).toHaveBeenCalledWith(
                         "groupID",
@@ -298,7 +310,7 @@ describe("GroupApi", () => {
             ];
 
             jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     groupMasterPublicKey: {x: "12", y: "23"},
                     groupID: "myGroup",
                     encryptedPrivateKey: "encryptedPrivKey",
@@ -307,14 +319,14 @@ describe("GroupApi", () => {
                     currentKeyId: 1,
                 }) as any
             );
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: userKeys}) as any);
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: userKeys}) as any);
             jest.spyOn(GroupOperations, "rotateGroupPrivateKeyAndEncryptToAdmins").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     encryptedAccessKeys: ["encryptedAccessKey1", "encryptedAccessKey2"],
                     augmentationFactor: new Uint8Array(32),
                 }) as any
             );
-            jest.spyOn(GroupApiEndpoints, "callGroupPrivateKeyUpdateApi").mockReturnValue(Future.of({needsRotation: false}) as any);
+            jest.spyOn(GroupApiEndpoints, "callGroupPrivateKeyUpdateApi").mockReturnValue(Future.of<any>({needsRotation: false}) as any);
 
             GroupApi.rotateGroupPrivateKey("myGroup").engage(
                 (e) => fail(e.message),
@@ -345,8 +357,8 @@ describe("GroupApi", () => {
         it("return an error if the user requesting the rotation is not an admin of the group", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of({groupID: "33", permissions: []}) as any);
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of({result: ["key1", "key2"]}) as any);
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of<any>({groupID: "33", permissions: []}) as any);
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: ["key1", "key2"]}) as any);
 
             GroupApi.rotateGroupPrivateKey("notYourGroup").engage(
                 (e) => {
@@ -360,8 +372,8 @@ describe("GroupApi", () => {
 
     describe("update", () => {
         it("makes request to API and maps result to expected object", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupUpdateApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callGroupUpdateApi").mockReturnValue(
+                Future.of<any>({
                     id: "88",
                     name: "new name",
                     permissions: ["admin"],
@@ -396,8 +408,8 @@ describe("GroupApi", () => {
             ];
             const signature = new Uint8Array(32);
 
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({
                     groupMasterPublicKey: {x: "12", y: "23"},
                     groupID: "32",
                     encryptedPrivateKey: "encryptedPrivKey",
@@ -405,12 +417,12 @@ describe("GroupApi", () => {
                     adminIds: ["id1"],
                 })
             );
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(
-                Future.of({encryptedAccessKey: ["encryptedAccessKey1", "encryptedAccessKey2"], signature})
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: userKeys}));
+            jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList").mockReturnValue(
+                Future.of<any>({encryptedAccessKey: ["encryptedAccessKey1", "encryptedAccessKey2"], signature})
             );
-            jest.spyOn(GroupApiEndpoints, "callAddAdminsApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callAddAdminsApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "user1"}, {userId: "user2"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
@@ -443,10 +455,10 @@ describe("GroupApi", () => {
         });
 
         it("returns list of failures when no users entered exist", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"]})
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"]})
             );
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: []}));
             jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList");
 
             GroupApi.addAdmins("33", ["user1", "user2"]).engage(
@@ -468,8 +480,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response doesnt return an encrypted private key, indicating the user is not a group admin", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "33", permissions: []}));
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of<any>({groupID: "33", permissions: []}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: ["key1", "key2"]}));
 
             GroupApi.addAdmins("33", ["user1", "user2"]).engage(
                 (e) => {
@@ -481,8 +493,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response only says the current user is a member and not an admin", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "61", permissions: ["user"]}));
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of<any>({groupID: "61", permissions: ["user"]}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: ["key1", "key2"]}));
 
             GroupApi.addAdmins("61", ["user1", "user2"]).engage(
                 (e) => {
@@ -499,13 +511,13 @@ describe("GroupApi", () => {
                 {id: "id2", userMasterPublicKey: {x: "key2"}},
             ];
 
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
             );
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(Future.of(["encryptedAccessKey1", "encryptedAccessKey2"]));
-            jest.spyOn(GroupApiEndpoints, "callAddAdminsApi").and.returnValue(
-                Future.of({
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: userKeys}));
+            jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList").mockReturnValue(Future.of<any>(["encryptedAccessKey1", "encryptedAccessKey2"]));
+            jest.spyOn(GroupApiEndpoints, "callAddAdminsApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "id1"}, {userId: "id2"}],
                     failedIds: [{userId: "id3", errorMessage: "does not exist"}],
                 })
@@ -528,8 +540,8 @@ describe("GroupApi", () => {
 
     describe("removeAdmins", () => {
         it("invokes group admin remove API and maps result correctly", () => {
-            jest.spyOn(GroupApiEndpoints, "callRemoveAdminsApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callRemoveAdminsApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "88"}, {userId: "13"}],
                     failedIds: [
                         {userId: "12", errorMessage: "does not exist"},
@@ -553,8 +565,8 @@ describe("GroupApi", () => {
         });
 
         it("includes list of users in failures if the arent included in response", () => {
-            jest.spyOn(GroupApiEndpoints, "callRemoveAdminsApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callRemoveAdminsApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "88"}],
                     failedIds: [
                         {userId: "12", errorMessage: "does not exist"},
@@ -589,8 +601,8 @@ describe("GroupApi", () => {
             ];
             const signature = new Uint8Array(32);
 
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({
                     groupID: "32",
                     encryptedPrivateKey: "encryptedPrivKey",
                     groupMasterPublicKey: {x: "12", y: "23"},
@@ -598,19 +610,21 @@ describe("GroupApi", () => {
                     adminIds: ["id1"],
                 })
             );
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            jest.spyOn(GroupApiEndpoints, "callAddMembersApi").and.returnValue(
-                Future.of({
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: userKeys}));
+            jest.spyOn(GroupApiEndpoints, "callAddMembersApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "user1"}, {userId: "user2"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
             );
-            jest.spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(
-                Future.of({transformKeyGrant: ["transformKey1", "transformKey2"], signature})
+            jest.spyOn(GroupOperations, "generateGroupTransformKeyToList").mockReturnValue(
+                Future.of<any>({transformKeyGrant: ["transformKey1", "transformKey2"], signature})
             );
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         succeeded: ["user1", "user2"],
@@ -638,14 +652,16 @@ describe("GroupApi", () => {
         });
 
         it("fails fast if none of the requested members exist", (done) => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"]})
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"]})
             );
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: []}));
             jest.spyOn(GroupOperations, "generateGroupTransformKeyToList");
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         succeeded: [],
@@ -664,8 +680,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response doesnt return an encrypted private key, indicating the user is not a group admin", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "32", permissions: []}));
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of<any>({groupID: "32", permissions: []}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: ["key1", "key2"]}));
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => {
@@ -677,8 +693,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response only indicates that the user is a member and not an admin", () => {
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "32", permissions: ["user"]}));
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(Future.of<any>({groupID: "32", permissions: ["user"]}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: ["key1", "key2"]}));
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => {
@@ -695,20 +711,22 @@ describe("GroupApi", () => {
                 {id: "id2", userMasterPublicKey: {x: "key2"}},
             ];
 
-            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
-                Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").mockReturnValue(
+                Future.of<any>({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
             );
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            jest.spyOn(GroupApiEndpoints, "callAddMembersApi").and.returnValue(
-                Future.of({
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: userKeys}));
+            jest.spyOn(GroupApiEndpoints, "callAddMembersApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "user1"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
             );
-            jest.spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(Future.of(["transformKey1", "transformKey2"]));
+            jest.spyOn(GroupOperations, "generateGroupTransformKeyToList").mockReturnValue(Future.of<any>(["transformKey1", "transformKey2"]));
 
             GroupApi.addMembers("61", ["user1", "user2", "12"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         succeeded: ["user1"],
@@ -724,15 +742,17 @@ describe("GroupApi", () => {
 
     describe("removeMembers", () => {
         it("invokes API with list and maps result correctly", (done) => {
-            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "user1"}, {userId: "user2"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
             );
 
             GroupApi.removeMembers("61", ["user1", "user2"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         succeeded: ["user1", "user2"],
@@ -746,8 +766,8 @@ describe("GroupApi", () => {
         });
 
         it("includes list of users in failures if the arent included in response", () => {
-            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "88"}],
                     failedIds: [
                         {userId: "12", errorMessage: "does not exist"},
@@ -775,15 +795,17 @@ describe("GroupApi", () => {
     describe("removeSelfAsMember", () => {
         it("invokes API with current user and maps result correctly", (done) => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
-            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [{userId: "user-10"}],
                     failedIds: [],
                 })
             );
 
             GroupApi.removeSelfAsMember("61").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual("user-10");
 
@@ -795,8 +817,8 @@ describe("GroupApi", () => {
 
         it("returns expected error code if group remove API returns any failure results", (done) => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
-            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").mockReturnValue(
+                Future.of<any>({
                     succeededIds: [],
                     failedIds: [{userId: "user-10", error: "failed"}],
                 })
@@ -814,10 +836,12 @@ describe("GroupApi", () => {
 
     describe("deleteGroup", () => {
         it("invokes API to delete the group", (done) => {
-            jest.spyOn(GroupApiEndpoints, "callGroupDeleteApi").and.returnValue(Future.of({id: "3325"}));
+            jest.spyOn(GroupApiEndpoints, "callGroupDeleteApi").mockReturnValue(Future.of<any>({id: "3325"}));
 
             GroupApi.deleteGroup("3325").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual({id: "3325"} as any);
                     done();

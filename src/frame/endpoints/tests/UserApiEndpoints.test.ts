@@ -14,10 +14,10 @@ describe("UserApiEndpoints", () => {
         let mapSpy: jasmine.Spy;
         beforeEach(() => {
             mapSpy = jasmine.createSpy("fetchJSON Map");
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue({
+            (ApiRequest.makeJwtApiRequest as jasmine.Spy).mockReturnValue({
                 map: mapSpy,
             });
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue({
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue({
                 map: mapSpy,
             });
         });
@@ -52,8 +52,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserCreateApi", () => {
         it("creates user with keys and returns saved user object", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -67,7 +67,9 @@ describe("UserApiEndpoints", () => {
                 },
                 true
             ).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (user: any) => {
                     expect(user).toEqual({
                         id: "user-10",
@@ -88,8 +90,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserCreateApiWithDevice", () => {
         it("creates user with full key set and returns saved user object", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -104,7 +106,9 @@ describe("UserApiEndpoints", () => {
                 signingKeys: TestUtils.getSigningKeyPair(),
                 transformKey: TestUtils.getTransformKey(),
             }).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (user: any) => {
                     expect(user).toEqual({
                         id: "user-10",
@@ -136,8 +140,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("creates user with partial key set and returns saved user object", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -152,7 +156,9 @@ describe("UserApiEndpoints", () => {
                 signingKeys: TestUtils.getSigningKeyPair(),
                 transformKey: TestUtils.getTransformKey(),
             }).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (user: any) => {
                     expect(user).toEqual({
                         id: "user-10",
@@ -186,8 +192,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserKeyUpdateApi", () => {
         it("calls Api with rotated private key and augmentation factor when private key rotation is requested", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -216,8 +222,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserUpdateApi", () => {
         it("calls API and updates status when requested", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -243,8 +249,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("calls API and updates users escrowed private key when requested", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -266,8 +272,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("updates both status and escrowed private key", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -292,8 +298,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserDeviceAdd", () => {
         it("calls API and returns data as expected", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     devicePublicKey: {x: "", y: ""},
                 })
             );
@@ -307,7 +313,9 @@ describe("UserApiEndpoints", () => {
                 new Uint8Array([99, 103, 113, 93]),
                 133353523
             ).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userKeys: any) => {
                     expect(userKeys).toEqual({
                         devicePublicKey: {x: "", y: ""},
@@ -337,12 +345,14 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserCurrentDeviceDelete", () => {
         it("calls API to delete device for current user", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of({id: 353}));
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(Future.of<any>({id: 353}));
             ApiState.setCurrentUser({...TestUtils.getFullUser(), id: "user-special~!@#$"});
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserCurrentDeviceDelete().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (deleteResult: any) => {
                     expect(deleteResult).toEqual({id: 353});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
@@ -357,8 +367,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserKeyListApi", () => {
         it("calls API and returns mapped response data", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     result: [
                         {id: "user-10", userMasterPublicKey: {x: ""}},
                         {id: "user-20", userMasterPublicKey: {x: ""}},
@@ -369,7 +379,9 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserKeyListApi(["user-10", "user-20"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual({
                         result: [
@@ -392,7 +404,7 @@ describe("UserApiEndpoints", () => {
                     {id: id2, userMasterPublicKey: {x: ""}},
                 ],
             };
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(Future.of<any>(resp));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
@@ -400,7 +412,9 @@ describe("UserApiEndpoints", () => {
             for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
             expect(UserApiEndpoints.userPublicKeyCache).toEqual({});
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -422,14 +436,16 @@ describe("UserApiEndpoints", () => {
                     {id: id2, userMasterPublicKey: {x: ""}},
                 ],
             };
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(Future.of<any>(resp));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             // clear the module cache for this test
             for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -438,7 +454,9 @@ describe("UserApiEndpoints", () => {
                 }
             );
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -457,14 +475,16 @@ describe("UserApiEndpoints", () => {
                     {id: id2, userMasterPublicKey: {x: ""}},
                 ],
             };
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(Future.of<any>(resp));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             // clear the module cache for this test
             for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -473,7 +493,9 @@ describe("UserApiEndpoints", () => {
                 }
             );
             UserApiEndpoints.callUserKeyListApi([id1, "user-30"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (_) => {
                     // make sure it was actually called a second time
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(2);
@@ -482,8 +504,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("escapes all user IDs", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     result: [
                         {id: "user-10", userMasterPublicKey: {x: ""}},
                         {id: "user-20", userMasterPublicKey: {x: ""}},
@@ -494,7 +516,9 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserKeyListApi(["~`!@#$%^&*()-_=+[{]};:<.>/?", "user-20"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual({
                         result: [
@@ -517,7 +541,9 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserKeyListApi([]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual({result: []});
                     expect(ApiRequest.makeAuthorizedApiRequest).not.toHaveBeenCalled();

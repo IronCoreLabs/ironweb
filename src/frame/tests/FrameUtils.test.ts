@@ -106,7 +106,9 @@ describe("FrameUtils", () => {
             FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (localKeys) => {
                     expect(localKeys.encryptedDeviceKey).toEqual(deviceKey);
                     expect(localKeys.encryptedSigningKey).toEqual(signingKey);

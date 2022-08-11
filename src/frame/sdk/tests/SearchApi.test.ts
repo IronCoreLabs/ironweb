@@ -9,14 +9,16 @@ describe("SearchApi", () => {
     describe("createBlindSearchIndex", () => {
         it("generates a random salt, encrypts it, and returns unmanaged doc", () => {
             jest.spyOn(DocAdvancedApi, "encrypt").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     document: "encDoc",
                     edeks: ["edek1", "edek2"],
                 } as any)
             );
 
             SearchApi.createBlindSearchIndex("mySearchIndexGroup").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (res) => {
                     expect(res).toEqual({
                         searchIndexEncryptedSalt: "encDoc",
@@ -44,14 +46,16 @@ describe("SearchApi", () => {
     describe("initializeBlindSearchIndex", () => {
         it("decrypts the provided salt, generates a random ID and stores the ID", () => {
             jest.spyOn(DocAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     data: new Uint8Array([82, 32, 87, 109, 139]),
                     accessVia: {type: "group", id: "mySearchIndexGroup"},
                 })
             );
 
             SearchApi.initializeBlindSearchIndex(new Uint8Array([99, 193]), new Uint8Array([135, 166])).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (searchIndexId) => {
                     expect(searchIndexId).toEqual(expect.any(String));
                     expect(searchIndexId).toHaveLength(16);
@@ -87,17 +91,19 @@ describe("SearchApi", () => {
 
         it("sends message to frame to tokenize data", () => {
             jest.spyOn(DocAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     data: new Uint8Array([82, 32, 87, 109, 139]),
                     accessVia: {type: "group", id: "mySearchIndexGroup"},
                 })
             );
-            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "tokenized data"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "tokenized data"}));
 
             SearchApi.initializeBlindSearchIndex(new Uint8Array([33]), new Uint8Array([32]))
                 .flatMap((searchIndexId) => SearchApi.tokenizeData(searchIndexId, "search data", "partition"))
                 .engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     (result: any) => {
                         expect(result).toEqual("tokenized data");
                         expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
@@ -127,17 +133,19 @@ describe("SearchApi", () => {
 
         it("sends message to frame to tokenize query", () => {
             jest.spyOn(DocAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     data: new Uint8Array([82, 32, 87, 109, 139]),
                     accessVia: {type: "group", id: "mySearchIndexGroup"},
                 })
             );
-            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "tokenized query"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "tokenized query"}));
 
             SearchApi.initializeBlindSearchIndex(new Uint8Array([33]), new Uint8Array([32]))
                 .flatMap((searchIndexId) => SearchApi.tokenizeQuery(searchIndexId, "search query", "partition"))
                 .engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     (result: any) => {
                         expect(result).toEqual("tokenized query");
                         expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
@@ -156,10 +164,12 @@ describe("SearchApi", () => {
 
     describe("transliterateString", () => {
         it("sends message to frame to transliterate string", () => {
-            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "transliterated string"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "transliterated string"}));
 
             SearchApi.transliterateString("my string").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual("transliterated string");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({

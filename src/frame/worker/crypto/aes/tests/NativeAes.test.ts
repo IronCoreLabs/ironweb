@@ -8,10 +8,10 @@ describe("NativeAes", () => {
     const wcDecrypt = crypto.subtle.decrypt;
 
     beforeEach(() => {
-        crypto.subtle.importKey = jasmine.createSpy("nativeImportKey").and.returnValue(Promise.resolve("CryptoKey"));
-        crypto.subtle.deriveKey = jasmine.createSpy("nativeDeriveKey").and.returnValue(Promise.resolve("derivedKey"));
-        crypto.subtle.encrypt = jasmine.createSpy("nativeEncrypt").and.returnValue(Promise.resolve(new Uint8Array([93, 82, 72])));
-        crypto.subtle.decrypt = jasmine.createSpy("nativeDecrypt").and.returnValue(Promise.resolve(new Uint8Array([87, 70, 62])));
+        crypto.subtle.importKey = jasmine.createSpy("nativeImportKey").mockReturnValue(Promise.resolve("CryptoKey"));
+        crypto.subtle.deriveKey = jasmine.createSpy("nativeDeriveKey").mockReturnValue(Promise.resolve("derivedKey"));
+        crypto.subtle.encrypt = jasmine.createSpy("nativeEncrypt").mockReturnValue(Promise.resolve(new Uint8Array([93, 82, 72])));
+        crypto.subtle.decrypt = jasmine.createSpy("nativeDecrypt").mockReturnValue(Promise.resolve(new Uint8Array([87, 70, 62])));
     });
 
     afterEach(() => {
@@ -28,7 +28,9 @@ describe("NativeAes", () => {
             const iv = new Uint8Array(12);
 
             NativeAes.encryptUserKey(userKey, "derivedKey" as any, salt, iv).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userPrivateKey: any) => {
                     expect(userPrivateKey.length).toEqual(47);
                     //Last bytes should be result from mock encrypt result we returned above

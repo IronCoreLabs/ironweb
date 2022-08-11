@@ -8,7 +8,7 @@ describe("SearchSDK", () => {
     let sendMessageMock: jest.SpyInstance<Future<Error, ResponseMessage>, [RequestMessage, (Uint8Array[] | undefined)?]>;
     beforeEach(() => {
         sendMessageMock = jest.spyOn(FrameMediator, "sendMessage");
-        sendMessageMock.mockReturnValue(Future.of({message: "messageResponse"} as any));
+        sendMessageMock.mockReturnValue(Future.of<any>({message: "messageResponse"} as any));
     });
 
     afterEach(() => {
@@ -57,7 +57,7 @@ describe("SearchSDK", () => {
     describe("tokenizeData", () => {
         it("sends expected message to frame to tokenize data after calling init", (done) => {
             ShimUtils.setSDKInitialized();
-            sendMessageMock.mockReturnValue(Future.of({message: {searchIndexId: "indexId"}} as any));
+            sendMessageMock.mockReturnValue(Future.of<any>({message: {searchIndexId: "indexId"}} as any));
             SearchSDK.initializeBlindSearchIndex({searchIndexEdeks: new Uint8Array([1]), searchIndexEncryptedSalt: new Uint8Array([2])})
                 .then((tokenizeApi) => tokenizeApi.tokenizeData("data to tokenize", "partition"))
                 .then(() => {
@@ -77,7 +77,7 @@ describe("SearchSDK", () => {
     describe("tokenizeQuery", () => {
         it("sends expected message to frame to tokenize query after calling init", (done) => {
             ShimUtils.setSDKInitialized();
-            sendMessageMock.mockReturnValue(Future.of({message: {searchIndexId: "indexId"}} as any));
+            sendMessageMock.mockReturnValue(Future.of<any>({message: {searchIndexId: "indexId"}} as any));
             SearchSDK.initializeBlindSearchIndex({searchIndexEdeks: new Uint8Array([1]), searchIndexEncryptedSalt: new Uint8Array([2])})
                 .then((tokenizeApi) => tokenizeApi.tokenizeQuery("query to tokenize", "partition"))
                 .then(() => {

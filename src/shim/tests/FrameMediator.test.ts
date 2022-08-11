@@ -118,13 +118,15 @@ describe("FrameMediator", () => {
 
     describe("sendMessage", () => {
         it("passes in payload and optional transfer list to API and responds with result", () => {
-            jest.spyOn(messenger, "postMessageToFrame").and.returnValue(
-                Future.of({
+            jest.spyOn(messenger, "postMessageToFrame").mockReturnValue(
+                Future.of<any>({
                     foo: "bar",
                 })
             );
             sendMessage({payload: "content"} as any, [new Uint8Array(12), new Uint8Array(10)]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(messenger.postMessageToFrame).toHaveBeenCalledWith({payload: "content"}, [new Uint8Array(12), new Uint8Array(10)]);
@@ -133,8 +135,8 @@ describe("FrameMediator", () => {
         });
 
         it("handles error message response types and rejects futures", () => {
-            jest.spyOn(messenger, "postMessageToFrame").and.returnValue(
-                Future.of({
+            jest.spyOn(messenger, "postMessageToFrame").mockReturnValue(
+                Future.of<any>({
                     message: {
                         text: "error",
                         code: 108,

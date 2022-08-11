@@ -9,7 +9,7 @@ import * as DocumentSDK from "../DocumentSDK";
 
 describe("DocumentSDK", () => {
     beforeEach(() => {
-        jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
+        jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "messageResponse"}));
     });
 
     afterEach(() => {
@@ -146,8 +146,8 @@ describe("DocumentSDK", () => {
 
         it("returns response from document get from store api and sets default options correctly", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 93]),
                         documentID: "doc-10",
@@ -194,8 +194,8 @@ describe("DocumentSDK", () => {
         it("calls decrypt api and returns response", (done) => {
             ShimUtils.setSDKInitialized();
             const doc = new Uint8Array(33);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 87]),
                     },
@@ -224,8 +224,8 @@ describe("DocumentSDK", () => {
         it("calls decrypt api with bytes and returns response", (done) => {
             ShimUtils.setSDKInitialized();
             const doc = new Uint8Array(33);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 87]),
                     },
@@ -403,8 +403,8 @@ describe("DocumentSDK", () => {
         it("passes policy if provided in options", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: new Uint8Array([90, 102, 103]),
                     },
@@ -461,8 +461,8 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([88, 91, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                         documentID: "doc-10",
@@ -510,8 +510,8 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                     },
@@ -546,8 +546,8 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                     },
@@ -582,8 +582,8 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                     },
@@ -621,8 +621,8 @@ describe("DocumentSDK", () => {
 
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                     },
@@ -656,8 +656,8 @@ describe("DocumentSDK", () => {
         it("passes policy if provided in options", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: new Uint8Array([90, 102, 103]),
                     },
@@ -756,8 +756,8 @@ describe("DocumentSDK", () => {
             const doc = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([98, 99, 107]);
 
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         documentID: "doc-10",
                         document: encryptedDoc,
@@ -1010,8 +1010,8 @@ describe("DocumentSDK", () => {
             const headerJSON = UTF8.encode(JSON.stringify({_did_: "353"}));
             //Make provided length one less character that the actual length
             const doc = concatArrayBuffers(new Uint8Array([2, 0, headerJSON.length]), headerJSON);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 87]),
                     },
@@ -1060,8 +1060,8 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([88, 91, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                         documentID: "doc-10",
@@ -1106,8 +1106,8 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                         edeks: "edeks",
@@ -1144,8 +1144,8 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         documentID: "providedID",
                         document: encryptedDoc,
@@ -1187,8 +1187,8 @@ describe("DocumentSDK", () => {
 
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: encryptedDoc,
                     },
@@ -1222,8 +1222,8 @@ describe("DocumentSDK", () => {
         it("passes policy if provided in options", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).and.returnValue(
-                Future.of({
+            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+                Future.of<any>({
                     message: {
                         document: new Uint8Array([90, 102, 103]),
                     },

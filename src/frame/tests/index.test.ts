@@ -22,7 +22,7 @@ describe("frame index", () => {
         });
 
         it("INIT_SDK", (done) => {
-            jest.spyOn(Init, "initialize").and.returnValue(Future.of("init"));
+            jest.spyOn(Init, "initialize").mockReturnValue(Future.of<any>("init"));
             const payload: MT.InitApiRequest = {
                 type: "INIT_SDK",
                 message: {
@@ -39,7 +39,7 @@ describe("frame index", () => {
         });
 
         it("CREATE_USER", (done) => {
-            jest.spyOn(Init, "createUser").and.returnValue(Future.of("createUser"));
+            jest.spyOn(Init, "createUser").mockReturnValue(Future.of<any>("createUser"));
             const payload: MT.CreateUserRequest = {
                 type: "CREATE_USER",
                 message: {
@@ -57,7 +57,7 @@ describe("frame index", () => {
         });
 
         it("CREATE_USER_AND_DEVICE", (done) => {
-            jest.spyOn(Init, "createUserAndDevice").and.returnValue(Future.of("createUserAndDevice"));
+            jest.spyOn(Init, "createUserAndDevice").mockReturnValue(Future.of<any>("createUserAndDevice"));
             const payload: MT.CreateUserAndDeviceRequest = {
                 type: "CREATE_USER_AND_DEVICE",
                 message: {
@@ -74,7 +74,7 @@ describe("frame index", () => {
         });
 
         it("GEN_DEVICE_KEYS", (done) => {
-            jest.spyOn(Init, "generateUserNewDeviceKeys").and.returnValue(Future.of("generateUserNewDeviceKeys"));
+            jest.spyOn(Init, "generateUserNewDeviceKeys").mockReturnValue(Future.of<any>("generateUserNewDeviceKeys"));
             const payload: MT.GenerateNewDeviceKeysRequest = {
                 type: "GEN_DEVICE_KEYS",
                 message: {
@@ -91,7 +91,7 @@ describe("frame index", () => {
         });
 
         it("CREATE_DETATCHED_USER_DEVICE", (done) => {
-            jest.spyOn(Init, "createDetachedUserDevice").and.returnValue(Future.of("createDetachedUserDevice"));
+            jest.spyOn(Init, "createDetachedUserDevice").mockReturnValue(Future.of<any>("createDetachedUserDevice"));
             const payload: MT.CreateDetachedUserDeviceRequest = {
                 type: "CREATE_DETATCHED_USER_DEVICE",
                 message: {passcode: "pass", jwtToken: "tok"},
@@ -110,7 +110,7 @@ describe("frame index", () => {
 
     describe("onMessage document tests", () => {
         it("DOCUMENT_LIST", (done) => {
-            jest.spyOn(DocumentApi, "list").and.returnValue(Future.of("list"));
+            jest.spyOn(DocumentApi, "list").mockReturnValue(Future.of<any>("list"));
             const payload: MT.DocumentListRequest = {
                 type: "DOCUMENT_LIST",
             };
@@ -126,7 +126,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_META_GET", (done) => {
-            jest.spyOn(DocumentApi, "getDocumentMeta").and.returnValue(Future.of("meta"));
+            jest.spyOn(DocumentApi, "getDocumentMeta").mockReturnValue(Future.of<any>("meta"));
             const payload: MT.DocumentMetaGetRequest = {
                 type: "DOCUMENT_META_GET",
                 message: {
@@ -146,8 +146,8 @@ describe("frame index", () => {
 
         it("DOCUMENT_STORE_DECRYPT", (done) => {
             const documentData = new Uint8Array(3);
-            jest.spyOn(DocumentApi, "decryptHostedDoc").and.returnValue(
-                Future.of({
+            jest.spyOn(DocumentApi, "decryptHostedDoc").mockReturnValue(
+                Future.of<any>({
                     data: documentData,
                 })
             );
@@ -171,8 +171,8 @@ describe("frame index", () => {
 
         it("DOCUMENT_DECRYPT", (done) => {
             const documentData = new Uint8Array(3);
-            jest.spyOn(DocumentApi, "decryptLocalDoc").and.returnValue(
-                Future.of({
+            jest.spyOn(DocumentApi, "decryptLocalDoc").mockReturnValue(
+                Future.of<any>({
                     data: documentData,
                 })
             );
@@ -202,7 +202,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UNMANAGED_DECRYPT", (done) => {
-            jest.spyOn(DocumentAdvancedApi, "decryptWithProvidedEdeks").and.returnValue(Future.of("umanagedDecrypt"));
+            jest.spyOn(DocumentAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(Future.of<any>("umanagedDecrypt"));
             const payload: any = {
                 type: "DOCUMENT_UNMANAGED_DECRYPT",
                 message: {
@@ -221,7 +221,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_STORE_ENCRYPT", (done) => {
-            jest.spyOn(DocumentApi, "encryptToStore").and.returnValue(Future.of("encryptToStore"));
+            jest.spyOn(DocumentApi, "encryptToStore").mockReturnValue(Future.of<any>("encryptToStore"));
             const payload: any = {
                 type: "DOCUMENT_STORE_ENCRYPT",
                 message: {
@@ -254,7 +254,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_STORE_ENCRYPT grantToAuthor missing", (done) => {
-            jest.spyOn(DocumentApi, "encryptToStore").and.returnValue(Future.of("encryptToStore"));
+            jest.spyOn(DocumentApi, "encryptToStore").mockReturnValue(Future.of<any>("encryptToStore"));
             const payload: any = {
                 type: "DOCUMENT_STORE_ENCRYPT",
                 message: {
@@ -281,7 +281,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_STORE_ENCRYPT grantToAuthor false", (done) => {
-            jest.spyOn(DocumentApi, "encryptToStore").and.returnValue(Future.of("encryptToStore"));
+            jest.spyOn(DocumentApi, "encryptToStore").mockReturnValue(Future.of<any>("encryptToStore"));
             const payload: any = {
                 type: "DOCUMENT_STORE_ENCRYPT",
                 message: {
@@ -310,7 +310,7 @@ describe("frame index", () => {
 
         it("DOCUMENT_ENCRYPT", (done) => {
             const documentData = new Uint8Array(28);
-            jest.spyOn(DocumentApi, "encryptLocalDocument").and.returnValue(Future.of({document: documentData}));
+            jest.spyOn(DocumentApi, "encryptLocalDocument").mockReturnValue(Future.of<any>({document: documentData}));
             const payload: any = {
                 type: "DOCUMENT_ENCRYPT",
                 message: {
@@ -345,7 +345,7 @@ describe("frame index", () => {
 
         it("DOCUMENT_ENCRYPT grantToAuthor missing", (done) => {
             const documentData = new Uint8Array(28);
-            jest.spyOn(DocumentApi, "encryptLocalDocument").and.returnValue(Future.of({document: documentData}));
+            jest.spyOn(DocumentApi, "encryptLocalDocument").mockReturnValue(Future.of<any>({document: documentData}));
             const payload: any = {
                 type: "DOCUMENT_ENCRYPT",
                 message: {
@@ -373,7 +373,7 @@ describe("frame index", () => {
 
         it("DOCUMENT_ENCRYPT grantToAuthor is false", (done) => {
             const documentData = new Uint8Array(28);
-            jest.spyOn(DocumentApi, "encryptLocalDocument").and.returnValue(Future.of({document: documentData}));
+            jest.spyOn(DocumentApi, "encryptLocalDocument").mockReturnValue(Future.of<any>({document: documentData}));
             const payload: any = {
                 type: "DOCUMENT_ENCRYPT",
                 message: {
@@ -401,7 +401,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UNMANAGED_ENCRYPT", (done) => {
-            jest.spyOn(DocumentAdvancedApi, "encrypt").and.returnValue(Future.of("umanagedEncrypt"));
+            jest.spyOn(DocumentAdvancedApi, "encrypt").mockReturnValue(Future.of<any>("umanagedEncrypt"));
             const payload: any = {
                 type: "DOCUMENT_UNMANAGED_ENCRYPT",
                 message: {
@@ -421,7 +421,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_STORE_UPDATE_DATA", (done) => {
-            jest.spyOn(DocumentApi, "updateToStore").and.returnValue(Future.of("updateToStore"));
+            jest.spyOn(DocumentApi, "updateToStore").mockReturnValue(Future.of<any>("updateToStore"));
             const payload: any = {
                 type: "DOCUMENT_STORE_UPDATE_DATA",
                 message: {
@@ -442,7 +442,7 @@ describe("frame index", () => {
 
         it("DOCUMENT_UPDATE_DATA", (done) => {
             const documentData = new Uint8Array(33);
-            jest.spyOn(DocumentApi, "updateLocalDocument").and.returnValue(Future.of({document: documentData}));
+            jest.spyOn(DocumentApi, "updateLocalDocument").mockReturnValue(Future.of<any>({document: documentData}));
             const payload: any = {
                 type: "DOCUMENT_UPDATE_DATA",
                 message: {
@@ -463,7 +463,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UPDATE_NAME", (done) => {
-            jest.spyOn(DocumentApi, "updateName").and.returnValue(Future.of({documentID: "doc-10", documentName: "doc name", created: "1", updated: "2"}));
+            jest.spyOn(DocumentApi, "updateName").mockReturnValue(Future.of<any>({documentID: "doc-10", documentName: "doc name", created: "1", updated: "2"}));
 
             const payload: any = {
                 type: "DOCUMENT_UPDATE_NAME",
@@ -489,7 +489,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_GRANT", (done) => {
-            jest.spyOn(DocumentApi, "grantDocumentAccess").and.returnValue(Future.of("grantDocumentAccess"));
+            jest.spyOn(DocumentApi, "grantDocumentAccess").mockReturnValue(Future.of<any>("grantDocumentAccess"));
             const payload: MT.DocumentGrantRequest = {
                 type: "DOCUMENT_GRANT",
                 message: {
@@ -510,7 +510,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_REVOKE", (done) => {
-            jest.spyOn(DocumentApi, "revokeDocumentAccess").and.returnValue(Future.of("revokeDocumentAccess"));
+            jest.spyOn(DocumentApi, "revokeDocumentAccess").mockReturnValue(Future.of<any>("revokeDocumentAccess"));
             const payload: MT.DocumentRevokeRequest = {
                 type: "DOCUMENT_REVOKE",
                 message: {
@@ -533,7 +533,7 @@ describe("frame index", () => {
 
     describe("onMessage user tests", () => {
         it("DEAUTHORIZE_DEVICE", (done) => {
-            jest.spyOn(UserApi, "deauthorizeDevice").and.returnValue(Future.of("deauthDevice"));
+            jest.spyOn(UserApi, "deauthorizeDevice").mockReturnValue(Future.of<any>("deauthDevice"));
             const payload: MT.DeauthorizeDevice = {
                 type: "DEAUTHORIZE_DEVICE",
                 message: null,
@@ -550,7 +550,7 @@ describe("frame index", () => {
         });
 
         it("CHANGE_USER_PASSCODE", (done) => {
-            jest.spyOn(UserApi, "changeUsersPasscode").and.returnValue(Future.of("changeUsersPasscode"));
+            jest.spyOn(UserApi, "changeUsersPasscode").mockReturnValue(Future.of<any>("changeUsersPasscode"));
 
             const payload: MT.ChangeUserPasscode = {
                 type: "CHANGE_USER_PASSCODE",
@@ -571,7 +571,7 @@ describe("frame index", () => {
         });
 
         it("ROTATE_USER_PRIVATE_KEY", (done) => {
-            jest.spyOn(UserApi, "rotateUserMasterKey").and.returnValue(Future.of("rotateUserMasterKey"));
+            jest.spyOn(UserApi, "rotateUserMasterKey").mockReturnValue(Future.of<any>("rotateUserMasterKey"));
 
             const payload: MT.RotateUserPrivateKey = {
                 type: "ROTATE_USER_PRIVATE_KEY",
@@ -593,7 +593,7 @@ describe("frame index", () => {
 
     describe("onMessage group tests", () => {
         it("GROUP_LIST", (done) => {
-            jest.spyOn(GroupApi, "list").and.returnValue(Future.of("groupList"));
+            jest.spyOn(GroupApi, "list").mockReturnValue(Future.of<any>("groupList"));
 
             const payload: MT.GroupListRequest = {
                 type: "GROUP_LIST",
@@ -611,7 +611,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_GET", (done) => {
-            jest.spyOn(GroupApi, "get").and.returnValue(Future.of("groupGet"));
+            jest.spyOn(GroupApi, "get").mockReturnValue(Future.of<any>("groupGet"));
 
             const payload: MT.GroupGetRequest = {
                 type: "GROUP_GET",
@@ -630,7 +630,7 @@ describe("frame index", () => {
 
         it("GROUP_CREATE", (done) => {
             jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
-            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of<any>("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
@@ -666,7 +666,7 @@ describe("frame index", () => {
         });
 
         it("ROTATE_GROUP_PRIVATE_KEY", (done) => {
-            jest.spyOn(GroupApi, "rotateGroupPrivateKey").and.returnValue(Future.of("rotateUserMasterKey"));
+            jest.spyOn(GroupApi, "rotateGroupPrivateKey").mockReturnValue(Future.of<any>("rotateUserMasterKey"));
 
             const payload: MT.RotateGroupPrivateKey = {
                 type: "ROTATE_GROUP_PRIVATE_KEY",
@@ -686,7 +686,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_UPDATE", (done) => {
-            jest.spyOn(GroupApi, "update").and.returnValue(Future.of("updatedGroup"));
+            jest.spyOn(GroupApi, "update").mockReturnValue(Future.of<any>("updatedGroup"));
             const payload: MT.GroupUpdateRequest = {
                 type: "GROUP_UPDATE",
                 message: {groupID: "groupID", groupName: "new name"},
@@ -702,7 +702,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_ADD_ADMINS", (done) => {
-            jest.spyOn(GroupApi, "addAdmins").and.returnValue(Future.of("groupAddAdmins"));
+            jest.spyOn(GroupApi, "addAdmins").mockReturnValue(Future.of<any>("groupAddAdmins"));
             const payload: MT.GroupAddAdminRequest = {
                 type: "GROUP_ADD_ADMINS",
                 message: {groupID: "my-group", userList: ["22", "89"]},
@@ -719,7 +719,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_REMOVE_ADMINS", (done) => {
-            jest.spyOn(GroupApi, "removeAdmins").and.returnValue(Future.of("groupRemoveAdmins"));
+            jest.spyOn(GroupApi, "removeAdmins").mockReturnValue(Future.of<any>("groupRemoveAdmins"));
             const payload: MT.GroupRemoveAdminRequest = {
                 type: "GROUP_REMOVE_ADMINS",
                 message: {groupID: "my-group", userList: ["22", "89"]},
@@ -736,7 +736,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_ADD_MEMBERS", (done) => {
-            jest.spyOn(GroupApi, "addMembers").and.returnValue(Future.of("groupAddMembers"));
+            jest.spyOn(GroupApi, "addMembers").mockReturnValue(Future.of<any>("groupAddMembers"));
 
             const payload: MT.GroupAddMemberRequest = {
                 type: "GROUP_ADD_MEMBERS",
@@ -754,7 +754,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_REMOVE_MEMBERS", (done) => {
-            jest.spyOn(GroupApi, "removeMembers").and.returnValue(Future.of("groupRemoveMembers"));
+            jest.spyOn(GroupApi, "removeMembers").mockReturnValue(Future.of<any>("groupRemoveMembers"));
 
             const payload: MT.GroupRemoveMemberRequest = {
                 type: "GROUP_REMOVE_MEMBERS",
@@ -772,7 +772,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_REMOVE_SELF_AS_MEMBER", (done) => {
-            jest.spyOn(GroupApi, "removeSelfAsMember").and.returnValue(Future.of("user-10"));
+            jest.spyOn(GroupApi, "removeSelfAsMember").mockReturnValue(Future.of<any>("user-10"));
 
             const payload: MT.GroupRemoveSelfAsMemberRequest = {
                 type: "GROUP_REMOVE_SELF_AS_MEMBER",
@@ -790,7 +790,7 @@ describe("frame index", () => {
         });
 
         it("GROUP_DELETE", (done) => {
-            jest.spyOn(GroupApi, "deleteGroup").and.returnValue(Future.of("deleteresp"));
+            jest.spyOn(GroupApi, "deleteGroup").mockReturnValue(Future.of<any>("deleteresp"));
 
             const payload: MT.GroupDeleteRequest = {
                 type: "GROUP_DELETE",
@@ -810,7 +810,7 @@ describe("frame index", () => {
     describe("resolveToStandardForm", () => {
         it("return a standard form result with no options sent", (done) => {
             jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
-            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of<any>("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
@@ -832,7 +832,7 @@ describe("frame index", () => {
         });
         it("return a standard form result with no options sent addAsMember is false", (done) => {
             jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
-            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of<any>("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
@@ -854,7 +854,7 @@ describe("frame index", () => {
         });
         it("return a standard form result when options are sent", (done) => {
             jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
-            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of<any>("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
@@ -890,7 +890,7 @@ describe("frame index", () => {
         });
         it("add the owner to an empyty admin list", (done) => {
             jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
-            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of<any>("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
@@ -919,7 +919,7 @@ describe("frame index", () => {
         });
         it("add group creator to empty admin list when addAsMember and addAsAdmin are true", (done) => {
             jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
-            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of<any>("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
@@ -947,7 +947,7 @@ describe("frame index", () => {
         });
         it("create a members and admins list when one is not provided and add the creatot when addAsMemebr and addAs Admin are true", (done) => {
             jest.spyOn(ApiState, "user").mockReturnValue({id: "groupCreatorId"} as any);
-            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of("groupCreate") as any);
+            jest.spyOn(GroupApi, "create").mockReturnValue(Future.of<any>("groupCreate") as any);
 
             const payload: MT.GroupCreateRequest = {
                 type: "GROUP_CREATE",
@@ -972,7 +972,7 @@ describe("frame index", () => {
 
     describe("error message handling", () => {
         it("returns error response with formatted code and message", (done) => {
-            jest.spyOn(DocumentApi, "decryptHostedDoc").and.returnValue(Future.reject(new SDKError(new Error("invalid"), 34)));
+            jest.spyOn(DocumentApi, "decryptHostedDoc").mockReturnValue(Future.reject(new SDKError(new Error("invalid"), 34)));
             const payload: MT.DocumentStoreDecryptRequest = {
                 type: "DOCUMENT_STORE_DECRYPT",
                 message: {

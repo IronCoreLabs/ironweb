@@ -12,7 +12,9 @@ describe("CryptoUtils", () => {
             jest.spyOn(window, "postMessage");
 
             CryptoUtils.generateRandomBytes(12).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (bytes) => {
                     expect(bytes instanceof Uint8Array).toBeTrue();
                     expect(bytes.length).toEqual(12);

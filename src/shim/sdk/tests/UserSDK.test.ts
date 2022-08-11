@@ -5,7 +5,7 @@ import * as ShimUtils from "../../ShimUtils";
 
 describe("UserSDK", () => {
     beforeEach(() => {
-        jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
+        jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "messageResponse"}));
     });
 
     afterEach(() => {

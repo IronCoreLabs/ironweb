@@ -4,13 +4,15 @@ import Future from "futurejs";
 describe("WorkerMediator", () => {
     describe("sendMessage", () => {
         it("passes in payload and optional transfer list to API and responds with result", () => {
-            jest.spyOn(messenger, "postMessageToWorker").and.returnValue(
-                Future.of({
+            jest.spyOn(messenger, "postMessageToWorker").mockReturnValue(
+                Future.of<any>({
                     foo: "bar",
                 })
             );
             sendMessage({payload: "content"} as any, ["foo", "bar"] as any).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(messenger.postMessageToWorker).toHaveBeenCalledWith({payload: "content"}, ["foo", "bar"]);
@@ -19,8 +21,8 @@ describe("WorkerMediator", () => {
         });
 
         it("handles error message response types and rejects futures", () => {
-            jest.spyOn(messenger, "postMessageToWorker").and.returnValue(
-                Future.of({
+            jest.spyOn(messenger, "postMessageToWorker").mockReturnValue(
+                Future.of<any>({
                     message: {
                         text: "error",
                         code: 108,
@@ -47,7 +49,9 @@ describe("WorkerMediator", () => {
                 };
 
                 messenger.postMessageToWorker({foo: "bar"} as any).engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     () => {
                         expect(messenger.worker.postMessage).toHaveBeenCalledWith(
                             {
@@ -69,7 +73,9 @@ describe("WorkerMediator", () => {
                 const bytes = [new Uint8Array(5), new Uint8Array(6)];
 
                 messenger.postMessageToWorker({foo: "bar"} as any, bytes).engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     () => {
                         expect(messenger.worker.postMessage).toHaveBeenCalledWith(
                             {

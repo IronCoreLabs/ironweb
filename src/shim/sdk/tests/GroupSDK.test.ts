@@ -5,7 +5,7 @@ import Future from "futurejs";
 
 describe("GroupSDK", () => {
     beforeEach(() => {
-        jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
+        jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "messageResponse"}));
     });
 
     afterEach(() => {
@@ -28,7 +28,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -57,7 +59,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -94,7 +98,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
 
             it("sends create message to frame with groupID if that value is valid and passes as an option", (done) => {
@@ -119,7 +125,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
 
             it("sends create message to frame with addAsMemberValue if that value is passed in as options", (done) => {
@@ -144,7 +152,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
             it("sends create message to frame with addAsAdmin value and ownerUserIdif that value is passed in as options", (done) => {
                 ShimUtils.setSDKInitialized();
@@ -168,7 +178,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
             it("sends create message to frame with groupName if that value is passed in as options", (done) => {
                 ShimUtils.setSDKInitialized();
@@ -192,7 +204,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
             it("sends create message to frame with options passed in if provided", (done) => {
                 ShimUtils.setSDKInitialized();
@@ -225,7 +239,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
             it("sends create message to frame with memberList when provided", (done) => {
                 ShimUtils.setSDKInitialized();
@@ -249,7 +265,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
             it("sends create message to frame with adminList when provided", (done) => {
                 ShimUtils.setSDKInitialized();
@@ -273,7 +291,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
             it("send create message to frame with ownerUserId if provided", (done) => {
                 ShimUtils.setSDKInitialized();
@@ -297,7 +317,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
         describe("rotatePrivateKey", () => {
@@ -318,7 +340,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -352,7 +376,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
 
             it("sends null value for group name", (done) => {
@@ -369,7 +395,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -399,7 +427,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
 
             it("dedupes users in array before submitting", (done) => {
@@ -416,7 +446,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -446,7 +478,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
 
             it("dedupes users in array before submitting", (done) => {
@@ -463,7 +497,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -493,7 +529,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
 
             it("dedupes users in array before submitting", (done) => {
@@ -510,7 +548,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -540,7 +580,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
 
             it("dedupes users in array before submitting", (done) => {
@@ -557,7 +599,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -585,7 +629,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
 
@@ -613,7 +659,9 @@ describe("GroupSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e));
+                    .catch((e) => {
+                        throw e;
+                    });
             });
         });
     });

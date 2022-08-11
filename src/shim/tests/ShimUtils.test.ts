@@ -40,7 +40,9 @@ describe("ShimUtils", () => {
         });
 
         it("returns undefined if local storage throws exception", () => {
-            jest.spyOn(Storage.prototype, "getItem").and.throwError("No access");
+            jest.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+                throw new Error("No access");
+            });
             expect(ShimUtils.getParentWindowSymmetricKey()).toBeUndefined();
         });
 

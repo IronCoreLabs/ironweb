@@ -11,13 +11,15 @@ describe("UserCrypto", () => {
             const encryptedPrivateUserKey = new Uint8Array(32);
             const privateKey = new Uint8Array(32);
 
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derivedKey"));
-            jest.spyOn(Recrypt, "rotateUsersPrivateKeyWithRetry").and.returnValue(Future.of({newPrivateKey: "boo", augmentationFactor: "or-treat"}));
-            jest.spyOn(AES, "encryptUserKey").and.returnValue(Future.of("trick"));
-            jest.spyOn(AES, "decryptUserKey").and.returnValue(Future.of(privateKey));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derivedKey"));
+            jest.spyOn(Recrypt, "rotateUsersPrivateKeyWithRetry").mockReturnValue(Future.of<any>({newPrivateKey: "boo", augmentationFactor: "or-treat"}));
+            jest.spyOn(AES, "encryptUserKey").mockReturnValue(Future.of<any>("trick"));
+            jest.spyOn(AES, "decryptUserKey").mockReturnValue(Future.of<any>(privateKey));
 
             UserCrypto.rotatePrivateKey("passcode", encryptedPrivateUserKey).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userKeyRotationResult: any) => {
                     expect(userKeyRotationResult).toEqual({
                         newEncryptedPrivateUserKey: "trick",
@@ -40,16 +42,20 @@ describe("UserCrypto", () => {
             const deviceKeys = TestUtils.getEmptyKeyPair();
             const privateUserKey = new Uint8Array(32);
 
-            jest.spyOn(Recrypt, "generateKeyPair").and.returnValue(Future.of(deviceKeys));
-            jest.spyOn(Recrypt, "generateSigningKeyPair").and.returnValue(Future.of(signingKeys));
-            jest.spyOn(Recrypt, "generateTransformKey").and.returnValue(Future.of("transformKey"));
-            jest.spyOn(Recrypt, "generateDeviceAddSignature").and.returnValue(Future.of("device signature"));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derivedKey"));
-            jest.spyOn(AES, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({deviceKey: "encryptedDeviceKey", signingKey: "encryptedSigningKey"}));
-            jest.spyOn(AES, "decryptUserKey").and.returnValue(Future.of("decrypted keys"));
+            jest.spyOn(Recrypt, "generateKeyPair").mockReturnValue(Future.of<any>(deviceKeys));
+            jest.spyOn(Recrypt, "generateSigningKeyPair").mockReturnValue(Future.of<any>(signingKeys));
+            jest.spyOn(Recrypt, "generateTransformKey").mockReturnValue(Future.of<any>("transformKey"));
+            jest.spyOn(Recrypt, "generateDeviceAddSignature").mockReturnValue(Future.of<any>("device signature"));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derivedKey"));
+            jest.spyOn(AES, "encryptDeviceAndSigningKeys").mockReturnValue(
+                Future.of<any>({deviceKey: "encryptedDeviceKey", signingKey: "encryptedSigningKey"})
+            );
+            jest.spyOn(AES, "decryptUserKey").mockReturnValue(Future.of<any>("decrypted keys"));
 
             UserCrypto.generateDeviceAndSigningKeys("validJWT", "passcode", new Uint8Array(32), privateUserKey, publicUserKey).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (deviceAndSigningKeys: any) => {
                     expect(deviceAndSigningKeys).toEqual({
                         userKeys: {
@@ -76,10 +82,10 @@ describe("UserCrypto", () => {
         });
 
         it("maps user key decrypt error to SDK error with proper error code", () => {
-            jest.spyOn(Recrypt, "generateKeyPair").and.returnValue(Future.of(TestUtils.getEmptyKeyPair()));
-            jest.spyOn(Recrypt, "generateSigningKeyPair").and.returnValue(Future.of(TestUtils.getSigningKeyPair()));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derivedKey"));
-            jest.spyOn(AES, "decryptUserKey").and.returnValue(Future.reject(new Error("could not do a decrypt")));
+            jest.spyOn(Recrypt, "generateKeyPair").mockReturnValue(Future.of<any>(TestUtils.getEmptyKeyPair()));
+            jest.spyOn(Recrypt, "generateSigningKeyPair").mockReturnValue(Future.of<any>(TestUtils.getSigningKeyPair()));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derivedKey"));
+            jest.spyOn(AES, "decryptUserKey").mockReturnValue(Future.reject(new Error("could not do a decrypt")));
 
             const userPublic = TestUtils.getEmptyPublicKey();
 
@@ -93,10 +99,10 @@ describe("UserCrypto", () => {
         });
 
         it("maps Recrypt operation failure to expected SDK error code", () => {
-            jest.spyOn(Recrypt, "generateKeyPair").and.returnValue(Future.reject(new Error("recrypt key gen failure")));
-            jest.spyOn(Recrypt, "generateSigningKeyPair").and.returnValue(Future.of(TestUtils.getSigningKeyPair()));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derivedKey"));
-            jest.spyOn(AES, "decryptUserKey").and.returnValue(Future.of("decrypted keys"));
+            jest.spyOn(Recrypt, "generateKeyPair").mockReturnValue(Future.reject(new Error("recrypt key gen failure")));
+            jest.spyOn(Recrypt, "generateSigningKeyPair").mockReturnValue(Future.of<any>(TestUtils.getSigningKeyPair()));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derivedKey"));
+            jest.spyOn(AES, "decryptUserKey").mockReturnValue(Future.of<any>("decrypted keys"));
 
             const userPublic = TestUtils.getEmptyPublicKey();
 
@@ -114,12 +120,14 @@ describe("UserCrypto", () => {
         it("generates document key and then encrypts key and document", () => {
             const userKeyPair = TestUtils.getEmptyKeyPair();
 
-            jest.spyOn(Recrypt, "generateKeyPair").and.returnValue(Future.of(userKeyPair));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived key"));
-            jest.spyOn(AES, "encryptUserKey").and.returnValue(Future.of("epk"));
+            jest.spyOn(Recrypt, "generateKeyPair").mockReturnValue(Future.of<any>(userKeyPair));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived key"));
+            jest.spyOn(AES, "encryptUserKey").mockReturnValue(Future.of<any>("epk"));
 
             UserCrypto.generateNewUserKeys("passcode").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userKeys) => {
                     expect(userKeys as any).toEqual({
                         ...userKeyPair,
@@ -134,8 +142,8 @@ describe("UserCrypto", () => {
         });
 
         it("converts errors into sdk error with expected error code", () => {
-            jest.spyOn(Recrypt, "generateKeyPair").and.returnValue(Future.reject(new Error("recrypt new user key pair failure")));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived key"));
+            jest.spyOn(Recrypt, "generateKeyPair").mockReturnValue(Future.reject(new Error("recrypt new user key pair failure")));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived key"));
 
             UserCrypto.generateNewUserKeys("passcode").engage(
                 (error) => {
@@ -156,14 +164,16 @@ describe("UserCrypto", () => {
                 privateKey: new Uint8Array([]),
             };
 
-            jest.spyOn(Recrypt, "generateNewUserKeySet").and.returnValue(Future.of({deviceKeys, userKeys: userKeyPair, signingKeys}));
-            jest.spyOn(Recrypt, "generateTransformKey").and.returnValue(Future.of("transformKey"));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived key"));
-            jest.spyOn(AES, "encryptDeviceAndSigningKeys").and.returnValue(Future.of("encryptedDeviceAndSigningKeys"));
-            jest.spyOn(AES, "encryptUserKey").and.returnValue(Future.of("epk"));
+            jest.spyOn(Recrypt, "generateNewUserKeySet").mockReturnValue(Future.of<any>({deviceKeys, userKeys: userKeyPair, signingKeys}));
+            jest.spyOn(Recrypt, "generateTransformKey").mockReturnValue(Future.of<any>("transformKey"));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived key"));
+            jest.spyOn(AES, "encryptDeviceAndSigningKeys").mockReturnValue(Future.of<any>("encryptedDeviceAndSigningKeys"));
+            jest.spyOn(AES, "encryptUserKey").mockReturnValue(Future.of<any>("epk"));
 
             UserCrypto.generateNewUserAndDeviceKeys("passcode").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 ({userKeys, encryptedDeviceAndSigningKeys}) => {
                     expect(encryptedDeviceAndSigningKeys as any).toEqual("encryptedDeviceAndSigningKeys");
                     expect(userKeys as any).toEqual({
@@ -184,8 +194,8 @@ describe("UserCrypto", () => {
         });
 
         it("converts errors into sdk error with expected error code", () => {
-            jest.spyOn(Recrypt, "generateNewUserKeySet").and.returnValue(Future.reject(new Error("recrypt new user key set failure")));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived key"));
+            jest.spyOn(Recrypt, "generateNewUserKeySet").mockReturnValue(Future.reject(new Error("recrypt new user key set failure")));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived key"));
 
             UserCrypto.generateNewUserAndDeviceKeys("passcode").engage(
                 (error) => {
@@ -208,12 +218,14 @@ describe("UserCrypto", () => {
 
             const devicePublicKey = new Uint8Array(22);
             const signingPublicKey = new Uint8Array(23);
-            jest.spyOn(Recrypt, "derivePublicKey").and.returnValue(Future.of(devicePublicKey));
-            jest.spyOn(Recrypt, "getPublicSigningKeyFromPrivate").and.returnValue(Future.of(signingPublicKey));
-            jest.spyOn(AES, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({deviceKey, signingKey}));
+            jest.spyOn(Recrypt, "derivePublicKey").mockReturnValue(Future.of<any>(devicePublicKey));
+            jest.spyOn(Recrypt, "getPublicSigningKeyFromPrivate").mockReturnValue(Future.of<any>(signingPublicKey));
+            jest.spyOn(AES, "decryptDeviceAndSigningKeys").mockReturnValue(Future.of<any>({deviceKey, signingKey}));
 
             UserCrypto.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symKey, nonce).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (keys: any) => {
                     expect(keys).toEqual({
                         deviceKeys: {
@@ -236,7 +248,7 @@ describe("UserCrypto", () => {
             const nonce = new Uint8Array(12);
             const symKey = new Uint8Array(30);
 
-            jest.spyOn(AES, "decryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("decrypt key failure")));
+            jest.spyOn(AES, "decryptDeviceAndSigningKeys").mockReturnValue(Future.reject(new Error("decrypt key failure")));
 
             UserCrypto.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symKey, nonce).engage(
                 (error) => {
@@ -250,9 +262,9 @@ describe("UserCrypto", () => {
 
     describe("changeUsersPasscode", () => {
         it("derives current passcode key, decrypts master private key, derives updated user key, and reencrypts master private key", (done) => {
-            jest.spyOn(AES, "decryptUserKey").and.returnValue(Future.of("decrypted private key"));
-            jest.spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
+            jest.spyOn(AES, "decryptUserKey").mockReturnValue(Future.of<any>("decrypted private key"));
+            jest.spyOn(AES, "encryptUserKey").mockReturnValue(Future.of<any>("encrypted private key"));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived fixed key"));
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => fail(e.message),
@@ -271,9 +283,9 @@ describe("UserCrypto", () => {
         });
 
         it("fails with expected error code when current passcode is incorrect", (done) => {
-            jest.spyOn(AES, "decryptUserKey").and.returnValue(Future.reject(new Error("could not do a decrypt")));
-            jest.spyOn(AES, "encryptUserKey").and.returnValue(Future.of("encrypted private key"));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
+            jest.spyOn(AES, "decryptUserKey").mockReturnValue(Future.reject(new Error("could not do a decrypt")));
+            jest.spyOn(AES, "encryptUserKey").mockReturnValue(Future.of<any>("encrypted private key"));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived fixed key"));
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => {
@@ -286,9 +298,9 @@ describe("UserCrypto", () => {
         });
 
         it("maps error code correctly when generating new user key fails ", (done) => {
-            jest.spyOn(AES, "decryptUserKey").and.returnValue(Future.of("decrypted private key"));
-            jest.spyOn(AES, "encryptUserKey").and.returnValue(Future.reject(new Error("could not encrypt key")));
-            jest.spyOn(Recrypt, "generatePasswordDerivedKey").and.returnValue(Future.of("derived fixed key"));
+            jest.spyOn(AES, "decryptUserKey").mockReturnValue(Future.of<any>("decrypted private key"));
+            jest.spyOn(AES, "encryptUserKey").mockReturnValue(Future.reject(new Error("could not encrypt key")));
+            jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived fixed key"));
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
                 (e) => {
@@ -303,7 +315,7 @@ describe("UserCrypto", () => {
 
     describe("signRequestPayload", () => {
         it("signs the provided payload and returns the signature", () => {
-            jest.spyOn(Recrypt, "createRequestSignature").and.returnValue({
+            jest.spyOn(Recrypt, "createRequestSignature").mockReturnValue({
                 userContextHeader: "comma,list,stuff",
                 requestHeaderSignature: "sig1",
                 authHeaderSignature: "sig2",

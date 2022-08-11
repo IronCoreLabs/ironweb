@@ -57,9 +57,9 @@ describe("Initialize", () => {
         });
 
         it("sends message to frame to create new user", (done) => {
-            const jwtCallback = jasmine.createSpy("jwt").and.returnValue(Promise.resolve("validJWT"));
-            jest.spyOn(FrameMediator, "sendMessage").and.callFake(() =>
-                Future.of({message: {id: "1", segmentId: 1, status: 1, userMasterPublicKey: "pubkey", userPrivateKey: "privkey"}})
+            const jwtCallback = jasmine.createSpy("jwt").mockReturnValue(Promise.resolve("validJWT"));
+            jest.spyOn(FrameMediator, "sendMessage").mockImplementation(() =>
+                Future.of<any>({message: {id: "1", segmentId: 1, status: 1, userMasterPublicKey: "pubkey", userPrivateKey: "privkey"}})
             );
             jest.spyOn(ShimUtils, "storeParentWindowSymmetricKey");
 
@@ -85,7 +85,9 @@ describe("Initialize", () => {
                     expect(ShimUtils.storeParentWindowSymmetricKey).not.toHaveBeenCalled();
                     done();
                 })
-                .catch((e) => fail(e));
+                .catch((e) => {
+                    throw e;
+                });
         });
     });
 
@@ -140,9 +142,9 @@ describe("Initialize", () => {
         });
 
         it("sends message to frame to create new user devices", (done) => {
-            const jwtCallback = jasmine.createSpy("jwt").and.returnValue(Promise.resolve("validJWT"));
-            jest.spyOn(FrameMediator, "sendMessage").and.returnValue(
-                Future.of({
+            const jwtCallback = jasmine.createSpy("jwt").mockReturnValue(Promise.resolve("validJWT"));
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
                     type: "CREATE_DETATCHED_USER_DEVICE_RESPONSE",
                     message: {
                         accountID: "abc",
@@ -172,7 +174,9 @@ describe("Initialize", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e));
+                .catch((e) => {
+                    throw e;
+                });
         });
     });
 
@@ -235,7 +239,7 @@ describe("Initialize", () => {
         it("rejects if passcode callback doesnt return a Promise", (done) => {
             const jwtCallback = () => Promise.resolve("jwt");
             const passcodeCallback: any = () => "passcode";
-            jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}}));
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}}));
 
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
@@ -252,7 +256,7 @@ describe("Initialize", () => {
                 expect(userExists).toBeTrue();
                 return Promise.resolve([] as any);
             };
-            jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: true}}));
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: true}}));
 
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
@@ -269,7 +273,7 @@ describe("Initialize", () => {
                 expect(userExists).toBeFalse();
                 return Promise.resolve("");
             };
-            jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}}));
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}}));
 
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
@@ -283,7 +287,7 @@ describe("Initialize", () => {
         it("rejects if set passcode promise rejects", (done) => {
             const jwtCallback = () => Promise.resolve("jwt");
             const passcodeCallback = () => Promise.reject(new Error("forced failure"));
-            jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}}));
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}}));
 
             Initialize.initialize(jwtCallback, passcodeCallback)
                 .then(() => fail("resolve should not be called when passcode callback "))
@@ -301,13 +305,13 @@ describe("Initialize", () => {
         });
 
         it("sends message to frame to create new user when verify result has no user", (done) => {
-            const jwtCallback = jasmine.createSpy("jwt").and.returnValue(Promise.resolve("validJWT"));
-            const passcodeCallback = jasmine.createSpy("passcode").and.returnValue(Promise.resolve("passcode"));
-            jest.spyOn(FrameMediator, "sendMessage").and.callFake((message: any) => {
+            const jwtCallback = jasmine.createSpy("jwt").mockReturnValue(Promise.resolve("validJWT"));
+            const passcodeCallback = jasmine.createSpy("passcode").mockReturnValue(Promise.resolve("passcode"));
+            jest.spyOn(FrameMediator, "sendMessage").mockImplementation((message: any) => {
                 if (message.type === "INIT_SDK") {
-                    return Future.of({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}});
+                    return Future.of<any>({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: false}});
                 }
-                return Future.of({message: {symmetricKey: "symKey", user: {id: "user-10", status: 1}}});
+                return Future.of<any>({message: {symmetricKey: "symKey", user: {id: "user-10", status: 1}}});
             });
             jest.spyOn(ShimUtils, "storeParentWindowSymmetricKey");
 
@@ -340,17 +344,19 @@ describe("Initialize", () => {
                     expect(ShimUtils.storeParentWindowSymmetricKey).toHaveBeenCalledWith("symKey");
                     done();
                 })
-                .catch((e) => fail(e));
+                .catch((e) => {
+                    throw e;
+                });
         });
 
         it("sends message to sub frame to create new device keys", (done) => {
-            const jwtCallback = jasmine.createSpy("jwt").and.returnValue(Promise.resolve("validJWT"));
-            const passcodeCallback = jasmine.createSpy("passcode").and.returnValue(Promise.resolve("pass"));
-            jest.spyOn(FrameMediator, "sendMessage").and.callFake((message: any) => {
+            const jwtCallback = jasmine.createSpy("jwt").mockReturnValue(Promise.resolve("validJWT"));
+            const passcodeCallback = jasmine.createSpy("passcode").mockReturnValue(Promise.resolve("pass"));
+            jest.spyOn(FrameMediator, "sendMessage").mockImplementation((message: any) => {
                 if (message.type === "INIT_SDK") {
-                    return Future.of({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: true}});
+                    return Future.of<any>({type: "INIT_PASSCODE_REQUIRED", message: {doesUserExist: true}});
                 }
-                return Future.of({message: {symmetricKey: "symKeyFromNewDevice", user: {id: "user-10", status: 1}}});
+                return Future.of<any>({message: {symmetricKey: "symKeyFromNewDevice", user: {id: "user-10", status: 1}}});
             });
             jest.spyOn(ShimUtils, "storeParentWindowSymmetricKey");
 
@@ -379,15 +385,17 @@ describe("Initialize", () => {
 
                     done();
                 })
-                .catch((e) => fail(e));
+                .catch((e) => {
+                    throw e;
+                });
         });
 
         it("sends JWT token to sub frame and returns full SDK if the user already exists and has keys", (done) => {
             jest.spyOn(ShimUtils, "storeParentWindowSymmetricKey");
             const jwtCallback = () => Promise.resolve("validJWT");
-            const passcodeCallback = jasmine.createSpy("passcode").and.returnValue(Promise.resolve("pass"));
-            jest.spyOn(FrameMediator, "sendMessage").and.returnValue(
-                Future.of({
+            const passcodeCallback = jasmine.createSpy("passcode").mockReturnValue(Promise.resolve("pass"));
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
                     type: "FULL_SDK_RESPONSE",
                     message: {
                         symmetricKey: "symKey2",
@@ -418,7 +426,9 @@ describe("Initialize", () => {
                     expect(ShimUtils.storeParentWindowSymmetricKey).toHaveBeenCalledWith("symKey2");
                     done();
                 })
-                .catch((e) => fail(e));
+                .catch((e) => {
+                    throw e;
+                });
         });
     });
 });
