@@ -39,7 +39,5 @@ To run a subset of the tests you can use the `-t` option of Jest to only run tes
 
 `yarn run unit GroupCrypto`
 
-This library also has minimums for unit test code coverage in order to pass. These coverage minimums are configured within the `karma.conf.js` file and determine what the minimum % of code coverage is for various metrics before the unit tests will pass. TODO: port this to jest
-
 Copyright (c) 2022 IronCore Labs, Inc.
 All rights reserved.
