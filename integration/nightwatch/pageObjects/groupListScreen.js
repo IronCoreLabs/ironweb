@@ -1,11 +1,10 @@
 const groupListActions = {
     expectGroupRoleChipAtPosition(position, chipSelector, shouldExist = true){
         this.api.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            this.api.elementIdElement(elements.value[position].ELEMENT, this.client.locateStrategy, chipSelector, (chipElement) => {
-                if(shouldExist){
+            this.api.elementIdElement(Object.values(elements.value[position])[0], this.client.locateStrategy, chipSelector, (chipElement) => {
+                if (shouldExist) {
                     this.assert.equal(chipElement.status, 0, chipElement.status === -1 ? chipElement.value.message : "Found expected role chip");
-                }
-                else{
+                } else {
                     this.assert.equal(chipElement.status, -1, chipElement.status === 0 ? chipElement.value.message : "Found unexpected role chip");
                 }
             });
@@ -26,7 +25,7 @@ const groupListActions = {
     },
     expectGroupNameAtPosition(position, name){
         this.api.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            this.api.elementIdText(elements.value[position].ELEMENT, (elementText) => {
+            this.api.elementIdText(Object.values(elements.value[position])[0], (elementText) => {
                 this.assert.equal(elementText.value.includes(name), true, `Expected roughly group name "${name}", found "${elementText.value}"`);
             });
         });
@@ -42,8 +41,8 @@ const groupListActions = {
         return this.expectGroupRoleChipAtPosition(position, this.elements.memberChip.selector, false);
     },
     clickOnNthGroup(item){
-        this.api.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            this.api.elementIdClick(elements.value[item].ELEMENT);
+        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
+            this.api.elementIdClick(Object.values(elements.value[item])[0]);
         });
     },
 };

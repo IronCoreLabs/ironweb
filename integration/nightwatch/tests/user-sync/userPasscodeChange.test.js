@@ -47,11 +47,9 @@ module.exports = {
 
         commandBar.clearSymmetricKey();
 
-        initializeUser.clickInitializeAppButton()
-            .enterUserPasscode(firstPasscode)
-            .submitPasscode();
+        initializeUser.clickInitializeAppButton().enterUserPasscode(firstPasscode).submitPasscode();
 
-        initializeUser.expect.element('@submitPasscode').to.have.value.that.equals(null);
+        initializeUser.expect.element("@submitPasscode").to.not.have.value;
 
         browser.end();
     },
@@ -70,8 +68,8 @@ module.exports = {
         demoApp
             .enterPasscodeFields(secondPasscode, secondPasscode)
             .submitChangePasscode()
-            .waitForElementPresent('@currentPasscodeInput')
-            .expect.element('@currentPasscodeInput').to.have.value.that.equals("");
+            .waitForElementPresent("@currentPasscodeInput")
+            .expect.element("@currentPasscodeInput").to.not.have.value;
 
         browser.end();
     }

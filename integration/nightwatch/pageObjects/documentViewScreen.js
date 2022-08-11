@@ -22,8 +22,8 @@ const documentViewActions = {
         return this.click('@backToListButton');
     },
     assertHasTodoItemAtIndex(todoText, index=0){
-        this.api.elements(this.client.locateStrategy, this.elements.todoListItems.selector, (elements) => {
-            this.api.elementIdText(elements.value[index].ELEMENT, (elementText) => {
+        browser.elements("css selector", this.elements.todoListItems.selector, (elements) => {
+            this.api.elementIdText(Object.values(elements.value[index])[0], (elementText) => {
                 this.assert.equal(elementText.value, todoText, `Todo list item content, expected "${todoText}, found "${elementText.value}"`);
             });
         });
@@ -34,27 +34,27 @@ const documentViewActions = {
     },
     submitNewTodo(){
         this.api.elementIdClick(this.elements.updateTodoInput.selector, () => {
-            this.api.keys(this.api.Keys.ENTER);
-            this.waitForElementPresent('@updateTodoInput');
+            this.api.sendKeys("#newTodoItem", this.api.Keys.ENTER);
+            this.waitForElementVisible("@updateTodoInput");
         });
         return this;
     },
     assertUserVisibleToSize(size){
-        this.api.elements(this.client.locateStrategy, this.elements.userVisibleItem.selector, (elements) => {
+        browser.elements(this.client.locateStrategy, this.elements.userVisibleItem.selector, (elements) => {
             this.assert.equal(elements.value.length, size, `Expected user visible count of "${size}", found "${elements.value.length}"`);
         });
         return this;
     },
     assertUserVisibleIDAtPosition(position, id){
-        this.api.elements(this.client.locateStrategy, this.elements.userVisibleItem.selector, (elements) => {
-            this.api.elementIdText(elements.value[position].ELEMENT, (elementText) => {
+        browser.elements(this.client.locateStrategy, this.elements.userVisibleItem.selector, (elements) => {
+            this.api.elementIdText(Object.values(elements.value[position])[0], (elementText) => {
                 this.assert.equal(elementText.value.includes(id), true, `Expected roughly visible to ID "${id}", found "${elementText.value}"`);
             });
         });
         return this;
     },
     assertGroupVisibleToSize(size){
-        this.api.elements(this.client.locateStrategy, this.elements.groupVisibleItem.selector, (elements) => {
+        browser.elements(this.client.locateStrategy, this.elements.groupVisibleItem.selector, (elements) => {
             this.assert.equal(elements.value.length, size, `Expected group visible count of "${size}", found "${elements.value.length}"`);
         });
         return this;
@@ -63,15 +63,15 @@ const documentViewActions = {
         return this.setValue('@userGrantInput', id);
     },
     clickGrantAccessButton(){
-        return this.click('@grantAccessButton').waitForElementPresent('@grantAccessButton');
+        return this.click("@grantAccessButton").waitForElementPresent("@grantAccessButton");
     },
     clickRevokeAccessButton(){
         return this.click('@revokeAccessButton');
     },
     clickOnGroupGrantAccessCheckbox(groupID){
-        this.api.element(this.client.locateStrategy, `#${groupID}`, (element) => {
-            this.api.elementIdClick(element.value.ELEMENT);
-        })
+        browser.element(this.client.locateStrategy, `#${groupID}`, (element) => {
+            this.api.elementIdClick(Object.values(element.value)[0]);
+        });
         return this;
     },
 };

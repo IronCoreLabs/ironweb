@@ -70,7 +70,6 @@ const sharedConfig = {
         ],
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
         new webpack.DefinePlugin({
             SDK_NPM_VERSION_PLACEHOLDER: JSON.stringify("SDK_NPM_VERSION_PLACEHOLDER"),
             _WORKER_PATH_LOCATION_: JSON.stringify("./webpack/dist/worker.js"),

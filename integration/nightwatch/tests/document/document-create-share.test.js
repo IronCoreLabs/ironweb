@@ -26,10 +26,7 @@ module.exports = {
 
             demoApp.assertOnHostedDocumentViewPage();
 
-            documentView
-                .waitForElementVisible('@documentViewDetails')
-                .assertUserVisibleToSize(2)
-                .assertUserVisibleIDAtPosition(1, firstUserID);
+            documentView.waitForElementVisible("@documentViewDetails").assertUserVisibleToSize(2).assertUserVisibleIDAtPosition(0, firstUserID);
 
             browser.end();
         });

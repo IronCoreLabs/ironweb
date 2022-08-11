@@ -28,9 +28,7 @@ module.exports = {
 
         demoApp.assertOnDocumentListPage();
 
-        documentList
-            .expectCountOfTodoLists(1)
-            .expectTodoListNameAtPosition(0, updatedDocName)
+        documentList.refreshList().expectCountOfTodoLists(1).expectTodoListNameAtPosition(0, updatedDocName);
 
         browser.end();
     },
@@ -57,12 +55,15 @@ module.exports = {
          * item and make sure it gets added as we expect
          */
         documentView
-            .waitForElementVisible('@documentViewDetails')
+            .waitForElementVisible("@documentViewDetails")
             .assertDocumentName(docName)
             .assertHasTodoItemAtIndex(firstTodoItem)
             .addNewTodoText(secondTodoItem)
             .submitNewTodo()
-            .assertHasTodoItemAtIndex(secondTodoItem, 1)
+            .assertHasTodoItemAtIndex(secondTodoItem, 1);
+        // browser.elements("css selector", ".todo-list-item", (elements) => {
+        //     console.log(elements.value);
+        // });
 
         browser.end();
     },

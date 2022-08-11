@@ -21,9 +21,9 @@ const documentCreateActions = {
         return this.setValue('@userGrantInput', id);
     },
     clickOnGroupGrantAccessCheckbox(groupID){
-        this.api.element(this.client.locateStrategy, `#${groupID}`, (element) => {
-            this.api.elementIdClick(element.value.ELEMENT);
-        })
+        browser.element(this.client.locateStrategy, `#${groupID}`, (element) => {
+            this.api.elementIdClick(Object.values(element.value)[0]);
+        });
         return this;
     },
 }

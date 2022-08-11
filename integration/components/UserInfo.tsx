@@ -75,9 +75,11 @@ export default class UserInfo extends React.Component<{}, UserInfoState> {
                     },
                     () => {
                         if (error.code === IronWeb.ErrorCodes.USER_PASSCODE_INCORRECT) {
-                            this.currentPasscodeInput.getInputNode().value = "";
-                            this.newPasscodeInput.getInputNode().value = "";
-                            this.currentPasscodeInput.focus();
+                            if (this.currentPasscodeInput && this.newPasscodeInput) {
+                                this.currentPasscodeInput.getInputNode().value = "";
+                                this.newPasscodeInput.getInputNode().value = "";
+                                this.currentPasscodeInput.focus();
+                            }
                         }
                     }
                 );

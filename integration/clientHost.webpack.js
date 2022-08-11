@@ -128,7 +128,6 @@ module.exports = {
         emitOnErrors: false,
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
         new webpack.DefinePlugin({
             //"process.env.NODE_ENV": JSON.stringify(runtimeEnvironment), not sure why this conflicting problem comes up
             SDK_NPM_VERSION_PLACEHOLDER: JSON.stringify(process.env.HOSTED_VERSION || "SDK_NPM_VERSION_PLACEHOLDER"),

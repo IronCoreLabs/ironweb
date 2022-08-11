@@ -32,7 +32,7 @@ module.exports = {
             .enterUserPasscode('passcode2')
             .submitPasscode();
 
-        initializeUser.expect.element('@submitPasscode').to.have.value.that.equals(null);
+        initializeUser.expect.element("@submitPasscode").to.not.have.value;
 
         browser.end();
     },
