@@ -36,7 +36,9 @@ describe("DocumentCrypto", () => {
                     expect(error.message).toEqual("plaintext decryption failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_DECRYPT_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });
@@ -84,7 +86,7 @@ describe("DocumentCrypto", () => {
                         encryptedDocument: {data, dataNonce},
                     });
                     expect(Recrypt.generateDocumentKey).toHaveBeenCalledWith();
-                    expect((Recrypt.encryptPlaintextToList as jasmine.Spy).calls.count()).toEqual(2);
+                    expect(Recrypt.encryptPlaintextToList as unknown as jest.SpyInstance).toHaveBeenCalledTimes(2);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, userPublicKeyList, signingKeys);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, [], signingKeys);
                     expect(AES.encryptDocument).toHaveBeenCalledWith(docToEncrypt, generatedKey);
@@ -134,7 +136,7 @@ describe("DocumentCrypto", () => {
                         encryptedDocument: {data, dataNonce},
                     });
                     expect(Recrypt.generateDocumentKey).toHaveBeenCalledWith();
-                    expect((Recrypt.encryptPlaintextToList as jasmine.Spy).calls.count()).toEqual(2);
+                    expect(Recrypt.encryptPlaintextToList as unknown as jest.SpyInstance).toHaveBeenCalledTimes(2);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, groupPublicKeyList, signingKeys);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, [], signingKeys);
                     expect(AES.encryptDocument).toHaveBeenCalledWith(docToEncrypt, generatedKey);
@@ -187,7 +189,7 @@ describe("DocumentCrypto", () => {
                         encryptedDocument: {data, dataNonce},
                     });
                     expect(Recrypt.generateDocumentKey).toHaveBeenCalledWith();
-                    expect((Recrypt.encryptPlaintextToList as jasmine.Spy).calls.count()).toEqual(2);
+                    expect(Recrypt.encryptPlaintextToList as unknown as jest.SpyInstance).toHaveBeenCalledTimes(2);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, userPublicKeyList, signingKeys);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, groupPublicKeyList, signingKeys);
                     expect(AES.encryptDocument).toHaveBeenCalledWith(docToEncrypt, generatedKey);
@@ -203,7 +205,9 @@ describe("DocumentCrypto", () => {
                     expect(error.message).toEqual("generate doc key failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_ENCRYPT_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });
@@ -243,7 +247,9 @@ describe("DocumentCrypto", () => {
                     expect(error.message).toEqual("plaintext decrypt failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_REENCRYPT_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });
@@ -275,7 +281,9 @@ describe("DocumentCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             DocumentCrypto.encryptToKeys(TestUtils.getTransformedSymmetricKey(), userList, groupList, new Uint8Array(32), signingKeys).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (resp: any) => {
                     expect(resp).toEqual({
                         userAccessKeys: EncryptedAccessKeyList,
@@ -295,7 +303,9 @@ describe("DocumentCrypto", () => {
                     expect(error.message).toEqual("plaintext decrypt failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_GRANT_ACCESS_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });

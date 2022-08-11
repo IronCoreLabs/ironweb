@@ -85,7 +85,9 @@ describe("GroupCrypto", () => {
                     expect(error.message).toEqual("group key gen failure");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_GENERATION_FAILURE);
                 },
-                () => fail("Success should not be invoked when operations fail")
+                () => {
+                    throw new Error("Success should not be invoked when operations fail");
+                }
             );
         });
     });
@@ -106,7 +108,9 @@ describe("GroupCrypto", () => {
             jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of<any>(["accessKey1", "accessKey2"]) as any);
 
             GroupCrypto.rotatePrivateKey(groupPrivateKey, adminList, adminPrivateKey, signingKeys).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result: any) => {
                     expect(result).toEqual({encryptedAccessKeys: ["accessKey1", "accessKey2"], augmentationFactor: "augmentationFactor"});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
@@ -128,7 +132,9 @@ describe("GroupCrypto", () => {
                     expect(error.message).toEqual("plaintext decryption failed");
                     expect(error.code).toEqual(ErrorCodes.GROUP_PRIVATE_KEY_ROTATION_FAILURE);
                 },
-                () => fail("Success should not be invoked when operations fail")
+                () => {
+                    throw new Error("Success should not be invoked when operations fail");
+                }
             );
         });
     });
@@ -146,7 +152,9 @@ describe("GroupCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             GroupCrypto.addAdminsToGroup(groupPrivateKey, groupPublicKey, "groupID", userList, adminPrivateKey, signingKeys).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result: any) => {
                     expect(result).toEqual({encryptedAccessKey: ["accessKey1", "accessKey2"], signature});
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(groupPrivateKey, adminPrivateKey);
@@ -170,7 +178,9 @@ describe("GroupCrypto", () => {
                     expect(error.message).toEqual("plaintext decryption failed");
                     expect(error.code).toEqual(ErrorCodes.GROUP_KEY_DECRYPTION_FAILURE);
                 },
-                () => fail("Success should not be invoked when operations fail")
+                () => {
+                    throw new Error("Success should not be invoked when operations fail");
+                }
             );
         });
     });
@@ -216,7 +226,9 @@ describe("GroupCrypto", () => {
                     expect(error.message).toEqual("plaintext decryption failed");
                     expect(error.code).toEqual(ErrorCodes.GROUP_MEMBER_KEY_ENCRYPTION_FAILURE);
                 },
-                () => fail("Success should not be invoked when operations fail")
+                () => {
+                    throw new Error("Success should not be invoked when operations fail");
+                }
             );
         });
     });

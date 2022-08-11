@@ -13,10 +13,12 @@ describe("UserApi", () => {
             expect(ApiState.user()).toEqual(TestUtils.getFullUser());
             jest.spyOn(Storage.prototype, "removeItem");
             UserApi.deauthorizeDevice().engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(UserApiEndpoints.callUserCurrentDeviceDelete).toHaveBeenCalledWith();
-                    expect(result).toBeTrue();
+                    expect(result).toBe(true);
                     expect(localStorage.removeItem).toHaveBeenCalledWith("1-1:user-10-icldaspkn");
                     expect(ApiState.user()).toBeUndefined();
                 }
@@ -24,14 +26,16 @@ describe("UserApi", () => {
         });
 
         it("clears items from local storage even if request fails", () => {
-            jest.spyOn(UserApiEndpoints, "callUserCurrentDeviceDelete").mockReturnValue(Future.reject("device delete"));
+            jest.spyOn(UserApiEndpoints, "callUserCurrentDeviceDelete").mockReturnValue(Future.reject<any>("device delete"));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             expect(ApiState.user()).toEqual(TestUtils.getFullUser());
             jest.spyOn(Storage.prototype, "removeItem");
             UserApi.deauthorizeDevice().engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
-                    expect(result).toBeFalse();
+                    expect(result).toBe(false);
                     expect(localStorage.removeItem).toHaveBeenCalledWith("1-1:user-10-icldaspkn");
                     expect(ApiState.user()).toBeUndefined();
                 }
@@ -51,7 +55,7 @@ describe("UserApi", () => {
             jest.spyOn(ApiState, "setEncryptedPrivateUserKey");
 
             UserApi.rotateUserMasterKey("current").engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (result: any) => {
                     expect(result).toEqual("user key update result");
                     expect(ApiState.setEncryptedPrivateUserKey).toHaveBeenCalledWith("newEncryptedPrivateUserKey");
@@ -82,7 +86,7 @@ describe("UserApi", () => {
             jest.spyOn(ApiState, "setEncryptedPrivateUserKey");
 
             UserApi.changeUsersPasscode("current", "new").engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (result: any) => {
                     expect(result).toEqual("user update result");
                     expect(UserApiEndpoints.callUserUpdateApi).toHaveBeenCalledWith("encrypted private user key");

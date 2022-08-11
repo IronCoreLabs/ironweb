@@ -36,7 +36,9 @@ describe("WorkerMediator", () => {
                     expect(e.message).toEqual("error");
                     expect(e.code).toEqual(108);
                 },
-                () => fail("Should fail with error response content")
+                () => {
+                    throw new Error("Should fail with error response content");
+                }
             );
         });
     });
@@ -45,7 +47,7 @@ describe("WorkerMediator", () => {
         describe("postMessageToWorker", () => {
             it("posts message on worker and returns Future", () => {
                 (messenger as any).worker = {
-                    postMessage: jasmine.createSpy("postMessage"),
+                    postMessage: jest.fn(),
                 };
 
                 messenger.postMessageToWorker({foo: "bar"} as any).engage(
@@ -61,14 +63,14 @@ describe("WorkerMediator", () => {
                             []
                         );
 
-                        expect(messenger.callbacks).toBeArrayOfSize(1);
+                        expect(messenger.callbacks).toHaveLength(1);
                     }
                 );
             });
 
             it("converts byte arrays to buffers in transfer list", () => {
                 (messenger as any).worker = {
-                    postMessage: jasmine.createSpy("postMessage"),
+                    postMessage: jest.fn(),
                 };
                 const bytes = [new Uint8Array(5), new Uint8Array(6)];
 
@@ -85,7 +87,7 @@ describe("WorkerMediator", () => {
                             [new ArrayBuffer(5), new ArrayBuffer(6)]
                         );
 
-                        expect(messenger.callbacks).toBeArrayOfSize(1);
+                        expect(messenger.callbacks).toHaveLength(1);
                     }
                 );
             });
@@ -93,7 +95,7 @@ describe("WorkerMediator", () => {
 
         describe("processMessage", () => {
             it("does nothing if no callback is set", () => {
-                messenger.callbacks[7] = jasmine.createSpy("callback");
+                messenger.callbacks[7] = jest.fn();
                 messenger.processMessage({
                     data: {
                         data: {foo: "bar"},
@@ -106,7 +108,7 @@ describe("WorkerMediator", () => {
             });
 
             it("invokes callback provided and deletes it", () => {
-                messenger.callbacks[7] = jasmine.createSpy("callback");
+                messenger.callbacks[7] = jest.fn();
                 messenger.processMessage({
                     data: {
                         data: {foo: "bar"},

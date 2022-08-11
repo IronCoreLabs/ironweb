@@ -39,7 +39,9 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentListApi").mockReturnValue(Future.of<any>({result: dataList}));
 
             DocumentApi.list().engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         result: [
@@ -67,7 +69,7 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentMetadataGetApi").mockReturnValue(Future.of<any>(docMeta));
 
             DocumentApi.getDocumentMeta("my-doc").engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (result: any) => {
                     expect(result).toEqual({
                         documentID: "my-doc",
@@ -91,7 +93,7 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentOperations, "decryptDocument").mockReturnValue(Future.of<any>(new Uint8Array([36, 89, 72])));
 
             DocumentApi.decryptHostedDoc("doc key").engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 ({data, documentID, documentName, visibleTo, association}) => {
                     expect(documentID).toEqual("docID");
                     expect(documentName).toEqual("my doc");
@@ -117,10 +119,12 @@ describe("DocumentApi", () => {
             const doc = new Uint8Array([8, 23, 235, 2]);
             DocumentApi.decryptLocalDoc("docID", doc).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
-                () => fail("Should reject when provided document is an unsupported version")
+                () => {
+                    throw new Error("Should reject when provided document is an unsupported version");
+                }
             );
         });
 
@@ -133,7 +137,9 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentOperations, "decryptDocument").mockReturnValue(Future.of<any>(decryptedBytes));
 
             DocumentApi.decryptLocalDoc("docID", eDoc).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 ({data, documentID, documentName, visibleTo, association}) => {
                     expect(documentID).toEqual("docID");
                     expect(documentName).toEqual("my doc");
@@ -163,7 +169,9 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar", name: "my doc", created: "1", updated: "2"}));
 
             DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", [], [], true).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (data: any) => {
                     expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
                     const currentUserRecord = {
@@ -206,7 +214,7 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), docName, [], [], true).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
                     expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
@@ -248,7 +256,7 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar", name: "my doc", created: "1", updated: "2"}));
 
             DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["user-33"], true).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
                     const userKeyList = [
@@ -290,11 +298,11 @@ describe("DocumentApi", () => {
 
             DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["group-20"], true).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.message).toContain("[user-55]");
                     done();
                 },
-                () => fail("Create should not succeed if not all users or groups can be found")
+                () => done("Create should not succeed if not all users or groups can be found")
             );
         });
     });
@@ -314,7 +322,9 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar"}));
 
             DocumentApi.encryptLocalDocument("mydocID", new Uint8Array([]), "", [], [], true).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 ({document, documentID, documentName}) => {
                     expect(documentID).toEqual("bar");
                     expect(documentName).toBeUndefined();
@@ -353,7 +363,9 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "mydocID", name: docName}));
 
             DocumentApi.encryptLocalDocument("mydocID", new Uint8Array([]), docName, [], [], true).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 ({document, documentID, documentName}) => {
                     expect(documentID).toEqual("mydocID");
                     expect(documentName).toEqual(docName);
@@ -390,7 +402,7 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar"}));
 
             DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["user-33"], true).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 ({documentID, documentName, document}) => {
                     expect(documentID).toEqual("bar");
                     expect(documentName).toBeUndefined();
@@ -439,7 +451,7 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar"}));
 
             DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-33"], ["group-20"], false).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 ({documentID, documentName, document}) => {
                     expect(documentID).toEqual("bar");
                     expect(documentName).toBeUndefined();
@@ -490,7 +502,7 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar"}));
 
             DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", [], [], false, undefined).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 ({documentID, documentName, document}) => {
                     expect(documentID).toEqual("bar");
                     expect(documentName).toBeUndefined();
@@ -539,11 +551,11 @@ describe("DocumentApi", () => {
 
             DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", [], [], false, undefined).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.message).toContain("[user-33]");
                     done();
                 },
-                (_) => fail("This should not succeed.")
+                (_) => done("This should not succeed.")
             );
         });
 
@@ -561,11 +573,11 @@ describe("DocumentApi", () => {
 
             DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", ["user-33"], ["group-20", "group-33"], true).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.message).toContain("[group-33]");
                     done();
                 },
-                () => fail("Should not call create when any user or group could not be found")
+                () => done("Should not call create when any user or group could not be found")
             );
         });
 
@@ -583,11 +595,11 @@ describe("DocumentApi", () => {
 
             DocumentApi.encryptLocalDocument("doc key", new Uint8Array([88, 73, 92]), "", [], [], false).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.message).toBe("Failed to create document due to no users or groups to share with.");
                     done();
                 },
-                () => fail("Should not call create when no users or groups could be found")
+                () => done("Should not call create when no users or groups could be found")
             );
         });
     });
@@ -604,7 +616,7 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.updateToStore("doc key", new Uint8Array([88, 73, 92])).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({documentID: "bar", documentName: "updated doc", created: "1", updated: "2"});
                     expect(DocumentOperations.reEncryptDocument).toHaveBeenCalledWith(
@@ -632,7 +644,9 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentApiEndpoints, "callDocumentMetadataGetApi").mockReturnValue(Future.of<any>(existingDocument));
 
             DocumentApi.updateLocalDocument("docID", new Uint8Array([88, 73, 92])).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 ({documentID, documentName, document}) => {
                     expect(documentID).toEqual("docID");
                     expect(documentName).toEqual("my doc");
@@ -656,7 +670,9 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.updateName("doc-10", "new name").engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (response) => {
                     expect(response).toEqual({
                         documentID: "bar",
@@ -705,7 +721,7 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.grantDocumentAccess("docID", ["userID", "userID2"], []).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({
                         succeeded: [
@@ -768,7 +784,7 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.grantDocumentAccess("docID", [], ["groupID"]).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({
                         succeeded: [
@@ -835,7 +851,7 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.grantDocumentAccess("docID", ["userID1", "userID2"], ["groupID1", "groupID2"]).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({
                         succeeded: [
@@ -907,7 +923,7 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.grantDocumentAccess("docID", ["userID1", "userID2", "userID3", "userID4"], ["groupID1", "groupID2", "groupID3", "groupID4"]).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({
                         succeeded: [
@@ -938,7 +954,7 @@ describe("DocumentApi", () => {
             jest.spyOn(DocumentOperations, "encryptDocumentToKeys");
 
             DocumentApi.grantDocumentAccess("docID", ["userID1", "userID2"], ["groupID1"]).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (data: any) => {
                     expect(data).toEqual({
                         succeeded: [],
@@ -969,7 +985,9 @@ describe("DocumentApi", () => {
             );
 
             DocumentApi.revokeDocumentAccess("docID", ["userID1", "userID2"], ["groupID1", "groupID2"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         succeeded: [

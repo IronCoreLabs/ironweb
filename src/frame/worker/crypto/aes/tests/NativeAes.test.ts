@@ -8,10 +8,10 @@ describe("NativeAes", () => {
     const wcDecrypt = crypto.subtle.decrypt;
 
     beforeEach(() => {
-        crypto.subtle.importKey = jasmine.createSpy("nativeImportKey").mockReturnValue(Promise.resolve("CryptoKey"));
-        crypto.subtle.deriveKey = jasmine.createSpy("nativeDeriveKey").mockReturnValue(Promise.resolve("derivedKey"));
-        crypto.subtle.encrypt = jasmine.createSpy("nativeEncrypt").mockReturnValue(Promise.resolve(new Uint8Array([93, 82, 72])));
-        crypto.subtle.decrypt = jasmine.createSpy("nativeDecrypt").mockReturnValue(Promise.resolve(new Uint8Array([87, 70, 62])));
+        crypto.subtle.importKey = jest.fn().mockReturnValue(Promise.resolve("CryptoKey"));
+        crypto.subtle.deriveKey = jest.fn().mockReturnValue(Promise.resolve("derivedKey"));
+        crypto.subtle.encrypt = jest.fn().mockReturnValue(Promise.resolve(new Uint8Array([93, 82, 72])));
+        crypto.subtle.decrypt = jest.fn().mockReturnValue(Promise.resolve(new Uint8Array([87, 70, 62])));
     });
 
     afterEach(() => {
@@ -50,7 +50,7 @@ describe("NativeAes", () => {
             const userKey = new Uint8Array(47);
 
             NativeAes.decryptUserKey(userKey, "derivedKey" as any).engage(
-                () => fail("decrypting key pair should not fail"),
+                () => done("decrypting key pair should not fail"),
                 (decryptedKey: any) => {
                     expect(decryptedKey.length).toEqual(3);
                     //Bytes should be result from mock encrypt result we returned above
@@ -72,7 +72,7 @@ describe("NativeAes", () => {
             const providedIV = new Uint8Array(12);
 
             NativeAes.encryptDocument(doc, new Uint8Array(32), providedIV).engage(
-                () => fail("AES encryption should not fail"),
+                () => done("AES encryption should not fail"),
                 (encryptedDocumentResult) => {
                     const {iv, content} = encryptedDocumentResult;
                     expect(iv).toEqual(providedIV);
@@ -93,7 +93,7 @@ describe("NativeAes", () => {
             const iv = new Uint8Array(12);
 
             NativeAes.decryptDocument(doc, new Uint8Array(32), iv).engage(
-                () => fail("AES decryption should not fail"),
+                () => done("AES decryption should not fail"),
                 (decryptedDocument) => {
                     expect(decryptedDocument).toEqual(new Uint8Array([87, 70, 62]));
                     expect(crypto.subtle.importKey).toHaveBeenCalled();
@@ -112,7 +112,7 @@ describe("NativeAes", () => {
             const iv = new Uint8Array(12);
 
             NativeAes.encryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, iv).engage(
-                () => fail("AES encryption of keys should not fail"),
+                () => done("AES encryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({
                         iv,
@@ -134,7 +134,7 @@ describe("NativeAes", () => {
             const iv = new Uint8Array(12);
 
             NativeAes.decryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, iv).engage(
-                () => fail("AES decryption of keys should not fail"),
+                () => done("AES decryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({
                         deviceKey: new Uint8Array([87, 70, 62]),

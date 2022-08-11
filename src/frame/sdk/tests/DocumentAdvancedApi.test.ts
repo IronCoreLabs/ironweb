@@ -23,10 +23,12 @@ describe("DocumentAdvancedApi", () => {
             const eDoc = new Uint8Array([99, 35, 235]);
             DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
-                () => fail("Should reject when document is not one of ours")
+                () => {
+                    throw new Error("Should reject when document is not one of ours");
+                }
             );
         });
 
@@ -35,10 +37,12 @@ describe("DocumentAdvancedApi", () => {
             const eDoc = new Uint8Array([2, 35, 52, 13, 63, 23, 63, 34]);
             DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
-                () => fail("Should reject when document header is invalid")
+                () => {
+                    throw new Error("Should reject when document header is invalid");
+                }
             );
         });
 
@@ -53,7 +57,9 @@ describe("DocumentAdvancedApi", () => {
             jest.spyOn(DocumentOperations, "decryptDocument").mockReturnValue(Future.of<any>(decryptedBytes));
 
             DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 ({data}) => {
                     expect(data).toEqual(decryptedBytes);
                 }
@@ -99,7 +105,7 @@ describe("DocumentAdvancedApi", () => {
             );
 
             DocumentAdvancedApi.encrypt("doc key", new Uint8Array([88, 73, 92]), ["user-55", "user-33"], ["group-20"], true, {}).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 ({edeks, document, documentID}) => {
                     const userKeyList = [
                         {id: "user-55", masterPublicKey: TestUtils.getEmptyPublicKeyString()},

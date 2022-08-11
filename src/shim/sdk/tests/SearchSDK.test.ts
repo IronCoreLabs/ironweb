@@ -46,9 +46,9 @@ describe("SearchSDK", () => {
         it("returns instance of InitializedSearchIndex on success", (done) => {
             ShimUtils.setSDKInitialized();
             SearchSDK.initializeBlindSearchIndex({searchIndexEdeks: new Uint8Array([1]), searchIndexEncryptedSalt: new Uint8Array([2])}).then((res) => {
-                expect(res).toBeObject();
-                expect(res.tokenizeData).toBeFunction();
-                expect(res.tokenizeQuery).toBeFunction();
+                expect(typeof res).toBe("object");
+                expect(typeof res.tokenizeData).toBe("function");
+                expect(typeof res.tokenizeQuery).toBe("function");
                 done();
             });
         });

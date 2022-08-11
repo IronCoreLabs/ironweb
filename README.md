@@ -31,15 +31,15 @@ This repo uses NPM scripts in order to run all tests and linting. You can run bo
 
 ### Unit Testing
 
-This repo uses [Karma](https://karma-runner.github.io/latest/index.html) and [Jasmine](https://jasmine.github.io/) for all unit testing. The unit tests are run using a headless version of Chrome to verify that all tests work in a browser-based environment.
+This repo uses [jest](https://jestjs.io/) and [nightwatch](https://nightwatchjs.org/) for all unit testing. The unit tests are run using a headless version of Chrome to verify that all tests work in a browser-based environment.
 
 `yarn run unit`
 
 To run a subset of the tests you can use the `-t` option of Jest to only run tests whose name matches the provided value
 
-`yarn run unit --filter GroupCrypto`
+`yarn run unit GroupCrypto`
 
-This library also has minimums for unit test code coverage in order to pass. These coverage minimums are configured within the `karma.conf.js` file and determine what the minimum % of code coverage is for various metrics before the unit tests will pass.
+This library also has minimums for unit test code coverage in order to pass. These coverage minimums are configured within the `karma.conf.js` file and determine what the minimum % of code coverage is for various metrics before the unit tests will pass. TODO: port this to jest
 
 Copyright (c) 2022 IronCore Labs, Inc.
 All rights reserved.

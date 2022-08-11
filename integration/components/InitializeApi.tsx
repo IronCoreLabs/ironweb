@@ -14,6 +14,15 @@ interface InitializeApiState {
     passcode: string;
 }
 
+declare global {
+    interface Window {
+        User: {
+            id: string;
+            name: string;
+        };
+    }
+}
+
 const tabStyle = {
     marginTop: "15px",
     padding: "25px",

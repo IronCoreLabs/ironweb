@@ -91,10 +91,12 @@ describe("UserCrypto", () => {
 
             UserCrypto.generateDeviceAndSigningKeys("validJWT", "passcode", new Uint8Array(32), new Uint8Array(32), userPublic).engage(
                 (error) => {
-                    expect(error.message).toBeString();
+                    expect(error.message).toEqual(expect.stringContaining(""));
                     expect(error.code).toEqual(ErrorCodes.USER_PASSCODE_INCORRECT);
                 },
-                () => fail("Success handler should not be called with functions fail")
+                () => {
+                    throw new Error("Success handler should not be called with functions fail");
+                }
             );
         });
 
@@ -111,7 +113,9 @@ describe("UserCrypto", () => {
                     expect(error.message).toEqual("recrypt key gen failure");
                     expect(error.code).toEqual(ErrorCodes.USER_DEVICE_KEY_GENERATION_FAILURE);
                 },
-                () => fail("Success handler should not be called with functions fail")
+                () => {
+                    throw new Error("Success handler should not be called with functions fail");
+                }
             );
         });
     });
@@ -150,7 +154,9 @@ describe("UserCrypto", () => {
                     expect(error.message).toEqual("recrypt new user key pair failure");
                     expect(error.code).toEqual(ErrorCodes.USER_MASTER_KEY_GENERATION_FAILURE);
                 },
-                () => fail("Should not invoke success when operation fails")
+                () => {
+                    throw new Error("Should not invoke success when operation fails");
+                }
             );
         });
     });
@@ -202,7 +208,9 @@ describe("UserCrypto", () => {
                     expect(error.message).toEqual("recrypt new user key set failure");
                     expect(error.code).toEqual(ErrorCodes.USER_MASTER_KEY_GENERATION_FAILURE);
                 },
-                () => fail("Should not invoke success when operation fails")
+                () => {
+                    throw new Error("Should not invoke success when operation fails");
+                }
             );
         });
     });
@@ -255,7 +263,9 @@ describe("UserCrypto", () => {
                     expect(error.message).toEqual("decrypt key failure");
                     expect(error.code).toEqual(ErrorCodes.USER_DEVICE_KEY_DECRYPTION_FAILURE);
                 },
-                () => fail("Should not invoke success when operation fails")
+                () => {
+                    throw new Error("Should not invoke success when operation fails");
+                }
             );
         });
     });
@@ -267,7 +277,7 @@ describe("UserCrypto", () => {
             jest.spyOn(Recrypt, "generatePasswordDerivedKey").mockReturnValue(Future.of<any>("derived fixed key"));
 
             UserCrypto.changeUsersPasscode("current", "new", new Uint8Array([33])).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (encryptedKey: any) => {
                     expect(encryptedKey).toEqual({
                         encryptedPrivateUserKey: "encrypted private key",
@@ -293,7 +303,7 @@ describe("UserCrypto", () => {
                     expect(AES.encryptUserKey).not.toHaveBeenCalled();
                     done();
                 },
-                () => fail("Future should not resolve when decryption fails")
+                () => done("Future should not resolve when decryption fails")
             );
         });
 
@@ -308,7 +318,7 @@ describe("UserCrypto", () => {
                     expect(AES.encryptUserKey).toHaveBeenCalled();
                     done();
                 },
-                () => fail("Future should not resolve when decryption fails")
+                () => done("Future should not resolve when decryption fails")
             );
         });
     });

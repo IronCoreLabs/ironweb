@@ -43,7 +43,7 @@ describe("Init exposed public SDK", () => {
 
             PublicSdk.initialize(fetchJWT, passcode)
                 .then(() => {
-                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                    done("Initialization should not occur if the client browser does not support random number generation.");
                 })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
@@ -83,7 +83,7 @@ describe("Init exposed public SDK", () => {
 
             PublicSdk.createNewUser(fetchJWT, passcode)
                 .then(() => {
-                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                    done("Initialization should not occur if the client browser does not support random number generation.");
                 })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
@@ -112,7 +112,7 @@ describe("Init exposed public SDK", () => {
 
             PublicSdk.createNewDeviceKeys(fetchJWT, passcode)
                 .then(() => {
-                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                    done("Initialization should not occur if the client browser does not support random number generation.");
                 })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
@@ -135,7 +135,7 @@ describe("Init exposed public SDK", () => {
 
     describe("ErrorCodes", () => {
         it("exposes error codes", () => {
-            expect(PublicSdk.ErrorCodes).toBeObject();
+            expect(typeof PublicSdk.ErrorCodes).toBe("object");
         });
     });
 
@@ -154,8 +154,8 @@ describe("Init exposed public SDK", () => {
             checkSDKInitialized.mockImplementationOnce(() => {
                 throw Error("");
             });
-            expect(PublicSdk.isInitialized()).toBeFalse();
+            expect(PublicSdk.isInitialized()).toBe(false);
         });
-        it("should return true when sdk check doesn't throw", () => expect(PublicSdk.isInitialized()).toBeTrue());
+        it("should return true when sdk check doesn't throw", () => expect(PublicSdk.isInitialized()).toBe(true));
     });
 });

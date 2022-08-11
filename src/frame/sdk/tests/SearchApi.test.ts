@@ -38,7 +38,9 @@ describe("SearchApi", () => {
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.SEARCH_CREATE_INDEX_FAILURE);
                 },
-                () => fail("Should not succeed when doc encrypt fails")
+                () => {
+                    throw new Error("Should not succeed when doc encrypt fails");
+                }
             );
         });
     });
@@ -73,7 +75,9 @@ describe("SearchApi", () => {
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.SEARCH_INIT_INDEX_FAILURE);
                 },
-                () => fail("Initialize should fail when salt decrypt fails")
+                () => {
+                    throw new Error("Initialize should fail when salt decrypt fails");
+                }
             );
         });
     });
@@ -85,7 +89,9 @@ describe("SearchApi", () => {
                     expect(e.message).toContain("not yet been initialized");
                     expect(e.code).toEqual(ErrorCodes.SEARCH_TOKENIZE_DATA_FAILURE);
                 },
-                () => fail("Should not be able to tokenize data without initializatin")
+                () => {
+                    throw new Error("Should not be able to tokenize data without initialization");
+                }
             );
         });
 
@@ -127,7 +133,9 @@ describe("SearchApi", () => {
                     expect(e.message).toContain("not yet been initialized");
                     expect(e.code).toEqual(ErrorCodes.SEARCH_TOKENIZE_QUERY_FAILURE);
                 },
-                () => fail("Should not be able to tokenize query without initializatin")
+                () => {
+                    throw new Error("Should not be able to tokenize query without initialization");
+                }
             );
         });
 

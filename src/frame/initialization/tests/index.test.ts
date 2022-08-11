@@ -94,7 +94,7 @@ describe("init index", () => {
                     });
                     expect(InitializationApi.fetchAndValidateLocalKeys).not.toHaveBeenCalled();
                     expect(FrameUtils.clearDeviceAndSigningKeys).toHaveBeenCalledWith("user-10", 1);
-                    expect(ApiState.user()).toBeObject();
+                    expect(typeof ApiState.user()).toBe("object");
                     done();
                 }
             );
@@ -120,7 +120,7 @@ describe("init index", () => {
                             doesUserExist: true,
                         },
                     });
-                    expect(ApiState.user()).toBeObject();
+                    expect(typeof ApiState.user()).toBe("object");
                     done();
                 }
             );
@@ -321,7 +321,9 @@ describe("init index", () => {
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.USER_NOT_SYNCED_FAILURE);
                 },
-                () => fail("Call should not succeed when user doesnt yet exist.")
+                () => {
+                    throw new Error("Call should not succeed when user doesnt yet exist.");
+                }
             );
         });
 

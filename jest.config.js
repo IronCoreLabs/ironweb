@@ -30,5 +30,4 @@ module.exports = {
     coveragePathIgnorePatterns: ["EncryptedDeks.js"],
     setupFilesAfterEnv: ["./src/tests/jestSetup.ts"],
     testEnvironment: "jsdom",
-    testRunner: "jasmine2",
 };

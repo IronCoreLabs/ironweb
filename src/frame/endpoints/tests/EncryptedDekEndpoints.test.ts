@@ -20,12 +20,14 @@ describe("EncryptedDekEndpoints", () => {
             const edeks = new Uint8Array([100, 200, 300]);
 
             EncryptedDekEndpoints.callEncryptedDekTransformApi(edeks).engage(
-                () => fail("edeks/transform should not reject"),
+                () => {
+                    throw new Error("edeks/transform should not reject");
+                },
                 (response: any) => {
                     expect(response).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("edeks/transform", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(request.body).toEqual(edeks);
                 }
             );

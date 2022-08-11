@@ -14,7 +14,7 @@ describe("ApiRequest", () => {
     });
 
     describe("getRequestSignature", () => {
-        it("sends message to worker and maps response to auth header string", () => {
+        it("sends message to worker and maps response to auth header string", (done) => {
             jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
                 Future.of<any>({
                     message: {
@@ -26,7 +26,7 @@ describe("ApiRequest", () => {
             );
 
             ApiRequest.getRequestSignature("/path/to/resource", "GET", "bodyparts").engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (signature) => {
                     expect(signature).toEqual({
                         userContextHeader: "context",
@@ -44,6 +44,7 @@ describe("ApiRequest", () => {
                             body: "bodyparts",
                         },
                     });
+                    done();
                 }
             );
         });
@@ -54,13 +55,13 @@ describe("ApiRequest", () => {
             if (typeof window.fetch === "function") {
                 jest.spyOn(window, "fetch");
             } else {
-                window.fetch = jasmine.createSpy("fetch");
+                window.fetch = jest.fn();
             }
         });
 
         it("invokes window.fetch with expected parameters", () => {
             const fetchFuture = ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header");
-            fetchFuture.engage(jasmine.createSpy("fetchFailure"), jasmine.createSpy("fetchSuccess"));
+            fetchFuture.engage(jest.fn(), jest.fn());
 
             expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
                 method: "POST",
@@ -70,7 +71,7 @@ describe("ApiRequest", () => {
 
         it("invokes window.fetch with octet-stream content type if body is bytes", () => {
             const fetchFuture = ApiRequest.fetchJson("api/method", -1, {method: "POST", body: new Uint8Array([])}, "auth header");
-            fetchFuture.engage(jasmine.createSpy("fetchFailure"), jasmine.createSpy("fetchSuccess"));
+            fetchFuture.engage(jest.fn(), jest.fn());
 
             expect(window.fetch).toHaveBeenCalledWith("/api/1/api/method", {
                 method: "POST",
@@ -80,7 +81,7 @@ describe("ApiRequest", () => {
         });
 
         it("converts failed request to SDK error", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() => Promise.reject(new Error("forced error")));
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() => Promise.reject(new Error("forced error")));
 
             ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
@@ -88,12 +89,12 @@ describe("ApiRequest", () => {
                     expect(error.code).toEqual(-1);
                     done();
                 },
-                () => fail("success method should not be called when fetch fails")
+                () => done("success method should not be called when fetch fails")
             );
         });
 
         it("converts failed request with JSON error into SDK Error", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     statusText: "not good",
@@ -107,12 +108,12 @@ describe("ApiRequest", () => {
                     expect(error.code).toEqual(-1);
                     done();
                 },
-                () => fail("success method should not be called when fetch fails")
+                () => done("success method should not be called when fetch fails")
             );
         });
 
-        it("returns special failure error if request was rate limited", () => {
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+        it("returns special failure error if request was rate limited", (done) => {
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     status: 429,
@@ -121,15 +122,16 @@ describe("ApiRequest", () => {
 
             ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
-                    expect(error.message).toBeString();
+                    expect(error.message).toEqual(expect.stringContaining(""));
                     expect(error.code).toEqual(ErrorCodes.REQUEST_RATE_LIMITED);
+                    done();
                 },
-                () => fail("success method should not be called when 429 error was recieved")
+                () => done("success method should not be called when 429 error was recieved")
             );
         });
 
         it("falls back to status text if response JSON is not in the expected format", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     statusText: "not good",
@@ -143,12 +145,12 @@ describe("ApiRequest", () => {
                     expect(error.code).toEqual(-1);
                     done();
                 },
-                () => fail("success method should not be called when fetch fails")
+                () => done("success method should not be called when fetch fails")
             );
         });
 
         it("falls back to status text if response body cannot be JSON parsed", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: false,
                     statusText: "not good",
@@ -162,12 +164,12 @@ describe("ApiRequest", () => {
                     expect(error.code).toEqual(-1);
                     done();
                 },
-                () => fail("success method should not be called when fetch fails")
+                () => done("success method should not be called when fetch fails")
             );
         });
 
         it("returns empty object if request status is a 204", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() => Promise.resolve({ok: true, status: 204}));
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() => Promise.resolve({ok: true, status: 204}));
 
             ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (e) => {
@@ -181,7 +183,7 @@ describe("ApiRequest", () => {
         });
 
         it("falls back to hardcoded message text when response is success but JSON parsing fails", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 200,
@@ -191,16 +193,16 @@ describe("ApiRequest", () => {
 
             ApiRequest.fetchJson("api/method", -1, {method: "POST"}, "auth header").engage(
                 (error) => {
-                    expect(error.message).toBeString();
+                    expect(error.message).toEqual(expect.stringContaining(""));
                     expect(error.code).toEqual(-1);
                     done();
                 },
-                () => fail("success should not be invoked when JSON parsing fails")
+                () => done("success should not be invoked when JSON parsing fails")
             );
         });
 
         it("invokes response.json on result and maps data to result and response", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 200,
@@ -234,7 +236,7 @@ describe("ApiRequest", () => {
                 })
             );
 
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 204,
@@ -265,7 +267,7 @@ describe("ApiRequest", () => {
 
     describe("makeJwtApiRequest", () => {
         it("formats provided JWT to expected auth header", (done) => {
-            (window.fetch as jasmine.Spy).mockImplementation(() =>
+            (window.fetch as unknown as jest.SpyInstance).mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
                     status: 204,

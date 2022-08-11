@@ -9,7 +9,7 @@ import {fromByteArray} from "base64-js";
 describe("worker index", () => {
     describe("ParentThreadMessenger", () => {
         it("posts proper worker message to parent window", () => {
-            jest.spyOn(window, "postMessage");
+            jest.spyOn(window, "postMessage").mockImplementation();
 
             messenger.postMessageToParent({foo: "bar"} as any, 10);
 
@@ -23,7 +23,7 @@ describe("worker index", () => {
         });
 
         it("converts byte arrays to array buffers in transfer list", () => {
-            jest.spyOn(window, "postMessage");
+            jest.spyOn(window, "postMessage").mockImplementation();
             const bytes = new Uint8Array(3);
 
             messenger.postMessageToParent({foo: "bar"} as any, 10, [bytes]);
@@ -38,14 +38,14 @@ describe("worker index", () => {
         });
 
         it("invokes message callback with event data when processing", () => {
-            jest.spyOn(window, "postMessage");
+            jest.spyOn(window, "postMessage").mockImplementation();
             const bytes = new Uint8Array(3);
             jest.spyOn(messenger, "onMessageCallback");
 
             messenger.processMessageIntoWorker({data: {data: {foo: "bar"}, replyID: 38}} as MessageEvent);
 
             expect(messenger.onMessageCallback).toHaveBeenCalledWith({foo: "bar"}, expect.any(Function));
-            const callback = (messenger.onMessageCallback as jasmine.Spy).calls.argsFor(0)[1];
+            const callback = (messenger.onMessageCallback as unknown as jest.SpyInstance).mock.calls[0][1];
             callback({response: "data"}, [bytes]);
 
             expect(window.postMessage).toHaveBeenCalledWith(
@@ -165,7 +165,7 @@ describe("worker index", () => {
         });
 
         it("SIGNATURE_GENERATION", (done) => {
-            jest.spyOn(UserCrypto, "signRequestPayload").mockReturnValue("signature");
+            jest.spyOn(UserCrypto, "signRequestPayload").mockReturnValue("signature" as any);
             const payload: any = {
                 type: "SIGNATURE_GENERATION",
                 message: {

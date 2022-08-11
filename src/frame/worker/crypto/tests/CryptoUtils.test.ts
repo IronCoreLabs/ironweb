@@ -3,7 +3,7 @@ import * as CryptoUtils from "../CryptoUtils";
 describe("CryptoUtils", () => {
     describe("getCryptoSubtleApi", () => {
         it("returns subtle crypto object or undefined", () => {
-            expect(CryptoUtils.getCryptoSubtleApi()).toBeObject();
+            expect(typeof CryptoUtils.getCryptoSubtleApi()).toBe("object");
         });
     });
 
@@ -16,7 +16,7 @@ describe("CryptoUtils", () => {
                     throw e;
                 },
                 (bytes) => {
-                    expect(bytes instanceof Uint8Array).toBeTrue();
+                    expect(bytes instanceof Uint8Array).toBe(true);
                     expect(bytes.length).toEqual(12);
                     expect(window.postMessage).not.toHaveBeenCalled();
                     done();

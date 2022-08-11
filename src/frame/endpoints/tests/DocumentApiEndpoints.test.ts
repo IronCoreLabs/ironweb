@@ -19,7 +19,9 @@ describe("DocumentApiEndpoints", () => {
     describe("callDocumentListApi", () => {
         it("requests document list endpoint and maps response to data result", () => {
             DocumentApiEndpoints.callDocumentListApi().engage(
-                () => fail("Doc list should not reject"),
+                () => {
+                    throw new Error("Doc list should not reject");
+                },
                 (documents: any) => {
                     expect(documents).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object));
@@ -41,12 +43,14 @@ describe("DocumentApiEndpoints", () => {
             ];
 
             DocumentApiEndpoints.callDocumentCreateApi("docID", encryptedDocumentToBase64("docID", 353, document), userKeyList, [], "doc name").engage(
-                () => fail("Doc create should not reject"),
+                () => {
+                    throw new Error("Doc create should not reject");
+                },
                 (documentResult: any) => {
                     expect(documentResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         id: "docID",
                         value: {
@@ -100,12 +104,14 @@ describe("DocumentApiEndpoints", () => {
             ];
 
             DocumentApiEndpoints.callDocumentCreateApi("", null, userKeyList, groupKeyList).engage(
-                () => fail("Doc create should not reject"),
+                () => {
+                    throw new Error("Doc create should not reject");
+                },
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         value: {
                             fromUserId: "user-10",
@@ -141,12 +147,14 @@ describe("DocumentApiEndpoints", () => {
             ];
 
             DocumentApiEndpoints.callDocumentCreateApi("docKey", null, userKeyList, []).engage(
-                () => fail("Doc create should not reject"),
+                () => {
+                    throw new Error("Doc create should not reject");
+                },
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         id: "docKey",
                         value: {
@@ -171,7 +179,9 @@ describe("DocumentApiEndpoints", () => {
     describe("callDocumentGetApi", () => {
         it("gets document from api and maps result", () => {
             DocumentApiEndpoints.callDocumentGetApi("docKey").engage(
-                () => fail("doc get API should not reject"),
+                () => {
+                    throw new Error("doc get API should not reject");
+                },
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
 
@@ -188,7 +198,9 @@ describe("DocumentApiEndpoints", () => {
     describe("callDocumentMetadataGetApi", () => {
         it("gets metadata for document and maps result", () => {
             DocumentApiEndpoints.callDocumentMetadataGetApi("docID").engage(
-                () => fail("doc meta get API should not reject"),
+                () => {
+                    throw new Error("doc meta get API should not reject");
+                },
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docID", expect.any(Number), expect.any(Object));
@@ -202,12 +214,14 @@ describe("DocumentApiEndpoints", () => {
             const document = TestUtils.getEncryptedDocument();
 
             DocumentApiEndpoints.callDocumentUpdateApi("docKey", encryptedDocumentToBase64("docID", 353, document)).engage(
-                () => fail("Doc update should not reject"),
+                () => {
+                    throw new Error("Doc update should not reject");
+                },
                 (documentResult: any) => {
                     expect(documentResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docKey", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         data: {
                             content: "AgAdeyJfZGlkXyI6ImRvY0lEIiwiX3NpZF8iOjM1M31ub25jZWJhc2U=",
@@ -219,11 +233,13 @@ describe("DocumentApiEndpoints", () => {
 
         it("includes document name and omits data if not provided", () => {
             DocumentApiEndpoints.callDocumentUpdateApi("docKey", undefined, "new name").engage(
-                () => fail("Doc update should not reject"),
+                () => {
+                    throw new Error("Doc update should not reject");
+                },
                 () => {
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docKey", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         name: "new name",
                     });
@@ -233,11 +249,13 @@ describe("DocumentApiEndpoints", () => {
 
         it("sets name to null if passed in as such", () => {
             DocumentApiEndpoints.callDocumentUpdateApi("docKey", undefined, null).engage(
-                () => fail("Doc update should not reject"),
+                () => {
+                    throw new Error("Doc update should not reject");
+                },
                 () => {
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docKey", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         name: null,
                     });
@@ -292,12 +310,14 @@ describe("DocumentApiEndpoints", () => {
 
         it("calls grant API and returns mapped API response", () => {
             DocumentApiEndpoints.callDocumentGrantApi("docID", userKeys, groupKeys).engage(
-                () => fail("Doc grant should not reject"),
+                () => {
+                    throw new Error("Doc grant should not reject");
+                },
                 (document: any) => {
                     expect(document).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docID/access", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
                         to: [
@@ -345,65 +365,69 @@ describe("DocumentApiEndpoints", () => {
 
         it("responds with proper key list when no users", () => {
             DocumentApiEndpoints.callDocumentGrantApi("docID", [], groupKeys).engage(
-                () => fail("Doc grant should not reject"),
                 () => {
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
-                    expect(JSON.parse(request.body)).toEqual({
-                        fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
-                        to: [
-                            {
-                                encryptedMessage: "AAAA",
-                                publicSigningKey: "AA==",
-                                authHash: "AA==",
-                                signature: "A===",
-                                ephemeralPublicKey: {x: "AAAAAAA=", y: "AAAAA=="},
-                                userOrGroup: {
-                                    type: "group",
-                                    id: "355",
-                                    masterPublicKey: {x: "grouppublickeyx", y: "grouppublickeyy"},
+                    throw new Error("Doc grant should not reject");
+                },
+                    () => {
+                        const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
+                        expect(JSON.parse(request.body)).toEqual({
+                            fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
+                            to: [
+                                {
+                                    encryptedMessage: "AAAA",
+                                    publicSigningKey: "AA==",
+                                    authHash: "AA==",
+                                    signature: "A===",
+                                    ephemeralPublicKey: {x: "AAAAAAA=", y: "AAAAA=="},
+                                    userOrGroup: {
+                                        type: "group",
+                                        id: "355",
+                                        masterPublicKey: {x: "grouppublickeyx", y: "grouppublickeyy"},
+                                    },
                                 },
-                            },
-                        ],
-                    });
-                }
+                            ],
+                        });
+                    }
             );
         });
 
         it("responds with proper key list when no groups", () => {
             DocumentApiEndpoints.callDocumentGrantApi("docID", userKeys, []).engage(
-                () => fail("Doc grant should not reject"),
                 () => {
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
-                    expect(JSON.parse(request.body)).toEqual({
-                        fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
-                        to: [
-                            {
-                                encryptedMessage: "AAA=",
-                                publicSigningKey: "AAAA",
-                                authHash: "AA==",
-                                signature: "A===",
-                                ephemeralPublicKey: {x: "", y: "AA=="},
-                                userOrGroup: {
-                                    type: "user",
-                                    id: "37",
-                                    masterPublicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
+                    throw new Error("Doc grant should not reject");
+                },
+                    () => {
+                        const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
+                        expect(JSON.parse(request.body)).toEqual({
+                            fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
+                            to: [
+                                {
+                                    encryptedMessage: "AAA=",
+                                    publicSigningKey: "AAAA",
+                                    authHash: "AA==",
+                                    signature: "A===",
+                                    ephemeralPublicKey: {x: "", y: "AA=="},
+                                    userOrGroup: {
+                                        type: "user",
+                                        id: "37",
+                                        masterPublicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
+                                    },
                                 },
-                            },
-                            {
-                                encryptedMessage: "AA==",
-                                publicSigningKey: "AA==",
-                                authHash: "AA==",
-                                signature: "A===",
-                                ephemeralPublicKey: {x: "AAAAAA==", y: "AAAA"},
-                                userOrGroup: {
-                                    type: "user",
-                                    id: "99",
-                                    masterPublicKey: {x: "secondpublickey", y: "secondpublickeyy"},
+                                {
+                                    encryptedMessage: "AA==",
+                                    publicSigningKey: "AA==",
+                                    authHash: "AA==",
+                                    signature: "A===",
+                                    ephemeralPublicKey: {x: "AAAAAA==", y: "AAAA"},
+                                    userOrGroup: {
+                                        type: "user",
+                                        id: "99",
+                                        masterPublicKey: {x: "secondpublickey", y: "secondpublickeyy"},
+                                    },
                                 },
-                            },
-                        ],
-                    });
-                }
+                            ],
+                        });
+                    }
             );
         });
     });
@@ -411,14 +435,20 @@ describe("DocumentApiEndpoints", () => {
     describe("callDocumentRevokeApi", () => {
         it("calls document revoke endpoint with both user and group list", () => {
             DocumentApiEndpoints.callDocumentRevokeApi("docID", ["user-1", "user-2"], ["group-1"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (revokeResult: any) => {
                     expect(revokeResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docID/access", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
-                        userOrGroups: [{id: "user-1", type: "user"}, {id: "user-2", type: "user"}, {id: "group-1", type: "group"}],
+                        userOrGroups: [
+                            {id: "user-1", type: "user"},
+                            {id: "user-2", type: "user"},
+                            {id: "group-1", type: "group"},
+                        ],
                     });
                 }
             );
@@ -426,12 +456,14 @@ describe("DocumentApiEndpoints", () => {
 
         it("builds list without users if none are provided", () => {
             DocumentApiEndpoints.callDocumentRevokeApi("docID", [], ["group-1"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (revokeResult: any) => {
                     expect(revokeResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docID/access", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userOrGroups: [{id: "group-1", type: "group"}],
                     });
@@ -441,12 +473,14 @@ describe("DocumentApiEndpoints", () => {
 
         it("builds list without users if none are provided", () => {
             DocumentApiEndpoints.callDocumentRevokeApi("docID?=10", ["user-1"], []).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (revokeResult: any) => {
                     expect(revokeResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docID%3F%3D10/access", expect.any(Number), expect.any(Object));
 
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userOrGroups: [{id: "user-1", type: "user"}],
                     });

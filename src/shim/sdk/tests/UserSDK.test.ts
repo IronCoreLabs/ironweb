@@ -32,7 +32,7 @@ describe("UserSDK", () => {
                         expect(ShimUtils.clearParentWindowSymmetricKey).toHaveBeenCalledWith();
                         done();
                     })
-                    .catch((e) => fail(e.message));
+                    .catch((e) => done(e));
             });
         });
 
@@ -56,7 +56,7 @@ describe("UserSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e.message));
+                    .catch((e) => done(e));
             });
         });
 
@@ -79,7 +79,7 @@ describe("UserSDK", () => {
                         });
                         done();
                     })
-                    .catch((e) => fail(e.message));
+                    .catch((e) => done(e));
             });
         });
     });

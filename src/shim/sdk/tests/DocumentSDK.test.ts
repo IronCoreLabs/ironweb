@@ -29,7 +29,7 @@ describe("DocumentSDK", () => {
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith({type: "DOCUMENT_LIST"});
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -54,7 +54,7 @@ describe("DocumentSDK", () => {
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith({type: "DOCUMENT_META_GET", message: {documentID: "docID"}});
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -73,9 +73,11 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const doc = concatArrayBuffers(new Uint8Array([9]), new Uint8Array(40));
             DocumentSDK.getDocumentIDFromBytes(doc)
-                .then(() => fail("Should not resolve when document ID is an unsupported version."))
+                .then(() => {
+                    throw new Error("Should not resolve when document ID is an unsupported version.");
+                })
                 .catch((e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 });
         });
@@ -88,7 +90,9 @@ describe("DocumentSDK", () => {
                 .then((result) => {
                     expect(result).toBeNull();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => {
+                    throw new Error(e.message);
+                });
         });
 
         it("rejects if the provided document header is malformed", () => {
@@ -98,9 +102,11 @@ describe("DocumentSDK", () => {
             const doc = concatArrayBuffers(new Uint8Array([2, 0, headerJSON.length - 1]), headerJSON);
 
             DocumentSDK.getDocumentIDFromBytes(doc)
-                .then(() => fail("Should not succeed when ID cannot be parsed."))
+                .then(() => {
+                    throw new Error("Should not succeed when ID cannot be parsed.");
+                })
                 .catch((e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 });
         });
@@ -115,7 +121,9 @@ describe("DocumentSDK", () => {
                 .then((result) => {
                     expect(result).toEqual("353");
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => {
+                    throw new Error(e.message);
+                });
         });
 
         it("parses document ID and returns value when the array is different from the buffer", () => {
@@ -128,7 +136,9 @@ describe("DocumentSDK", () => {
                 .then((result) => {
                     expect(result).toEqual("353");
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => {
+                    throw new Error(e.message);
+                });
         });
     });
 
@@ -146,7 +156,7 @@ describe("DocumentSDK", () => {
 
         it("returns response from document get from store api and sets default options correctly", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 93]),
@@ -170,7 +180,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -194,7 +204,7 @@ describe("DocumentSDK", () => {
         it("calls decrypt api and returns response", (done) => {
             ShimUtils.setSDKInitialized();
             const doc = new Uint8Array(33);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 87]),
@@ -218,13 +228,13 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("calls decrypt api with bytes and returns response", (done) => {
             ShimUtils.setSDKInitialized();
             const doc = new Uint8Array(33);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 87]),
@@ -247,11 +257,11 @@ describe("DocumentSDK", () => {
                         [doc]
                     );
                     //Ensure we cloned these bytes before passing them to the frame
-                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    const passedDoc = (FrameMediator.sendMessage as unknown as jest.SpyInstance).mock.calls.pop()[0].message.documentData;
                     expect(passedDoc).not.toBe(doc);
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -294,11 +304,11 @@ describe("DocumentSDK", () => {
                         [document]
                     );
                     //Ensure we cloned these bytes before passing them to the frame
-                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    const passedDoc = (FrameMediator.sendMessage as unknown as jest.SpyInstance).mock.calls.pop()[0].message.documentData;
                     expect(passedDoc).not.toBe(document);
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses grauntToAuthor from options if provided", (done) => {
@@ -323,7 +333,7 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses ID from options if provided", (done) => {
@@ -347,7 +357,7 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses provided name from options object", (done) => {
@@ -371,7 +381,7 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("dedupes list of users and groups provided", (done) => {
@@ -397,13 +407,13 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("passes policy if provided in options", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: new Uint8Array([90, 102, 103]),
@@ -430,14 +440,16 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("rejects if size of data is above max limit", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array(2050000);
             DocumentSDK.encryptToStore(document)
-                .then(() => fail("Encrypt to store should reject when data is too large"))
+                .then(() => {
+                    throw new Error("Encrypt to store should reject when data is too large");
+                })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED);
                 });
@@ -461,7 +473,7 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([88, 91, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -496,21 +508,21 @@ describe("DocumentSDK", () => {
                         },
                         [document]
                     );
-                    const messagePayload = (FrameMediator.sendMessage as jasmine.Spy).calls.argsFor(0)[0];
+                    const messagePayload = (FrameMediator.sendMessage as unknown as jest.SpyInstance).mock.calls[0][0];
                     expect(messagePayload.message.documentID.length).toEqual(32);
                     expect(messagePayload.message.documentID).toMatch(/[0-9a-fA-F]+/);
                     //Ensure we cloned these bytes before passing them to the frame
                     expect(messagePayload.message.documentData).not.toBe(document);
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses grantToAuthor from options object", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -539,14 +551,14 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses provided ID from options object", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -575,14 +587,14 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses provided name from options object", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -611,7 +623,7 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("dedupes list of users and groups provided", (done) => {
@@ -621,7 +633,7 @@ describe("DocumentSDK", () => {
 
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -650,13 +662,13 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("passes policy if provided in options", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: new Uint8Array([90, 102, 103]),
@@ -683,7 +695,7 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -721,18 +733,20 @@ describe("DocumentSDK", () => {
                         [document]
                     );
                     //Ensure we cloned these bytes before passing them to the frame
-                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    const passedDoc = (FrameMediator.sendMessage as unknown as jest.SpyInstance).mock.calls.pop()[0].message.documentData;
                     expect(passedDoc).not.toBe(document);
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("rejects if size of data is above max limit", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array(2050000);
             DocumentSDK.updateEncryptedDataInStore("mydoc", document)
-                .then(() => fail("Update to store should reject when data is too large"))
+                .then(() => {
+                    throw new Error("Update to store should reject when data is too large");
+                })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED);
                 });
@@ -756,7 +770,7 @@ describe("DocumentSDK", () => {
             const doc = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([98, 99, 107]);
 
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         documentID: "doc-10",
@@ -782,11 +796,11 @@ describe("DocumentSDK", () => {
                         [doc]
                     );
                     //Ensure we cloned these bytes before passing them to the frame
-                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    const passedDoc = (FrameMediator.sendMessage as unknown as jest.SpyInstance).mock.calls.pop()[0].message.documentData;
                     expect(passedDoc).not.toBe(document);
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -815,7 +829,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("converts empty string values into null", (done) => {
@@ -832,7 +846,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -870,7 +884,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("dedupes array of ids provided", (done) => {
@@ -891,7 +905,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("passes in list of valid groups without users as well", (done) => {
@@ -909,7 +923,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -947,7 +961,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("dedupes array of ids provided", (done) => {
@@ -968,7 +982,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("passes in list of valid groups without users as well", (done) => {
@@ -986,7 +1000,7 @@ describe("DocumentSDK", () => {
                     });
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -1010,7 +1024,7 @@ describe("DocumentSDK", () => {
             const headerJSON = UTF8.encode(JSON.stringify({_did_: "353"}));
             //Make provided length one less character that the actual length
             const doc = concatArrayBuffers(new Uint8Array([2, 0, headerJSON.length]), headerJSON);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         data: new Uint8Array([98, 87]),
@@ -1035,11 +1049,11 @@ describe("DocumentSDK", () => {
                         [doc]
                     );
                     //Ensure we cloned these bytes before passing them to the frame
-                    const passedDoc = (FrameMediator.sendMessage as jasmine.Spy).calls.mostRecent().args[0].message.documentData;
+                    const passedDoc = (FrameMediator.sendMessage as unknown as jest.SpyInstance).mock.calls.pop()[0].message.documentData;
                     expect(passedDoc).not.toBe(document);
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 
@@ -1060,7 +1074,7 @@ describe("DocumentSDK", () => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([88, 91, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -1092,21 +1106,21 @@ describe("DocumentSDK", () => {
                         },
                         [document]
                     );
-                    const messagePayload = (FrameMediator.sendMessage as jasmine.Spy).calls.argsFor(0)[0];
+                    const messagePayload = (FrameMediator.sendMessage as unknown as jest.SpyInstance).mock.calls[0][0];
                     expect(messagePayload.message.documentID.length).toEqual(32);
                     expect(messagePayload.message.documentID).toMatch(/[0-9a-fA-F]+/);
                     //Ensure we cloned these bytes before passing them to the frame
                     expect(messagePayload.message.documentData).not.toBe(document);
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses grantToAuthor from options object", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -1137,14 +1151,14 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("uses provided ID from options object", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         documentID: "providedID",
@@ -1177,7 +1191,7 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("dedupes list of users and groups provided", (done) => {
@@ -1187,7 +1201,7 @@ describe("DocumentSDK", () => {
 
             const document = new Uint8Array([100, 111, 99]);
             const encryptedDoc = new Uint8Array([90, 102, 103]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: encryptedDoc,
@@ -1216,13 +1230,13 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
 
         it("passes policy if provided in options", (done) => {
             ShimUtils.setSDKInitialized();
             const document = new Uint8Array([100, 111, 99]);
-            (FrameMediator.sendMessage as jasmine.Spy).mockReturnValue(
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         document: new Uint8Array([90, 102, 103]),
@@ -1249,7 +1263,7 @@ describe("DocumentSDK", () => {
                     );
                     done();
                 })
-                .catch((e) => fail(e.message));
+                .catch((e) => done(e));
         });
     });
 });

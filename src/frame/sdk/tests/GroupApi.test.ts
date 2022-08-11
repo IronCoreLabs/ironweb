@@ -142,11 +142,11 @@ describe("GroupApi", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
             const memberList = [{id: "user2ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
             const adminList = [
-                {id: "user1ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user1", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
                 {id: "user3ID", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
             ];
             const userKeyList = [
-                {id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
+                {id: "user1", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
                 {id: "user2ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
                 {id: "user3ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
             ];
@@ -173,7 +173,7 @@ describe("GroupApi", () => {
                 }) as any
             );
 
-            GroupApi.create("groupID", "groupName", false, ["user2ID"], ["user3ID"], "user1ID").engage(
+            GroupApi.create("groupID", "groupName", false, ["user2ID"], ["user3ID"], "user1").engage(
                 (e) => {
                     throw e;
                 },
@@ -196,7 +196,7 @@ describe("GroupApi", () => {
                         "encryptedAccessKeys",
                         false,
                         "transformKeyGrantList",
-                        "user1ID",
+                        "user1",
                         "groupName"
                     );
                 }
@@ -241,31 +241,35 @@ describe("GroupApi", () => {
         it("fails if memberList is sent and contains non existent user", () => {
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(
                 Future.of<any>({
-                    result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                    result: [{id: "user1", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
                 }) as any
             );
 
             GroupApi.create("", "private group", false, ["user1", "user2"], []).engage(
                 (e) => {
-                    expect(e.message).toContain(["user2"]);
+                    expect(e.message).toContain("user2");
                     expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE);
                 },
-                () => fail("Should not be able to create group with members if mamber list request contains non existent users")
+                () => {
+                    throw new Error("Should not be able to create group with members if mamber list request contains non existent users");
+                }
             );
         });
         it("fails if adminList is sent and contains non existent user", () => {
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(
                 Future.of<any>({
-                    result: [{id: "user1ID", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
+                    result: [{id: "user1", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
                 }) as any
             );
 
             GroupApi.create("", "private group", false, [], ["user1", "user2"]).engage(
                 (e) => {
-                    expect(e.message).toContain(["user2"]);
+                    expect(e.message).toContain("user2");
                     expect(e.code).toEqual(ErrorCodes.GROUP_CREATE_WITH_MEMBERS_OR_ADMINS_FAILURE);
                 },
-                () => fail("Should not be able to create group with members if mamber list request contains non existent users")
+                () => {
+                    throw new Error("Should not be able to create group with members if mamber list request contains non existent users");
+                }
             );
         });
         it("if needsRotation is set to true callGroupCreateApi is called with needsRotation true", () => {
@@ -329,7 +333,9 @@ describe("GroupApi", () => {
             jest.spyOn(GroupApiEndpoints, "callGroupPrivateKeyUpdateApi").mockReturnValue(Future.of<any>({needsRotation: false}) as any);
 
             GroupApi.rotateGroupPrivateKey("myGroup").engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         needsRotation: false,
@@ -365,7 +371,9 @@ describe("GroupApi", () => {
                     expect(e.message).toContain(["Current user is not authorized to rotate this groups private key as they are not a group administrator."]);
                     expect(e.code).toEqual(ErrorCodes.GROUP_ROTATE_PRIVATE_KEY_NOT_ADMIN_FAILURE);
                 },
-                () => fail("Should not be able to rotate the group private key if the requesting user is not an admin")
+                () => {
+                    throw new Error("Should not be able to rotate the group private key if the requesting user is not an admin");
+                }
             );
         });
     });
@@ -383,7 +391,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.update("88", "new name").engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         groupID: "88",
@@ -429,7 +439,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.addAdmins("33", ["user1", "user2"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         succeeded: ["user1", "user2"],
@@ -462,7 +474,9 @@ describe("GroupApi", () => {
             jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList");
 
             GroupApi.addAdmins("33", ["user1", "user2"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result: any) => {
                     expect(result).toEqual({
                         succeeded: [],
@@ -485,10 +499,12 @@ describe("GroupApi", () => {
 
             GroupApi.addAdmins("33", ["user1", "user2"]).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toBeNumber();
                 },
-                () => fail("Should not be able to add members when user is not an admin and GET does not return an encrypted private key")
+                () => {
+                    throw new Error("Should not be able to add members when user is not an admin and GET does not return an encrypted private key");
+                }
             );
         });
 
@@ -498,10 +514,12 @@ describe("GroupApi", () => {
 
             GroupApi.addAdmins("61", ["user1", "user2"]).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toBeNumber();
                 },
-                () => fail("Should not be able to add members when user is not an admin and GET does not return an encrypted private key")
+                () => {
+                    throw new Error("Should not be able to add members when user is not an admin and GET does not return an encrypted private key");
+                }
             );
         });
 
@@ -524,7 +542,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.addAdmins("33", ["id1", "id2", "id3", "id4"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         succeeded: ["id1", "id2"],
@@ -551,7 +571,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.removeAdmins("3235", ["88", "13", "12", "33"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         succeeded: ["88", "13"],
@@ -576,7 +598,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.removeAdmins("3235", ["88", "13", "12", "33"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         succeeded: ["88"],
@@ -685,10 +709,12 @@ describe("GroupApi", () => {
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toBeNumber();
                 },
-                () => fail("Should not be able to add members when user is not an admin and GET does not return an encrypted private key")
+                () => {
+                    throw new Error("Should not be able to add members when user is not an admin and GET does not return an encrypted private key");
+                }
             );
         });
 
@@ -698,10 +724,12 @@ describe("GroupApi", () => {
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toBeNumber();
                 },
-                () => fail("Should not be able to add members when user is not an admin and GET does not return an encrypted private key")
+                () => {
+                    throw new Error("Should not be able to add members when user is not an admin and GET does not return an encrypted private key");
+                }
             );
         });
 
@@ -777,7 +805,9 @@ describe("GroupApi", () => {
             );
 
             GroupApi.removeMembers("3235", ["88", "13", "12", "33"]).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result) => {
                     expect(result).toEqual({
                         succeeded: ["88"],
@@ -829,7 +859,7 @@ describe("GroupApi", () => {
                     expect(e.code).toEqual(ErrorCodes.GROUP_REMOVE_SELF_REQUEST_FAILURE);
                     done();
                 },
-                () => fail("Remove self should not succeed if there were any failures")
+                () => done("Remove self should not succeed if there were any failures")
             );
         });
     });
