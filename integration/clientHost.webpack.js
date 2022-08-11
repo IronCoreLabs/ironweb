@@ -97,10 +97,11 @@ module.exports = {
                 ca: fs.readFileSync(path.join(__dirname, "certs/sb/chain.pem")),
             },
         },
-        onBeforeSetupMiddleware(devServer) {
+        setupMiddlewares: (middlewares, devServer) => {
             devServer.app.use(cookieParser());
             devServer.app.get("/", serveIndex);
             devServer.app.get("/generateJWT/:userID", serveJWT);
+            return middlewares;
         },
     },
     mode: "development",

@@ -1,11 +1,11 @@
 module.exports = {
-    beforeEach(browser){
+    beforeEach(browser) {
         browser.url(browser.launchUrl);
         const {initializeUser} = browser.page.demoApp().section;
         initializeUser.initializeAndSyncUser();
     },
 
-    'Can share a document with another user given their ID'(browser){
+    "Can share a document with another user given their ID"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView, commandBar, initializeUser} = demoApp.section;
 
@@ -19,14 +19,12 @@ module.exports = {
 
             documentList.clickAddNewDocument();
 
-            documentCreate
-                .setTodoListName(`Grant access to ${firstUserID}`)
-                .submitDocument();
+            documentCreate.setTodoListName(`Grant access to ${firstUserID}`).submitDocument();
 
             demoApp.assertOnHostedDocumentViewPage();
 
             documentView
-                .waitForElementVisible('@documentViewDetails')
+                .waitForElementVisible("@documentViewDetails")
                 .enterUserIDToGrantAccess(firstUserID)
                 .clickGrantAccessButton()
                 .assertUserVisibleToSize(2)
@@ -36,7 +34,7 @@ module.exports = {
         });
     },
 
-    'Can remove share from user as document author'(browser){
+    "Can remove share from user as document author"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView, commandBar, initializeUser} = demoApp.section;
 
@@ -50,18 +48,16 @@ module.exports = {
 
             documentList.clickAddNewDocument();
 
-            documentCreate
-                .setTodoListName(`Grant access to ${firstUserID}`)
-                .submitDocument();
+            documentCreate.setTodoListName(`Grant access to ${firstUserID}`).submitDocument();
 
             demoApp.assertOnHostedDocumentViewPage();
 
             documentView
-                .waitForElementVisible('@documentViewDetails')
+                .waitForElementVisible("@documentViewDetails")
                 .enterUserIDToGrantAccess(firstUserID)
                 .clickGrantAccessButton()
                 .assertUserVisibleToSize(2)
-                .clickRevokeAccessButton()
+                .clickRevokeAccessButton();
 
             //Wait for the removal to complete
             browser.pause(350);

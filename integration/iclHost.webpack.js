@@ -98,13 +98,14 @@ const frameConfig = {
                 ca: fs.readFileSync(path.join(__dirname, "certs/icl/chain.pem")),
             },
         },
-        onBeforeSetupMiddleware(devServer) {
+        setupMiddlewares: (middlewares, devServer) => {
             devServer.app.get("/ironweb-frame", serveFrame);
             //Setup endpoint for optionally serving production files for both the frame and the worker script. The path here is defined
             //both above in the frame HTMl as well as the build config in build.js for when we define the webpack public path for the worker.
             devServer.app.use("/static/:version/:file", (req, res) => {
                 res.sendFile(path.join(__dirname, "../dist/frame/", req.params.file));
             });
+            return middlewares;
         },
         proxy: {
             //Proxy through API requests through webpack. We're doing this because the API is hosted locally over port 9090 over

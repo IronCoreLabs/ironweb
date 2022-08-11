@@ -19,7 +19,7 @@
           "browserName": "chrome",
           "comment": "'window-size=1920,1080', 'headless', 'disable-dev-shm-usage'",
           "chromeOptions": {
-              "args": ["no-sandbox", "window-size=1920,1080", "headless", "disable-dev-shm-usage"]
+              "args": ["no-sandbox", "window-size=1920,1080", "disable-dev-shm-usage"]
           },
           "acceptSslCerts": true
       }

@@ -3,21 +3,27 @@
  */
 const initializeActions = {
     clickInitializeAppButton() {
-        return this.click("@initializeButton").waitForElementVisible("@enterPasscodeInput");
+        browser
+            .click(this.client.locateStrategy, this.elements.initializeButton.selector)
+            .waitForElementVisible(this.client.locateStrategy, this.elements.enterPasscodeInput.selector);
+        return this;
     },
     enterUserPasscode(passcode) {
-        return this.setValue("@enterPasscodeInput", passcode);
+        browser.setValue(this.client.locateStrategy, this.elements.enterPasscodeInput.selector, passcode);
+        return this;
     },
     submitPasscode() {
-        return this.click("@submitPasscode");
+        browser.click(this.client.locateStrategy, this.elements.submitPasscode.selector);
+        return this;
     },
     initializeAndSyncUser(passcode) {
         const userPasscode = passcode || "nightwatch";
-        return this.waitForElementPresent("@initializeButton")
-            .clickInitializeAppButton()
+        browser.waitForElementPresent(this.client.locateStrategy, this.elements.initializeButton.selector);
+        this.clickInitializeAppButton()
             .enterUserPasscode(userPasscode)
             .submitPasscode()
-            .waitForElementNotPresent("@submitPasscode");
+            .waitForElementNotPresent(this.client.locateStrategy, this.elements.submitPasscode.selector);
+        return this;
     },
 };
 

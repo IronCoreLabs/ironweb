@@ -1,10 +1,10 @@
 module.exports = {
-    '@tags': ['userPasscodeChange'],
-    beforeEach(browser){
+    "@tags": ["userPasscodeChange"],
+    beforeEach(browser) {
         browser.url(browser.launchUrl);
     },
 
-    'User can change passcode if they enter old one correctly'(browser){
+    "User can change passcode if they enter old one correctly"(browser) {
         const demoApp = browser.page.demoApp();
         const {commandBar, initializeUser} = demoApp.section;
 
@@ -15,10 +15,7 @@ module.exports = {
 
         commandBar.clickChangePasscodeButton();
 
-        demoApp
-            .enterPasscodeFields(firstPasscode, secondPasscode)
-            .submitChangePasscode()
-            .waitForElementNotPresent('@passwordChangeDialog');
+        demoApp.enterPasscodeFields(firstPasscode, secondPasscode).submitChangePasscode().waitForElementNotPresent("@passwordChangeDialog");
 
         commandBar.clearSymmetricKey();
 
@@ -29,7 +26,7 @@ module.exports = {
         browser.end();
     },
 
-    'User passcode enter fails when using users old passcode'(browser){
+    "User passcode enter fails when using users old passcode"(browser) {
         const demoApp = browser.page.demoApp();
         const {commandBar, initializeUser} = demoApp.section;
 
@@ -40,10 +37,7 @@ module.exports = {
 
         commandBar.clickChangePasscodeButton();
 
-        demoApp
-            .enterPasscodeFields(firstPasscode, secondPasscode)
-            .submitChangePasscode()
-            .waitForElementNotPresent('@passwordChangeDialog');
+        demoApp.enterPasscodeFields(firstPasscode, secondPasscode).submitChangePasscode().waitForElementNotPresent("@passwordChangeDialog");
 
         commandBar.clearSymmetricKey();
 
@@ -54,7 +48,7 @@ module.exports = {
         browser.end();
     },
 
-    'User passcode change fails when previous passcode is incorrect'(browser){
+    "User passcode change fails when previous passcode is incorrect"(browser) {
         const demoApp = browser.page.demoApp();
         const {commandBar, initializeUser} = demoApp.section;
 
@@ -72,5 +66,5 @@ module.exports = {
             .expect.element("@currentPasscodeInput").to.not.have.value;
 
         browser.end();
-    }
+    },
 };

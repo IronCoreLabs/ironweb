@@ -1,30 +1,24 @@
 module.exports = {
-    beforeEach(browser){
+    beforeEach(browser) {
         browser.url(browser.launchUrl);
         const {initializeUser} = browser.page.demoApp().section;
         initializeUser.initializeAndSyncUser();
     },
 
-    'Can update existing document name'(browser){
+    "Can update existing document name"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView} = demoApp.section;
 
         documentList.clickAddNewDocument();
 
-        const originalDocName = 'hosted nightwatch document';
-        const updatedDocName = 'updated name only';
+        const originalDocName = "hosted nightwatch document";
+        const updatedDocName = "updated name only";
 
-        documentCreate
-            .setTodoListName(originalDocName)
-            .submitDocument();
+        documentCreate.setTodoListName(originalDocName).submitDocument();
 
         demoApp.assertOnHostedDocumentViewPage();
 
-        documentView
-            .waitForElementVisible('@documentViewDetails')
-            .assertDocumentName(originalDocName)
-            .changeDocumentName(updatedDocName)
-            .backToDocumentList();
+        documentView.waitForElementVisible("@documentViewDetails").assertDocumentName(originalDocName).changeDocumentName(updatedDocName).backToDocumentList();
 
         demoApp.assertOnDocumentListPage();
 
@@ -33,20 +27,17 @@ module.exports = {
         browser.end();
     },
 
-    'Can add new todo items to existing documents'(browser){
+    "Can add new todo items to existing documents"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView} = demoApp.section;
 
         documentList.clickAddNewDocument();
 
-        const docName = 'hosted nightwatch document';
-        const firstTodoItem = 'do integration testing';
-        const secondTodoItem = 'list update item';
+        const docName = "hosted nightwatch document";
+        const firstTodoItem = "do integration testing";
+        const secondTodoItem = "list update item";
 
-        documentCreate
-            .setTodoListName(docName)
-            .setTodoListItem(firstTodoItem)
-            .submitDocument();
+        documentCreate.setTodoListName(docName).setTodoListItem(firstTodoItem).submitDocument();
 
         demoApp.assertOnHostedDocumentViewPage();
 

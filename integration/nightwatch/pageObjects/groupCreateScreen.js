@@ -3,19 +3,21 @@
  */
 
 const groupCreateActions = {
-    enterGroupID(id){
-        return this.setValue('@groupIDInput', id);
+    enterGroupID(id) {
+        return this.setValue("@groupIDInput", id);
     },
-    enterGroupName(name){
-        return this.setValue('@groupNameInput', name);
+    enterGroupName(name) {
+        return this.setValue("@groupNameInput", name);
     },
-    toggleAddAsMember(){
-        return this.click('@groupMemberToggle');
+    toggleAddAsMember() {
+        return this.click("@groupMemberToggle");
     },
-    submitNewGroup(){
-        return this.click('@groupCreateButton').waitForElementNotPresent('@groupCreateButton');
+    // WARNING: always use `groupCreateScreen.enterGroupID` when creating a group. Auto-generated group ids will
+    // sometimes have leading numbers, making them invalid html IDs
+    submitNewGroup() {
+        return this.click("@groupCreateButton").waitForElementNotPresent("@groupCreateButton");
     },
-}
+};
 
 const groupCreateElements = {
     groupIDInput: {selector: '#new-group-id'},

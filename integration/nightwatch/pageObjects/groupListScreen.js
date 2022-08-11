@@ -1,11 +1,20 @@
 const groupListActions = {
     expectGroupRoleChipAtPosition(position, chipSelector, shouldExist = true){
-        this.api.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            this.api.elementIdElement(Object.values(elements.value[position])[0], this.client.locateStrategy, chipSelector, (chipElement) => {
+        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
+            browser.elementIdElement(Object.values(elements.value[position])[0], this.client.locateStrategy, chipSelector, (chipElement) => {
+                console.log(chipElement);
                 if (shouldExist) {
-                    this.assert.equal(chipElement.status, 0, chipElement.status === -1 ? chipElement.value.message : "Found expected role chip");
+                    if (typeof chipElement.value === "object") {
+                        this.assert.equal(true, true, "Found expected role chip");
+                    } else if (typeof chipElement.value === "array") {
+                        this.assert.equal(true, false, "Expected role chip not found");
+                    }
                 } else {
-                    this.assert.equal(chipElement.status, -1, chipElement.status === 0 ? chipElement.value.message : "Found unexpected role chip");
+                    if (typeof chipElement.value === "object") {
+                        this.assert.equal(true, false, "Found unexpected role chip");
+                    } else if (typeof chipElement.value === "array") {
+                        this.assert.equal(true, true, "Role chip not found as expected");
+                    }
                 }
             });
         });
@@ -18,13 +27,13 @@ const groupListActions = {
         return this.click('@createNewGroupButton');
     },
     expectCountOfGroups(length){
-        this.api.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
+        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
             this.assert.equal(elements.value.length, length, `Expected group count of "${length}, found "${elements.value.length}"`);
         });
         return this;
     },
     expectGroupNameAtPosition(position, name){
-        this.api.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
+        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
             this.api.elementIdText(Object.values(elements.value[position])[0], (elementText) => {
                 this.assert.equal(elementText.value.includes(name), true, `Expected roughly group name "${name}", found "${elementText.value}"`);
             });

@@ -1,6 +1,6 @@
 module.exports = {
-    tags: ['this'],
-    beforeEach(browser){
+    tags: ["this"],
+    beforeEach(browser) {
         browser.url(browser.launchUrl);
         const demoApp = browser.page.demoApp();
         const {initializeUser} = demoApp.section;
@@ -8,25 +8,21 @@ module.exports = {
         demoApp.switchToGroubTabUI();
     },
 
-    'User can remove themselves from a group member'(browser){
+    "User can remove themselves from a group member"(browser) {
         const demoApp = browser.page.demoApp();
         const {groupList, groupCreate, groupDetail} = demoApp.section;
 
         const groupName = "nightwatch group";
+        const groupID = "nightwatch-group" + Date.now();
 
-        groupList.clickAddNewGroup()
+        groupList.clickAddNewGroup();
         demoApp.assertOnGroupCreatePage();
 
-        groupCreate
-            .enterGroupName(groupName)
-            .submitNewGroup();
+        groupCreate.enterGroupName(groupName).enterGroupID(groupID).submitNewGroup();
 
         demoApp.assertOnGroupDetailPage();
 
-        groupDetail
-            .assertGroupName(groupName)
-            .assertGroupMemberSize(1)
-            .removeMemberAtPosition(0);
+        groupDetail.assertGroupName(groupName).assertGroupMemberSize(1).removeMemberAtPosition(0);
 
         //Wait for remove operation to complete before continuing
         browser.pause(350);
@@ -36,7 +32,7 @@ module.exports = {
         browser.end();
     },
 
-    'Admin can add another admin to the group'(browser){
+    "Admin can add another admin to the group"(browser) {
         const demoApp = browser.page.demoApp();
         const {groupList, groupCreate, groupDetail, commandBar, initializeUser} = demoApp.section;
 
@@ -51,27 +47,21 @@ module.exports = {
             demoApp.switchToGroubTabUI();
 
             const groupName = "nightwatch group";
-            groupList.clickAddNewGroup()
+            const groupID = "nightwatch-group" + Date.now();
+            groupList.clickAddNewGroup();
             demoApp.assertOnGroupCreatePage();
 
-            groupCreate
-                .enterGroupName(groupName)
-                .submitNewGroup();
+            groupCreate.enterGroupName(groupName).enterGroupID(groupID).submitNewGroup();
 
             demoApp.assertOnGroupDetailPage();
 
-            groupDetail
-                .assertGroupName(groupName)
-                .assertGroupMemberSize(1)
-                .addNewAdminID(firstUserID)
-                .submitNewAdmin()
-                .assertGroupAdminSize(2);
+            groupDetail.assertGroupName(groupName).assertGroupMemberSize(1).addNewAdminID(firstUserID).submitNewAdmin().assertGroupAdminSize(2);
 
             browser.end();
         });
     },
 
-    'Admin can remove admins from the group'(browser){
+    "Admin can remove admins from the group"(browser) {
         const demoApp = browser.page.demoApp();
         const {groupList, groupCreate, groupDetail, commandBar, initializeUser} = demoApp.section;
 
@@ -86,12 +76,11 @@ module.exports = {
             demoApp.switchToGroubTabUI();
 
             const groupName = "nightwatch group";
-            groupList.clickAddNewGroup()
+            const groupID = "nightwatch-group" + Date.now();
+            groupList.clickAddNewGroup();
             demoApp.assertOnGroupCreatePage();
 
-            groupCreate
-                .enterGroupName(groupName)
-                .submitNewGroup();
+            groupCreate.enterGroupName(groupName).enterGroupID(groupID).submitNewGroup();
 
             demoApp.assertOnGroupDetailPage();
 
@@ -111,7 +100,7 @@ module.exports = {
         });
     },
 
-    'Admin can add another member to the group'(browser){
+    "Admin can add another member to the group"(browser) {
         const demoApp = browser.page.demoApp();
         const {groupList, groupCreate, groupDetail, commandBar, initializeUser} = demoApp.section;
 
@@ -126,27 +115,21 @@ module.exports = {
             demoApp.switchToGroubTabUI();
 
             const groupName = "nightwatch group";
-            groupList.clickAddNewGroup()
+            const groupID = "nightwatch-group" + Date.now();
+            groupList.clickAddNewGroup();
             demoApp.assertOnGroupCreatePage();
 
-            groupCreate
-                .enterGroupName(groupName)
-                .submitNewGroup();
+            groupCreate.enterGroupName(groupName).enterGroupID(groupID).submitNewGroup();
 
             demoApp.assertOnGroupDetailPage();
 
-            groupDetail
-                .assertGroupName(groupName)
-                .assertGroupMemberSize(1)
-                .addNewMemberID(firstUserID)
-                .submitNewMember()
-                .assertGroupMemberSize(2);
+            groupDetail.assertGroupName(groupName).assertGroupMemberSize(1).addNewMemberID(firstUserID).submitNewMember().assertGroupMemberSize(2);
 
             browser.end();
         });
     },
 
-    'Group admin can remove other users from the group'(browser){
+    "Group admin can remove other users from the group"(browser) {
         const demoApp = browser.page.demoApp();
         const {groupList, groupCreate, groupDetail, commandBar, initializeUser} = demoApp.section;
 
@@ -161,12 +144,11 @@ module.exports = {
             demoApp.switchToGroubTabUI();
 
             const groupName = "nightwatch group";
-            groupList.clickAddNewGroup()
+            const groupID = "nightwatch-group" + Date.now();
+            groupList.clickAddNewGroup();
             demoApp.assertOnGroupCreatePage();
 
-            groupCreate
-                .enterGroupName(groupName)
-                .submitNewGroup();
+            groupCreate.enterGroupName(groupName).enterGroupID(groupID).submitNewGroup();
 
             demoApp.assertOnGroupDetailPage();
 
@@ -176,7 +158,7 @@ module.exports = {
                 .addNewMemberID(firstUserID)
                 .submitNewMember()
                 .assertGroupMemberSize(2)
-                .removeMemberAtPosition(1)
+                .removeMemberAtPosition(1);
 
             //Wait for remove operation to complete before continuing
             browser.pause(350);
