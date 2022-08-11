@@ -1,13 +1,14 @@
 import Future from "futurejs";
 import * as polyfill from "../polyfill";
-import * as Constants from "../../../../../Constants";
 import * as CryptoUtils from "../../CryptoUtils";
+jest.mock("../../../../../Constants", () => ({
+    CryptoConstants: {
+        // reduce the iterations for our tests to save time
+        PBKDF2_ITERATIONS: 500,
+    },
+}));
 
 describe("PBKDF2 polyfill", () => {
-    beforeAll(() => {
-        jest.spyOn(Constants.CryptoConstants, "PBKDF2_ITERATIONS").mockReturnValue(500);
-    });
-
     describe("generatePasswordDerivedKey", () => {
         it("should generate the expected derived key when no salt provided", () => {
             jest.spyOn(CryptoUtils, "generateRandomBytes").mockReturnValue(Future.of<any>(new Uint8Array(32)));
