@@ -69,7 +69,7 @@ module.exports = {
 
         demoApp.assertOnDocumentListPage();
 
-        documentList.expectCountOfTodoLists(1).expectTodoListNameAtPosition(0, docName).expectTodoListHostedAtPosition(0).clickOnNthTodoList(0);
+        documentList.refreshList().expectCountOfTodoLists(1).expectTodoListNameAtPosition(0, docName).expectTodoListHostedAtPosition(0).clickOnNthTodoList(0);
 
         demoApp.assertOnHostedDocumentViewPage();
 

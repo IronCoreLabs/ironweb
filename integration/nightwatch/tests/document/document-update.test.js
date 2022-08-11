@@ -52,9 +52,6 @@ module.exports = {
             .addNewTodoText(secondTodoItem)
             .submitNewTodo()
             .assertHasTodoItemAtIndex(secondTodoItem, 1);
-        // browser.elements("css selector", ".todo-list-item", (elements) => {
-        //     console.log(elements.value);
-        // });
 
         browser.end();
     },

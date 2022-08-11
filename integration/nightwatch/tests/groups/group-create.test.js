@@ -76,6 +76,7 @@ module.exports = {
         demoApp.assertOnGroupListPage();
 
         groupList
+            .refreshList()
             .expectCountOfGroups(1)
             .expectGroupNameAtPosition(0, groupName)
             .expectGroupAdminChipAtPosition(0)
