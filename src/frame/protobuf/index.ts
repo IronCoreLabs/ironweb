@@ -42,5 +42,11 @@ const convertEncryptedMessage = (encryptedPlaintext: PREEncryptedMessage) =>
 export const encodeEdeks = (segmentId: number, documentId: string, userKeys: EncryptedAccessKey[], groupKeys: EncryptedAccessKey[]): Uint8Array => {
     const userDeks = userKeys.map(convertEncryptedAccessKey("userId"));
     const groupDeks = groupKeys.map(convertEncryptedAccessKey("groupId"));
-    return PBEDeks.encode(new PBEDeks({edeks: [...groupDeks, ...userDeks], segmentId, documentId})).finish();
+    const encodedEdeks = PBEDeks.encode(new PBEDeks({edeks: [...groupDeks, ...userDeks], segmentId, documentId})).finish();
+    // This is a workaround for a breaking change in protobuf 7.0.0, https://github.com/protobufjs/protobuf.js/issues/1791
+    if (Buffer) {
+        return new Uint8Array((encodedEdeks as Buffer).buffer);
+    } else {
+        return encodedEdeks;
+    }
 };
