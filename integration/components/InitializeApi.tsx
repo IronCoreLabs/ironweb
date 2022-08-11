@@ -17,7 +17,7 @@ interface InitializeApiState {
 const tabStyle = {
     marginTop: "15px",
     padding: "25px",
-    textAlign: "center" as "center",
+    textAlign: "center" as const,
 };
 
 export default class InitializeApi extends React.Component<InitializeApiProps, InitializeApiState> {

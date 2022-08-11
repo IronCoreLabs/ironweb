@@ -18,7 +18,7 @@ interface DocumentVisibilityProps {
     loadDocumentMetadata(): void;
 }
 
-export default class DocumentVisibility extends React.Component<DocumentVisibilityProps, {}> {
+export default class DocumentVisibility extends React.Component<DocumentVisibilityProps> {
     revokeDocumentAccess(id: string, type: string) {
         const unshareList = {
             [type === "user" ? "users" : "groups"]: [{id}],

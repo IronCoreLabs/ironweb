@@ -27,7 +27,7 @@ class SdkUser {
      * Clear all fields from our internal state. Occurs when we're logging out the current user.
      */
     clearCurrentUser() {
-        let replacement = new SdkUser();
+        const replacement = new SdkUser();
         this.apiUser = replacement.apiUser;
         this.publicUserKey = replacement.publicUserKey;
         this.encryptedPrivateUserKey = replacement.encryptedPrivateUserKey;

@@ -27,8 +27,8 @@ interface TodoAppState {
     selectedList: null | DocumentIDNameResponse;
 }
 
-export default class TodoApp extends React.Component<{}, TodoAppState> {
-    constructor(props: {}) {
+export default class TodoApp extends React.Component<Record<string, never>, TodoAppState> {
+    constructor(props: Record<string, never>) {
         super(props);
         this.state = {
             initComplete: false,

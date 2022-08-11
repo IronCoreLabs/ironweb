@@ -29,4 +29,6 @@ module.exports = {
     testPathIgnorePatterns: ["/node_modules/", "/nightwatch/", "/protobuf/"],
     coveragePathIgnorePatterns: ["EncryptedDeks.js"],
     setupFilesAfterEnv: ["./src/tests/jestSetup.ts"],
+    testEnvironment: "jsdom",
+    testRunner: "jasmine2",
 };

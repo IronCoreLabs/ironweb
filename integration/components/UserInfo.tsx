@@ -37,11 +37,11 @@ interface UserInfoState {
     passcodeError: boolean;
 }
 
-export default class UserInfo extends React.Component<{}, UserInfoState> {
+export default class UserInfo extends React.Component<Record<string, never>, UserInfoState> {
     currentPasscodeInput!: TextField;
     newPasscodeInput!: TextField;
 
-    constructor(props: {}) {
+    constructor(props: Record<string, never>) {
         super(props);
         this.state = {
             showingDialog: false,
