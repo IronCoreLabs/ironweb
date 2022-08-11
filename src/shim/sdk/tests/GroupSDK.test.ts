@@ -5,7 +5,7 @@ import Future from "futurejs";
 
 describe("GroupSDK", () => {
     beforeEach(() => {
-        spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
+        jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
     });
 
     afterEach(() => {

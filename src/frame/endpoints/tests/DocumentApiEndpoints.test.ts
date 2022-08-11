@@ -7,7 +7,7 @@ import DocumentApiEndpoints from "../DocumentApiEndpoints";
 
 describe("DocumentApiEndpoints", () => {
     beforeEach(() => {
-        spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
+        jest.spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
             Future.of({
                 foo: "bar",
             })

@@ -21,7 +21,7 @@ module.exports = {
                 ignoreCodes: [151001],
             },
             //This can be removed once https://github.com/kulshekhar/ts-jest/issues/1471 is released, probably in ts-jest 25.3.0
-            tsConfig: {
+            tsconfig: {
                 outDir: "$$ts-jest$$",
             },
         },

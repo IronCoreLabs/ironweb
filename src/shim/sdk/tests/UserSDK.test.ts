@@ -5,7 +5,7 @@ import * as ShimUtils from "../../ShimUtils";
 
 describe("UserSDK", () => {
     beforeEach(() => {
-        spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
+        jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
     });
 
     afterEach(() => {
@@ -21,7 +21,7 @@ describe("UserSDK", () => {
 
             it("sends deauth request type to frame", (done) => {
                 ShimUtils.setSDKInitialized();
-                spyOn(ShimUtils, "clearParentWindowSymmetricKey");
+                jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
                 UserSDK.deauthorizeDevice()
                     .then((result: any) => {
                         expect(result).toEqual({transformKeyDeleted: "messageResponse"});

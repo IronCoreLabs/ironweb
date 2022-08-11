@@ -118,7 +118,7 @@ describe("FrameMediator", () => {
 
     describe("sendMessage", () => {
         it("passes in payload and optional transfer list to API and responds with result", () => {
-            spyOn(messenger, "postMessageToFrame").and.returnValue(
+            jest.spyOn(messenger, "postMessageToFrame").and.returnValue(
                 Future.of({
                     foo: "bar",
                 })
@@ -133,7 +133,7 @@ describe("FrameMediator", () => {
         });
 
         it("handles error message response types and rejects futures", () => {
-            spyOn(messenger, "postMessageToFrame").and.returnValue(
+            jest.spyOn(messenger, "postMessageToFrame").and.returnValue(
                 Future.of({
                     message: {
                         text: "error",

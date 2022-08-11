@@ -7,8 +7,8 @@ import {CryptoConstants} from "../../../../../Constants";
 describe("AES", () => {
     describe("decryptPrivateKeys", () => {
         it("uses native API if provided derived key is not a byte array", (done) => {
-            spyOn(NativeAes, "decryptUserKey").and.returnValue(Future.of("decrypted keys"));
-            spyOn(PolyfillAes, "decryptUserKey");
+            jest.spyOn(NativeAes, "decryptUserKey").and.returnValue(Future.of("decrypted keys"));
+            jest.spyOn(PolyfillAes, "decryptUserKey");
 
             decryptUserKey(new Uint8Array([]), {key: "CryptoKey", salt: new Uint8Array(32)} as any).engage(
                 () => fail("should not fail to decrypt keys when using native API"),
@@ -21,8 +21,8 @@ describe("AES", () => {
         });
 
         it("uses polyfill if derived key is a byte array", (done) => {
-            spyOn(NativeAes, "decryptUserKey");
-            spyOn(PolyfillAes, "decryptUserKey").and.returnValue(Future.of("polyfill decrypted keys"));
+            jest.spyOn(NativeAes, "decryptUserKey");
+            jest.spyOn(PolyfillAes, "decryptUserKey").and.returnValue(Future.of("polyfill decrypted keys"));
 
             decryptUserKey(new Uint8Array([]), {key: new Uint8Array(32), salt: new Uint8Array(32)}).engage(
                 () => fail("should not fail to decrypt keys when using polyfill API"),
@@ -37,8 +37,8 @@ describe("AES", () => {
 
     describe("encryptUserKey", () => {
         it("uses native API if provided derived key is not a byte array", (done) => {
-            spyOn(NativeAes, "encryptUserKey").and.returnValue(Future.of("encrypted keys"));
-            spyOn(PolyfillAes, "encryptUserKey");
+            jest.spyOn(NativeAes, "encryptUserKey").and.returnValue(Future.of("encrypted keys"));
+            jest.spyOn(PolyfillAes, "encryptUserKey");
 
             encryptUserKey(new Uint8Array([]), {key: "CryptoKey", salt: new Uint8Array(32)} as any).engage(
                 () => fail("should not fail to encrypt keys when using native API"),
@@ -51,8 +51,8 @@ describe("AES", () => {
         });
 
         it("uses polyfill if derived key is a byte array", (done) => {
-            spyOn(NativeAes, "encryptUserKey");
-            spyOn(PolyfillAes, "encryptUserKey").and.returnValue(Future.of("polyfill encrypted keys"));
+            jest.spyOn(NativeAes, "encryptUserKey");
+            jest.spyOn(PolyfillAes, "encryptUserKey").and.returnValue(Future.of("polyfill encrypted keys"));
 
             encryptUserKey(new Uint8Array([]), {key: new Uint8Array(32), salt: new Uint8Array(32)}).engage(
                 () => fail("should not fail to encrypt keys when using polyfill API"),
@@ -67,7 +67,7 @@ describe("AES", () => {
 
     describe("encryptDocument", () => {
         it("uses native API if available", () => {
-            spyOn(NativeAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const document = new Uint8Array(40);
             const docSymKey = new Uint8Array(32);
@@ -82,7 +82,7 @@ describe("AES", () => {
         });
 
         it("uses polyfill API if native is not available", () => {
-            spyOn(PolyfillAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(PolyfillAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const document = new Uint8Array(40);
             const docSymKey = new Uint8Array(32);
@@ -97,8 +97,8 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(NativeAes, "encryptDocument").and.returnValue(Future.reject(new Error("forced failure")));
-            spyOn(PolyfillAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "encryptDocument").and.returnValue(Future.reject(new Error("forced failure")));
+            jest.spyOn(PolyfillAes, "encryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const document = new Uint8Array(40);
             const docSymKey = new Uint8Array(32);
@@ -116,7 +116,7 @@ describe("AES", () => {
 
     describe("decryptDocument", () => {
         it("uses native API if available", () => {
-            spyOn(NativeAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
 
             const doc = new Uint8Array(40);
             const symKey = new Uint8Array(32);
@@ -132,8 +132,8 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(PolyfillAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
-            spyOn(NativeAes, "decryptDocument").and.returnValue(Future.reject(new Error("forced failure")));
+            jest.spyOn(PolyfillAes, "decryptDocument").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "decryptDocument").and.returnValue(Future.reject(new Error("forced failure")));
 
             const doc = new Uint8Array(40);
             const symKey = new Uint8Array(32);
@@ -150,10 +150,10 @@ describe("AES", () => {
         });
 
         it("doesnt try polyfill if native fails because decryption failed", () => {
-            spyOn(PolyfillAes, "decryptDocument");
+            jest.spyOn(PolyfillAes, "decryptDocument");
             const incorrectKeyError = new Error("");
             incorrectKeyError.name = CryptoConstants.NATIVE_DECRYPT_FAILURE_ERROR;
-            spyOn(NativeAes, "decryptDocument").and.returnValue(Future.reject(incorrectKeyError));
+            jest.spyOn(NativeAes, "decryptDocument").and.returnValue(Future.reject(incorrectKeyError));
 
             const doc = new Uint8Array(40);
             const symKey = new Uint8Array(32);
@@ -172,7 +172,7 @@ describe("AES", () => {
 
     describe("encryptDeviceAndSigningKeys", () => {
         it("uses native API if available", () => {
-            spyOn(NativeAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
 
             const deviceKey = new Uint8Array(40);
             const signingKey = new Uint8Array(32);
@@ -187,8 +187,8 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(PolyfillAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
-            spyOn(NativeAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("forced failure")));
+            jest.spyOn(PolyfillAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "encryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("forced failure")));
 
             const deviceKey = new Uint8Array(40);
             const signingKey = new Uint8Array(32);
@@ -197,12 +197,7 @@ describe("AES", () => {
                 () => fail("document decryption should not fail"),
                 (decryptedDoc: any) => {
                     expect(decryptedDoc).toEqual({foo: "bar"});
-                    expect(PolyfillAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(
-                        deviceKey,
-                        signingKey,
-                        expect.any(Uint8Array),
-                        expect.any(Uint8Array)
-                    );
+                    expect(PolyfillAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, expect.any(Uint8Array), expect.any(Uint8Array));
                     expect(NativeAes.encryptDeviceAndSigningKeys).toHaveBeenCalledWith(deviceKey, signingKey, expect.any(Uint8Array), expect.any(Uint8Array));
                 }
             );
@@ -211,7 +206,7 @@ describe("AES", () => {
 
     describe("decryptDeviceAndSigningKeys", () => {
         it("uses native API if available", () => {
-            spyOn(NativeAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
 
             const deviceKey = new Uint8Array(40);
             const signingKey = new Uint8Array(32);
@@ -228,8 +223,8 @@ describe("AES", () => {
         });
 
         it("falls back to polyfill API if native fails", () => {
-            spyOn(PolyfillAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
-            spyOn(NativeAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("forced failure")));
+            jest.spyOn(PolyfillAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.of({foo: "bar"}));
+            jest.spyOn(NativeAes, "decryptDeviceAndSigningKeys").and.returnValue(Future.reject(new Error("forced failure")));
 
             const deviceKey = new Uint8Array(40);
             const signingKey = new Uint8Array(32);

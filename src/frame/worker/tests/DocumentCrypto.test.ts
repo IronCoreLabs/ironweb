@@ -10,8 +10,8 @@ describe("DocumentCrypto", () => {
         it("decrypts document key and then decrypts document", () => {
             const decryptedKey = new Uint8Array(22);
             const plaintext = new Uint8Array(384);
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([plaintext, decryptedKey]));
-            spyOn(AES, "decryptDocument").and.returnValue(Future.of("decrypted document"));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([plaintext, decryptedKey]));
+            jest.spyOn(AES, "decryptDocument").and.returnValue(Future.of("decrypted document"));
 
             const testDoc = TestUtils.getEncryptedDocument();
             const symKey = TestUtils.getTransformedSymmetricKey();
@@ -27,7 +27,7 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failure")));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failure")));
 
             DocumentCrypto.decryptDocument(TestUtils.getEncryptedDocument(), TestUtils.getTransformedSymmetricKey(), new Uint8Array(32)).engage(
                 (error) => {
@@ -53,14 +53,14 @@ describe("DocumentCrypto", () => {
                 },
             ];
 
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
+            jest.spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
                 if (keyList.length) {
                     return Future.of(encryptedUserKeyList);
                 }
                 return Future.of([]);
             });
-            spyOn(AES, "encryptDocument").and.returnValue(
+            jest.spyOn(AES, "encryptDocument").and.returnValue(
                 Future.of({
                     data,
                     dataNonce,
@@ -101,14 +101,14 @@ describe("DocumentCrypto", () => {
                 },
             ];
 
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
+            jest.spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
                 if (keyList.length) {
                     return Future.of(encryptedGroupKeyList);
                 }
                 return Future.of([]);
             });
-            spyOn(AES, "encryptDocument").and.returnValue(
+            jest.spyOn(AES, "encryptDocument").and.returnValue(
                 Future.of({
                     data,
                     dataNonce,
@@ -148,14 +148,14 @@ describe("DocumentCrypto", () => {
                 {publicKey: "secondGroupPK", encryptedSymmetricKey: "secoGroupESK"},
             ];
 
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
+            jest.spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
                 if (keyList.length === 1) {
                     return Future.of(encryptedUserKeyList);
                 }
                 return Future.of(encryptedGroupKeyList);
             });
-            spyOn(AES, "encryptDocument").and.returnValue(
+            jest.spyOn(AES, "encryptDocument").and.returnValue(
                 Future.of({
                     data,
                     dataNonce,
@@ -188,7 +188,7 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.reject(new Error("generate doc key failure")));
+            jest.spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.reject(new Error("generate doc key failure")));
 
             DocumentCrypto.encryptDocument(new Uint8Array(35), [], [], TestUtils.getSigningKeyPair()).engage(
                 (error) => {
@@ -209,8 +209,8 @@ describe("DocumentCrypto", () => {
                 dataNonce: new Uint8Array(12),
             };
 
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([plaintext, decryptKey]));
-            spyOn(AES, "encryptDocument").and.returnValue(Future.of(decryptResult));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([plaintext, decryptKey]));
+            jest.spyOn(AES, "encryptDocument").and.returnValue(Future.of(decryptResult));
 
             const symKey = TestUtils.getTransformedSymmetricKey();
             const newData = new Uint8Array(35);
@@ -227,7 +227,7 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decrypt failure")));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decrypt failure")));
             DocumentCrypto.reEncryptDocument(new Uint8Array(35), TestUtils.getTransformedSymmetricKey(), new Uint8Array(32)).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decrypt failure");
@@ -253,8 +253,8 @@ describe("DocumentCrypto", () => {
                 },
             ];
 
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([decryptPlaintext, decryptKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.returnValue(Future.of(EncryptedAccessKeyList));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([decryptPlaintext, decryptKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").and.returnValue(Future.of(EncryptedAccessKeyList));
 
             const userList = [
                 {id: "abc-123", masterPublicKey: {x: "", y: ""}},
@@ -279,7 +279,7 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decrypt failure")));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decrypt failure")));
             DocumentCrypto.encryptToKeys(TestUtils.getTransformedSymmetricKey(), [], [], new Uint8Array(32), TestUtils.getSigningKeyPair()).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decrypt failure");

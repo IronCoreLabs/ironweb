@@ -5,12 +5,12 @@ import * as CryptoUtils from "../../CryptoUtils";
 
 describe("PBKDF2 polyfill", () => {
     beforeAll(() => {
-        spyOn(Constants.CryptoConstants, "PBKDF2_ITERATIONS").and.returnValue(500);
+        jest.spyOn(Constants.CryptoConstants, "PBKDF2_ITERATIONS").and.returnValue(500);
     });
 
     describe("generatePasswordDerivedKey", () => {
         it("should generate the expected derived key when no salt provided", () => {
-            spyOn(CryptoUtils, "generateRandomBytes").and.returnValue(Future.of(new Uint8Array(32)));
+            jest.spyOn(CryptoUtils, "generateRandomBytes").and.returnValue(Future.of(new Uint8Array(32)));
 
             polyfill.generatePasswordDerivedKey("password").engage(
                 (e) => fail(e),

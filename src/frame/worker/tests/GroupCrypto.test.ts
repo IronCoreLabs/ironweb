@@ -117,7 +117,7 @@ describe("GroupCrypto", () => {
             const adminPrivateKey = new Uint8Array(23);
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
 
             GroupCrypto.rotatePrivateKey(groupPrivateKey, adminList, adminPrivateKey, signingKeys).engage(
                 (error) => {
@@ -154,7 +154,7 @@ describe("GroupCrypto", () => {
 
         it("maps errors to SDKError with expected error code", () => {
             const groupPublicKey = TestUtils.getEmptyPublicKeyString();
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
 
             const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const adminPrivateKey = new Uint8Array(20);
@@ -197,7 +197,7 @@ describe("GroupCrypto", () => {
         });
 
         it("maps errors to SDKError with specific error code", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
+            jest.spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failed")));
 
             const groupPrivateKey = TestUtils.getTransformedSymmetricKey();
             const adminPrivateKey = new Uint8Array(20);

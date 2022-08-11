@@ -47,10 +47,10 @@ describe("DocumentAdvancedApi", () => {
             const decryptedBytes = new Uint8Array([36, 89, 72]);
             const edeks = new Uint8Array([22, 33, 44]);
 
-            spyOn(EncryptedDekEndpoints, "callEncryptedDekTransformApi").and.returnValue(
+            jest.spyOn(EncryptedDekEndpoints, "callEncryptedDekTransformApi").and.returnValue(
                 Future.of({encryptedSymmetricKey: TestUtils.getTransformedSymmetricKey()})
             );
-            spyOn(DocumentOperations, "decryptDocument").and.returnValue(Future.of(decryptedBytes));
+            jest.spyOn(DocumentOperations, "decryptDocument").and.returnValue(Future.of(decryptedBytes));
 
             DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
                 (e) => fail(e.message),
@@ -71,17 +71,17 @@ describe("DocumentAdvancedApi", () => {
             ];
             const returnedGroupKeys = [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}];
 
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
                 Future.of({
                     result: returnedUserKeys,
                 })
             );
-            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
                 Future.of({
                     result: returnedGroupKeys,
                 })
             );
-            spyOn(PolicyApiEndpoints, "callApplyPolicyApi").and.returnValue(
+            jest.spyOn(PolicyApiEndpoints, "callApplyPolicyApi").and.returnValue(
                 Future.of({
                     usersAndGroups: [
                         {id: "group-policy", type: "group", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
@@ -90,7 +90,7 @@ describe("DocumentAdvancedApi", () => {
                     invalidUsersAndGroups: [],
                 })
             );
-            spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
+            jest.spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
                 Future.of({
                     userAccessKeys: [{id: "user-10", encryptedPlaintext: encryptedSymKey, publicKey: TestUtils.getEmptyPublicKeyString()}],
                     groupAccessKeys: [{id: "group-10", encryptedPlaintext: encryptedSymKey, publicKey: TestUtils.getEmptyPublicKeyString()}],

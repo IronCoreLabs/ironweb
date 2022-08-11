@@ -6,8 +6,8 @@ import UserApiEndpoints from "../UserApiEndpoints";
 
 describe("UserApiEndpoints", () => {
     beforeEach(() => {
-        spyOn(ApiRequest, "makeAuthorizedApiRequest");
-        spyOn(ApiRequest, "makeJwtApiRequest");
+        jest.spyOn(ApiRequest, "makeAuthorizedApiRequest");
+        jest.spyOn(ApiRequest, "makeJwtApiRequest");
     });
 
     describe("callUserVerifyApi", () => {

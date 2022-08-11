@@ -3,7 +3,7 @@ import FrameMessenger from "../FrameMessenger";
 describe("FrameMessenger", () => {
     describe("constructor", () => {
         it("adds event listener from parent frame", () => {
-            spyOn(window, "addEventListener");
+            jest.spyOn(window, "addEventListener");
             new FrameMessenger(() => null);
 
             expect(window.addEventListener).toHaveBeenCalledWith("message", expect.any(Function));
@@ -12,7 +12,7 @@ describe("FrameMessenger", () => {
 
     describe("setupMessagePort", () => {
         it("does nothing if message isnt what we expect", () => {
-            spyOn(window, "removeEventListener");
+            jest.spyOn(window, "removeEventListener");
 
             const messenger = new FrameMessenger(() => null);
 
@@ -24,7 +24,7 @@ describe("FrameMessenger", () => {
         });
 
         it("gets port, starts it up and clears window message event", () => {
-            spyOn(window, "removeEventListener");
+            jest.spyOn(window, "removeEventListener");
             const fauxPort = {
                 start: jasmine.createSpy("start"),
                 addEventListener: jasmine.createSpy("addEventListener"),

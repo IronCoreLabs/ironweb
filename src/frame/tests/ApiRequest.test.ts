@@ -15,8 +15,8 @@ describe("ApiRequest", () => {
 
     describe("getRequestSignature", () => {
         it("sends message to worker and maps response to auth header string", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(
-                Future.of({
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
                     message: {
                         userContextHeader: "context",
                         requestHeaderSignature: "sig1",
@@ -52,7 +52,7 @@ describe("ApiRequest", () => {
     describe("fetchJson", () => {
         beforeAll(() => {
             if (typeof window.fetch === "function") {
-                spyOn(window, "fetch");
+                jest.spyOn(window, "fetch");
             } else {
                 window.fetch = jasmine.createSpy("fetch");
             }
@@ -220,7 +220,7 @@ describe("ApiRequest", () => {
 
     describe("makeAuthorizedApiRequest", () => {
         it("calculates custom header signaturtes and auth signature", (done) => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(
                 Future.of({
                     message: {
                         userContextHeader: "context",

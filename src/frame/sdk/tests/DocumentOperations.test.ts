@@ -6,7 +6,7 @@ import * as TestUtils from "../../../tests/TestUtils";
 describe("DocumentOperations", () => {
     describe("decryptDocument", () => {
         it("decrypts document key and then decrypts document", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: {decryptedDocument: "decrypted doc"}}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: {decryptedDocument: "decrypted doc"}}));
 
             const testDoc = TestUtils.getEncryptedDocument();
             const symKey = TestUtils.getTransformedSymmetricKey();
@@ -45,7 +45,7 @@ describe("DocumentOperations", () => {
             ];
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(
                 Future.of({
                     message: {
                         encryptedSymmetricKey: "encryptedSymKey",
@@ -86,7 +86,7 @@ describe("DocumentOperations", () => {
             const newData = new Uint8Array(35);
             const privKey = new Uint8Array(32);
 
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: {encryptedDocument: "encrypted doc"}}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: {encryptedDocument: "encrypted doc"}}));
 
             DocumentOperations.reEncryptDocument(newData, symKey, privKey).engage(
                 (e) => fail(e),
@@ -112,11 +112,14 @@ describe("DocumentOperations", () => {
         it("encrypts new list of symmetric keys and calls document grant endpoint", () => {
             const symKey = TestUtils.getTransformedSymmetricKey();
             const privKey = new Uint8Array(32);
-            const userList = [{id: "abc-123", masterPublicKey: {x: "", y: ""}}, {id: "def-456", masterPublicKey: {x: "", y: ""}}];
+            const userList = [
+                {id: "abc-123", masterPublicKey: {x: "", y: ""}},
+                {id: "def-456", masterPublicKey: {x: "", y: ""}},
+            ];
             const groupList = [{id: "group-35", masterPublicKey: {x: "", y: ""}}];
             const signingKeys = TestUtils.getSigningKeyPair();
 
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "list of keys"}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "list of keys"}));
 
             DocumentOperations.encryptDocumentToKeys(symKey, userList, groupList, privKey, signingKeys).engage(
                 (e) => fail(e),

@@ -92,7 +92,7 @@ describe("SearchApi", () => {
                     accessVia: {type: "group", id: "mySearchIndexGroup"},
                 })
             );
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "tokenized data"}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "tokenized data"}));
 
             SearchApi.initializeBlindSearchIndex(new Uint8Array([33]), new Uint8Array([32]))
                 .flatMap((searchIndexId) => SearchApi.tokenizeData(searchIndexId, "search data", "partition"))
@@ -132,7 +132,7 @@ describe("SearchApi", () => {
                     accessVia: {type: "group", id: "mySearchIndexGroup"},
                 })
             );
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "tokenized query"}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "tokenized query"}));
 
             SearchApi.initializeBlindSearchIndex(new Uint8Array([33]), new Uint8Array([32]))
                 .flatMap((searchIndexId) => SearchApi.tokenizeQuery(searchIndexId, "search query", "partition"))
@@ -156,7 +156,7 @@ describe("SearchApi", () => {
 
     describe("transliterateString", () => {
         it("sends message to frame to transliterate string", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "transliterated string"}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "transliterated string"}));
 
             SearchApi.transliterateString("my string").engage(
                 (e) => fail(e),

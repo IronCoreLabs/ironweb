@@ -90,8 +90,8 @@ describe("RecryptWasm", () => {
 
     describe("generatePasswordDerivedKey", () => {
         it("should generate random bytes and use WebCrypto pbkdf2", () => {
-            spyOn(nativePBKDF2, "generatePasscodeDerivedKey").and.returnValue(Future.of("derivedKey"));
-            spyOn(CryptoUtils, "getCryptoSubtleApi").and.returnValue(true);
+            jest.spyOn(nativePBKDF2, "generatePasscodeDerivedKey").and.returnValue(Future.of("derivedKey"));
+            jest.spyOn(CryptoUtils, "getCryptoSubtleApi").and.returnValue(true);
 
             Recrypt.generatePasswordDerivedKey("password", new Uint8Array(32)).engage(
                 (e) => e,
@@ -426,7 +426,7 @@ describe("RecryptWasm", () => {
         it("returns comma list of items and calculates two signatures", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
-            spyOn(Date, "now").and.returnValue(123456);
+            jest.spyOn(Date, "now").and.returnValue(123456);
             const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "get", "/path/to/resource", "bodyparts");
             expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
             expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
@@ -441,7 +441,7 @@ describe("RecryptWasm", () => {
         it("uses an empty byte array when body is empty", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
-            spyOn(Date, "now").and.returnValue(123456);
+            jest.spyOn(Date, "now").and.returnValue(123456);
             const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "POST", "/path/to/resource", null);
             expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
             expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
@@ -456,7 +456,7 @@ describe("RecryptWasm", () => {
         it("uses existing Uint8Array when body is set as one", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
-            spyOn(Date, "now").and.returnValue(123456);
+            jest.spyOn(Date, "now").and.returnValue(123456);
             const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "GET", "/path/to/resource", new Uint8Array([9, 9, 9, 9]));
             expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
             expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
@@ -472,7 +472,7 @@ describe("RecryptWasm", () => {
     describe("generateDeviceAddSignature", () => {
         it("generates the expected signature", (done) => {
             const fixedTS = 1234567890123;
-            spyOn(Date, "now").and.returnValue(fixedTS);
+            jest.spyOn(Date, "now").and.returnValue(fixedTS);
 
             Recrypt.generateDeviceAddSignature("jwt", TestUtils.getEmptyKeyPair(), TestUtils.getTransformKey()).engage(
                 (e) => fail(e.message),

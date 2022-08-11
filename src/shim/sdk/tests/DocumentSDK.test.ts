@@ -9,7 +9,7 @@ import * as DocumentSDK from "../DocumentSDK";
 
 describe("DocumentSDK", () => {
     beforeEach(() => {
-        spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
+        jest.spyOn(FrameMediator, "sendMessage").and.returnValue(Future.of({message: "messageResponse"}));
     });
 
     afterEach(() => {

@@ -18,13 +18,13 @@ describe("ShimUtils", () => {
         });
 
         it("does not set any local storage key if not key provided", () => {
-            spyOn(Storage.prototype, "setItem");
+            jest.spyOn(Storage.prototype, "setItem");
             ShimUtils.storeParentWindowSymmetricKey();
             expect(localStorage.setItem).not.toHaveBeenCalled();
         });
 
         it("sets value with expected key", () => {
-            spyOn(Storage.prototype, "setItem");
+            jest.spyOn(Storage.prototype, "setItem");
             ShimUtils.storeParentWindowSymmetricKey("symKey");
             expect(localStorage.setItem).toHaveBeenCalledWith("1-icldassk", "symKey");
         });
@@ -40,7 +40,7 @@ describe("ShimUtils", () => {
         });
 
         it("returns undefined if local storage throws exception", () => {
-            spyOn(Storage.prototype, "getItem").and.throwError("No access");
+            jest.spyOn(Storage.prototype, "getItem").and.throwError("No access");
             expect(ShimUtils.getParentWindowSymmetricKey()).toBeUndefined();
         });
 

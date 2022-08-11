@@ -9,7 +9,7 @@ describe("CryptoUtils", () => {
 
     describe("generateRandomBytes", () => {
         it("returns random bytes without calling back to main window", (done) => {
-            spyOn(window, "postMessage");
+            jest.spyOn(window, "postMessage");
 
             CryptoUtils.generateRandomBytes(12).engage(
                 (e) => fail(e),

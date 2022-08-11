@@ -9,7 +9,7 @@ import {fromByteArray} from "base64-js";
 describe("worker index", () => {
     describe("ParentThreadMessenger", () => {
         it("posts proper worker message to parent window", () => {
-            spyOn(window, "postMessage");
+            jest.spyOn(window, "postMessage");
 
             messenger.postMessageToParent({foo: "bar"} as any, 10);
 
@@ -23,7 +23,7 @@ describe("worker index", () => {
         });
 
         it("converts byte arrays to array buffers in transfer list", () => {
-            spyOn(window, "postMessage");
+            jest.spyOn(window, "postMessage");
             const bytes = new Uint8Array(3);
 
             messenger.postMessageToParent({foo: "bar"} as any, 10, [bytes]);
@@ -38,9 +38,9 @@ describe("worker index", () => {
         });
 
         it("invokes message callback with event data when processing", () => {
-            spyOn(window, "postMessage");
+            jest.spyOn(window, "postMessage");
             const bytes = new Uint8Array(3);
-            spyOn(messenger, "onMessageCallback");
+            jest.spyOn(messenger, "onMessageCallback");
 
             messenger.processMessageIntoWorker({data: {data: {foo: "bar"}, replyID: 38}} as MessageEvent);
 
@@ -60,7 +60,7 @@ describe("worker index", () => {
 
     describe("user crypto tests", () => {
         it("USER_DEVICE_KEYGEN", (done) => {
-            spyOn(UserCrypto, "generateDeviceAndSigningKeys").and.returnValue(Future.of("new keys"));
+            jest.spyOn(UserCrypto, "generateDeviceAndSigningKeys").and.returnValue(Future.of("new keys"));
             const payload: any = {
                 type: "USER_DEVICE_KEYGEN",
                 message: {
@@ -82,7 +82,7 @@ describe("worker index", () => {
         });
 
         it("NEW_USER_KEYGEN", (done) => {
-            spyOn(UserCrypto, "generateNewUserKeys").and.returnValue(Future.of("new keys"));
+            jest.spyOn(UserCrypto, "generateNewUserKeys").and.returnValue(Future.of("new keys"));
             const payload: any = {
                 type: "NEW_USER_KEYGEN",
                 message: {
@@ -98,7 +98,7 @@ describe("worker index", () => {
         });
 
         it("NEW_USER_AND_DEVICE_KEYGEN", (done) => {
-            spyOn(UserCrypto, "generateNewUserAndDeviceKeys").and.returnValue(Future.of("new keys"));
+            jest.spyOn(UserCrypto, "generateNewUserAndDeviceKeys").and.returnValue(Future.of("new keys"));
             const payload: any = {
                 type: "NEW_USER_AND_DEVICE_KEYGEN",
                 message: {
@@ -114,7 +114,7 @@ describe("worker index", () => {
         });
 
         it("DECRYPT_LOCAL_KEYS", (done) => {
-            spyOn(UserCrypto, "decryptDeviceAndSigningKeys").and.returnValue(Future.of("decrypted keys"));
+            jest.spyOn(UserCrypto, "decryptDeviceAndSigningKeys").and.returnValue(Future.of("decrypted keys"));
             const payload: any = {
                 type: "DECRYPT_LOCAL_KEYS",
                 message: {
@@ -133,7 +133,7 @@ describe("worker index", () => {
         });
 
         it("ROTATE_USER_PRIVATE_KEY", (done) => {
-            spyOn(UserCrypto, "rotatePrivateKey").and.returnValue(Future.of("rotated user key"));
+            jest.spyOn(UserCrypto, "rotatePrivateKey").and.returnValue(Future.of("rotated user key"));
             const payload: any = {
                 type: "ROTATE_USER_PRIVATE_KEY",
                 message: {passcode: "passcode", encryptedPrivateUserKey: "encryptedPrivateUserKey"},
@@ -146,7 +146,7 @@ describe("worker index", () => {
         });
 
         it("CHANGE_USER_PASSCODE", (done) => {
-            spyOn(UserCrypto, "changeUsersPasscode").and.returnValue(Future.of("new encrypted private key"));
+            jest.spyOn(UserCrypto, "changeUsersPasscode").and.returnValue(Future.of("new encrypted private key"));
             const payload: any = {
                 type: "CHANGE_USER_PASSCODE",
                 message: {
@@ -165,7 +165,7 @@ describe("worker index", () => {
         });
 
         it("SIGNATURE_GENERATION", (done) => {
-            spyOn(UserCrypto, "signRequestPayload").and.returnValue("signature");
+            jest.spyOn(UserCrypto, "signRequestPayload").and.returnValue("signature");
             const payload: any = {
                 type: "SIGNATURE_GENERATION",
                 message: {
@@ -199,7 +199,7 @@ describe("worker index", () => {
                     content: new Uint8Array(3),
                 },
             };
-            spyOn(DocumentCrypto, "encryptDocument").and.returnValue(Future.of(encryptedDoc));
+            jest.spyOn(DocumentCrypto, "encryptDocument").and.returnValue(Future.of(encryptedDoc));
 
             const payload: any = {
                 type: "DOCUMENT_ENCRYPT",
@@ -221,7 +221,7 @@ describe("worker index", () => {
         });
 
         it("DOCUMENT_DECRYPT", (done) => {
-            spyOn(DocumentCrypto, "decryptDocument").and.returnValue(Future.of("decrypted doc"));
+            jest.spyOn(DocumentCrypto, "decryptDocument").and.returnValue(Future.of("decrypted doc"));
 
             const payload: any = {
                 type: "DOCUMENT_DECRYPT",
@@ -245,7 +245,7 @@ describe("worker index", () => {
             const encryptedDoc = {
                 content: "encrypted doc content",
             };
-            spyOn(DocumentCrypto, "reEncryptDocument").and.returnValue(Future.of(encryptedDoc));
+            jest.spyOn(DocumentCrypto, "reEncryptDocument").and.returnValue(Future.of(encryptedDoc));
 
             const payload: any = {
                 type: "DOCUMENT_REENCRYPT",
@@ -266,7 +266,7 @@ describe("worker index", () => {
         });
 
         it("DOCUMENT_ENCRYPT_TO_KEYS", (done) => {
-            spyOn(DocumentCrypto, "encryptToKeys").and.returnValue(Future.of("key list"));
+            jest.spyOn(DocumentCrypto, "encryptToKeys").and.returnValue(Future.of("key list"));
 
             const payload: any = {
                 type: "DOCUMENT_ENCRYPT_TO_KEYS",
@@ -333,7 +333,7 @@ describe("worker index", () => {
         });
 
         it("GROUP_ADD_ADMINS", (done) => {
-            spyOn(GroupCrypto, "addAdminsToGroup").and.returnValue(Future.of("added admins"));
+            jest.spyOn(GroupCrypto, "addAdminsToGroup").and.returnValue(Future.of("added admins"));
 
             const payload: any = {
                 type: "GROUP_ADD_ADMINS",
@@ -365,7 +365,7 @@ describe("worker index", () => {
         });
 
         it("GROUP_ADD_MEMBERS", (done) => {
-            spyOn(GroupCrypto, "addMembersToGroup").and.returnValue(Future.of("added members"));
+            jest.spyOn(GroupCrypto, "addMembersToGroup").and.returnValue(Future.of("added members"));
 
             const payload: any = {
                 type: "GROUP_ADD_MEMBERS",
@@ -399,7 +399,7 @@ describe("worker index", () => {
 
     describe("error message handling", () => {
         it("returns error response with formatted code and message", (done) => {
-            spyOn(DocumentCrypto, "encryptToKeys").and.returnValue(Future.reject(new SDKError(new Error("invalid"), 34)));
+            jest.spyOn(DocumentCrypto, "encryptToKeys").and.returnValue(Future.reject(new SDKError(new Error("invalid"), 34)));
             const payload: any = {
                 type: "DOCUMENT_ENCRYPT_TO_KEYS",
                 message: {

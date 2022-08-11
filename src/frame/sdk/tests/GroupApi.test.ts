@@ -10,7 +10,7 @@ import {ErrorCodes} from "../../../Constants";
 describe("GroupApi", () => {
     describe("list", () => {
         it("requests group list from API and maps over result", () => {
-            spyOn(GroupApiEndpoints, "callGroupListApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupListApi").and.returnValue(
                 Future.of({
                     result: [
                         {
@@ -65,7 +65,7 @@ describe("GroupApi", () => {
 
     describe("get", () => {
         it("requests get endpoint for specific ID and maps response", () => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({
                     groupPublicKey: "bar",
                     name: "private group",
@@ -100,7 +100,7 @@ describe("GroupApi", () => {
         });
 
         it("returns partial response if only meta info is returned", () => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({
                     groupPublicKey: "bar",
                     name: "private group",
@@ -360,7 +360,7 @@ describe("GroupApi", () => {
 
     describe("update", () => {
         it("makes request to API and maps result to expected object", () => {
-            spyOn(GroupApiEndpoints, "callGroupUpdateApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupUpdateApi").and.returnValue(
                 Future.of({
                     id: "88",
                     name: "new name",
@@ -396,7 +396,7 @@ describe("GroupApi", () => {
             ];
             const signature = new Uint8Array(32);
 
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({
                     groupMasterPublicKey: {x: "12", y: "23"},
                     groupID: "32",
@@ -405,11 +405,11 @@ describe("GroupApi", () => {
                     adminIds: ["id1"],
                 })
             );
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
+            jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(
                 Future.of({encryptedAccessKey: ["encryptedAccessKey1", "encryptedAccessKey2"], signature})
             );
-            spyOn(GroupApiEndpoints, "callAddAdminsApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callAddAdminsApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "user1"}, {userId: "user2"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
@@ -443,11 +443,11 @@ describe("GroupApi", () => {
         });
 
         it("returns list of failures when no users entered exist", () => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"]})
             );
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
-            spyOn(GroupOperations, "encryptGroupPrivateKeyToList");
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
+            jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList");
 
             GroupApi.addAdmins("33", ["user1", "user2"]).engage(
                 (e) => fail(e.message),
@@ -468,8 +468,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response doesnt return an encrypted private key, indicating the user is not a group admin", () => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "33", permissions: []}));
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "33", permissions: []}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
 
             GroupApi.addAdmins("33", ["user1", "user2"]).engage(
                 (e) => {
@@ -481,8 +481,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response only says the current user is a member and not an admin", () => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "61", permissions: ["user"]}));
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "61", permissions: ["user"]}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
 
             GroupApi.addAdmins("61", ["user1", "user2"]).engage(
                 (e) => {
@@ -499,12 +499,12 @@ describe("GroupApi", () => {
                 {id: "id2", userMasterPublicKey: {x: "key2"}},
             ];
 
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
             );
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(Future.of(["encryptedAccessKey1", "encryptedAccessKey2"]));
-            spyOn(GroupApiEndpoints, "callAddAdminsApi").and.returnValue(
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
+            jest.spyOn(GroupOperations, "encryptGroupPrivateKeyToList").and.returnValue(Future.of(["encryptedAccessKey1", "encryptedAccessKey2"]));
+            jest.spyOn(GroupApiEndpoints, "callAddAdminsApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "id1"}, {userId: "id2"}],
                     failedIds: [{userId: "id3", errorMessage: "does not exist"}],
@@ -528,7 +528,7 @@ describe("GroupApi", () => {
 
     describe("removeAdmins", () => {
         it("invokes group admin remove API and maps result correctly", () => {
-            spyOn(GroupApiEndpoints, "callRemoveAdminsApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callRemoveAdminsApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "88"}, {userId: "13"}],
                     failedIds: [
@@ -553,7 +553,7 @@ describe("GroupApi", () => {
         });
 
         it("includes list of users in failures if the arent included in response", () => {
-            spyOn(GroupApiEndpoints, "callRemoveAdminsApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callRemoveAdminsApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "88"}],
                     failedIds: [
@@ -589,7 +589,7 @@ describe("GroupApi", () => {
             ];
             const signature = new Uint8Array(32);
 
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({
                     groupID: "32",
                     encryptedPrivateKey: "encryptedPrivKey",
@@ -598,14 +598,14 @@ describe("GroupApi", () => {
                     adminIds: ["id1"],
                 })
             );
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            spyOn(GroupApiEndpoints, "callAddMembersApi").and.returnValue(
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
+            jest.spyOn(GroupApiEndpoints, "callAddMembersApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "user1"}, {userId: "user2"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
             );
-            spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(
+            jest.spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(
                 Future.of({transformKeyGrant: ["transformKey1", "transformKey2"], signature})
             );
 
@@ -638,11 +638,11 @@ describe("GroupApi", () => {
         });
 
         it("fails fast if none of the requested members exist", (done) => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"]})
             );
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
-            spyOn(GroupOperations, "generateGroupTransformKeyToList");
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: []}));
+            jest.spyOn(GroupOperations, "generateGroupTransformKeyToList");
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => fail(e),
@@ -664,8 +664,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response doesnt return an encrypted private key, indicating the user is not a group admin", () => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "32", permissions: []}));
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "32", permissions: []}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => {
@@ -677,8 +677,8 @@ describe("GroupApi", () => {
         });
 
         it("fails if the group get response only indicates that the user is a member and not an admin", () => {
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "32", permissions: ["user"]}));
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(Future.of({groupID: "32", permissions: ["user"]}));
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: ["key1", "key2"]}));
 
             GroupApi.addMembers("61", ["user1", "user2"]).engage(
                 (e) => {
@@ -695,17 +695,17 @@ describe("GroupApi", () => {
                 {id: "id2", userMasterPublicKey: {x: "key2"}},
             ];
 
-            spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callGroupGetApi").and.returnValue(
                 Future.of({groupID: "32", encryptedPrivateKey: "encryptedPrivKey", permissions: ["admin", "member"], adminIds: ["id1"]})
             );
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
-            spyOn(GroupApiEndpoints, "callAddMembersApi").and.returnValue(
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(Future.of({result: userKeys}));
+            jest.spyOn(GroupApiEndpoints, "callAddMembersApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "user1"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
                 })
             );
-            spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(Future.of(["transformKey1", "transformKey2"]));
+            jest.spyOn(GroupOperations, "generateGroupTransformKeyToList").and.returnValue(Future.of(["transformKey1", "transformKey2"]));
 
             GroupApi.addMembers("61", ["user1", "user2", "12"]).engage(
                 (e) => fail(e),
@@ -724,7 +724,7 @@ describe("GroupApi", () => {
 
     describe("removeMembers", () => {
         it("invokes API with list and maps result correctly", (done) => {
-            spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "user1"}, {userId: "user2"}],
                     failedIds: [{userId: "12", errorMessage: "does not exist"}],
@@ -746,7 +746,7 @@ describe("GroupApi", () => {
         });
 
         it("includes list of users in failures if the arent included in response", () => {
-            spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "88"}],
                     failedIds: [
@@ -775,7 +775,7 @@ describe("GroupApi", () => {
     describe("removeSelfAsMember", () => {
         it("invokes API with current user and maps result correctly", (done) => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
-            spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
                 Future.of({
                     succeededIds: [{userId: "user-10"}],
                     failedIds: [],
@@ -795,7 +795,7 @@ describe("GroupApi", () => {
 
         it("returns expected error code if group remove API returns any failure results", (done) => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
-            spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
+            jest.spyOn(GroupApiEndpoints, "callRemoveMembersApi").and.returnValue(
                 Future.of({
                     succeededIds: [],
                     failedIds: [{userId: "user-10", error: "failed"}],
@@ -814,7 +814,7 @@ describe("GroupApi", () => {
 
     describe("deleteGroup", () => {
         it("invokes API to delete the group", (done) => {
-            spyOn(GroupApiEndpoints, "callGroupDeleteApi").and.returnValue(Future.of({id: "3325"}));
+            jest.spyOn(GroupApiEndpoints, "callGroupDeleteApi").and.returnValue(Future.of({id: "3325"}));
 
             GroupApi.deleteGroup("3325").engage(
                 (e) => fail(e),

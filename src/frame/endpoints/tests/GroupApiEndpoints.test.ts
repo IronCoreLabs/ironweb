@@ -7,7 +7,7 @@ import GroupApiEndpoints from "../GroupApiEndpoints";
 describe("GroupApiEndpoints", () => {
     var apiSpy: jasmine.Spy;
     beforeEach(() => {
-        apiSpy = spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
+        apiSpy = jest.spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
             Future.of({
                 foo: "bar",
             })

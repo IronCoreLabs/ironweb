@@ -6,7 +6,7 @@ import * as TestUtils from "../../../tests/TestUtils";
 describe("GroupOperations", () => {
     describe("groupCreate", () => {
         it("sends worker message to create group", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "new group"}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "new group"}));
             const signingKeys = TestUtils.getSigningKeyPair();
 
             GroupOperations.groupCreate(signingKeys, [], []).engage(
@@ -60,7 +60,7 @@ describe("GroupOperations", () => {
 
     describe("encryptGroupPrivateKeyToList", () => {
         it("sends message to worker to encrypt group encrypte private key to list", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "encrypted user keys"}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "encrypted user keys"}));
             const userPrivateKey = new Uint8Array(32);
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const encryptedGroupPrivateKey = TestUtils.getTransformedSymmetricKey();
@@ -90,7 +90,7 @@ describe("GroupOperations", () => {
 
     describe("generateGroupTransformKeyToList", () => {
         it("sends message to worker to generate transform key to list", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "transformed user keys"}));
+            jest.spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "transformed user keys"}));
             const userPrivateKey = new Uint8Array(32);
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const encryptedGroupPrivateKey = TestUtils.getTransformedSymmetricKey();

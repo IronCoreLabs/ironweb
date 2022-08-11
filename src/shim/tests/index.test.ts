@@ -22,7 +22,7 @@ describe("Init exposed public SDK", () => {
         });
 
         it("calls init api with argument", () => {
-            spyOn(Init, "initialize");
+            jest.spyOn(Init, "initialize");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = () => Promise.resolve("pass");
@@ -36,7 +36,7 @@ describe("Init exposed public SDK", () => {
             const origRandomValues = window.crypto.getRandomValues;
             (window.crypto as any).getRandomValues = null;
 
-            spyOn(Init, "initialize");
+            jest.spyOn(Init, "initialize");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = () => Promise.resolve("pass");
@@ -62,7 +62,7 @@ describe("Init exposed public SDK", () => {
         });
 
         it("calls init api with argument", () => {
-            spyOn(Init, "createNewUser");
+            jest.spyOn(Init, "createNewUser");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
@@ -76,7 +76,7 @@ describe("Init exposed public SDK", () => {
             const origRandomValues = window.crypto.getRandomValues;
             (window.crypto as any).getRandomValues = null;
 
-            spyOn(Init, "createNewUser");
+            jest.spyOn(Init, "createNewUser");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
@@ -105,7 +105,7 @@ describe("Init exposed public SDK", () => {
             const origRandomValues = window.crypto.getRandomValues;
             (window.crypto as any).getRandomValues = null;
 
-            spyOn(Init, "createUserDeviceKeys");
+            jest.spyOn(Init, "createUserDeviceKeys");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
@@ -122,7 +122,7 @@ describe("Init exposed public SDK", () => {
         });
 
         it("calls init api with argument", () => {
-            spyOn(Init, "createUserDeviceKeys");
+            jest.spyOn(Init, "createUserDeviceKeys");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
