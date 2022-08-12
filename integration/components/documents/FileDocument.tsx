@@ -9,7 +9,7 @@ interface FileDocumentProps {
     fileName: string;
 }
 
-export default class FileDocument extends React.Component<FileDocumentProps, {}> {
+export default class FileDocument extends React.Component<FileDocumentProps> {
     getImageDocumentMarkup() {
         return <img src={`data:${this.props.mimeType};base64, ${this.props.content}`} style={{maxWidth: "100%", maxHeight: "100%"}} />;
     }

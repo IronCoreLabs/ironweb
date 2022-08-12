@@ -19,14 +19,16 @@ describe("init index", () => {
 
     describe("initialize", () => {
         it("sets user on state with verify response when users exists", (done) => {
-            spyOn(InitializationApi, "initializeApi").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
+                Future.of<any>({
                     user: TestUtils.getFullUser(),
                 })
             );
 
             Init.initialize("jwtToken").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (results) => {
                     expect(results).toEqual({
                         type: "INIT_PASSCODE_REQUIRED",
@@ -46,14 +48,16 @@ describe("init index", () => {
         });
 
         it("does not update user state when user does not exist on verify response", (done) => {
-            spyOn(InitializationApi, "initializeApi").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
+                Future.of<any>({
                     user: undefined,
                 })
             );
 
             Init.initialize("jwtToken").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (results) => {
                     expect(results).toEqual({
                         type: "INIT_PASSCODE_REQUIRED",
@@ -69,16 +73,18 @@ describe("init index", () => {
         });
 
         it("clears local device keys when no sym key provided and returns passcode response", (done) => {
-            spyOn(InitializationApi, "initializeApi").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
+                Future.of<any>({
                     user: TestUtils.getFullUser(),
                 })
             );
-            spyOn(InitializationApi, "fetchAndValidateLocalKeys");
-            spyOn(FrameUtils, "clearDeviceAndSigningKeys");
+            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys");
+            jest.spyOn(FrameUtils, "clearDeviceAndSigningKeys");
 
             Init.initialize("jwtToken", undefined).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (results) => {
                     expect(results).toEqual({
                         type: "INIT_PASSCODE_REQUIRED",
@@ -88,23 +94,25 @@ describe("init index", () => {
                     });
                     expect(InitializationApi.fetchAndValidateLocalKeys).not.toHaveBeenCalled();
                     expect(FrameUtils.clearDeviceAndSigningKeys).toHaveBeenCalledWith("user-10", 1);
-                    expect(ApiState.user()).toBeObject();
+                    expect(typeof ApiState.user()).toBe("object");
                     done();
                 }
             );
         });
 
         it("expects passcode response when local keys cannot be found or validated", (done) => {
-            spyOn(InitializationApi, "fetchAndValidateLocalKeys").and.returnValue(Future.reject(new Error("failed")));
+            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys").mockReturnValue(Future.reject(new Error("failed")));
 
-            spyOn(InitializationApi, "initializeApi").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
+                Future.of<any>({
                     user: TestUtils.getFullUser(),
                 })
             );
 
             Init.initialize("jwtToken", "symKey").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (results) => {
                     expect(results).toEqual({
                         type: "INIT_PASSCODE_REQUIRED",
@@ -112,25 +120,27 @@ describe("init index", () => {
                             doesUserExist: true,
                         },
                     });
-                    expect(ApiState.user()).toBeObject();
+                    expect(typeof ApiState.user()).toBe("object");
                     done();
                 }
             );
         });
 
         it("returns with SDK object when device/signing keys are found locally", (done) => {
-            spyOn(InitializationApi, "initializeApi").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
+                Future.of<any>({
                     user: TestUtils.getFullUser(),
                 })
             );
 
             const deviceKeys = TestUtils.getEmptyKeyPair();
             const signingKeys = TestUtils.getSigningKeyPair();
-            spyOn(InitializationApi, "fetchAndValidateLocalKeys").and.returnValue(Future.of({deviceKeys, signingKeys}));
+            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys").mockReturnValue(Future.of<any>({deviceKeys, signingKeys}));
 
             Init.initialize("jwtToken", "symKey").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (SDK) => {
                     expect(SDK).toEqual({
                         type: "FULL_SDK_RESPONSE",
@@ -169,12 +179,14 @@ describe("init index", () => {
                 groupsNeedingRotation: [],
             };
 
-            spyOn(FrameUtils, "storeDeviceAndSigningKeys");
+            jest.spyOn(FrameUtils, "storeDeviceAndSigningKeys");
 
-            spyOn(InitializationApi, "createUser").and.returnValue(Future.of(apiResponse));
+            jest.spyOn(InitializationApi, "createUser").mockReturnValue(Future.of<any>(apiResponse));
 
             Init.createUser("jwt", "passcode", false).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (SDK) => {
                     expect(SDK).toEqual({
                         type: "CREATE_USER_RESPONSE",
@@ -193,10 +205,10 @@ describe("init index", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             const userKeys = TestUtils.getEmptyKeyPair();
 
-            spyOn(FrameUtils, "storeDeviceAndSigningKeys");
+            jest.spyOn(FrameUtils, "storeDeviceAndSigningKeys");
 
-            spyOn(InitializationApi, "createUserAndDevice").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "createUserAndDevice").mockReturnValue(
+                Future.of<any>({
                     user: TestUtils.getFullUser(),
                     keys: {
                         userKeys: {
@@ -217,7 +229,9 @@ describe("init index", () => {
             );
 
             Init.createUserAndDevice("jwt", "passcode").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (SDK) => {
                     expect(SDK).toEqual({
                         type: "FULL_SDK_RESPONSE",
@@ -246,16 +260,16 @@ describe("init index", () => {
     describe("generateUserNewDeviceKeys", () => {
         it("decrypts user key and generates new keys", () => {
             ApiState.setCurrentUser(TestUtils.getFullUser());
-            spyOn(InitializationApi, "initializeApi").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
+                Future.of<any>({
                     user: TestUtils.getFullUser(),
                 })
             );
-            spyOn(FrameUtils, "storeDeviceAndSigningKeys");
+            jest.spyOn(FrameUtils, "storeDeviceAndSigningKeys");
             const deviceKeys = TestUtils.getEmptyKeyPair();
             const signingKeys = TestUtils.getSigningKeyPair();
-            spyOn(InitializationApi, "generateDeviceAndSigningKeys").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "generateDeviceAndSigningKeys").mockReturnValue(
+                Future.of<any>({
                     encryptedLocalKeys: {
                         encryptedDeviceKey: "edk",
                         encryptedSigningKey: "esk",
@@ -265,10 +279,12 @@ describe("init index", () => {
                     userUpdateKeys: {deviceKeys, signingKeys},
                 })
             );
-            spyOn(localStorage, "setItem");
+            jest.spyOn(localStorage, "setItem");
 
             Init.generateUserNewDeviceKeys("jwtToken", "passcode").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (SDK) => {
                     expect(SDK).toEqual({
                         type: "FULL_SDK_RESPONSE",
@@ -299,19 +315,21 @@ describe("init index", () => {
 
     describe("createDetachedUserDevice", () => {
         it("verifies user and rejects if they dont exist", () => {
-            spyOn(UserApiEndpoints, "callUserVerifyApi").and.returnValue(Future.of({}));
+            jest.spyOn(UserApiEndpoints, "callUserVerifyApi").mockReturnValue(Future.of<any>({}));
 
             Init.createDetachedUserDevice("token", "pass").engage(
                 (e) => {
                     expect(e.code).toEqual(ErrorCodes.USER_NOT_SYNCED_FAILURE);
                 },
-                () => fail("Call should not succeed when user doesnt yet exist.")
+                () => {
+                    throw new Error("Call should not succeed when user doesnt yet exist.");
+                }
             );
         });
 
         it("uses verified user and password to decrypt master key and generates device from it", () => {
-            spyOn(UserApiEndpoints, "callUserVerifyApi").and.returnValue(
-                Future.of({
+            jest.spyOn(UserApiEndpoints, "callUserVerifyApi").mockReturnValue(
+                Future.of<any>({
                     user: {
                         id: "mockID",
                         segmentId: 333,
@@ -320,8 +338,8 @@ describe("init index", () => {
                     },
                 })
             );
-            spyOn(InitializationApi, "generateDeviceAndSigningKeys").and.returnValue(
-                Future.of({
+            jest.spyOn(InitializationApi, "generateDeviceAndSigningKeys").mockReturnValue(
+                Future.of<any>({
                     userUpdateKeys: {
                         deviceKeys: {privateKey: new Uint8Array([98, 81, 130, 199])},
                         signingKeys: {privateKey: new Uint8Array([58, 101, 98])},
@@ -335,7 +353,9 @@ describe("init index", () => {
             );
 
             Init.createDetachedUserDevice("token", "pass").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(InitializationApi.generateDeviceAndSigningKeys).toHaveBeenCalledWith("token", "pass", expect.any(Uint8Array), {
                         x: expect.any(Uint8Array),

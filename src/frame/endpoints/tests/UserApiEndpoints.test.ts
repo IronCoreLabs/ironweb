@@ -6,18 +6,18 @@ import UserApiEndpoints from "../UserApiEndpoints";
 
 describe("UserApiEndpoints", () => {
     beforeEach(() => {
-        spyOn(ApiRequest, "makeAuthorizedApiRequest");
-        spyOn(ApiRequest, "makeJwtApiRequest");
+        jest.spyOn(ApiRequest, "makeAuthorizedApiRequest");
+        jest.spyOn(ApiRequest, "makeJwtApiRequest");
     });
 
     describe("callUserVerifyApi", () => {
-        let mapSpy: jasmine.Spy;
+        let mapSpy: jest.SpyInstance;
         beforeEach(() => {
-            mapSpy = jasmine.createSpy("fetchJSON Map");
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue({
+            mapSpy = jest.fn();
+            (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue({
                 map: mapSpy,
             });
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue({
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue({
                 map: mapSpy,
             });
         });
@@ -31,7 +31,7 @@ describe("UserApiEndpoints", () => {
             UserApiEndpoints.callUserVerifyApi("jwtToken");
 
             expect(mapSpy).toHaveBeenCalledWith(expect.any(Function));
-            const mapper = mapSpy.calls.argsFor(0)[0];
+            const mapper = mapSpy.mock.calls[0][0];
             expect(mapper(undefined)).toEqual({
                 user: undefined,
                 jwt: "jwtToken",
@@ -42,7 +42,7 @@ describe("UserApiEndpoints", () => {
             UserApiEndpoints.callUserVerifyApi("jwtToken");
 
             expect(mapSpy).toHaveBeenCalledWith(expect.any(Function));
-            const mapper = mapSpy.calls.argsFor(0)[0];
+            const mapper = mapSpy.mock.calls[0][0];
             expect(mapper({foo: "bar"})).toEqual({
                 user: {foo: "bar"},
                 jwt: "jwtToken",
@@ -52,8 +52,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserCreateApi", () => {
         it("creates user with keys and returns saved user object", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -67,7 +67,9 @@ describe("UserApiEndpoints", () => {
                 },
                 true
             ).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (user: any) => {
                     expect(user).toEqual({
                         id: "user-10",
@@ -75,7 +77,7 @@ describe("UserApiEndpoints", () => {
                     });
 
                     expect(ApiRequest.makeJwtApiRequest).toHaveBeenCalledWith("users", expect.any(Number), expect.any(Object), "jwtToken");
-                    const request = (ApiRequest.makeJwtApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPublicKey: {x: expect.any(String), y: expect.any(String)},
                         userPrivateKey: "AAAAAAAAAAAAAA==",
@@ -88,8 +90,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserCreateApiWithDevice", () => {
         it("creates user with full key set and returns saved user object", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -104,7 +106,9 @@ describe("UserApiEndpoints", () => {
                 signingKeys: TestUtils.getSigningKeyPair(),
                 transformKey: TestUtils.getTransformKey(),
             }).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (user: any) => {
                     expect(user).toEqual({
                         id: "user-10",
@@ -112,7 +116,7 @@ describe("UserApiEndpoints", () => {
                     });
 
                     expect(ApiRequest.makeJwtApiRequest).toHaveBeenCalledWith("users", expect.any(Number), expect.any(Object), "jwtToken");
-                    const request = (ApiRequest.makeJwtApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPublicKey: {x: expect.any(String), y: expect.any(String)},
                         userPrivateKey: "AAAAAAAAAAAAAA==",
@@ -136,8 +140,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("creates user with partial key set and returns saved user object", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -152,7 +156,9 @@ describe("UserApiEndpoints", () => {
                 signingKeys: TestUtils.getSigningKeyPair(),
                 transformKey: TestUtils.getTransformKey(),
             }).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (user: any) => {
                     expect(user).toEqual({
                         id: "user-10",
@@ -160,7 +166,7 @@ describe("UserApiEndpoints", () => {
                     });
 
                     expect(ApiRequest.makeJwtApiRequest).toHaveBeenCalledWith("users", expect.any(Number), expect.any(Object), "jwtToken");
-                    const request = (ApiRequest.makeJwtApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPublicKey: {x: expect.any(String), y: expect.any(String)},
                         userPrivateKey: "AAAAAAAAAAAAAAAA",
@@ -186,8 +192,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserKeyUpdateApi", () => {
         it("calls Api with rotated private key and augmentation factor when private key rotation is requested", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -197,14 +203,16 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserKeyUpdateApi(new Uint8Array([99, 104, 111]), new Uint8Array([98, 103, 110])).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (userKeys: any) => {
                     expect(userKeys).toEqual({
                         id: "user-10",
                         foo: "bar",
                     });
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10/keys/1", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPrivateKey: "Y2hv",
                         augmentationFactor: "Ymdu",
@@ -216,8 +224,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserUpdateApi", () => {
         it("calls API and updates status when requested", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -227,14 +235,16 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserUpdateApi(undefined, 2).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (userKeys: any) => {
                     expect(userKeys).toEqual({
                         id: "user-10",
                         foo: "bar",
                     });
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         status: 2,
                     });
@@ -243,8 +253,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("calls API and updates users escrowed private key when requested", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -254,10 +264,12 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserUpdateApi(new Uint8Array([98, 103, 110])).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 () => {
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-special~!%40%23%24", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPrivateKey: "Ymdu",
                     });
@@ -266,8 +278,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("updates both status and escrowed private key", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     id: "user-10",
                     foo: "bar",
                 })
@@ -277,10 +289,12 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserUpdateApi(new Uint8Array([98, 103, 110]), 3).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 () => {
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("users/user-10", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         userPrivateKey: "Ymdu",
                         status: 3,
@@ -292,8 +306,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserDeviceAdd", () => {
         it("calls API and returns data as expected", () => {
-            (ApiRequest.makeJwtApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     devicePublicKey: {x: "", y: ""},
                 })
             );
@@ -307,14 +321,16 @@ describe("UserApiEndpoints", () => {
                 new Uint8Array([99, 103, 113, 93]),
                 133353523
             ).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userKeys: any) => {
                     expect(userKeys).toEqual({
                         devicePublicKey: {x: "", y: ""},
                     });
 
                     expect(ApiRequest.makeJwtApiRequest).toHaveBeenCalledWith("users/devices", expect.any(Number), expect.any(Object), "jwt");
-                    const request = (ApiRequest.makeJwtApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         timestamp: 133353523,
                         userPublicKey: {x: expect.any(String), y: expect.any(String)},
@@ -337,12 +353,14 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserCurrentDeviceDelete", () => {
         it("calls API to delete device for current user", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of({id: 353}));
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({id: 353}));
             ApiState.setCurrentUser({...TestUtils.getFullUser(), id: "user-special~!@#$"});
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserCurrentDeviceDelete().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (deleteResult: any) => {
                     expect(deleteResult).toEqual({id: 353});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
@@ -357,8 +375,8 @@ describe("UserApiEndpoints", () => {
 
     describe("callUserKeyListApi", () => {
         it("calls API and returns mapped response data", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     result: [
                         {id: "user-10", userMasterPublicKey: {x: ""}},
                         {id: "user-20", userMasterPublicKey: {x: ""}},
@@ -369,7 +387,9 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserKeyListApi(["user-10", "user-20"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual({
                         result: [
@@ -392,7 +412,7 @@ describe("UserApiEndpoints", () => {
                     {id: id2, userMasterPublicKey: {x: ""}},
                 ],
             };
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>(resp));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
@@ -400,7 +420,9 @@ describe("UserApiEndpoints", () => {
             for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
             expect(UserApiEndpoints.userPublicKeyCache).toEqual({});
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -422,14 +444,16 @@ describe("UserApiEndpoints", () => {
                     {id: id2, userMasterPublicKey: {x: ""}},
                 ],
             };
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>(resp));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             // clear the module cache for this test
             for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -438,7 +462,9 @@ describe("UserApiEndpoints", () => {
                 }
             );
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -457,14 +483,16 @@ describe("UserApiEndpoints", () => {
                     {id: id2, userMasterPublicKey: {x: ""}},
                 ],
             };
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(Future.of(resp));
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>(resp));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             // clear the module cache for this test
             for (var member in UserApiEndpoints.userPublicKeyCache) delete UserApiEndpoints.userPublicKeyCache[member];
             UserApiEndpoints.callUserKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual(resp);
 
@@ -473,7 +501,9 @@ describe("UserApiEndpoints", () => {
                 }
             );
             UserApiEndpoints.callUserKeyListApi([id1, "user-30"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (_) => {
                     // make sure it was actually called a second time
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(2);
@@ -482,8 +512,8 @@ describe("UserApiEndpoints", () => {
         });
 
         it("escapes all user IDs", () => {
-            (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).and.returnValue(
-                Future.of({
+            (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
                     result: [
                         {id: "user-10", userMasterPublicKey: {x: ""}},
                         {id: "user-20", userMasterPublicKey: {x: ""}},
@@ -494,7 +524,9 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserKeyListApi(["~`!@#$%^&*()-_=+[{]};:<.>/?", "user-20"]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userList: any) => {
                     expect(userList).toEqual({
                         result: [
@@ -517,7 +549,9 @@ describe("UserApiEndpoints", () => {
             ApiState.setDeviceAndSigningKeys(TestUtils.getEmptyKeyPair(), TestUtils.getSigningKeyPair());
 
             UserApiEndpoints.callUserKeyListApi([]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual({result: []});
                     expect(ApiRequest.makeAuthorizedApiRequest).not.toHaveBeenCalled();

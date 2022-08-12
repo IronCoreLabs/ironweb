@@ -16,7 +16,9 @@ describe("RecryptWasm", () => {
                     expect(error.message).toEqual("Key rotation failed.");
                     expect(Recrypt.getApi().generateKeyPair).toHaveBeenCalledTimes(2);
                 },
-                () => fail("Should not success when operation fails")
+                () => {
+                    throw new Error("Should not success when operation fails");
+                }
             );
         });
 
@@ -27,7 +29,9 @@ describe("RecryptWasm", () => {
                 (error) => {
                     expect(error.message).toEqual("Key rotation failed.");
                 },
-                () => fail("Should fail when private key subtraction results in zeroed private key")
+                () => {
+                    throw new Error("Should fail when private key subtraction results in zeroed private key");
+                }
             );
 
             expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(2);
@@ -37,7 +41,9 @@ describe("RecryptWasm", () => {
             jest.spyOn(Recrypt.getApi(), "generateKeyPair").mockReturnValue({privateKey: new Uint8Array([12, 23, 34])} as any);
             jest.spyOn(MockRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array([11, 22, 33]));
             Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 ({newPrivateKey, augmentationFactor}) => {
                     expect(Recrypt.getApi().generateKeyPair).toHaveBeenCalledTimes(1);
                     expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(1);
@@ -56,7 +62,9 @@ describe("RecryptWasm", () => {
                 () => {
                     expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(2);
                 },
-                () => fail("Should not success when operation fails")
+                () => {
+                    throw new Error("Should not success when operation fails");
+                }
             );
         });
 
@@ -68,7 +76,9 @@ describe("RecryptWasm", () => {
                     expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(2);
                     expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(2);
                 },
-                () => fail("Should fail when private key subtraction results in zeroed private key")
+                () => {
+                    throw new Error("Should fail when private key subtraction results in zeroed private key");
+                }
             );
         });
 
@@ -77,7 +87,9 @@ describe("RecryptWasm", () => {
             jest.spyOn(MockRecrypt, "subtractPrivateKeys").mockReturnValue(new Uint8Array([11, 22, 33]));
             jest.spyOn(Recrypt.getApi(), "hash256").mockReturnValue(new Uint8Array([44, 55, 34]));
             Recrypt.rotateGroupPrivateKeyWithRetry(groupPrivateKey).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 ({plaintext, augmentationFactor}) => {
                     expect(Recrypt.getApi().generatePlaintext).toHaveBeenCalledTimes(1);
                     expect(MockRecrypt.subtractPrivateKeys).toHaveBeenCalledTimes(1);
@@ -90,8 +102,8 @@ describe("RecryptWasm", () => {
 
     describe("generatePasswordDerivedKey", () => {
         it("should generate random bytes and use WebCrypto pbkdf2", () => {
-            spyOn(nativePBKDF2, "generatePasscodeDerivedKey").and.returnValue(Future.of("derivedKey"));
-            spyOn(CryptoUtils, "getCryptoSubtleApi").and.returnValue(true);
+            jest.spyOn(nativePBKDF2, "generatePasscodeDerivedKey").mockReturnValue(Future.of<any>("derivedKey"));
+            jest.spyOn(CryptoUtils, "getCryptoSubtleApi").mockReturnValue(true as any);
 
             Recrypt.generatePasswordDerivedKey("password", new Uint8Array(32)).engage(
                 (e) => e,
@@ -106,7 +118,9 @@ describe("RecryptWasm", () => {
     describe("generateKeyPair", () => {
         it("should generate a set of Recrypt keys", () => {
             Recrypt.generateKeyPair().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 ({publicKey, privateKey}) => {
                     expect(publicKey.x.length).toEqual(32);
                     expect(publicKey.y.length).toEqual(32);
@@ -122,7 +136,9 @@ describe("RecryptWasm", () => {
     describe("generateSigningKeyPair", () => {
         it("generates a set of ed25519 keys", () => {
             Recrypt.generateSigningKeyPair().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 ({publicKey, privateKey}) => {
                     expect(publicKey).toEqual(expect.any(Uint8Array));
                     expect(publicKey.length).toEqual(32);
@@ -142,7 +158,9 @@ describe("RecryptWasm", () => {
                     });
                 })
                 .engage(
-                    (e) => fail(e.message),
+                    (e) => {
+                        throw new Error(e.message);
+                    },
                     () => null
                 );
         });
@@ -151,9 +169,11 @@ describe("RecryptWasm", () => {
     describe("generateNewUserKeySet", () => {
         it("generates both user and device keys", () => {
             Recrypt.generateNewUserKeySet().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (keys: any) => {
-                    expect(Object.keys(keys)).toBeArrayOfSize(3);
+                    expect(Object.keys(keys)).toHaveLength(3);
                     expect(keys.userKeys.publicKey.x.length).toEqual(32);
                     expect(keys.userKeys.publicKey.y.length).toEqual(32);
                     expect(keys.userKeys.publicKey.x).toEqual(expect.any(Uint8Array));
@@ -178,7 +198,9 @@ describe("RecryptWasm", () => {
     describe("generateGroupKeyPair", () => {
         it("generates new public, private, and plaintext fields", () => {
             Recrypt.generateGroupKeyPair().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (keys) => {
                     expect(keys.publicKey.x).toEqual(expect.any(Uint8Array));
                     expect(keys.publicKey.y).toEqual(expect.any(Uint8Array));
@@ -204,7 +226,9 @@ describe("RecryptWasm", () => {
                     return Recrypt.derivePublicKey(keys.privateKey);
                 })
                 .engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     (derivedPublicKey) => {
                         expect(derivedPublicKey).toEqual(publicKey);
                     }
@@ -218,9 +242,11 @@ describe("RecryptWasm", () => {
             Recrypt.generateKeyPair()
                 .flatMap((keys) => Recrypt.generateTransformKey(keys.privateKey, keys.publicKey, signingKeys))
                 .engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     (transformKey) => {
-                        expect(transformKey).toBeObject();
+                        expect(typeof transformKey).toBe("object");
 
                         expect(transformKey.encryptedTempKey).toEqual(expect.any(Uint8Array));
                         expect(transformKey.encryptedTempKey.length).toEqual(384);
@@ -251,7 +277,9 @@ describe("RecryptWasm", () => {
         it("returns an empty array when no keys passed in", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             Recrypt.generateTransformKeyToList(new Uint8Array(32), [], signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual([]);
                 }
@@ -276,9 +304,11 @@ describe("RecryptWasm", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             Recrypt.generateTransformKeyToList(new Uint8Array(32), [key1, key2], signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
-                    expect(result).toBeArrayOfSize(2);
+                    expect(result).toHaveLength(2);
 
                     const [ts1, ts2] = result;
 
@@ -313,9 +343,11 @@ describe("RecryptWasm", () => {
     describe("generateDocumentKey", () => {
         it("generates document symmetric key", () => {
             Recrypt.generateDocumentKey().engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (key: any) => {
-                    expect(key).toBeArrayOfSize(2);
+                    expect(key).toHaveLength(2);
                     expect(key[0]).toEqual(expect.any(Uint8Array));
                     expect(key[0].length).toEqual(384);
                     expect(key[1]).toEqual(expect.any(Uint8Array));
@@ -333,7 +365,9 @@ describe("RecryptWasm", () => {
                 y: toByteArray("O918eBCWdImkkA7jIcHk3dPhf08TudRmgODFgdXJzHk="),
             };
             Recrypt.encryptPlaintext(new Uint8Array(384), publicKey, signingKeys).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (encryptedKey) => {
                     expect(encryptedKey.ephemeralPublicKey.x).toEqual(expect.any(String));
                     expect(encryptedKey.ephemeralPublicKey.y).toEqual(expect.any(String));
@@ -365,30 +399,24 @@ describe("RecryptWasm", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             Recrypt.encryptPlaintextToList(new Uint8Array(384), [user1, user2], signingKeys).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (encryptedKeys) => {
-                    expect(encryptedKeys).toBeArrayOfSize(2);
+                    expect(encryptedKeys).toHaveLength(2);
 
                     expect(encryptedKeys[0].publicKey).toEqual(user1.masterPublicKey);
-                    expect(encryptedKeys[0].encryptedPlaintext).toContainAllKeys([
-                        "encryptedMessage",
-                        "ephemeralPublicKey",
-                        "authHash",
-                        "signature",
-                        "publicSigningKey",
-                    ]);
-                    expect(encryptedKeys[0].encryptedPlaintext.ephemeralPublicKey).toContainAllKeys(["x", "y"]);
+                    expect(Object.keys(encryptedKeys[0].encryptedPlaintext)).toEqual(
+                        expect.arrayContaining(["encryptedMessage", "ephemeralPublicKey", "authHash", "signature", "publicSigningKey"])
+                    );
+                    expect(Object.keys(encryptedKeys[0].encryptedPlaintext.ephemeralPublicKey)).toEqual(expect.arrayContaining(["x", "y"]));
                     expect(encryptedKeys[0].id).toEqual("user1");
 
                     expect(encryptedKeys[1].publicKey).toEqual(user2.masterPublicKey);
-                    expect(encryptedKeys[1].encryptedPlaintext).toContainAllKeys([
-                        "encryptedMessage",
-                        "ephemeralPublicKey",
-                        "authHash",
-                        "signature",
-                        "publicSigningKey",
-                    ]);
-                    expect(encryptedKeys[1].encryptedPlaintext.ephemeralPublicKey).toContainAllKeys(["x", "y"]);
+                    expect(Object.keys(encryptedKeys[1].encryptedPlaintext)).toEqual(
+                        expect.arrayContaining(["encryptedMessage", "ephemeralPublicKey", "authHash", "signature", "publicSigningKey"])
+                    );
+                    expect(Object.keys(encryptedKeys[1].encryptedPlaintext.ephemeralPublicKey)).toEqual(expect.arrayContaining(["x", "y"]));
                     expect(encryptedKeys[1].id).toEqual("user2");
                 }
             );
@@ -397,9 +425,11 @@ describe("RecryptWasm", () => {
         it("returns empty list when no keys provided", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             Recrypt.encryptPlaintextToList(new Uint8Array(384), [], signingKeys).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (encryptedKeys) => {
-                    expect(encryptedKeys).toBeArrayOfSize(0);
+                    expect(encryptedKeys).toHaveLength(0);
                 }
             );
         });
@@ -410,7 +440,9 @@ describe("RecryptWasm", () => {
             const encryptedValue = TestUtils.getTransformedSymmetricKey();
             const privateKey = new Uint8Array(32);
             Recrypt.decryptPlaintext(encryptedValue, privateKey).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 ([decryptedPlaintext, symKey]) => {
                     expect(decryptedPlaintext).toEqual(expect.any(Uint8Array));
                     expect(decryptedPlaintext.length).toEqual(55); //Comes from RecryptMock.ts file
@@ -426,7 +458,7 @@ describe("RecryptWasm", () => {
         it("returns comma list of items and calculates two signatures", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
-            spyOn(Date, "now").and.returnValue(123456);
+            jest.spyOn(Date, "now").mockReturnValue(123456);
             const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "get", "/path/to/resource", "bodyparts");
             expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
             expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
@@ -441,7 +473,7 @@ describe("RecryptWasm", () => {
         it("uses an empty byte array when body is empty", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
-            spyOn(Date, "now").and.returnValue(123456);
+            jest.spyOn(Date, "now").mockReturnValue(123456);
             const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "POST", "/path/to/resource", null);
             expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
             expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
@@ -456,7 +488,7 @@ describe("RecryptWasm", () => {
         it("uses existing Uint8Array when body is set as one", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
             jest.spyOn(Recrypt.getApi(), "ed25519Sign").mockReturnValue(new Uint8Array(64));
-            spyOn(Date, "now").and.returnValue(123456);
+            jest.spyOn(Date, "now").mockReturnValue(123456);
             const signatureDetails = Recrypt.createRequestSignature(1, "user-10", signingKeys, "GET", "/path/to/resource", new Uint8Array([9, 9, 9, 9]));
             expect(signatureDetails.userContextHeader).toEqual("123456,1,user-10,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
             expect(signatureDetails.authHeaderSignature).toEqual("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==");
@@ -472,10 +504,10 @@ describe("RecryptWasm", () => {
     describe("generateDeviceAddSignature", () => {
         it("generates the expected signature", (done) => {
             const fixedTS = 1234567890123;
-            spyOn(Date, "now").and.returnValue(fixedTS);
+            jest.spyOn(Date, "now").mockReturnValue(fixedTS);
 
             Recrypt.generateDeviceAddSignature("jwt", TestUtils.getEmptyKeyPair(), TestUtils.getTransformKey()).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 (signature) => {
                     expect(signature.ts).toEqual(fixedTS);
                     expect(signature.signature).toEqual(expect.any(Uint8Array));

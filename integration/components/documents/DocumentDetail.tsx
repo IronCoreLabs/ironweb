@@ -9,7 +9,7 @@ interface DocumentDetailProps {
     backToList: () => void;
 }
 
-export default class DocumentDetail extends React.Component<DocumentDetailProps, {}> {
+export default class DocumentDetail extends React.Component<DocumentDetailProps> {
     render() {
         if (isLocalDocument(this.props.document.documentID)) {
             return <LocalDocument document={this.props.document} backToDocumentList={this.props.backToList} />;

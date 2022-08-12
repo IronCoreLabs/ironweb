@@ -22,17 +22,26 @@ const buttonStyle: React.CSSProperties = {
     margin: "5px",
 };
 
+declare global {
+    interface Window {
+        User: {
+            id: string;
+            name: string;
+        };
+    }
+}
+
 interface UserInfoState {
     showingDialog: boolean;
     changingPasscode: boolean;
     passcodeError: boolean;
 }
 
-export default class UserInfo extends React.Component<{}, UserInfoState> {
+export default class UserInfo extends React.Component<Record<string, never>, UserInfoState> {
     currentPasscodeInput!: TextField;
     newPasscodeInput!: TextField;
 
-    constructor(props: {}) {
+    constructor(props: Record<string, never>) {
         super(props);
         this.state = {
             showingDialog: false,
@@ -66,9 +75,11 @@ export default class UserInfo extends React.Component<{}, UserInfoState> {
                     },
                     () => {
                         if (error.code === IronWeb.ErrorCodes.USER_PASSCODE_INCORRECT) {
-                            this.currentPasscodeInput.getInputNode().value = "";
-                            this.newPasscodeInput.getInputNode().value = "";
-                            this.currentPasscodeInput.focus();
+                            if (this.currentPasscodeInput && this.newPasscodeInput) {
+                                this.currentPasscodeInput.getInputNode().value = "";
+                                this.newPasscodeInput.getInputNode().value = "";
+                                this.currentPasscodeInput.focus();
+                            }
                         }
                     }
                 );
@@ -82,7 +93,7 @@ export default class UserInfo extends React.Component<{}, UserInfoState> {
                 logAction(`User device successfully deauthorized. Deleted transform key: ${result.transformKeyDeleted}`);
                 window.location.reload();
             });
-        } catch (e) {
+        } catch (e: any) {
             logAction(`User device deauthorize error: ${e.message}. Error Code: ${e.code}`, "error");
         }
     }

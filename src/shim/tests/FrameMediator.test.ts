@@ -7,9 +7,9 @@ describe("FrameMediator", () => {
         let fauxFrame: any;
         beforeEach(() => {
             fauxFrame = {
-                addEventListener: jasmine.createSpy("addEventListener"),
+                addEventListener: jest.fn(),
                 contentWindow: {
-                    postMessage: jasmine.createSpy("postMessage"),
+                    postMessage: jest.fn(),
                 },
             };
         });
@@ -19,7 +19,7 @@ describe("FrameMediator", () => {
                 new ShimMessenger(fauxFrame);
 
                 expect(fauxFrame.addEventListener).toHaveBeenCalledWith("load", expect.any(Function));
-                fauxFrame.addEventListener.calls.argsFor(0)[1]();
+                fauxFrame.addEventListener.mock.calls[0][1]();
                 expect(fauxFrame.contentWindow.postMessage).toHaveBeenCalledWith("MESSAGE_PORT_INIT", Frame.FRAME_DOMAIN, expect.any(Object));
             });
         });
@@ -29,11 +29,11 @@ describe("FrameMediator", () => {
                 const messenger = new ShimMessenger(fauxFrame as any);
 
                 (messenger as any).messagePort = {
-                    postMessage: jasmine.createSpy("postMessage"),
+                    postMessage: jest.fn(),
                 };
 
                 messenger.postMessageToFrame({foo: "bar"} as any).engage(
-                    (e) => fail(e.message),
+                    (e) => done(e),
                     (result: any) => {
                         expect(result).toEqual({engaged: "future"});
                         done();
@@ -52,11 +52,11 @@ describe("FrameMediator", () => {
                 const messenger = new ShimMessenger(fauxFrame as any);
 
                 (messenger as any).messagePort = {
-                    postMessage: jasmine.createSpy("postMessage"),
+                    postMessage: jest.fn(),
                 };
 
                 messenger.postMessageToFrame({foo: "bar"} as any, [{buffer: "1"}, {buffer: "2"}] as any).engage(
-                    (e) => fail(e.message),
+                    (e) => done(e),
                     (result: any) => {
                         expect(result).toEqual({engaged: "future"});
                         done();
@@ -74,7 +74,9 @@ describe("FrameMediator", () => {
                 const messenger = new ShimMessenger(fauxFrame as any);
 
                 (messenger as any).messagePort = {
-                    postMessage: jasmine.createSpy("postMessage").and.throwError("forced failure"),
+                    postMessage: jest.fn().mockImplementation(() => {
+                        throw new Error("forced failure");
+                    }),
                 };
 
                 messenger.postMessageToFrame({foo: "bar"} as any).engage(
@@ -82,7 +84,7 @@ describe("FrameMediator", () => {
                         expect(e.message).toEqual(expect.any(String));
                         done();
                     },
-                    () => fail("should fail when postmessage throws an exception")
+                    () => done("should fail when postmessage throws an exception")
                 );
             });
         });
@@ -90,7 +92,7 @@ describe("FrameMediator", () => {
         describe("processMessageIntoShim", () => {
             it("invokes callback given the replyID in the event", () => {
                 const messenger = new ShimMessenger(fauxFrame as any);
-                const cbSpy = jasmine.createSpy("callbackSpy");
+                const cbSpy = jest.fn();
 
                 messenger.callbacks = {
                     35: cbSpy,
@@ -103,7 +105,7 @@ describe("FrameMediator", () => {
 
             it("does nothing with callback if not present", () => {
                 const messenger = new ShimMessenger(fauxFrame as any);
-                const cbSpy = jasmine.createSpy("callbackSpy");
+                const cbSpy = jest.fn();
 
                 messenger.callbacks = {
                     35: cbSpy,
@@ -118,13 +120,15 @@ describe("FrameMediator", () => {
 
     describe("sendMessage", () => {
         it("passes in payload and optional transfer list to API and responds with result", () => {
-            spyOn(messenger, "postMessageToFrame").and.returnValue(
-                Future.of({
+            jest.spyOn(messenger, "postMessageToFrame").mockReturnValue(
+                Future.of<any>({
                     foo: "bar",
                 })
             );
             sendMessage({payload: "content"} as any, [new Uint8Array(12), new Uint8Array(10)]).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(messenger.postMessageToFrame).toHaveBeenCalledWith({payload: "content"}, [new Uint8Array(12), new Uint8Array(10)]);
@@ -133,8 +137,8 @@ describe("FrameMediator", () => {
         });
 
         it("handles error message response types and rejects futures", () => {
-            spyOn(messenger, "postMessageToFrame").and.returnValue(
-                Future.of({
+            jest.spyOn(messenger, "postMessageToFrame").mockReturnValue(
+                Future.of<any>({
                     message: {
                         text: "error",
                         code: 108,
@@ -148,7 +152,9 @@ describe("FrameMediator", () => {
                     expect(e.message).toEqual("error");
                     expect(e.code).toEqual(108);
                 },
-                () => fail("Should fail with error response content")
+                () => {
+                    throw new Error("Should fail with error response content");
+                }
             );
         });
     });

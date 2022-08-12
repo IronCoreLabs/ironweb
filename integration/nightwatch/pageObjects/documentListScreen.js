@@ -3,8 +3,8 @@
  */
 const documentListActions = {
     expectTodoListStorageType(selector, position){
-        this.api.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.api.elementIdElement(elements.value[position].ELEMENT, this.client.locateStrategy, selector, (chipElement) => {
+        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
+            this.api.elementIdElement(Object.values(elements.value[position])[0], this.client.locateStrategy, selector, (chipElement) => {
                 this.assert.equal(chipElement.status, 0, chipElement.status === -1 ? chipElement.value.message : "Found correct storage chip");
             });
         });
@@ -17,14 +17,14 @@ const documentListActions = {
         return this.click('@newDocumentButton');
     },
     expectCountOfTodoLists(length){
-        this.api.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
+        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
             this.assert.equal(elements.value.length, length, `Todo list length, expected item count of "${length}, found "${elements.value.length}"`);
         });
         return this;
     },
     expectTodoListNameAtPosition(position, name){
-        this.api.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.api.elementIdText(elements.value[position].ELEMENT, (elementText) => {
+        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
+            this.api.elementIdText(Object.values(elements.value[position])[0], (elementText) => {
                 this.assert.equal(elementText.value.includes(name), true, `Todo list content, expected roughly "${name}", found "${elementText.value}"`);
             });
         });
@@ -37,8 +37,8 @@ const documentListActions = {
         return this.expectTodoListStorageType(this.elements.localStorageChip.selector, position);
     },
     clickOnNthTodoList(item){
-        this.api.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.api.elementIdClick(elements.value[item].ELEMENT);
+        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
+            this.api.elementIdClick(Object.values(elements.value[item])[0]);
         });
     },
 };

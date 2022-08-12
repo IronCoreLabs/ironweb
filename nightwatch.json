@@ -16,11 +16,12 @@
       "selenium_host": "localhost",
       "default_path_prefix" : "",
       "desiredCapabilities": {
-        "browserName": "chrome",
-        "chromeOptions" : {
-          "args" : ["--no-sandbox"]
-        },
-        "acceptSslCerts": true
+          "browserName": "chrome",
+          "comment": "'window-size=1920,1080', 'headless', 'disable-dev-shm-usage'",
+          "chromeOptions": {
+              "args": ["no-sandbox", "window-size=1920,1080", "headless", "disable-dev-shm-usage"]
+          },
+          "acceptSslCerts": true
       }
     },
 

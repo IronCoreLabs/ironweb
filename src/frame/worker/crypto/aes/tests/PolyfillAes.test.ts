@@ -8,7 +8,7 @@ describe("PolyfillAes", () => {
             const salt = new Uint8Array(32);
             const iv = new Uint8Array(12);
             PolyfillAes.encryptUserKey(key, derivedKey, salt, iv).engage(
-                () => fail("encrypting users keys should not reject"),
+                () => done("encrypting users keys should not reject"),
                 (encryptedKey: any) => {
                     expect(encryptedKey).toEqual(expect.any(Uint8Array));
                     expect(encryptedKey.length).toEqual(92);
@@ -30,7 +30,7 @@ describe("PolyfillAes", () => {
                     return PolyfillAes.decryptUserKey(encryptedKey, derivedKey);
                 })
                 .engage(
-                    () => fail("decrypting keys should not fail"),
+                    () => done("decrypting keys should not fail"),
                     (decryptedKey) => {
                         expect(decryptedKey).toEqual(userKey);
                         done();
@@ -43,7 +43,9 @@ describe("PolyfillAes", () => {
         it("encrypts document and maps result to expected document output", () => {
             const providedIV = new Uint8Array(12);
             PolyfillAes.encryptDocument(new Uint8Array([93]), new Uint8Array(32), providedIV).engage(
-                () => fail("AES decryption should not fail"),
+                () => {
+                    throw new Error("AES decryption should not fail");
+                },
                 (encryptedData) => {
                     const {iv, content} = encryptedData;
                     expect(iv).toEqual(providedIV);
@@ -60,7 +62,9 @@ describe("PolyfillAes", () => {
                 new Uint8Array(32),
                 new Uint8Array(12)
             ).engage(
-                () => fail("AES decryption should not fail"),
+                () => {
+                    throw new Error("AES decryption should not fail");
+                },
                 (encryptedData) => {
                     expect(encryptedData).toEqual(new Uint8Array([93]));
                 }
@@ -76,7 +80,7 @@ describe("PolyfillAes", () => {
             const providedIV = new Uint8Array(12);
 
             PolyfillAes.encryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, providedIV).engage(
-                () => fail("AES encryption of keys should not fail"),
+                () => done("AES encryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({
                         iv: providedIV,
@@ -98,7 +102,7 @@ describe("PolyfillAes", () => {
             const iv = new Uint8Array(12);
 
             PolyfillAes.decryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, iv).engage(
-                () => fail("AES decryption of keys should not fail"),
+                () => done("AES decryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({
                         deviceKey: new Uint8Array([35, 80]),

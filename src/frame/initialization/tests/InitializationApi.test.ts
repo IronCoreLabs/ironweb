@@ -8,10 +8,12 @@ import * as TestUtils from "../../../tests/TestUtils";
 describe("InitializationApi", () => {
     describe("initializeApi", () => {
         it("invokes API endpoint with expected parameter", (done) => {
-            spyOn(UserApiEndpoints, "callUserVerifyApi").and.returnValue(Future.of("init result"));
+            jest.spyOn(UserApiEndpoints, "callUserVerifyApi").mockReturnValue(Future.of<any>("init result"));
 
             InitApi.initializeApi("jwtToken").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (val: any) => {
                     expect(val).toEqual("init result");
                     expect(UserApiEndpoints.callUserVerifyApi).toHaveBeenCalledWith("jwtToken");
@@ -25,15 +27,17 @@ describe("InitializationApi", () => {
         it("requests new JWT and derives key if jwt is callback", (done) => {
             const userKeys = TestUtils.getEmptyKeyPair();
 
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(
-                Future.of({
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
                     message: userKeys,
                 })
             );
-            spyOn(UserApiEndpoints, "callUserCreateApi").and.returnValue(Future.of("new user"));
+            jest.spyOn(UserApiEndpoints, "callUserCreateApi").mockReturnValue(Future.of<any>("new user"));
 
             InitApi.createUser("passcode", "jwtToken2", false).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userCreationData: any) => {
                     expect(userCreationData).toEqual("new user");
 
@@ -59,18 +63,20 @@ describe("InitializationApi", () => {
                 },
             };
 
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(
-                Future.of({
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
                     message: {
                         userKeys,
                         encryptedDeviceAndSigningKeys: deviceAndSigning,
                     },
                 })
             );
-            spyOn(UserApiEndpoints, "callUserCreateApiWithDevice").and.returnValue(Future.of("new user"));
+            jest.spyOn(UserApiEndpoints, "callUserCreateApiWithDevice").mockReturnValue(Future.of<any>("new user"));
 
             InitApi.createUserAndDevice("passcode", "jwtToken2").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (userCreationData: any) => {
                     expect(userCreationData).toEqual({
                         user: "new user",
@@ -106,8 +112,8 @@ describe("InitializationApi", () => {
             const userPublicKey = TestUtils.getEmptyPublicKey();
             const deviceSignature = new Uint8Array(33);
 
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(
-                Future.of({
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
                     message: {
                         userKeys,
                         encryptedDeviceAndSigningKeys: deviceAndSigning,
@@ -118,8 +124,8 @@ describe("InitializationApi", () => {
                     },
                 })
             );
-            spyOn(UserApiEndpoints, "callUserDeviceAdd").and.returnValue(
-                Future.of({
+            jest.spyOn(UserApiEndpoints, "callUserDeviceAdd").mockReturnValue(
+                Future.of<any>({
                     id: 1,
                     created: "timestamp",
                     name: "deviceName",
@@ -127,7 +133,9 @@ describe("InitializationApi", () => {
             );
 
             InitApi.generateDeviceAndSigningKeys("jwtToken", "passcode", encryptedUserKey, userPublicKey).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (keys: any) => {
                     expect(keys).toEqual({
                         userUpdateKeys: userKeys,
@@ -163,12 +171,14 @@ describe("InitializationApi", () => {
             const encryptedSigningKey = new Uint8Array(64);
             const nonce = new Uint8Array(12);
 
-            spyOn(FrameUtils, "getDeviceAndSigningKeys").and.returnValue(Future.of({encryptedDeviceKey, encryptedSigningKey, nonce}));
+            jest.spyOn(FrameUtils, "getDeviceAndSigningKeys").mockReturnValue(Future.of<any>({encryptedDeviceKey, encryptedSigningKey, nonce}));
 
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "decrypted keys"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "decrypted keys"}));
 
             InitApi.fetchAndValidateLocalKeys("30", 3, "AA==").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (response: any) => {
                     expect(response).toEqual("decrypted keys");
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({

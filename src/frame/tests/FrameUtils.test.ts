@@ -12,9 +12,9 @@ describe("FrameUtils", () => {
             const nonce = new Uint8Array([88, 93, 91]);
             FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
             const keys = localStorage.getItem("1-3:30-icldaspkn");
-            expect(keys).toBeString();
+            expect(keys).toEqual(expect.stringContaining(""));
             const decodeKeys = JSON.parse(keys as string);
-            expect(decodeKeys).toBeObject();
+            expect(typeof decodeKeys).toBe("object");
             expect(decodeKeys.deviceKey).toEqual("AAAAAAA=");
             expect(decodeKeys.signingKey).toEqual("AAAAAAAA");
             expect(decodeKeys.nonce).toEqual("WF1b");
@@ -28,8 +28,10 @@ describe("FrameUtils", () => {
 
         it("fails when no value is set in local storage", () => {
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => expect(e.message).toBeString(),
-                () => fail("Should fail when no keys are in local storage")
+                (e) => expect(e.message).toEqual(expect.stringContaining("")),
+                () => {
+                    throw new Error("Should fail when no keys are in local storage");
+                }
             );
         });
 
@@ -37,8 +39,10 @@ describe("FrameUtils", () => {
             localStorage.setItem(`3:30-icldaspkn`, "{[nalka}[[];a");
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => expect(e.message).toBeString(),
-                () => fail("Should fail when no keys are in local storage")
+                (e) => expect(e.message).toEqual(expect.stringContaining("")),
+                () => {
+                    throw new Error("Should fail when no keys are in local storage");
+                }
             );
         });
 
@@ -46,8 +50,10 @@ describe("FrameUtils", () => {
             localStorage.setItem(`3:30-icldaspkn`, '"foo"');
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => expect(e.message).toBeString(),
-                () => fail("Should fail when no keys are in local storage")
+                (e) => expect(e.message).toEqual(expect.stringContaining("")),
+                () => {
+                    throw new Error("Should fail when no keys are in local storage");
+                }
             );
         });
 
@@ -55,8 +61,10 @@ describe("FrameUtils", () => {
             localStorage.setItem(`3:30-icldaspkn`, JSON.stringify({deviceKey: "foo"}));
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => expect(e.message).toBeString(),
-                () => fail("Should fail when no keys are in local storage")
+                (e) => expect(e.message).toEqual(expect.stringContaining("")),
+                () => {
+                    throw new Error("Should fail when no keys are in local storage");
+                }
             );
         });
 
@@ -64,8 +72,10 @@ describe("FrameUtils", () => {
             localStorage.setItem(`3:30-icldaspkn`, JSON.stringify({signingKey: "foo"}));
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => expect(e.message).toBeString(),
-                () => fail("Should fail when no keys are in local storage")
+                (e) => expect(e.message).toEqual(expect.stringContaining("")),
+                () => {
+                    throw new Error("Should fail when no keys are in local storage");
+                }
             );
         });
 
@@ -79,8 +89,10 @@ describe("FrameUtils", () => {
             );
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => expect(e.message).toBeString(),
-                () => fail("Should fail when no keys are in local storage")
+                (e) => expect(e.message).toEqual(expect.stringContaining("")),
+                () => {
+                    throw new Error("Should fail when no keys are in local storage");
+                }
             );
         });
 
@@ -94,8 +106,10 @@ describe("FrameUtils", () => {
             );
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => expect(e.message).toBeString(),
-                () => fail("Should fail when no keys are in local storage")
+                (e) => expect(e.message).toEqual(expect.stringContaining("")),
+                () => {
+                    throw new Error("Should fail when no keys are in local storage");
+                }
             );
         });
 
@@ -106,7 +120,9 @@ describe("FrameUtils", () => {
             FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (localKeys) => {
                     expect(localKeys.encryptedDeviceKey).toEqual(deviceKey);
                     expect(localKeys.encryptedSigningKey).toEqual(signingKey);

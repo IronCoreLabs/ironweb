@@ -6,11 +6,13 @@ import * as TestUtils from "../../../tests/TestUtils";
 describe("GroupOperations", () => {
     describe("groupCreate", () => {
         it("sends worker message to create group", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "new group"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "new group"}));
             const signingKeys = TestUtils.getSigningKeyPair();
 
             GroupOperations.groupCreate(signingKeys, [], []).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual("new group");
 
@@ -35,13 +37,15 @@ describe("GroupOperations", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
-                Future.of({
+                Future.of<any>({
                     message: {encryptedAccessKeys: "accessKey", augmentationFactor: "augmentationFactor"},
                 }) as any
             );
 
             GroupOperations.rotateGroupPrivateKeyAndEncryptToAdmins(encryptedGroupKey, adminList, userPrivateMasterKey, signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual({encryptedAccessKeys: "accessKey", augmentationFactor: "augmentationFactor"});
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
@@ -60,7 +64,7 @@ describe("GroupOperations", () => {
 
     describe("encryptGroupPrivateKeyToList", () => {
         it("sends message to worker to encrypt group encrypte private key to list", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "encrypted user keys"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "encrypted user keys"}));
             const userPrivateKey = new Uint8Array(32);
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const encryptedGroupPrivateKey = TestUtils.getTransformedSymmetricKey();
@@ -68,7 +72,9 @@ describe("GroupOperations", () => {
             const groupPublicKey = TestUtils.getEmptyPublicKeyString();
 
             GroupOperations.encryptGroupPrivateKeyToList(encryptedGroupPrivateKey, groupPublicKey, "groupID", userList, userPrivateKey, signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual("encrypted user keys");
 
@@ -90,7 +96,7 @@ describe("GroupOperations", () => {
 
     describe("generateGroupTransformKeyToList", () => {
         it("sends message to worker to generate transform key to list", () => {
-            spyOn(WorkerMediator, "sendMessage").and.returnValue(Future.of({message: "transformed user keys"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "transformed user keys"}));
             const userPrivateKey = new Uint8Array(32);
             const userList = [{id: "user-35", masterPublicKey: {x: "", y: ""}}];
             const encryptedGroupPrivateKey = TestUtils.getTransformedSymmetricKey();
@@ -98,7 +104,9 @@ describe("GroupOperations", () => {
             const groupPublicKey = TestUtils.getEmptyPublicKeyString();
 
             GroupOperations.generateGroupTransformKeyToList(encryptedGroupPrivateKey, groupPublicKey, "GroupID", userList, userPrivateKey, signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result: any) => {
                     expect(result).toEqual("transformed user keys");
 

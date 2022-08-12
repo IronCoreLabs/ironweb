@@ -35,10 +35,10 @@ interface StatusConsoleState {
     logList: LogItem[];
 }
 
-export default class StatusConsole extends React.Component<{}, StatusConsoleState> {
+export default class StatusConsole extends React.Component<Record<string, never>, StatusConsoleState> {
     logContainer!: HTMLDivElement;
 
-    constructor(props: {}) {
+    constructor(props: Record<string, never>) {
         super(props);
         this.state = {
             logList: [],

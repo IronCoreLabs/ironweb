@@ -22,7 +22,7 @@ describe("Init exposed public SDK", () => {
         });
 
         it("calls init api with argument", () => {
-            spyOn(Init, "initialize");
+            jest.spyOn(Init, "initialize");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = () => Promise.resolve("pass");
@@ -36,14 +36,14 @@ describe("Init exposed public SDK", () => {
             const origRandomValues = window.crypto.getRandomValues;
             (window.crypto as any).getRandomValues = null;
 
-            spyOn(Init, "initialize");
+            jest.spyOn(Init, "initialize");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = () => Promise.resolve("pass");
 
             PublicSdk.initialize(fetchJWT, passcode)
                 .then(() => {
-                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                    done("Initialization should not occur if the client browser does not support random number generation.");
                 })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
@@ -62,7 +62,7 @@ describe("Init exposed public SDK", () => {
         });
 
         it("calls init api with argument", () => {
-            spyOn(Init, "createNewUser");
+            jest.spyOn(Init, "createNewUser");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
@@ -76,14 +76,14 @@ describe("Init exposed public SDK", () => {
             const origRandomValues = window.crypto.getRandomValues;
             (window.crypto as any).getRandomValues = null;
 
-            spyOn(Init, "createNewUser");
+            jest.spyOn(Init, "createNewUser");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
 
             PublicSdk.createNewUser(fetchJWT, passcode)
                 .then(() => {
-                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                    done("Initialization should not occur if the client browser does not support random number generation.");
                 })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
@@ -105,14 +105,14 @@ describe("Init exposed public SDK", () => {
             const origRandomValues = window.crypto.getRandomValues;
             (window.crypto as any).getRandomValues = null;
 
-            spyOn(Init, "createUserDeviceKeys");
+            jest.spyOn(Init, "createUserDeviceKeys");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
 
             PublicSdk.createNewDeviceKeys(fetchJWT, passcode)
                 .then(() => {
-                    fail("Initialization should not occur if the client browser does not support random number generation.");
+                    done("Initialization should not occur if the client browser does not support random number generation.");
                 })
                 .catch((e) => {
                     expect(e.code).toEqual(ErrorCodes.RANDOM_NUMBER_GENERATION_FAILURE);
@@ -122,7 +122,7 @@ describe("Init exposed public SDK", () => {
         });
 
         it("calls init api with argument", () => {
-            spyOn(Init, "createUserDeviceKeys");
+            jest.spyOn(Init, "createUserDeviceKeys");
 
             const fetchJWT = () => Promise.resolve("test");
             const passcode = "pass";
@@ -135,7 +135,7 @@ describe("Init exposed public SDK", () => {
 
     describe("ErrorCodes", () => {
         it("exposes error codes", () => {
-            expect(PublicSdk.ErrorCodes).toBeObject();
+            expect(typeof PublicSdk.ErrorCodes).toBe("object");
         });
     });
 
@@ -154,8 +154,8 @@ describe("Init exposed public SDK", () => {
             checkSDKInitialized.mockImplementationOnce(() => {
                 throw Error("");
             });
-            expect(PublicSdk.isInitialized()).toBeFalse();
+            expect(PublicSdk.isInitialized()).toBe(false);
         });
-        it("should return true when sdk check doesn't throw", () => expect(PublicSdk.isInitialized()).toBeTrue());
+        it("should return true when sdk check doesn't throw", () => expect(PublicSdk.isInitialized()).toBe(true));
     });
 });

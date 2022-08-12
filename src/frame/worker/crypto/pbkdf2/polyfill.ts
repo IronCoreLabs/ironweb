@@ -22,7 +22,7 @@ export function generatePasswordDerivedKey(password: string, saltUsedDuringPrior
 
     return saltGeneration.map((salt) => {
         const saltAsBits = codec.base64.toBits(fromByteArray(salt));
-        const keyAsBits = misc.pbkdf2(password, saltAsBits, CryptoConstants.PBKDF2_ITERATIONS(), 256, hmacSHA256 as any);
+        const keyAsBits = misc.pbkdf2(password, saltAsBits, CryptoConstants.PBKDF2_ITERATIONS, 256, hmacSHA256 as any);
         return {
             key: toByteArray(codec.base64.fromBits(keyAsBits)),
             salt,

@@ -1,6 +1,5 @@
 const webpack = require("webpack");
 const path = require("path");
-const ATL = require("awesome-typescript-loader");
 const TerserPlugin = require("terser-webpack-plugin");
 
 process.env.NODE_ENV = "production";
@@ -13,7 +12,7 @@ module.exports = (_, argv) => {
             rules: [
                 {
                     test: /\.ts/,
-                    use: ["awesome-typescript-loader"],
+                    use: ["ts-loader"],
                     exclude: /node_modules/,
                 },
             ],
@@ -28,9 +27,7 @@ module.exports = (_, argv) => {
             },
         },
         plugins: [
-            new ATL.CheckerPlugin(),
             new webpack.DefinePlugin({
-                NODE_ENV: JSON.stringify("production"),
                 "process.env.NODE_ENV": JSON.stringify("production"),
                 _WORKER_PATH_LOCATION_: JSON.stringify(`${argv.outputPublicPath}ironweb-worker.min.js`),
             }),

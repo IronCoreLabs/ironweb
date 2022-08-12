@@ -82,20 +82,26 @@ function serveJWT(req, res) {
 
 module.exports = {
     devServer: {
+        client: {
+            overlay: true,
+        },
         hot: true,
         compress: true,
         port: SB_PORT,
         host: SB_HOST,
-        overlay: true,
-        https: {
-            key: fs.readFileSync(path.join(__dirname, "certs/sb/privkey.pem")),
-            cert: fs.readFileSync(path.join(__dirname, "certs/sb/cert.pem")),
-            ca: fs.readFileSync(path.join(__dirname, "certs/sb/chain.pem")),
+        server: {
+            type: "https",
+            options: {
+                key: fs.readFileSync(path.join(__dirname, "certs/sb/privkey.pem")),
+                cert: fs.readFileSync(path.join(__dirname, "certs/sb/cert.pem")),
+                ca: fs.readFileSync(path.join(__dirname, "certs/sb/chain.pem")),
+            },
         },
-        before(app) {
-            app.use(cookieParser());
-            app.get("/", serveIndex);
-            app.get("/generateJWT/:userID", serveJWT);
+        setupMiddlewares: (middlewares, devServer) => {
+            devServer.app.use(cookieParser());
+            devServer.app.get("/", serveIndex);
+            devServer.app.get("/generateJWT/:userID", serveJWT);
+            return middlewares;
         },
     },
     mode: "development",
@@ -114,7 +120,7 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 exclude: /node_modules/,
-                use: ["awesome-typescript-loader"],
+                use: ["ts-loader"],
             },
         ],
     },
@@ -123,10 +129,8 @@ module.exports = {
         emitOnErrors: false,
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
         new webpack.DefinePlugin({
-            NODE_ENV: JSON.stringify(runtimeEnvironment),
-            "process.env.NODE_ENV": JSON.stringify(runtimeEnvironment),
+            //"process.env.NODE_ENV": JSON.stringify(runtimeEnvironment), not sure why this conflicting problem comes up
             SDK_NPM_VERSION_PLACEHOLDER: JSON.stringify(process.env.HOSTED_VERSION || "SDK_NPM_VERSION_PLACEHOLDER"),
             _ICL_FRAME_DOMAIN_REPLACEMENT_: JSON.stringify(getFrameDomain()),
         }),

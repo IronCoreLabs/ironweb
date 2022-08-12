@@ -1,19 +1,22 @@
 import Future from "futurejs";
 import * as polyfill from "../polyfill";
-import * as Constants from "../../../../../Constants";
 import * as CryptoUtils from "../../CryptoUtils";
+jest.mock("../../../../../Constants", () => ({
+    CryptoConstants: {
+        // reduce the iterations for our tests to save time
+        PBKDF2_ITERATIONS: 500,
+    },
+}));
 
 describe("PBKDF2 polyfill", () => {
-    beforeAll(() => {
-        spyOn(Constants.CryptoConstants, "PBKDF2_ITERATIONS").and.returnValue(500);
-    });
-
     describe("generatePasswordDerivedKey", () => {
         it("should generate the expected derived key when no salt provided", () => {
-            spyOn(CryptoUtils, "generateRandomBytes").and.returnValue(Future.of(new Uint8Array(32)));
+            jest.spyOn(CryptoUtils, "generateRandomBytes").mockReturnValue(Future.of<any>(new Uint8Array(32)));
 
             polyfill.generatePasswordDerivedKey("password").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (derivedKey) => {
                     expect(derivedKey.key).toEqual(
                         //prettier-ignore
@@ -29,7 +32,9 @@ describe("PBKDF2 polyfill", () => {
             const salt = new Uint8Array([247, 116, 135, 59, 206, 61, 138, 137, 77, 207, 159, 207, 29, 133, 206, 15, 208, 76, 245, 83, 222, 84, 6, 157, 189, 223, 166, 231, 9, 182, 209, 173]);
 
             polyfill.generatePasswordDerivedKey("password", salt).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (derivedKey) => {
                     expect(derivedKey.key).toEqual(
                         //prettier-ignore

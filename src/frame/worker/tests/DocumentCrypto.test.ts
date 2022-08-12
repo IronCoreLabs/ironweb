@@ -10,14 +10,16 @@ describe("DocumentCrypto", () => {
         it("decrypts document key and then decrypts document", () => {
             const decryptedKey = new Uint8Array(22);
             const plaintext = new Uint8Array(384);
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([plaintext, decryptedKey]));
-            spyOn(AES, "decryptDocument").and.returnValue(Future.of("decrypted document"));
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of<any>([plaintext, decryptedKey]));
+            jest.spyOn(AES, "decryptDocument").mockReturnValue(Future.of<any>("decrypted document"));
 
             const testDoc = TestUtils.getEncryptedDocument();
             const symKey = TestUtils.getTransformedSymmetricKey();
             const privKey = new Uint8Array(32);
             DocumentCrypto.decryptDocument(testDoc, symKey, privKey).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (decryptedData: any) => {
                     expect(decryptedData).toEqual("decrypted document");
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(symKey, privKey);
@@ -27,14 +29,16 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decryption failure")));
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.reject(new Error("plaintext decryption failure")));
 
             DocumentCrypto.decryptDocument(TestUtils.getEncryptedDocument(), TestUtils.getTransformedSymmetricKey(), new Uint8Array(32)).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decryption failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_DECRYPT_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });
@@ -53,15 +57,15 @@ describe("DocumentCrypto", () => {
                 },
             ];
 
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
+            jest.spyOn(Recrypt, "generateDocumentKey").mockReturnValue(Future.of<any>([generatedPlaintext, generatedKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockImplementation((_: any, keyList: any) => {
                 if (keyList.length) {
-                    return Future.of(encryptedUserKeyList);
+                    return Future.of<any>(encryptedUserKeyList);
                 }
-                return Future.of([]);
+                return Future.of<any>([]);
             });
-            spyOn(AES, "encryptDocument").and.returnValue(
-                Future.of({
+            jest.spyOn(AES, "encryptDocument").mockReturnValue(
+                Future.of<any>({
                     data,
                     dataNonce,
                 })
@@ -72,7 +76,9 @@ describe("DocumentCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             DocumentCrypto.encryptDocument(docToEncrypt, userPublicKeyList, [], signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (decryptedData: any) => {
                     expect(decryptedData).toEqual({
                         userAccessKeys: encryptedUserKeyList,
@@ -80,7 +86,7 @@ describe("DocumentCrypto", () => {
                         encryptedDocument: {data, dataNonce},
                     });
                     expect(Recrypt.generateDocumentKey).toHaveBeenCalledWith();
-                    expect((Recrypt.encryptPlaintextToList as jasmine.Spy).calls.count()).toEqual(2);
+                    expect(Recrypt.encryptPlaintextToList as unknown as jest.SpyInstance).toHaveBeenCalledTimes(2);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, userPublicKeyList, signingKeys);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, [], signingKeys);
                     expect(AES.encryptDocument).toHaveBeenCalledWith(docToEncrypt, generatedKey);
@@ -101,15 +107,15 @@ describe("DocumentCrypto", () => {
                 },
             ];
 
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
+            jest.spyOn(Recrypt, "generateDocumentKey").mockReturnValue(Future.of<any>([generatedPlaintext, generatedKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockImplementation((_: any, keyList: any) => {
                 if (keyList.length) {
-                    return Future.of(encryptedGroupKeyList);
+                    return Future.of<any>(encryptedGroupKeyList);
                 }
-                return Future.of([]);
+                return Future.of<any>([]);
             });
-            spyOn(AES, "encryptDocument").and.returnValue(
-                Future.of({
+            jest.spyOn(AES, "encryptDocument").mockReturnValue(
+                Future.of<any>({
                     data,
                     dataNonce,
                 })
@@ -120,7 +126,9 @@ describe("DocumentCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             DocumentCrypto.encryptDocument(docToEncrypt, [], groupPublicKeyList, signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (decryptedData: any) => {
                     expect(decryptedData).toEqual({
                         userAccessKeys: [],
@@ -128,7 +136,7 @@ describe("DocumentCrypto", () => {
                         encryptedDocument: {data, dataNonce},
                     });
                     expect(Recrypt.generateDocumentKey).toHaveBeenCalledWith();
-                    expect((Recrypt.encryptPlaintextToList as jasmine.Spy).calls.count()).toEqual(2);
+                    expect(Recrypt.encryptPlaintextToList as unknown as jest.SpyInstance).toHaveBeenCalledTimes(2);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, groupPublicKeyList, signingKeys);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, [], signingKeys);
                     expect(AES.encryptDocument).toHaveBeenCalledWith(docToEncrypt, generatedKey);
@@ -148,15 +156,15 @@ describe("DocumentCrypto", () => {
                 {publicKey: "secondGroupPK", encryptedSymmetricKey: "secoGroupESK"},
             ];
 
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.of([generatedPlaintext, generatedKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.callFake((_: any, keyList: any) => {
+            jest.spyOn(Recrypt, "generateDocumentKey").mockReturnValue(Future.of<any>([generatedPlaintext, generatedKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockImplementation((_: any, keyList: any) => {
                 if (keyList.length === 1) {
-                    return Future.of(encryptedUserKeyList);
+                    return Future.of<any>(encryptedUserKeyList);
                 }
-                return Future.of(encryptedGroupKeyList);
+                return Future.of<any>(encryptedGroupKeyList);
             });
-            spyOn(AES, "encryptDocument").and.returnValue(
-                Future.of({
+            jest.spyOn(AES, "encryptDocument").mockReturnValue(
+                Future.of<any>({
                     data,
                     dataNonce,
                 })
@@ -171,7 +179,9 @@ describe("DocumentCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             DocumentCrypto.encryptDocument(docToEncrypt, userPublicKeyList, groupPublicKeyList, signingKeys).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (decryptedData: any) => {
                     expect(decryptedData).toEqual({
                         userAccessKeys: encryptedUserKeyList,
@@ -179,7 +189,7 @@ describe("DocumentCrypto", () => {
                         encryptedDocument: {data, dataNonce},
                     });
                     expect(Recrypt.generateDocumentKey).toHaveBeenCalledWith();
-                    expect((Recrypt.encryptPlaintextToList as jasmine.Spy).calls.count()).toEqual(2);
+                    expect(Recrypt.encryptPlaintextToList as unknown as jest.SpyInstance).toHaveBeenCalledTimes(2);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, userPublicKeyList, signingKeys);
                     expect(Recrypt.encryptPlaintextToList).toHaveBeenCalledWith(generatedPlaintext, groupPublicKeyList, signingKeys);
                     expect(AES.encryptDocument).toHaveBeenCalledWith(docToEncrypt, generatedKey);
@@ -188,14 +198,16 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "generateDocumentKey").and.returnValue(Future.reject(new Error("generate doc key failure")));
+            jest.spyOn(Recrypt, "generateDocumentKey").mockReturnValue(Future.reject(new Error("generate doc key failure")));
 
             DocumentCrypto.encryptDocument(new Uint8Array(35), [], [], TestUtils.getSigningKeyPair()).engage(
                 (error) => {
                     expect(error.message).toEqual("generate doc key failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_ENCRYPT_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });
@@ -209,15 +221,17 @@ describe("DocumentCrypto", () => {
                 dataNonce: new Uint8Array(12),
             };
 
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([plaintext, decryptKey]));
-            spyOn(AES, "encryptDocument").and.returnValue(Future.of(decryptResult));
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of<any>([plaintext, decryptKey]));
+            jest.spyOn(AES, "encryptDocument").mockReturnValue(Future.of<any>(decryptResult));
 
             const symKey = TestUtils.getTransformedSymmetricKey();
             const newData = new Uint8Array(35);
             const privKey = new Uint8Array(32);
 
             DocumentCrypto.reEncryptDocument(newData, symKey, privKey).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (decryptedData: any) => {
                     expect(decryptedData).toEqual(decryptResult);
                     expect(Recrypt.decryptPlaintext).toHaveBeenCalledWith(symKey, privKey);
@@ -227,13 +241,15 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decrypt failure")));
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.reject(new Error("plaintext decrypt failure")));
             DocumentCrypto.reEncryptDocument(new Uint8Array(35), TestUtils.getTransformedSymmetricKey(), new Uint8Array(32)).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decrypt failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_REENCRYPT_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });
@@ -253,8 +269,8 @@ describe("DocumentCrypto", () => {
                 },
             ];
 
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.of([decryptPlaintext, decryptKey]));
-            spyOn(Recrypt, "encryptPlaintextToList").and.returnValue(Future.of(EncryptedAccessKeyList));
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of<any>([decryptPlaintext, decryptKey]));
+            jest.spyOn(Recrypt, "encryptPlaintextToList").mockReturnValue(Future.of<any>(EncryptedAccessKeyList));
 
             const userList = [
                 {id: "abc-123", masterPublicKey: {x: "", y: ""}},
@@ -265,7 +281,9 @@ describe("DocumentCrypto", () => {
             const signingKeys = TestUtils.getSigningKeyPair();
 
             DocumentCrypto.encryptToKeys(TestUtils.getTransformedSymmetricKey(), userList, groupList, new Uint8Array(32), signingKeys).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (resp: any) => {
                     expect(resp).toEqual({
                         userAccessKeys: EncryptedAccessKeyList,
@@ -279,13 +297,15 @@ describe("DocumentCrypto", () => {
         });
 
         it("maps failures to SDK error with specific error code", () => {
-            spyOn(Recrypt, "decryptPlaintext").and.returnValue(Future.reject(new Error("plaintext decrypt failure")));
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.reject(new Error("plaintext decrypt failure")));
             DocumentCrypto.encryptToKeys(TestUtils.getTransformedSymmetricKey(), [], [], new Uint8Array(32), TestUtils.getSigningKeyPair()).engage(
                 (error) => {
                     expect(error.message).toEqual("plaintext decrypt failure");
                     expect(error.code).toEqual(ErrorCodes.DOCUMENT_GRANT_ACCESS_FAILURE);
                 },
-                () => fail("success handler should not be invoked when operation fails")
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
             );
         });
     });

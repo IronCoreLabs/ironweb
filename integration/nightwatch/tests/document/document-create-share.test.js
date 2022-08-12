@@ -1,11 +1,11 @@
 module.exports = {
-    beforeEach(browser){
+    beforeEach(browser) {
         browser.url(browser.launchUrl);
         const {initializeUser} = browser.page.demoApp().section;
         initializeUser.initializeAndSyncUser();
     },
 
-    'Can share a document with another user at creation time'(browser){
+    "Can share a document with another user at creation time"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView, commandBar, initializeUser} = demoApp.section;
 
@@ -19,55 +19,39 @@ module.exports = {
 
             documentList.clickAddNewDocument();
 
-            documentCreate
-                .setTodoListName(`Grant access to ${firstUserID}`)
-                .enterUserIDToGrantAccess(firstUserID)
-                .submitDocument();
+            documentCreate.setTodoListName(`Grant access to ${firstUserID}`).enterUserIDToGrantAccess(firstUserID).submitDocument();
 
             demoApp.assertOnHostedDocumentViewPage();
 
-            documentView
-                .waitForElementVisible('@documentViewDetails')
-                .assertUserVisibleToSize(2)
-                .assertUserVisibleIDAtPosition(1, firstUserID);
+            documentView.waitForElementVisible("@documentViewDetails").assertUserVisibleToSize(2).assertUserVisibleIDAtPosition(0, firstUserID);
 
             browser.end();
         });
     },
 
-    'Can share a document with a group at creation time'(browser){
+    "Can share a document with a group at creation time"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView, groupList, groupCreate, groupDetail} = demoApp.section;
 
         demoApp.switchToGroubTabUI();
 
-        groupList.clickAddNewGroup()
+        groupList.clickAddNewGroup();
         demoApp.assertOnGroupCreatePage();
 
-        groupCreate
-            .enterGroupName('share with group on create')
-            .submitNewGroup();
+        groupCreate.enterGroupName("share with group on create").enterGroupID(`share-with-group-on-create-${Date.now()}`).submitNewGroup();
 
         demoApp.assertOnGroupDetailPage();
 
         groupDetail.getGroupID((groupID) => {
-
             demoApp.switchToDocumentTabUI();
 
             documentList.clickAddNewDocument();
 
-            documentCreate
-                .setTodoListName(`Grant access to group ${groupID}`)
-                .clickOnGroupGrantAccessCheckbox(groupID)
-                .submitDocument();
+            documentCreate.setTodoListName(`Grant access to group ${groupID}`).clickOnGroupGrantAccessCheckbox(groupID).submitDocument();
 
             demoApp.assertOnHostedDocumentViewPage();
 
-            documentView
-                .waitForElementVisible('@documentViewDetails')
-                .assertUserVisibleToSize(1)
-                .assertGroupVisibleToSize(1)
-                .clickRevokeAccessButton();
+            documentView.waitForElementVisible("@documentViewDetails").assertUserVisibleToSize(1).assertGroupVisibleToSize(1).clickRevokeAccessButton();
 
             browser.pause(350);
 

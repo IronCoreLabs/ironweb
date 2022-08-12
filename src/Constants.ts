@@ -19,7 +19,7 @@ export const CryptoConstants = {
     IV_LENGTH: 12,
     SALT_LENGTH: 32,
     AES_SYMMETRIC_KEY_LENGTH: 32,
-    PBKDF2_ITERATIONS: () => 250000, //Set this as a function so that we can mock it during unit tests
+    PBKDF2_ITERATIONS: 250000,
     NATIVE_DECRYPT_FAILURE_ERROR: "OperationError",
 };
 

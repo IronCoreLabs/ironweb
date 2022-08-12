@@ -1,5 +1,4 @@
 const webpack = require("webpack");
-const ATL = require("awesome-typescript-loader");
 const TerserPlugin = require("terser-webpack-plugin");
 
 process.env.NODE_ENV = "production";
@@ -24,15 +23,13 @@ const config = {
         rules: [
             {
                 test: /\.ts$/,
-                use: ["awesome-typescript-loader"],
+                use: ["ts-loader"],
                 exclude: /node_modules/,
             },
         ],
     },
     plugins: [
-        new ATL.CheckerPlugin(),
         new webpack.DefinePlugin({
-            NODE_ENV: JSON.stringify("production"),
             "process.env.NODE_ENV": JSON.stringify("production"),
         }),
     ],

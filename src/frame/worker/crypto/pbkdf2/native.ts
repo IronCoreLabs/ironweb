@@ -22,7 +22,7 @@ function deriveKey(key: CryptoKey, salt: Uint8Array) {
             {
                 name: "PBKDF2",
                 salt,
-                iterations: PBKDF2_ITERATIONS(),
+                iterations: PBKDF2_ITERATIONS,
                 hash: {name: "SHA-256"},
             },
             key,

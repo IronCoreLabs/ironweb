@@ -23,10 +23,12 @@ describe("DocumentAdvancedApi", () => {
             const eDoc = new Uint8Array([99, 35, 235]);
             DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
-                () => fail("Should reject when document is not one of ours")
+                () => {
+                    throw new Error("Should reject when document is not one of ours");
+                }
             );
         });
 
@@ -35,10 +37,12 @@ describe("DocumentAdvancedApi", () => {
             const eDoc = new Uint8Array([2, 35, 52, 13, 63, 23, 63, 34]);
             DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
                 (e) => {
-                    expect(e.message).toBeString();
+                    expect(e.message).toEqual(expect.stringContaining(""));
                     expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
                 },
-                () => fail("Should reject when document header is invalid")
+                () => {
+                    throw new Error("Should reject when document header is invalid");
+                }
             );
         });
 
@@ -47,13 +51,15 @@ describe("DocumentAdvancedApi", () => {
             const decryptedBytes = new Uint8Array([36, 89, 72]);
             const edeks = new Uint8Array([22, 33, 44]);
 
-            spyOn(EncryptedDekEndpoints, "callEncryptedDekTransformApi").and.returnValue(
-                Future.of({encryptedSymmetricKey: TestUtils.getTransformedSymmetricKey()})
+            jest.spyOn(EncryptedDekEndpoints, "callEncryptedDekTransformApi").mockReturnValue(
+                Future.of<any>({encryptedSymmetricKey: TestUtils.getTransformedSymmetricKey()})
             );
-            spyOn(DocumentOperations, "decryptDocument").and.returnValue(Future.of(decryptedBytes));
+            jest.spyOn(DocumentOperations, "decryptDocument").mockReturnValue(Future.of<any>(decryptedBytes));
 
             DocumentAdvancedApi.decryptWithProvidedEdeks(eDoc, edeks).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 ({data}) => {
                     expect(data).toEqual(decryptedBytes);
                 }
@@ -71,18 +77,18 @@ describe("DocumentAdvancedApi", () => {
             ];
             const returnedGroupKeys = [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}];
 
-            spyOn(UserApiEndpoints, "callUserKeyListApi").and.returnValue(
-                Future.of({
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(
+                Future.of<any>({
                     result: returnedUserKeys,
                 })
             );
-            spyOn(GroupApiEndpoints, "callGroupKeyListApi").and.returnValue(
-                Future.of({
+            jest.spyOn(GroupApiEndpoints, "callGroupKeyListApi").mockReturnValue(
+                Future.of<any>({
                     result: returnedGroupKeys,
                 })
             );
-            spyOn(PolicyApiEndpoints, "callApplyPolicyApi").and.returnValue(
-                Future.of({
+            jest.spyOn(PolicyApiEndpoints, "callApplyPolicyApi").mockReturnValue(
+                Future.of<any>({
                     usersAndGroups: [
                         {id: "group-policy", type: "group", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
                         {id: "user-policy", type: "user", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
@@ -90,8 +96,8 @@ describe("DocumentAdvancedApi", () => {
                     invalidUsersAndGroups: [],
                 })
             );
-            spyOn(DocumentOperations, "encryptNewDocumentToList").and.returnValue(
-                Future.of({
+            jest.spyOn(DocumentOperations, "encryptNewDocumentToList").mockReturnValue(
+                Future.of<any>({
                     userAccessKeys: [{id: "user-10", encryptedPlaintext: encryptedSymKey, publicKey: TestUtils.getEmptyPublicKeyString()}],
                     groupAccessKeys: [{id: "group-10", encryptedPlaintext: encryptedSymKey, publicKey: TestUtils.getEmptyPublicKeyString()}],
                     encryptedDocument,
@@ -99,7 +105,7 @@ describe("DocumentAdvancedApi", () => {
             );
 
             DocumentAdvancedApi.encrypt("doc key", new Uint8Array([88, 73, 92]), ["user-55", "user-33"], ["group-20"], true, {}).engage(
-                (e) => fail(e.message),
+                (e) => done(e),
                 ({edeks, document, documentID}) => {
                     const userKeyList = [
                         {id: "user-55", masterPublicKey: TestUtils.getEmptyPublicKeyString()},

@@ -14,10 +14,19 @@ interface InitializeApiState {
     passcode: string;
 }
 
+declare global {
+    interface Window {
+        User: {
+            id: string;
+            name: string;
+        };
+    }
+}
+
 const tabStyle = {
     marginTop: "15px",
     padding: "25px",
-    textAlign: "center" as "center",
+    textAlign: "center" as const,
 };
 
 export default class InitializeApi extends React.Component<InitializeApiProps, InitializeApiState> {
@@ -99,11 +108,11 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
             });
     };
 
-    getPasscodeInput() {
+    getPasscodeInput(key: string) {
         return (
             <TextField
                 key="passcode"
-                id="api-passcode"
+                id={`api-passcode-${key}`}
                 autoFocus
                 type="text"
                 onKeyPress={this.handleEnter}
@@ -137,7 +146,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
     getInitUIElement() {
         if (this.state.showSetPasscode) {
             return [
-                this.getPasscodeInput(),
+                this.getPasscodeInput("initialize"),
                 <RaisedButton className="set-passcode" key="set-passcode" secondary onClick={this.setPasscode} label="Set Passcode" />,
             ];
         }
@@ -152,7 +161,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
                 </Tab>
                 <Tab label="Manual" onActive={() => this.setState({passcode: ""})}>
                     <div style={{...tabStyle}}>
-                        {this.getPasscodeInput()}
+                        {this.getPasscodeInput("manual")}
                         <RaisedButton className="initialize-create-user" secondary onClick={this.createUser} label="Create User" />
                         <br />
                         <br />

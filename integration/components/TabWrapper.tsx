@@ -13,8 +13,8 @@ interface TabWrapperState {
     selectedGroup: null | GroupMetaResponse | "new";
 }
 
-export default class TabWrapper extends React.Component<{}, TabWrapperState> {
-    constructor(props: {}) {
+export default class TabWrapper extends React.Component<Record<string, never>, TabWrapperState> {
+    constructor(props: Record<string, never>) {
         super(props);
         this.state = {
             selectedList: null,

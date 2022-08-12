@@ -6,8 +6,8 @@ import PolicyApiEndpoints from "../PolicyApiEndpoints";
 
 describe("PolicyApiEndpoint", () => {
     beforeEach(() => {
-        spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
-            Future.of({
+        jest.spyOn(ApiRequest, "makeAuthorizedApiRequest").mockReturnValue(
+            Future.of<any>({
                 foo: "bar",
             })
         );
@@ -23,7 +23,9 @@ describe("PolicyApiEndpoint", () => {
                 dataSubject: "Tommy&Fing B",
                 substituteUser: "CZECH REPUB",
             }).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
@@ -41,7 +43,9 @@ describe("PolicyApiEndpoint", () => {
                 category: "catty&batty",
                 dataSubject: null,
             } as any).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (result) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(

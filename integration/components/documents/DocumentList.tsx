@@ -4,7 +4,6 @@ import Divider from "material-ui/Divider";
 import FloatingActionButton from "material-ui/FloatingActionButton";
 import {List, ListItem} from "material-ui/List";
 import {brown200, brown400, cyan500, lightGreen200, lightGreen400, lightGreenA700, orange200, orange400} from "material-ui/styles/colors";
-import Subheader from "material-ui/Subheader";
 import Assignment from "material-ui/svg-icons/action/assignment";
 import Add from "material-ui/svg-icons/content/add";
 import Cloud from "material-ui/svg-icons/file/cloud";
@@ -156,12 +155,7 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
                         <Refresh />
                     </FloatingActionButton>
                 </div>
-                <List style={{backgroundColor: "#f5f5f5", padding: 0, maxHeight: "350px", overflowY: "auto"}}>
-                    <Subheader>My Documents</Subheader>
-                    {this.getDocumentsMarkup(this.state.lists.filter((list) => list.association === "owner"))}
-                    <Subheader>Shared With Me</Subheader>
-                    {this.getDocumentsMarkup(this.state.lists.filter((list) => list.association !== "owner"))}
-                </List>
+                <List style={{backgroundColor: "#f5f5f5", padding: 0, maxHeight: "350px", overflowY: "auto"}}>{this.getDocumentsMarkup(this.state.lists)}</List>
                 <div style={{display: "flex", justifyContent: "flex-end", margin: "10px 0"}}>
                     <FloatingActionButton className="new-document" onClick={this.props.onListSelect.bind(null, "new")} mini backgroundColor={cyan500}>
                         <Add />

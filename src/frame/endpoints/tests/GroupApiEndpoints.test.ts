@@ -5,10 +5,10 @@ import ApiState from "../../ApiState";
 import GroupApiEndpoints from "../GroupApiEndpoints";
 
 describe("GroupApiEndpoints", () => {
-    var apiSpy: jasmine.Spy;
+    var apiSpy: jest.SpyInstance;
     beforeEach(() => {
-        apiSpy = spyOn(ApiRequest, "makeAuthorizedApiRequest").and.returnValue(
-            Future.of({
+        apiSpy = jest.spyOn(ApiRequest, "makeAuthorizedApiRequest").mockReturnValue(
+            Future.of<any>({
                 foo: "bar",
             })
         );
@@ -19,7 +19,7 @@ describe("GroupApiEndpoints", () => {
     describe("callGroupListApi", () => {
         it("requests group list endpoint and maps response to data result", () => {
             GroupApiEndpoints.callGroupListApi().engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups: any) => {
                     expect(groups).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
@@ -40,9 +40,9 @@ describe("GroupApiEndpoints", () => {
                     {id: id2, groupMasterPublicKey: key2},
                 ],
             };
-            apiSpy.and.returnValue(Future.of(apiResp));
+            apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.callGroupKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups: any) => {
                     expect(groups).toEqual(apiResp);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -61,9 +61,9 @@ describe("GroupApiEndpoints", () => {
                     {id: id2, groupMasterPublicKey: key2},
                 ],
             };
-            apiSpy.and.returnValue(Future.of(apiResp));
+            apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.callGroupKeyListApi([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups: any) => {
                     expect(groups).toEqual(apiResp);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
@@ -77,7 +77,7 @@ describe("GroupApiEndpoints", () => {
 
         it("returns empty array if no group IDs provided", () => {
             GroupApiEndpoints.callGroupKeyListApi([]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups) => {
                     expect(groups).toEqual({result: []});
                     expect(ApiRequest.makeAuthorizedApiRequest).not.toHaveBeenCalled();
@@ -100,9 +100,9 @@ describe("GroupApiEndpoints", () => {
             };
             // clear the module cache for this test
             for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
-            apiSpy.and.returnValue(Future.of(apiResp));
+            apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -110,7 +110,7 @@ describe("GroupApiEndpoints", () => {
                 }
             );
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
@@ -131,9 +131,9 @@ describe("GroupApiEndpoints", () => {
             };
             // clear the module cache for this test
             for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
-            apiSpy.and.returnValue(Future.of(apiResp));
+            apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -156,9 +156,9 @@ describe("GroupApiEndpoints", () => {
             };
             // clear the module cache for this test
             for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
-            apiSpy.and.returnValue(Future.of(apiResp));
+            apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -166,7 +166,7 @@ describe("GroupApiEndpoints", () => {
                 }
             );
             GroupApiEndpoints.getGroupPublicKeyList([id1, "group-30"]).engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (_) => {
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-30", expect.any(Number), expect.any(Object));
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(2);
@@ -178,7 +178,7 @@ describe("GroupApiEndpoints", () => {
     describe("callGroupGetApi", () => {
         it("requests group get with specific ID and maps response to data result", () => {
             GroupApiEndpoints.callGroupGetApi("87").engage(
-                (e) => fail(e),
+                (e) => {throw e},
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/87", expect.any(Number), expect.any(Object));
@@ -207,11 +207,13 @@ describe("GroupApiEndpoints", () => {
             ];
 
             GroupApiEndpoints.callGroupCreateApi("35", groupPublicKey, encryptedAccessKeys, false, transformKeyGrantList, "ownerUserId", "group name").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         id: "35",
                         name: "group name",
@@ -293,11 +295,13 @@ describe("GroupApiEndpoints", () => {
             ];
 
             GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, encryptedAccessKeys, false, [transformKeyGrant], "ownerUserId", "").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         groupPublicKey: {
@@ -347,11 +351,13 @@ describe("GroupApiEndpoints", () => {
             ];
 
             GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, encryptedAccessKeys, false, [], "ownerUserId", "group name").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         name: "group name",
@@ -388,11 +394,13 @@ describe("GroupApiEndpoints", () => {
             ];
 
             GroupApiEndpoints.callGroupCreateApi("", groupPublicKey, encryptedAccessKeys, false, [], "", "group name").engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         name: "group name",
@@ -431,11 +439,13 @@ describe("GroupApiEndpoints", () => {
             ];
             const augmentationFactor = new Uint8Array([98, 103, 110]);
             GroupApiEndpoints.callGroupPrivateKeyUpdateApi("groupID", encryptedAccessKeys, augmentationFactor, 5).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/groupID/keys/5", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         augmentationFactor: "Ymdu",
                         admins: [
@@ -459,11 +469,13 @@ describe("GroupApiEndpoints", () => {
     describe("callGroupUpdateApi", () => {
         it("invokes API with update parameters when new value provided", () => {
             GroupApiEndpoints.callGroupUpdateApi("23", "new name").engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/23", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                     expect(JSON.parse(request.body)).toEqual({
                         name: "new name",
                     });
@@ -473,11 +485,13 @@ describe("GroupApiEndpoints", () => {
 
         it("invokes API with null to clear group name", () => {
             GroupApiEndpoints.callGroupUpdateApi("&32", null).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (result: any) => {
                     expect(result).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/%2632", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         name: null,
@@ -505,11 +519,13 @@ describe("GroupApiEndpoints", () => {
             ];
 
             GroupApiEndpoints.callAddAdminsApi("22", userKeys, signature).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         admins: [
@@ -540,11 +556,13 @@ describe("GroupApiEndpoints", () => {
             const userIDs = ["31", "89", "76", "33"];
 
             GroupApiEndpoints.callRemoveAdminsApi("22", userIDs).engage(
-                (e) => fail(e.message),
+                (e) => {
+                    throw new Error(e.message);
+                },
                 (removeResult: any) => {
                     expect(removeResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/22/admins", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         users: [{userId: "31"}, {userId: "89"}, {userId: "76"}, {userId: "33"}],
@@ -571,11 +589,13 @@ describe("GroupApiEndpoints", () => {
             const signature = new Uint8Array([98, 103, 110]);
 
             GroupApiEndpoints.callAddMembersApi("31", userKeys, signature).engage(
-                (e) => fail(e),
+                (e) => {
+                    throw e;
+                },
                 (addResult: any) => {
                     expect(addResult).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object));
-                    const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                     expect(JSON.parse(request.body)).toEqual({
                         users: [
@@ -613,11 +633,13 @@ describe("GroupApiEndpoints", () => {
         describe("callRemoveMembersApi", () => {
             it("passes in list of IDs to API", () => {
                 GroupApiEndpoints.callRemoveMembersApi("31", ["3513", "36236"]).engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     (removeResult: any) => {
                         expect(removeResult).toEqual({foo: "bar"});
                         expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/31/users", expect.any(Number), expect.any(Object));
-                        const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                        const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
 
                         expect(JSON.parse(request.body)).toEqual({
                             users: [{userId: "3513"}, {userId: "36236"}],
@@ -630,11 +652,13 @@ describe("GroupApiEndpoints", () => {
         describe("callGroupDeleteApi", () => {
             it("requests expected endpoint", () => {
                 GroupApiEndpoints.callGroupDeleteApi("31&32").engage(
-                    (e) => fail(e),
+                    (e) => {
+                        throw e;
+                    },
                     (deleteResult: any) => {
                         expect(deleteResult).toEqual({foo: "bar"});
                         expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/31%2632", expect.any(Number), expect.any(Object));
-                        const request = (ApiRequest.makeAuthorizedApiRequest as jasmine.Spy).calls.argsFor(0)[2];
+                        const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
                         expect(request.body).toBeUndefined();
                     }
                 );

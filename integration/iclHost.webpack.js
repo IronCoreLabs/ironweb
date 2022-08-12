@@ -63,14 +63,13 @@ const sharedConfig = {
     module: {
         rules: [
             {
-                test: /\.ts$/,
+                test: /\.tsx?$/,
                 exclude: /node_modules/,
-                use: ["awesome-typescript-loader"],
+                use: ["ts-loader"],
             },
         ],
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
         new webpack.DefinePlugin({
             SDK_NPM_VERSION_PLACEHOLDER: JSON.stringify("SDK_NPM_VERSION_PLACEHOLDER"),
             _WORKER_PATH_LOCATION_: JSON.stringify("./webpack/dist/worker.js"),
@@ -84,23 +83,29 @@ const sharedConfig = {
 const frameConfig = {
     ...sharedConfig,
     devServer: {
+        client: {
+            overlay: true,
+        },
         hot: true,
         compress: true,
         port: IRONCORE_PORT,
         host: IRONCORE_HOST,
-        overlay: true,
-        https: {
-            key: fs.readFileSync(path.join(__dirname, "certs/icl/privkey.pem")),
-            cert: fs.readFileSync(path.join(__dirname, "certs/icl/cert.pem")),
-            ca: fs.readFileSync(path.join(__dirname, "certs/icl/chain.pem")),
+        server: {
+            type: "https",
+            options: {
+                key: fs.readFileSync(path.join(__dirname, "certs/icl/privkey.pem")),
+                cert: fs.readFileSync(path.join(__dirname, "certs/icl/cert.pem")),
+                ca: fs.readFileSync(path.join(__dirname, "certs/icl/chain.pem")),
+            },
         },
-        before(app) {
-            app.get("/ironweb-frame", serveFrame);
+        setupMiddlewares: (middlewares, devServer) => {
+            devServer.app.get("/ironweb-frame", serveFrame);
             //Setup endpoint for optionally serving production files for both the frame and the worker script. The path here is defined
             //both above in the frame HTMl as well as the build config in build.js for when we define the webpack public path for the worker.
-            app.use("/static/:version/:file", (req, res) => {
+            devServer.app.use("/static/:version/:file", (req, res) => {
                 res.sendFile(path.join(__dirname, "../dist/frame/", req.params.file));
             });
+            return middlewares;
         },
         proxy: {
             //Proxy through API requests through webpack. We're doing this because the API is hosted locally over port 9090 over
