@@ -99,10 +99,12 @@ export function getDocumentIDFromBytes(documentData: Uint8Array): Promise<string
 }
 
 /**
+ * @deprecated Use `decrypt` instead.
  * Retrieve and decrypt a document from the document store. Returns a Promise which will be resolved once the document has been retrieved and decrypted.
  * @param {string} documentID ID of the document to retrieve
  */
 export function decryptFromStore(documentID: string) {
+    console.warn("decryptFromStore is deprecated. Use decrypt instead.");
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateID(documentID);
     const payload: MT.DocumentStoreDecryptRequest = {
@@ -138,6 +140,7 @@ export function decrypt(documentID: string, documentData: Uint8Array) {
 }
 
 /**
+ * @deprecated Use `encrypt` instead and manage storage of the result yourself.
  * Creates a new encrypted document within the store. Returns a Promise which will be resolved once the data has been fully encrypted and saved.
  * @param {Uint8Array}            documentData Data to save for document
  * @param {DocumentCreateOptions} options      Document create options. Includes:
@@ -150,6 +153,7 @@ export function decrypt(documentID: string, documentData: Uint8Array) {
  *                                                   grantToAuthor: boolean - Should the create grant access to the logged in user. Defaults to true.
  */
 export function encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions) {
+    console.warn("encryptToStore is deprecated. Use encrypt instead and manage storage of the result yourself.");
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateDocumentData(documentData);
     if (documentData.length > MAX_DOCUMENT_SIZE) {
