@@ -1,11 +1,11 @@
 import * as React from "react";
 import TextField from "material-ui/TextField";
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
 import {GroupMetaResponse} from "../../../ironweb";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
 import FloatingActionButton from "material-ui/FloatingActionButton";
-import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
+import ArrowBack from "@material-ui/icons/ArrowBack";
 import Checkbox from "material-ui/Checkbox";
 
 interface NewGroupProps {
@@ -79,7 +79,9 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
                     />
                 </div>
                 <div style={{textAlign: "center", marginTop: "15px"}}>
-                    <RaisedButton className="submit-new-group" onClick={this.createNewGroup} label="Create New Group" />
+                    <Button variant="contained" className="submit-new-group" onClick={this.createNewGroup}>
+                        Create New Group
+                    </Button>
                 </div>
             </div>
         );

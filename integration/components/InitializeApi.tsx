@@ -1,4 +1,4 @@
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
 import {Tab, Tabs} from "material-ui/Tabs";
 import TextField from "material-ui/TextField";
 import * as React from "react";
@@ -147,10 +147,16 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
         if (this.state.showSetPasscode) {
             return [
                 this.getPasscodeInput("initialize"),
-                <RaisedButton className="set-passcode" key="set-passcode" secondary onClick={this.setPasscode} label="Set Passcode" />,
+                <Button variant="contained" className="set-passcode" key="set-passcode" color="secondary" onClick={this.setPasscode}>
+                    Set Passcode
+                </Button>,
             ];
         }
-        return <RaisedButton className="initialize-api-start" secondary onClick={this.initialize} label="Initialize Api" />;
+        return (
+            <Button variant="contained" className="initialize-api-start" color="secondary" onClick={this.initialize}>
+                Initialize Api
+            </Button>
+        );
     }
 
     render() {
@@ -162,10 +168,14 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
                 <Tab label="Manual" onActive={() => this.setState({passcode: ""})}>
                     <div style={{...tabStyle}}>
                         {this.getPasscodeInput("manual")}
-                        <RaisedButton className="initialize-create-user" secondary onClick={this.createUser} label="Create User" />
+                        <Button variant="contained" className="initialize-create-user" color="secondary" onClick={this.createUser}>
+                            Create User
+                        </Button>
                         <br />
                         <br />
-                        <RaisedButton className="initialize-create-device" secondary onClick={this.createDevice} label="Create Device" />
+                        <Button variant="contained" className="initialize-create-device" color="secondary" onClick={this.createDevice}>
+                            Create Device
+                        </Button>
                     </div>
                 </Tab>
             </Tabs>

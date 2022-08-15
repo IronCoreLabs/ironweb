@@ -2,7 +2,7 @@ import * as React from "react";
 import * as IronWeb from "../../../src/shim";
 import LoadingPlaceholder from "../LoadingPlaceholder";
 import TextField from "material-ui/TextField";
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
 import Checkbox from "material-ui/Checkbox";
 import {logAction} from "../../Logger";
 import {GroupMetaResponse, DocumentAccessResponse} from "../../../ironweb";
@@ -130,7 +130,9 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
         const submit = this.state.isGranting ? (
             <LoadingPlaceholder />
         ) : (
-            <RaisedButton className="grant-access-submit" onClick={this.grantListAccess} label="Grant Todo List Access" secondary />
+            <Button variant="contained" className="grant-access-submit" onClick={this.grantListAccess} color="secondary">
+                Grant Todo List Access
+            </Button>
         );
 
         return (

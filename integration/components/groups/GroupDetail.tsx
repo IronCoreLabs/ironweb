@@ -2,13 +2,18 @@ import * as React from "react";
 import Divider from "material-ui/Divider";
 import TextField from "material-ui/TextField";
 import FloatingActionButton from "material-ui/FloatingActionButton";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import Dialog from "material-ui/Dialog";
-import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
-import Refresh from "material-ui/svg-icons/navigation/refresh";
-import Delete from "material-ui/svg-icons/action/delete";
-import ImageRotateRight from "material-ui/svg-icons/image/rotate-right";
-import {lightGreenA700, red700, grey400} from "material-ui/styles/colors";
+import ArrowBack from "@material-ui/icons/ArrowBack";
+import Refresh from "@material-ui/icons/Refresh";
+import Delete from "@material-ui/icons/Delete";
+import ImageRotateRight from "@material-ui/icons/RotateRight";
+import lightGreen from "@material-ui/core/colors/lightGreen";
+import red from "@material-ui/core/colors/red";
+import grey from "@material-ui/core/colors/grey";
+const lightGreenA700 = lightGreen.A700;
+const red700 = red["700"];
+const grey400 = grey["400"];
 import {GroupMetaResponse, GroupDetailResponse} from "../../../ironweb";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
@@ -165,7 +170,11 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
 
     render() {
         const {groupMeta} = this.state;
-        const modalAction = [<FlatButton key="groupDelete" className="submit-passcode-change" label="Delete Group" secondary onClick={this.deleteGroup} />];
+        const modalAction = [
+            <Button key="groupDelete" className="submit-passcode-change" color="secondary" onClick={this.deleteGroup}>
+                Delete Group
+            </Button>,
+        ];
         return (
             <div className="group-detail">
                 <div style={{display: "flex", justifyContent: "space-around"}}>

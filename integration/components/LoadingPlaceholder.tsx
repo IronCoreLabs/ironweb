@@ -1,5 +1,5 @@
 import * as React from "react";
-import CircularProgress from "material-ui/CircularProgress";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 /**
  * Display a block with an icon used to denote a loading section

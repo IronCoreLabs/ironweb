@@ -6,12 +6,20 @@ import Chip from "material-ui/Chip";
 import Divider from "material-ui/Divider";
 import FloatingActionButton from "material-ui/FloatingActionButton";
 import Avatar from "material-ui/Avatar";
-import People from "material-ui/svg-icons/social/people";
-import Person from "material-ui/svg-icons/social/person";
-import Gavel from "material-ui/svg-icons/action/gavel";
-import Refresh from "material-ui/svg-icons/navigation/refresh";
-import Add from "material-ui/svg-icons/content/add";
-import {lightGreen200, lightGreen400, orange200, orange400, lightGreenA700, cyan500} from "material-ui/styles/colors";
+import People from '@material-ui/icons/People';
+import Person from '@material-ui/icons/Person';
+import Gavel from '@material-ui/icons/Gavel';
+import Refresh from '@material-ui/icons/Refresh';
+import Add from '@material-ui/icons/Add';
+import lightGreen from '@material-ui/core/colors/lightGreen';
+import orange from '@material-ui/core/colors/orange';
+import cyan from '@material-ui/core/colors/cyan';
+const lightGreen200 = lightGreen['200'];
+const lightGreen400 = lightGreen['400'];
+const orange200 = orange['200'];
+const orange400 = orange['400'];
+const lightGreenA700 = lightGreen.A700;
+const cyan500 = cyan['500'];
 import {GroupMetaResponse} from "../../../ironweb";
 
 interface GroupListProps {

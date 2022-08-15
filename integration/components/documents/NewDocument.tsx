@@ -1,6 +1,6 @@
 import * as React from "react";
 import TextField from "material-ui/TextField";
-import RaisedButton from "material-ui/RaisedButton";
+import Button from "@material-ui/core/Button";
 import {DocumentIDNameResponse, GroupMetaResponse} from "../../../ironweb";
 import * as DocumentDB from "../../DocumentDB";
 import * as IronWeb from "../../../src/shim";
@@ -11,11 +11,16 @@ import {List, ListItem} from "material-ui/List";
 import FloatingActionButton from "material-ui/FloatingActionButton";
 import Chip from "material-ui/Chip";
 import Avatar from "material-ui/Avatar";
-import Cloud from "material-ui/svg-icons/file/cloud";
-import Local from "material-ui/svg-icons/file/cloud-off";
-import Upload from "material-ui/svg-icons/file/file-upload";
-import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
-import {lightGreen200, lightGreen400, orange200, orange400} from "material-ui/styles/colors";
+import Cloud from "@material-ui/icons/Cloud";
+import Local from "@material-ui/icons/CloudOff";
+import Upload from "@material-ui/icons/CloudUpload";
+import ArrowBack from "@material-ui/icons/ArrowBack";
+import lightGreen from "@material-ui/core/colors/lightGreen";
+import orange from "@material-ui/core/colors/orange";
+const lightGreen200 = lightGreen["200"];
+const lightGreen400 = lightGreen["400"];
+const orange200 = orange["200"];
+const orange400 = orange["400"];
 
 type GrantList = {id: string}[];
 
@@ -340,7 +345,9 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
                                     {this.getGroupCheckboxes()}
                                 </div>
                             </div>
-                            <RaisedButton className="submit-new-document" onClick={this.createNewList} label="Create New Document" />
+                            <Button variant="contained" className="submit-new-document" onClick={this.createNewList}>
+                                Create New Document
+                            </Button>
                         </div>
                     </Tab>
                     <Tab label="File Upload">

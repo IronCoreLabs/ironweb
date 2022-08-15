@@ -4,11 +4,12 @@ import {logAction} from "../../Logger";
 import {List, ListItem} from "material-ui/List";
 import GrantDocumentAccess from "./GrantDocumentAccess";
 import IconButton from "material-ui/IconButton";
-import Person from "material-ui/svg-icons/social/person";
-import Star from "material-ui/svg-icons/toggle/star";
-import People from "material-ui/svg-icons/social/people";
-import Revoke from "material-ui/svg-icons/navigation/cancel";
-import {cyan500} from "material-ui/styles/colors";
+import Person from "@material-ui/icons/Person";
+import Star from "@material-ui/icons/Star";
+import People from "@material-ui/icons/People";
+import Revoke from "@material-ui/icons/Cancel";
+import cyan from "@material-ui/core/colors/cyan";
+const cyan500 = cyan["500"];
 import {DocumentVisibilityList, DocumentAssociation} from "../../../ironweb";
 
 interface DocumentVisibilityProps {
@@ -42,7 +43,7 @@ export default class DocumentVisibility extends React.Component<DocumentVisibili
     }
 
     getUserAccessRow = ({id}: {id: string}) => {
-        const currentUserIcon = id === window.User.id ? <Star color={cyan500} /> : undefined;
+        const currentUserIcon = id === window.User.id ? <Star htmlColor={cyan500} /> : undefined;
         let revokeIcon;
         if (!currentUserIcon) {
             //No user can remove themselves from a share, regardless of whether they're the author or not so only create a revoke icon if this is not the current user

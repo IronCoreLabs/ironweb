@@ -8,9 +8,10 @@ import FileDocument from "./FileDocument";
 import DocumentVisiblity from "./DocumentVisibility";
 import TextField from "material-ui/TextField";
 import FloatingActionButton from "material-ui/FloatingActionButton";
-import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
-import Refresh from "material-ui/svg-icons/navigation/refresh";
-import {lightGreenA700} from "material-ui/styles/colors";
+import ArrowBack from '@material-ui/icons/ArrowBack';
+import Refresh from '@material-ui/icons/Refresh';
+import lightGreen from '@material-ui/core/colors/lightGreen';
+const lightGreenA700 = lightGreen.A700;
 import {DocumentContent} from "../../componentTypes";
 import {DocumentMetaResponse} from "../../../ironweb";
 

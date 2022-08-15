@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as IronWeb from "../../../src/shim";
 import FloatingActionButton from "material-ui/FloatingActionButton";
-import Download from "material-ui/svg-icons/file/file-download";
+import Download from "@material-ui/icons/CloudDownload";
 
 interface FileDocumentProps {
     content: string;

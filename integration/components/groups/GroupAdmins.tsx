@@ -5,10 +5,11 @@ import LoadingPlaceholder from "../LoadingPlaceholder";
 import {List, ListItem} from "material-ui/List";
 import TextField from "material-ui/TextField";
 import IconButton from "material-ui/IconButton";
-import Star from "material-ui/svg-icons/toggle/star";
-import Gavel from "material-ui/svg-icons/action/gavel";
-import RemoveAdmin from "material-ui/svg-icons/action/open-in-new";
-import {cyan500} from "material-ui/styles/colors";
+import Star from "@material-ui/icons/Star";
+import Gavel from "@material-ui/icons/Gavel";
+import RemoveAdmin from "@material-ui/icons/OpenInNew";
+import cyan from "@material-ui/core/colors/cyan";
+const cyan500 = cyan["500"];
 
 interface GroupAdminsProps {
     groupID: string;
@@ -121,7 +122,7 @@ export default class GroupAdmins extends React.Component<GroupAdminsProps, Group
                     disabled
                     key={index}
                     primaryText={admin}
-                    leftIcon={admin === window.User.id ? <Star color={cyan500} /> : <Gavel />}
+                    leftIcon={admin === window.User.id ? <Star htmlColor={cyan500} /> : <Gavel />}
                     rightIcon={removeAdminMarkup}
                 />
             );

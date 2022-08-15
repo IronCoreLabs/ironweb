@@ -2,7 +2,7 @@ import * as React from "react";
 import {List, ListItem} from "material-ui/List";
 import TextField from "material-ui/TextField";
 import LoadingPlaceholder from "../LoadingPlaceholder";
-import Label from "material-ui/svg-icons/action/label";
+import Label from '@material-ui/icons/Label';
 
 interface TodoListProps {
     todos: string[];

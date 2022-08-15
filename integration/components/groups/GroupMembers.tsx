@@ -5,10 +5,11 @@ import LoadingPlaceholder from "../LoadingPlaceholder";
 import {List, ListItem} from "material-ui/List";
 import TextField from "material-ui/TextField";
 import IconButton from "material-ui/IconButton";
-import Star from "material-ui/svg-icons/toggle/star";
-import Person from "material-ui/svg-icons/social/person";
-import LeaveGroup from "material-ui/svg-icons/action/open-in-new";
-import {cyan500} from "material-ui/styles/colors";
+import Star from "@material-ui/icons/Star";
+import Person from "@material-ui/icons/Person";
+import LeaveGroup from "@material-ui/icons/OpenInNew";
+import cyan from "@material-ui/core/colors/cyan";
+const cyan500 = cyan["500"];
 
 interface GroupMembersProps {
     groupID: string;
@@ -140,7 +141,7 @@ export default class GroupMembers extends React.Component<GroupMembersProps, Gro
                         key={index}
                         primaryText={member}
                         rightIcon={deleteMember}
-                        leftIcon={member === window.User.id ? <Star color={cyan500} /> : <Person />}
+                        leftIcon={member === window.User.id ? <Star htmlColor={cyan500} /> : <Person />}
                     />
                 );
             });

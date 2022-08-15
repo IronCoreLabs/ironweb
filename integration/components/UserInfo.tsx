@@ -1,6 +1,5 @@
 import * as React from "react";
-import RaisedButton from "material-ui/RaisedButton";
-import FlatButton from "material-ui/FlatButton";
+import Button from "@material-ui/core/Button";
 import Dialog from "material-ui/Dialog";
 import TextField from "material-ui/TextField";
 import LoadingPlaceholder from "./LoadingPlaceholder";
@@ -117,14 +116,17 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
     getPostInitializationButtons() {
         if (IronWeb.isInitialized()) {
             return [
-                <RaisedButton key="device" className="clear-all" style={buttonStyle} onClick={this.clearDeviceAndSigningKeys} label="DeAuth Device" />,
-                <RaisedButton
+                <Button variant="contained" key="device" className="clear-all" style={buttonStyle} onClick={this.clearDeviceAndSigningKeys}>
+                    DeAuth Device
+                </Button>,
+                <Button
+                    variant="contained"
                     key="changePasscode"
                     className="change-passcode"
                     style={buttonStyle}
-                    onClick={() => this.setState({showingDialog: true})}
-                    label="Change Passcode"
-                />,
+                    onClick={() => this.setState({showingDialog: true})}>
+                    Change Passcode
+                </Button>,
             ];
         }
         return [];
@@ -157,7 +159,9 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
 
     render() {
         const modalAction = [
-            <FlatButton key="passcode" className="submit-passcode-change" label="Change Passcode" primary onClick={this.changeUserPasscode} />,
+            <Button key="passcode" className="submit-passcode-change" color="primary" onClick={this.changeUserPasscode}>
+                Change Passcode
+            </Button>,
         ];
 
         return (
@@ -165,9 +169,15 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                 <div>{window.User.name}</div>
                 <div className="user-id">{window.User.id}</div>
                 <br />
-                <RaisedButton className="reset-button" style={buttonStyle} onClick={this.resetApp} label="Reset App" />
-                <RaisedButton key="docs" className="clear-local-docs" style={buttonStyle} onClick={this.clearLocalDocuments} label="Clear Local Docs" />
-                <RaisedButton key="sym" className="clear-sym-key" style={buttonStyle} onClick={this.clearLocalSymmetricKey} label="Clear Sym Key" />
+                <Button variant="contained" className="reset-button" style={buttonStyle} onClick={this.resetApp}>
+                    Reset App
+                </Button>
+                <Button variant="contained" key="docs" className="clear-local-docs" style={buttonStyle} onClick={this.clearLocalDocuments}>
+                    Clear Local Docs
+                </Button>
+                <Button variant="contained" key="sym" className="clear-sym-key" style={buttonStyle} onClick={this.clearLocalSymmetricKey}>
+                    Clear Sym Key
+                </Button>
                 {this.getPostInitializationButtons()}
                 <Dialog
                     modal={false}
