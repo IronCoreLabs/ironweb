@@ -1,9 +1,8 @@
-import Button from "@material-ui/core/Button";
-import {Tab, Tabs} from "material-ui/Tabs";
-import TextField from "material-ui/TextField";
+import {Tab, Tabs, TextField, Button, Grid} from "@material-ui/core";
 import * as React from "react";
 import * as IronWeb from "../../src/shim";
 import {logAction} from "../Logger";
+import {TabPanel} from "./TabPanel";
 
 interface InitializeApiProps {
     onComplete: () => void;
@@ -12,6 +11,7 @@ interface InitializeApiProps {
 interface InitializeApiState {
     showSetPasscode: boolean;
     passcode: string;
+    tabIndex: number;
 }
 
 declare global {
@@ -23,12 +23,6 @@ declare global {
     }
 }
 
-const tabStyle = {
-    marginTop: "15px",
-    padding: "25px",
-    textAlign: "center" as const,
-};
-
 export default class InitializeApi extends React.Component<InitializeApiProps, InitializeApiState> {
     passcodeCallback?: (passcode: string) => void;
 
@@ -37,6 +31,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
         this.state = {
             showSetPasscode: false,
             passcode: "",
+            tabIndex: 0,
         };
     }
 
@@ -116,9 +111,11 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
                 autoFocus
                 type="text"
                 onKeyPress={this.handleEnter}
-                hintText="Passcode"
+                helperText="Passcode"
                 onChange={this.onPasscodeChange}
                 value={this.state.passcode}
+                variant="filled"
+                size="small"
             />
         );
     }
@@ -145,40 +142,62 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
 
     getInitUIElement() {
         if (this.state.showSetPasscode) {
-            return [
-                this.getPasscodeInput("initialize"),
-                <Button variant="contained" className="set-passcode" key="set-passcode" color="secondary" onClick={this.setPasscode}>
-                    Set Passcode
-                </Button>,
-            ];
+            return (
+                <Grid container spacing={1}>
+                    <Grid item xs={12}>
+                        {this.getPasscodeInput("initialize")}
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Button variant="contained" className="set-passcode" key="set-passcode" color="secondary" onClick={this.setPasscode}>
+                            Set Passcode
+                        </Button>
+                    </Grid>
+                </Grid>
+            );
         }
         return (
-            <Button variant="contained" className="initialize-api-start" color="secondary" onClick={this.initialize}>
-                Initialize Api
-            </Button>
+            <Grid container spacing={1}>
+                <Grid item xs={12}>
+                    <Button variant="contained" className="initialize-api-start" color="secondary" onClick={this.initialize}>
+                        Initialize Api
+                    </Button>
+                </Grid>
+            </Grid>
         );
     }
 
     render() {
         return (
-            <Tabs style={{width: "350px"}} className="initialize-api">
-                <Tab label="Initialize" onActive={() => this.setState({passcode: ""})}>
-                    <div style={tabStyle}>{this.getInitUIElement()}</div>
-                </Tab>
-                <Tab label="Manual" onActive={() => this.setState({passcode: ""})}>
-                    <div style={{...tabStyle}}>
-                        {this.getPasscodeInput("manual")}
-                        <Button variant="contained" className="initialize-create-user" color="secondary" onClick={this.createUser}>
-                            Create User
-                        </Button>
-                        <br />
-                        <br />
-                        <Button variant="contained" className="initialize-create-device" color="secondary" onClick={this.createDevice}>
-                            Create Device
-                        </Button>
-                    </div>
-                </Tab>
-            </Tabs>
+            <>
+                <Tabs
+                    value={this.state.tabIndex}
+                    style={{width: "350px"}}
+                    className="initialize-api"
+                    onChange={(_, newValue) => this.setState({passcode: "", tabIndex: newValue})}>
+                    <Tab label="Initialize" />
+                    <Tab label="Manual" />
+                </Tabs>
+                <TabPanel value={this.state.tabIndex} index={0}>
+                    {this.getInitUIElement()}
+                </TabPanel>
+                <TabPanel value={this.state.tabIndex} index={1}>
+                    <Grid container spacing={1}>
+                        <Grid item xs={12}>
+                            {this.getPasscodeInput("manual")}
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button variant="contained" className="initialize-create-user" color="secondary" onClick={this.createUser}>
+                                Create User
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button variant="contained" className="initialize-create-device" color="secondary" onClick={this.createDevice}>
+                                Create Device
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </TabPanel>
+            </>
         );
     }
 }

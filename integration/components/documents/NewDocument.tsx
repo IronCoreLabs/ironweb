@@ -1,22 +1,13 @@
 import * as React from "react";
-import TextField from "material-ui/TextField";
-import Button from "@material-ui/core/Button";
+import {Button, TextField, Tabs, Tab, List, ListItem, Checkbox, Fab, Chip, TextFieldProps, FormControlLabel} from "@material-ui/core";
 import {DocumentIDNameResponse, GroupMetaResponse} from "../../../ironweb";
 import * as DocumentDB from "../../DocumentDB";
 import * as IronWeb from "../../../src/shim";
-import {Tabs, Tab} from "material-ui/Tabs";
-import Checkbox from "material-ui/Checkbox";
 import {logAction} from "../../Logger";
-import {List, ListItem} from "material-ui/List";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import Chip from "material-ui/Chip";
-import Avatar from "material-ui/Avatar";
-import Cloud from "@material-ui/icons/Cloud";
-import Local from "@material-ui/icons/CloudOff";
-import Upload from "@material-ui/icons/CloudUpload";
-import ArrowBack from "@material-ui/icons/ArrowBack";
+import {Cloud, CloudOff as Local, CloudUpload as Upload, ArrowBack} from "@material-ui/icons";
 import lightGreen from "@material-ui/core/colors/lightGreen";
 import orange from "@material-ui/core/colors/orange";
+import {TabPanel} from "../TabPanel";
 const lightGreen200 = lightGreen["200"];
 const lightGreen400 = lightGreen["400"];
 const orange200 = orange["200"];
@@ -36,12 +27,13 @@ interface NewDocumentState {
     todoItems: {
         [index: number]: string;
     };
+    tabIndex: number;
 }
 
 export default class NewDocument extends React.Component<NewDocumentProps, NewDocumentState> {
-    newListID!: TextField;
-    newListName!: TextField;
-    userGrantList!: TextField;
+    newListID!: React.RefObject<TextFieldProps>;
+    newListName!: React.RefObject<TextFieldProps>;
+    userGrantList!: React.RefObject<TextFieldProps>;
 
     constructor(props: NewDocumentProps) {
         super(props);
@@ -50,7 +42,11 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
             selectedGroups: [],
             todoItems: {0: ""},
             storeLocal: false,
+            tabIndex: 0,
         };
+        this.newListID = React.createRef();
+        this.newListName = React.createRef();
+        this.userGrantList = React.createRef();
     }
 
     componentDidMount() {
@@ -61,12 +57,12 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
     }
 
     createNewList = () => {
-        const listName = this.newListName.getValue();
+        const listName = this.newListName.current?.value as string;
         if (listName) {
             const todoList = Object.keys(this.state.todoItems)
                 .map((todoKey) => this.state.todoItems[parseInt(todoKey)])
                 .filter((todoItem) => todoItem && todoItem.length);
-            const userShareList = this.userGrantList.getValue();
+            const userShareList = this.userGrantList.current?.value as string;
             const users = userShareList.split("\n").map((userID) => ({id: userID}));
             const groups = this.state.selectedGroups.map((groupID) => ({id: groupID}));
             if (this.state.storeLocal) {
@@ -78,7 +74,7 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
     };
 
     createLocalList = (listName: string, listItems: string[], users: GrantList, groups: GrantList) => {
-        const newDocID = this.newListID.getValue();
+        const newDocID = this.newListID.current?.value as string;
         const document = {
             type: "list",
             content: listItems,
@@ -101,7 +97,7 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
     };
 
     createHostedList = (listName: string, listItems: string[], users: GrantList, groups: GrantList) => {
-        const newDocID = this.newListID.getValue();
+        const newDocID = this.newListID.current?.value as string;
         const document = {
             type: "list",
             content: listItems,
@@ -127,15 +123,15 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
         this.setState({storeLocal: !this.state.storeLocal});
     };
 
-    setListIDRef = (input: TextField) => {
+    setListIDRef = (input: React.RefObject<TextFieldProps>) => {
         this.newListID = input;
     };
 
-    setListNameRef = (input: TextField) => {
+    setListNameRef = (input: React.RefObject<TextFieldProps>) => {
         this.newListName = input;
     };
 
-    setUserGrantListRef = (input: TextField) => {
+    setUserGrantListRef = (input: React.RefObject<TextFieldProps>) => {
         this.userGrantList = input;
     };
 
@@ -146,7 +142,7 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
         }
     };
 
-    onInputChange(inputID: string, _: any, newValue: string) {
+    onInputChange(inputID: string, newValue: string): void {
         const inputIndex = parseInt(inputID);
         const stateUpdate = {[inputIndex]: newValue};
 
@@ -220,12 +216,10 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
     getGroupCheckboxes() {
         const groupCheckboxes = this.state.availableGroups.map(({groupID, groupName}) => {
             return (
-                <Checkbox
+                <FormControlLabel
                     key={groupID}
-                    id={groupID}
+                    control={<Checkbox id={groupID} onChange={this.onGroupGrantAccessToggle.bind(this, groupID)} style={{width: "50%"}} />}
                     label={groupName || ""}
-                    onCheck={this.onGroupGrantAccessToggle.bind(this, groupID)}
-                    style={{width: "50%"}}
                 />
             );
         });
@@ -247,27 +241,27 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
     }
 
     getStorateTypeMarkup() {
-        let color, text, avatarIcon, avatarColor;
+        let color, text, avatarIcon;
         if (this.state.storeLocal) {
             color = orange200;
             text = "Local";
-            avatarIcon = <Local />;
-            avatarColor = orange400;
+            avatarIcon = <Local htmlColor={orange400} />;
         } else {
             color = lightGreen200;
             text = "Hosted";
-            avatarIcon = <Cloud />;
-            avatarColor = lightGreen400;
+            avatarIcon = <Cloud htmlColor={lightGreen400} />;
         }
         return (
             <Chip
                 className="storage-toggle"
-                labelStyle={{padding: "0 5px", fontSize: "12px", width: "45px", textAlign: "center"}}
+                classes={{
+                    colorPrimary: color,
+                }}
                 onClick={this.toggleStorage}
-                backgroundColor={color}>
-                <Avatar icon={avatarIcon} backgroundColor={avatarColor} />
-                {text}
-            </Chip>
+                icon={avatarIcon}
+                label={text}
+                color="primary"
+            />
         );
     }
 
@@ -278,10 +272,10 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
                     key={inputKey}
                     id={`todo-item-input-${inputKey}`}
                     type="text"
-                    hintText="Todo Item"
+                    helperText="Todo Item"
                     style={{width: "100%", padding: "0"}}
                     value={this.state.todoItems[parseInt(inputKey)]}
-                    onChange={this.onInputChange.bind(this, inputKey)}
+                    onChange={(e) => this.onInputChange(inputKey, e.target.value)}
                 />
             );
         });
@@ -302,64 +296,62 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
         return (
             <div className="new-document">
                 <div style={{position: "absolute", left: 0}}>
-                    <FloatingActionButton onClick={this.props.backToList} mini>
+                    <Fab onClick={this.props.backToList} size="small">
                         <ArrowBack />
-                    </FloatingActionButton>
+                    </Fab>
                 </div>
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", margin: "10px 0 25px 0"}}>
                     <h1>New Document</h1>
                     {this.getStorateTypeMarkup()}
                 </div>
-                <Tabs>
-                    <Tab label="Todo List">
-                        <div style={tabStyle}>
-                            <TextField
-                                id="todo-id-input"
-                                autoFocus
-                                ref={this.setListIDRef}
-                                type="text"
-                                hintText="List ID"
-                                style={{width: "100%", fontSize: "22px"}}
-                            />
-                            <TextField
-                                id="todo-name-input"
-                                ref={this.setListNameRef}
-                                type="text"
-                                hintText="List Name"
-                                style={{width: "100%", fontSize: "22px"}}
-                            />
-                            <List style={{backgroundColor: "#f5f5f5", padding: "0", marginBottom: "10px", maxHeight: "275px", overflowY: "auto"}}>
-                                {this.getTodoInputs()}
-                            </List>
-                            <div>
-                                <div>Share on Create</div>
-                                <div style={{display: "flex"}}>
-                                    <TextField
-                                        ref={this.setUserGrantListRef}
-                                        multiLine
-                                        id="userAccessID"
-                                        type="text"
-                                        hintText="User IDs to Grant Access To (1 per line)"
-                                        style={{width: "50%"}}
-                                    />
-                                    {this.getGroupCheckboxes()}
-                                </div>
-                            </div>
-                            <Button variant="contained" className="submit-new-document" onClick={this.createNewList}>
-                                Create New Document
-                            </Button>
-                        </div>
-                    </Tab>
-                    <Tab label="File Upload">
-                        <div style={tabStyle}>
-                            <h3>Upload file</h3>
-                            <FloatingActionButton onClick={this.invokeFileUploadInputClick} mini>
-                                <Upload />
-                            </FloatingActionButton>
-                            <input id="file-upload" type="file" onChange={this.handleFileAdd} style={{display: "none"}} />
-                        </div>
-                    </Tab>
+                <Tabs value={this.state.tabIndex} onChange={(_: React.ChangeEvent<Record<string, unknown>>, newValue) => this.setState({tabIndex: newValue})}>
+                    <Tab label="Todo List" />
+                    <Tab label="File Upload" />
                 </Tabs>
+                <TabPanel value={this.state.tabIndex} index={0} style={tabStyle}>
+                    <TextField
+                        id="todo-id-input"
+                        autoFocus
+                        inputRef={this.setListIDRef}
+                        type="text"
+                        helperText="List ID"
+                        style={{width: "100%", fontSize: "22px"}}
+                    />
+                    <TextField
+                        id="todo-name-input"
+                        inputRef={this.setListNameRef}
+                        type="text"
+                        helperText="List Name"
+                        style={{width: "100%", fontSize: "22px"}}
+                    />
+                    <List style={{backgroundColor: "#f5f5f5", padding: "0", marginBottom: "10px", maxHeight: "275px", overflowY: "auto"}}>
+                        {this.getTodoInputs()}
+                    </List>
+                    <div>
+                        <div>Share on Create</div>
+                        <div style={{display: "flex"}}>
+                            <TextField
+                                inputRef={this.setUserGrantListRef}
+                                multiline
+                                id="userAccessID"
+                                type="text"
+                                helperText="User IDs to Grant Access To (1 per line)"
+                                style={{width: "50%"}}
+                            />
+                            {this.getGroupCheckboxes()}
+                        </div>
+                    </div>
+                    <Button variant="contained" className="submit-new-document" onClick={this.createNewList}>
+                        Create New Document
+                    </Button>
+                </TabPanel>
+                <TabPanel value={this.state.tabIndex} index={1} style={tabStyle}>
+                    <h3>Upload file</h3>
+                    <Fab onClick={this.invokeFileUploadInputClick} size="small">
+                        <Upload />
+                    </Fab>
+                    <input id="file-upload" type="file" onChange={this.handleFileAdd} style={{display: "none"}} />
+                </TabPanel>
             </div>
         );
     }

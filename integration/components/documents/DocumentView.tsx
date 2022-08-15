@@ -2,15 +2,15 @@ import * as React from "react";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
 import LoadingPlaceholder from "../LoadingPlaceholder";
-import Divider from "material-ui/Divider";
+import Divider from "@material-ui/core/Divider";
 import TodoList from "./TodoList";
 import FileDocument from "./FileDocument";
 import DocumentVisiblity from "./DocumentVisibility";
-import TextField from "material-ui/TextField";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import ArrowBack from '@material-ui/icons/ArrowBack';
-import Refresh from '@material-ui/icons/Refresh';
-import lightGreen from '@material-ui/core/colors/lightGreen';
+import TextField from "@material-ui/core/TextField";
+import Fab from "@material-ui/core/Fab";
+import ArrowBack from "@material-ui/icons/ArrowBack";
+import Refresh from "@material-ui/icons/Refresh";
+import lightGreen from "@material-ui/core/colors/lightGreen";
 const lightGreenA700 = lightGreen.A700;
 import {DocumentContent} from "../../componentTypes";
 import {DocumentMetaResponse} from "../../../ironweb";
@@ -99,12 +99,19 @@ export default class DocumentView extends React.Component<DocumentViewProps, Doc
         return (
             <div className="document-view">
                 <div style={{display: "flex", justifyContent: "space-around"}}>
-                    <FloatingActionButton className="back-to-document-list" onClick={this.props.backToDocumentList} mini>
+                    <Fab className="back-to-document-list" onClick={this.props.backToDocumentList} size="small">
                         <ArrowBack />
-                    </FloatingActionButton>
-                    <FloatingActionButton className="refresh-document-view" onClick={this.props.loadDocument} mini backgroundColor={lightGreenA700}>
+                    </Fab>
+                    <Fab
+                        className="refresh-document-view"
+                        onClick={this.props.loadDocument}
+                        size="small"
+                        color="primary"
+                        classes={{
+                            primary: lightGreenA700,
+                        }}>
                         <Refresh />
-                    </FloatingActionButton>
+                    </Fab>
                 </div>
                 <div style={{textAlign: "center", marginBottom: 7}}>
                     <div className="document-name" style={{fontSize: 24, paddingBottom: 5}}>
@@ -114,9 +121,8 @@ export default class DocumentView extends React.Component<DocumentViewProps, Doc
                             <TextField
                                 id="documentName"
                                 value={this.state.name}
-                                inputStyle={{textAlign: "center", fontSize: 27}}
                                 onBlur={this.updateDocumentName}
-                                onChange={(_, newValue: string) => this.setState({name: newValue})}
+                                onChange={(e) => this.setState({name: e.target.value})}
                             />
                         )}
                     </div>

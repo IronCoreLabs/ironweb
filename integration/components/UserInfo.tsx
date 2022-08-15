@@ -1,7 +1,5 @@
 import * as React from "react";
-import Button from "@material-ui/core/Button";
-import Dialog from "material-ui/Dialog";
-import TextField from "material-ui/TextField";
+import {Button, Dialog, DialogActions, DialogContent, TextField, TextFieldProps} from "@material-ui/core";
 import LoadingPlaceholder from "./LoadingPlaceholder";
 import {LOCAL_DOC_STORAGE_KEY} from "../DocumentDB";
 import * as IronWeb from "../../src/shim";
@@ -37,8 +35,8 @@ interface UserInfoState {
 }
 
 export default class UserInfo extends React.Component<Record<string, never>, UserInfoState> {
-    currentPasscodeInput!: TextField;
-    newPasscodeInput!: TextField;
+    currentPasscodeInput!: React.RefObject<TextFieldProps>;
+    newPasscodeInput!: React.RefObject<TextFieldProps>;
 
     constructor(props: Record<string, never>) {
         super(props);
@@ -50,8 +48,8 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
     }
 
     changeUserPasscode = () => {
-        const currentPasscode = this.currentPasscodeInput.getValue();
-        const newPasscode = this.newPasscodeInput.getValue();
+        const currentPasscode = this.currentPasscodeInput.current?.value as string;
+        const newPasscode = this.newPasscodeInput.current?.value as string;
 
         if (!currentPasscode || !newPasscode) {
             return;
@@ -75,9 +73,9 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                     () => {
                         if (error.code === IronWeb.ErrorCodes.USER_PASSCODE_INCORRECT) {
                             if (this.currentPasscodeInput && this.newPasscodeInput) {
-                                this.currentPasscodeInput.getInputNode().value = "";
-                                this.newPasscodeInput.getInputNode().value = "";
-                                this.currentPasscodeInput.focus();
+                                this.currentPasscodeInput.current!.value = "";
+                                this.newPasscodeInput.current!.value = "";
+                                (this.currentPasscodeInput.current as any).focus();
                             }
                         }
                     }
@@ -136,34 +134,28 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
         if (this.state.changingPasscode) {
             return <LoadingPlaceholder />;
         }
-        const setCurrentPasscodeInput = (currentPasscodeInput: TextField) => {
+        const setCurrentPasscodeInput = (currentPasscodeInput: React.RefObject<TextFieldProps>) => {
             this.currentPasscodeInput = currentPasscodeInput;
         };
-        const setNewPasscodeInput = (newPasscodeInput: TextField) => {
+        const setNewPasscodeInput = (newPasscodeInput: React.RefObject<TextFieldProps>) => {
             this.newPasscodeInput = newPasscodeInput;
         };
         return (
             <div>
                 <TextField
                     id="currentPasscode"
-                    ref={setCurrentPasscodeInput}
-                    hintText="Current Passcode"
+                    inputRef={setCurrentPasscodeInput}
+                    helperText={this.state.passcodeError ? "Incorrect passcode" : "Current Passcode"}
                     autoFocus
-                    errorText={this.state.passcodeError ? "Incorrect passcode" : ""}
+                    error={this.state.passcodeError}
                 />
                 <br />
-                <TextField id="newPasscode" ref={setNewPasscodeInput} hintText="New Passcode" />
+                <TextField id="newPasscode" inputRef={setNewPasscodeInput} helperText="New Passcode" />
             </div>
         );
     }
 
     render() {
-        const modalAction = [
-            <Button key="passcode" className="submit-passcode-change" color="primary" onClick={this.changeUserPasscode}>
-                Change Passcode
-            </Button>,
-        ];
-
         return (
             <div style={componentStyle} className="user-info">
                 <div>{window.User.name}</div>
@@ -179,14 +171,13 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                     Clear Sym Key
                 </Button>
                 {this.getPostInitializationButtons()}
-                <Dialog
-                    modal={false}
-                    open={this.state.showingDialog}
-                    title="Change Passcode"
-                    onRequestClose={() => this.setState({showingDialog: false, passcodeError: false})}
-                    actions={modalAction}
-                    bodyClassName="password-change-dialog-body">
-                    {this.getModalContent()}
+                <Dialog open={this.state.showingDialog} title="Change Passcode" onClose={() => this.setState({showingDialog: false, passcodeError: false})}>
+                    <DialogContent className="password-change-dialog-body">{this.getModalContent()}</DialogContent>
+                    <DialogActions>
+                        <Button key="passcode" className="submit-passcode-change" color="primary" onClick={this.changeUserPasscode}>
+                            Change Passcode
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </div>
         );

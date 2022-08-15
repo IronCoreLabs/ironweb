@@ -1,8 +1,7 @@
 import * as React from "react";
-import {List, ListItem} from "material-ui/List";
-import TextField from "material-ui/TextField";
+import {List, ListItem, ListItemIcon, ListItemText, TextField, TextFieldProps} from "@material-ui/core";
 import LoadingPlaceholder from "../LoadingPlaceholder";
-import Label from '@material-ui/icons/Label';
+import {Label} from "@material-ui/icons";
 
 interface TodoListProps {
     todos: string[];
@@ -22,7 +21,7 @@ const listStyles: React.CSSProperties = {
 };
 
 export default class TodoList extends React.Component<TodoListProps, TodoListState> {
-    todoInput!: TextField;
+    todoInput!: React.RefObject<TextFieldProps>;
 
     constructor(props: TodoListProps) {
         super(props);
@@ -34,7 +33,7 @@ export default class TodoList extends React.Component<TodoListProps, TodoListSta
     componentDidUpdate(prevProps: TodoListProps) {
         if (prevProps.todos.length !== this.props.todos.length) {
             this.setState({updatingList: false}, () => {
-                this.todoInput.getInputNode().value = "";
+                this.todoInput.current!.value = "";
             });
         }
     }
@@ -46,7 +45,7 @@ export default class TodoList extends React.Component<TodoListProps, TodoListSta
     };
 
     addTodo = () => {
-        const todoValue = this.todoInput.getValue();
+        const todoValue = this.todoInput.current?.value as string;
         if (!todoValue) {
             return;
         }
@@ -54,15 +53,29 @@ export default class TodoList extends React.Component<TodoListProps, TodoListSta
         this.props.onAddTodo(todoValue);
     };
 
-    setTodoRef = (todoInput: TextField) => {
+    setTodoRef = (todoInput: React.RefObject<TextFieldProps>) => {
         this.todoInput = todoInput;
     };
 
     getTodoItems() {
         if (this.props.todos.length === 0) {
-            return <ListItem className="todo-list-empty" primaryText="No Todos Created!" leftIcon={<Label />} disabled />;
+            return (
+                <ListItem className="todo-list-empty" disabled>
+                    <ListItemIcon>
+                        <Label />
+                    </ListItemIcon>
+                    <ListItemText primary="No Todos Created!" />
+                </ListItem>
+            );
         }
-        return this.props.todos.map((todo, index) => <ListItem className="todo-list-item" primaryText={todo} leftIcon={<Label />} key={index} disabled />);
+        return this.props.todos.map((todo, index) => (
+            <ListItem className="todo-list-item" key={index} disabled>
+                <ListItemIcon>
+                    <Label />
+                </ListItemIcon>
+                <ListItemText primary={todo} />
+            </ListItem>
+        ));
     }
 
     render() {
@@ -78,8 +91,8 @@ export default class TodoList extends React.Component<TodoListProps, TodoListSta
                         autoFocus
                         type="text"
                         onKeyPress={this.handleEnter}
-                        ref={this.setTodoRef}
-                        hintText="Add New Todo"
+                        inputRef={this.setTodoRef}
+                        helperText="Add New Todo"
                         style={{width: "100%", marginBottom: "10px"}}
                     />
                 )}

@@ -2,13 +2,10 @@ import * as React from "react";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
 import LoadingPlaceholder from "../LoadingPlaceholder";
-import {List, ListItem} from "material-ui/List";
-import TextField from "material-ui/TextField";
-import IconButton from "material-ui/IconButton";
-import Star from "@material-ui/icons/Star";
-import Person from "@material-ui/icons/Person";
-import LeaveGroup from "@material-ui/icons/OpenInNew";
+import {List, ListItem, TextField, TextFieldProps, IconButton, ListItemIcon, ListItemText} from "@material-ui/core";
+import {Star, Person, OpenInNew as LeaveGroup} from "@material-ui/icons";
 import cyan from "@material-ui/core/colors/cyan";
+import {Tooltip} from "@material-ui/core";
 const cyan500 = cyan["500"];
 
 interface GroupMembersProps {
@@ -34,7 +31,7 @@ const listStyles: React.CSSProperties = {
 };
 
 export default class GroupMembers extends React.Component<GroupMembersProps, GroupMembersState> {
-    newMemberInput!: TextField;
+    newMemberInput!: React.RefObject<TextFieldProps>;
 
     constructor(props: GroupMembersProps) {
         super(props);
@@ -48,12 +45,12 @@ export default class GroupMembers extends React.Component<GroupMembersProps, Gro
         this.setState({groupMembers: nextProps.groupMembers});
     }
 
-    setMemberRef = (newMemberInput: TextField) => {
+    setMemberRef = (newMemberInput: React.RefObject<TextFieldProps>) => {
         this.newMemberInput = newMemberInput;
     };
 
     addMember = () => {
-        const memberValue = this.newMemberInput.getValue();
+        const memberValue = this.newMemberInput.current?.value as string;
         if (!memberValue) {
             return;
         }
@@ -71,7 +68,7 @@ export default class GroupMembers extends React.Component<GroupMembersProps, Gro
                     logAction(`Failed to add users '${addResult.failed.map(({id}) => id)}' as member(s) to the group ${this.props.groupID}`, "error");
                 }
                 this.setState({addingMembers: false}, () => {
-                    this.newMemberInput.getInputNode().value = "";
+                    this.newMemberInput.current!.value = "";
                 });
             })
             .catch((error: IronWeb.SDKError) => {
@@ -124,29 +121,27 @@ export default class GroupMembers extends React.Component<GroupMembersProps, Gro
                 let deleteMember;
                 if (this.props.isAdmin || member === window.User.id) {
                     deleteMember = (
-                        <IconButton
-                            className="group-remove-member"
-                            tooltip="Remove Member"
-                            tooltipPosition="top-left"
-                            onClick={this.removeMember.bind(this, member)}
-                            style={{padding: "0"}}>
-                            <LeaveGroup />
-                        </IconButton>
+                        <Tooltip title="Remove Member" placement="top-start">
+                            <IconButton className="group-remove-member" onClick={this.removeMember.bind(this, member)} style={{padding: "0"}}>
+                                <LeaveGroup />
+                            </IconButton>
+                        </Tooltip>
                     );
                 }
                 return (
-                    <ListItem
-                        className="group-member-user"
-                        disabled
-                        key={index}
-                        primaryText={member}
-                        rightIcon={deleteMember}
-                        leftIcon={member === window.User.id ? <Star htmlColor={cyan500} /> : <Person />}
-                    />
+                    <ListItem className="group-member-user" disabled key={index}>
+                        <ListItemIcon>{member === window.User.id ? <Star htmlColor={cyan500} /> : <Person />}</ListItemIcon>
+                        <ListItemText primary={member} />
+                        <ListItemIcon>{deleteMember}</ListItemIcon>
+                    </ListItem>
                 );
             });
         }
-        return <ListItem disabled key="0" primaryText="There are no members in this group." />;
+        return (
+            <ListItem disabled key="0">
+                <ListItemText primary="There are no members in this group." />
+            </ListItem>
+        );
     }
 
     handleMemberAddEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -165,8 +160,8 @@ export default class GroupMembers extends React.Component<GroupMembersProps, Gro
                     id="newMemberInput"
                     autoFocus
                     type="text"
-                    ref={this.setMemberRef}
-                    hintText="Add New Member"
+                    inputRef={this.setMemberRef}
+                    helperText="Add New Member"
                     onKeyPress={this.handleMemberAddEnter}
                     style={{width: "100%", marginBottom: "10px"}}
                 />

@@ -1,9 +1,9 @@
 import * as React from "react";
-import Divider from "material-ui/Divider";
-import TextField from "material-ui/TextField";
-import FloatingActionButton from "material-ui/FloatingActionButton";
+import Divider from "@material-ui/core/Divider";
+import TextField, {TextFieldProps} from "@material-ui/core/TextField";
+import Fab from "@material-ui/core/Fab";
 import Button from "@material-ui/core/Button";
-import Dialog from "material-ui/Dialog";
+import Dialog from "@material-ui/core/Dialog";
 import ArrowBack from "@material-ui/icons/ArrowBack";
 import Refresh from "@material-ui/icons/Refresh";
 import Delete from "@material-ui/icons/Delete";
@@ -20,6 +20,7 @@ import {logAction} from "../../Logger";
 import GroupMembers from "./GroupMembers";
 import GroupAdmins from "./GroupAdmins";
 import LoadingPlaceholder from "../LoadingPlaceholder";
+import {DialogActions, DialogContent} from "@material-ui/core";
 
 interface GroupDetailProps {
     group: GroupMetaResponse;
@@ -38,7 +39,7 @@ interface GroupDetailState {
 }
 
 export default class GroupDetail extends React.Component<GroupDetailProps, GroupDetailState> {
-    groupConfirmInput!: TextField;
+    groupConfirmInput!: React.RefObject<TextFieldProps>;
     constructor(props: GroupDetailProps) {
         super(props);
         this.state = {
@@ -51,6 +52,7 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
             groupIDConfirmError: false,
             showingDeleteConfirmation: false,
         };
+        this.groupConfirmInput = React.createRef();
         this.loadGroup();
     }
 
@@ -95,7 +97,7 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
      * Verify the group ID the user typed is correct before making the actual delete call.
      */
     deleteGroup = () => {
-        const groupConfirmID = this.groupConfirmInput.getValue();
+        const groupConfirmID = this.groupConfirmInput.current?.value as string;
         if (groupConfirmID !== this.props.group.groupID) {
             return this.setState({groupIDConfirmError: true});
         }
@@ -112,17 +114,17 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
      * Make the user confirm the group ID before allowing delete.
      */
     getDeleteConfirmationContent = () => {
-        const groupIDConfirm = (groupIDConfirmInput: TextField) => {
+        const groupIDConfirm = (groupIDConfirmInput: React.RefObject<TextFieldProps>) => {
             this.groupConfirmInput = groupIDConfirmInput;
         };
         return (
             <div>
                 <TextField
                     style={{width: "100%"}}
-                    ref={groupIDConfirm}
-                    hintText="Confirm group ID in order to delete"
+                    inputRef={groupIDConfirm}
+                    helperText={this.state.groupIDConfirmError ? "Incorrect ID" : "Confirm group ID in order to delete"}
                     autoFocus
-                    errorText={this.state.groupIDConfirmError ? "Incorrect ID" : ""}
+                    error={this.state.groupIDConfirmError}
                 />
             </div>
         );
@@ -134,9 +136,15 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
     getDeleteGroupIcon() {
         if (this.state.groupMeta.isAdmin) {
             return (
-                <FloatingActionButton onClick={() => this.setState({showingDeleteConfirmation: true})} mini backgroundColor={red700}>
+                <Fab
+                    onClick={() => this.setState({showingDeleteConfirmation: true})}
+                    size="small"
+                    color="primary"
+                    classes={{
+                        primary: red700,
+                    }}>
                     <Delete />
-                </FloatingActionButton>
+                </Fab>
             );
         }
         return null;
@@ -160,9 +168,15 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
     getRotateGroupPrivateKeyIcon() {
         if (this.state.groupMeta.isAdmin) {
             return (
-                <FloatingActionButton onClick={this.roatateGroupPrivateKey} mini backgroundColor={this.state.needsRotation ? red700 : grey400}>
+                <Fab
+                    onClick={this.roatateGroupPrivateKey}
+                    size="small"
+                    color="primary"
+                    classes={{
+                        primary: this.state.needsRotation ? red700 : grey400,
+                    }}>
                     <ImageRotateRight />
-                </FloatingActionButton>
+                </Fab>
             );
         }
         return null;
@@ -170,31 +184,34 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
 
     render() {
         const {groupMeta} = this.state;
-        const modalAction = [
-            <Button key="groupDelete" className="submit-passcode-change" color="secondary" onClick={this.deleteGroup}>
-                Delete Group
-            </Button>,
-        ];
         return (
             <div className="group-detail">
                 <div style={{display: "flex", justifyContent: "space-around"}}>
-                    <FloatingActionButton className="back-to-group-list" onClick={this.props.backToList} mini>
+                    <Fab className="back-to-group-list" onClick={this.props.backToList} size="small">
                         <ArrowBack />
-                    </FloatingActionButton>
-                    <FloatingActionButton onClick={this.loadGroup} mini backgroundColor={lightGreenA700}>
+                    </Fab>
+                    <Fab
+                        onClick={this.loadGroup}
+                        size="small"
+                        color="primary"
+                        classes={{
+                            primary: lightGreenA700,
+                        }}>
                         <Refresh />
-                    </FloatingActionButton>
+                    </Fab>
                     {this.getRotateGroupPrivateKeyIcon()}
                     {this.getDeleteGroupIcon()}
                 </div>
                 <Dialog
-                    modal={false}
                     open={this.state.showingDeleteConfirmation}
                     title="Confirm Group Delete"
-                    onRequestClose={() => this.setState({showingDeleteConfirmation: false, groupIDConfirmError: false})}
-                    actions={modalAction}
-                    bodyClassName="password-change-dialog-body">
-                    {this.getDeleteConfirmationContent()}
+                    onClose={() => this.setState({showingDeleteConfirmation: false, groupIDConfirmError: false})}>
+                    <DialogContent className="password-change-dialog-body">{this.getDeleteConfirmationContent()}</DialogContent>
+                    <DialogActions>
+                        <Button key="groupDelete" className="submit-passcode-change" color="secondary" onClick={this.deleteGroup}>
+                            Delete Group
+                        </Button>
+                    </DialogActions>
                 </Dialog>
                 <div style={{textAlign: "center", marginBottom: 7}}>
                     <div className="group-name" style={{fontSize: 24, paddingBottom: 5}}>
@@ -204,9 +221,11 @@ export default class GroupDetail extends React.Component<GroupDetailProps, Group
                             <TextField
                                 id="groupName"
                                 value={this.state.name || ""}
-                                inputStyle={{textAlign: "center", fontSize: "27px"}}
+                                inputProps={{
+                                    style: {textAlign: "center", fontSize: "27px"},
+                                }}
                                 onBlur={this.updateGroupName}
-                                onChange={(_, newValue: string) => this.setState({name: newValue})}
+                                onChange={(e) => this.setState({name: e.target.value})}
                             />
                         )}
                     </div>

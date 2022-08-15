@@ -1,11 +1,12 @@
 import * as React from "react";
 import * as IronWeb from "../../../src/shim";
 import LoadingPlaceholder from "../LoadingPlaceholder";
-import TextField from "material-ui/TextField";
+import TextField, {TextFieldProps} from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
-import Checkbox from "material-ui/Checkbox";
+import Checkbox from "@material-ui/core/Checkbox";
 import {logAction} from "../../Logger";
 import {GroupMetaResponse, DocumentAccessResponse} from "../../../ironweb";
+import {FormControlLabel} from "@material-ui/core";
 
 interface GrantDocumentAccessProps {
     listID: string;
@@ -20,7 +21,7 @@ interface GrantDocumentAccessState {
 }
 
 export default class GrantDocumentAccess extends React.Component<GrantDocumentAccessProps, GrantDocumentAccessState> {
-    listInput!: TextField;
+    listInput!: React.RefObject<TextFieldProps>;
 
     constructor(props: GrantDocumentAccessProps) {
         super(props);
@@ -29,6 +30,7 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
             selectedGroups: [],
             isGranting: false,
         };
+        this.listInput = React.createRef<TextFieldProps>();
     }
 
     componentDidMount() {
@@ -55,7 +57,7 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
     }
 
     grantListAccess = () => {
-        const userIDList: string = this.listInput.getValue();
+        const userIDList: string = this.listInput.current?.value as string;
         if (!userIDList && !this.state.selectedGroups.length) {
             return;
         }
@@ -80,7 +82,7 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
             logAction(`Document failed to be granted with [${list}]`, "error");
         }
         if (accessResponse.succeeded.length) {
-            this.listInput.getInputNode().value = "";
+            this.listInput.current!.value = "";
             this.setState({
                 selectedGroups: [],
             });
@@ -91,7 +93,7 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
         }
     };
 
-    setUserListRef = (input: TextField) => {
+    setUserListRef = (input: React.RefObject<TextFieldProps>) => {
         this.listInput = input;
     };
 
@@ -99,14 +101,18 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
         const groupCheckboxes = this.state.availableGroups.map(({groupID, groupName}) => {
             const alreadyHasAccess = this.props.groupAccess.indexOf(groupID) !== -1;
             return (
-                <Checkbox
+                <FormControlLabel
                     key={groupID}
-                    id={groupID}
-                    checked={alreadyHasAccess || this.state.selectedGroups.indexOf(groupID) > -1}
-                    disabled={alreadyHasAccess}
+                    control={
+                        <Checkbox
+                            id={groupID}
+                            checked={alreadyHasAccess || this.state.selectedGroups.indexOf(groupID) > -1}
+                            disabled={alreadyHasAccess}
+                            onChange={this.onGroupGrantAccessToggle.bind(this, groupID)}
+                            style={{width: "50%"}}
+                        />
+                    }
                     label={groupName || ""}
-                    onCheck={this.onGroupGrantAccessToggle.bind(this, groupID)}
-                    style={{width: "50%"}}
                 />
             );
         });
@@ -138,12 +144,12 @@ export default class GrantDocumentAccess extends React.Component<GrantDocumentAc
         return (
             <div style={{textAlign: "center"}}>
                 <TextField
-                    ref={this.setUserListRef}
-                    multiLine
+                    inputRef={this.setUserListRef}
+                    multiline
                     id="userAccessID"
                     autoFocus
                     type="text"
-                    hintText="User IDs to Grant Access To (1 per line)"
+                    helperText="User IDs to Grant Access To (1 per line)"
                     style={{width: "100%"}}
                 />
                 {this.getGroupCheckboxes()}

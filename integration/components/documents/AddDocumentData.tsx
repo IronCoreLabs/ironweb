@@ -1,9 +1,10 @@
 import * as React from "react";
-import TextField from "material-ui/TextField";
+import TextField, {TextFieldProps} from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
-import Dialog from "material-ui/Dialog";
+import Dialog from "@material-ui/core/Dialog";
 import {DocumentAssociationResponse} from "../../../ironweb";
 import {saveDoc} from "../../DocumentDB";
+import {DialogActions, DialogContent} from "@material-ui/core";
 
 interface AddDocumentDataProps {
     document: DocumentAssociationResponse | null;
@@ -11,10 +12,15 @@ interface AddDocumentDataProps {
 }
 
 export default class AddDocumentData extends React.Component<AddDocumentDataProps> {
-    documentData!: TextField;
+    documentData!: React.RefObject<TextFieldProps>;
+
+    constructor(props: AddDocumentDataProps) {
+        super(props);
+        this.documentData = React.createRef<TextFieldProps>();
+    }
 
     uploadData = () => {
-        const data = this.documentData.getValue();
+        const data = this.documentData.current?.value as string;
         if (!data) {
             return;
         }
@@ -23,22 +29,21 @@ export default class AddDocumentData extends React.Component<AddDocumentDataProp
     };
 
     getModalContent() {
-        const setDocumentDataInput = (input: TextField) => {
-            this.documentData = input;
+        const setDocumentDataInput = (ref: React.RefObject<TextFieldProps>) => {
+            this.documentData = ref;
         };
-        return <TextField ref={setDocumentDataInput} floatingLabelText="Document Data (Base64 Encoded)" autoFocus multiLine rows={3} style={{width: "75%"}} />;
+        return <TextField inputRef={setDocumentDataInput} label="Document Data (Base64 Encoded)" autoFocus multiline rows={3} style={{width: "75%"}} />;
     }
 
     render() {
-        const modalAction = [
-            <Button key="data" color="primary" onClick={this.uploadData}>
-                Upload Data
-            </Button>,
-        ];
-
         return (
-            <Dialog modal={false} open={this.props.document !== null} title="Add Document Data" onRequestClose={this.props.onClose} actions={modalAction}>
-                {this.getModalContent()}
+            <Dialog open={this.props.document !== null} title="Add Document Data" onClose={this.props.onClose}>
+                <DialogContent>{this.getModalContent()}</DialogContent>
+                <DialogActions>
+                    <Button key="data" color="primary" onClick={this.uploadData}>
+                        Upload Data
+                    </Button>
+                </DialogActions>
             </Dialog>
         );
     }

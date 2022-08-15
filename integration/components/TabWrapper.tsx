@@ -1,5 +1,5 @@
 import * as React from "react";
-import {Tabs, Tab} from "material-ui/Tabs";
+import {Tabs, Tab} from "@material-ui/core";
 import DocumentList from "./documents/DocumentList";
 import DocumentDetail from "./documents/DocumentDetail";
 import NewDocument from "./documents/NewDocument";
@@ -7,10 +7,12 @@ import NewGroup from "./groups/NewGroup";
 import GroupList from "./groups/GroupList";
 import GroupDetail from "./groups/GroupDetail";
 import {DocumentIDNameResponse, GroupMetaResponse} from "../../ironweb";
+import {TabPanel} from "./TabPanel";
 
 interface TabWrapperState {
     selectedList: null | DocumentIDNameResponse | "new";
     selectedGroup: null | GroupMetaResponse | "new";
+    value: number;
 }
 
 export default class TabWrapper extends React.Component<Record<string, never>, TabWrapperState> {
@@ -19,8 +21,13 @@ export default class TabWrapper extends React.Component<Record<string, never>, T
         this.state = {
             selectedList: null,
             selectedGroup: null,
+            value: 0,
         };
     }
+
+    handleChange = (_: React.ChangeEvent<Record<string, unknown>>, newValue: number) => {
+        this.setState({value: newValue});
+    };
 
     selectList = (list: DocumentIDNameResponse | "new") => {
         this.setState({
@@ -64,14 +71,18 @@ export default class TabWrapper extends React.Component<Record<string, never>, T
 
     render() {
         return (
-            <Tabs style={{width: "1000px", minHeight: "500px"}} tabTemplateStyle={{margin: "10px 20px", width: "inherit"}}>
-                <Tab label="Todo Lists" className="document-tab">
+            <>
+                <Tabs value={this.state.value} onChange={this.handleChange} style={{width: "1000px"}}>
+                    <Tab label="Todo Lists" className="document-tab" />
+                    <Tab label="Groups" className="group-tab" />
+                </Tabs>
+                <TabPanel value={this.state.value} index={0} style={{minHeight: "500px"}}>
                     {this.getDocumentTabContent()}
-                </Tab>
-                <Tab label="Groups" className="group-tab">
+                </TabPanel>
+                <TabPanel value={this.state.value} index={1} style={{minHeight: "500px"}}>
                     {this.getGroupTabContent()}
-                </Tab>
-            </Tabs>
+                </TabPanel>
+            </>
         );
     }
 }

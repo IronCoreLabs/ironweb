@@ -1,12 +1,9 @@
 import * as React from "react";
-import TextField from "material-ui/TextField";
-import Button from "@material-ui/core/Button";
+import {TextField, TextFieldProps, Button, Checkbox, Fab, FormControlLabel} from "@material-ui/core";
 import {GroupMetaResponse} from "../../../ironweb";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
-import FloatingActionButton from "material-ui/FloatingActionButton";
-import ArrowBack from "@material-ui/icons/ArrowBack";
-import Checkbox from "material-ui/Checkbox";
+import {ArrowBack} from "@material-ui/icons";
 
 interface NewGroupProps {
     backToGroup(): void;
@@ -19,8 +16,8 @@ interface NewGroupState {
 }
 
 export default class NewGroup extends React.Component<NewGroupProps, NewGroupState> {
-    newGroupName!: TextField;
-    newGroupID!: TextField;
+    newGroupName!: React.RefObject<TextFieldProps>;
+    newGroupID!: React.RefObject<TextFieldProps>;
 
     constructor(props: NewGroupProps) {
         super(props);
@@ -31,8 +28,8 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
     }
 
     createNewGroup = () => {
-        const groupID = this.newGroupID.getValue();
-        const groupName = this.newGroupName.getValue();
+        const groupID = this.newGroupID.current?.value as string;
+        const groupName = this.newGroupName.current?.value as string;
         logAction(`Creating group with ID '${groupID}' and name '${groupName}'`);
         IronWeb.group
             .create({groupID, groupName, addAsMember: this.state.isAddAsMemberChecked, needsRotation: this.state.isNeedsRotationChecked})
@@ -45,11 +42,11 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
             });
     };
 
-    setGroupNameRef = (input: TextField) => {
+    setGroupNameRef = (input: React.RefObject<TextFieldProps>) => {
         this.newGroupName = input;
     };
 
-    setGroupIDRef = (input: TextField) => {
+    setGroupIDRef = (input: React.RefObject<TextFieldProps>) => {
         this.newGroupID = input;
     };
 
@@ -58,24 +55,45 @@ export default class NewGroup extends React.Component<NewGroupProps, NewGroupSta
             <div className="new-group">
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", margin: "10px 0"}}>
                     <h1>New Group</h1>
-                    <FloatingActionButton onClick={this.props.backToGroup} mini>
+                    <Fab onClick={this.props.backToGroup} size="small">
                         <ArrowBack />
-                    </FloatingActionButton>
+                    </Fab>
                 </div>
                 <div>
-                    <TextField id="new-group-id" autoFocus ref={this.setGroupIDRef} type="text" hintText="Group ID" style={{width: "100%", fontSize: "22px"}} />
-                    <TextField id="new-group-name" ref={this.setGroupNameRef} type="text" hintText="Group Name" style={{width: "100%", fontSize: "22px"}} />
-                    <Checkbox
-                        className="group-member-toggle"
-                        checked={this.state.isAddAsMemberChecked}
-                        onCheck={() => this.setState({isAddAsMemberChecked: !this.state.isAddAsMemberChecked})}
-                        label="Add yourself as a member"
+                    <TextField
+                        id="new-group-id"
+                        autoFocus
+                        inputRef={this.setGroupIDRef}
+                        type="text"
+                        helperText="Group ID"
+                        style={{width: "100%", fontSize: "22px"}}
                     />
-                    <Checkbox
-                        className="group-rotate-toggle"
-                        checked={this.state.isNeedsRotationChecked}
-                        onCheck={() => this.setState({isNeedsRotationChecked: !this.state.isNeedsRotationChecked})}
+                    <TextField
+                        id="new-group-name"
+                        inputRef={this.setGroupNameRef}
+                        type="text"
+                        helperText="Group Name"
+                        style={{width: "100%", fontSize: "22px"}}
+                    />
+                    <FormControlLabel
+                        label="Add yourself as a member"
+                        control={
+                            <Checkbox
+                                className="group-member-toggle"
+                                checked={this.state.isAddAsMemberChecked}
+                                onChange={() => this.setState({isAddAsMemberChecked: !this.state.isAddAsMemberChecked})}
+                            />
+                        }
+                    />
+                    <FormControlLabel
                         label="Create group with pending private key rotation"
+                        control={
+                            <Checkbox
+                                className="group-rotate-toggle"
+                                checked={this.state.isNeedsRotationChecked}
+                                onChange={() => this.setState({isNeedsRotationChecked: !this.state.isNeedsRotationChecked})}
+                            />
+                        }
                     />
                 </div>
                 <div style={{textAlign: "center", marginTop: "15px"}}>

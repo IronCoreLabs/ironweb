@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as IronWeb from "../../../src/shim";
-import FloatingActionButton from "material-ui/FloatingActionButton";
+import Fab from "@material-ui/core/Fab";
 import Download from "@material-ui/icons/CloudDownload";
 
 interface FileDocumentProps {
@@ -26,9 +26,9 @@ export default class FileDocument extends React.Component<FileDocumentProps> {
     getGenericFileMarkup() {
         return (
             <div style={{display: "flex", justifyContent: "center", marginTop: "15px"}}>
-                <FloatingActionButton onClick={this.downloadFile}>
+                <Fab onClick={this.downloadFile}>
                     <Download />
-                </FloatingActionButton>
+                </Fab>
             </div>
         );
     }

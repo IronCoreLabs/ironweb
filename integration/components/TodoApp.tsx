@@ -1,5 +1,5 @@
-import Paper from "material-ui/Paper";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import Paper from "@material-ui/core/Paper";
+import {createTheme, ThemeProvider} from "@material-ui/core/styles";
 import * as React from "react";
 import {DocumentIDNameResponse} from "../../ironweb";
 import InitializeApi from "./InitializeApi";
@@ -48,13 +48,13 @@ export default class TodoApp extends React.Component<Record<string, never>, Todo
 
         return (
             <div style={containerStyle}>
-                <MuiThemeProvider>
-                    <Paper style={appWrapperStyle} zDepth={3}>
+                <ThemeProvider theme={createTheme({})}>
+                    <Paper style={appWrapperStyle} elevation={3}>
                         <UserInfo />
                         {content}
                         <StatusConsole />
                     </Paper>
-                </MuiThemeProvider>
+                </ThemeProvider>
             </div>
         );
     }

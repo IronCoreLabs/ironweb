@@ -2,13 +2,10 @@ import * as React from "react";
 import * as IronWeb from "../../../src/shim";
 import {logAction} from "../../Logger";
 import LoadingPlaceholder from "../LoadingPlaceholder";
-import {List, ListItem} from "material-ui/List";
-import TextField from "material-ui/TextField";
-import IconButton from "material-ui/IconButton";
-import Star from "@material-ui/icons/Star";
-import Gavel from "@material-ui/icons/Gavel";
-import RemoveAdmin from "@material-ui/icons/OpenInNew";
+import {List, ListItem, TextField, TextFieldProps, IconButton, ListItemIcon, ListItemText} from "@material-ui/core";
+import {Star, Gavel, OpenInNew as RemoveAdmin} from "@material-ui/icons";
 import cyan from "@material-ui/core/colors/cyan";
+import {Tooltip} from "@material-ui/core";
 const cyan500 = cyan["500"];
 
 interface GroupAdminsProps {
@@ -33,7 +30,7 @@ const listStyles: React.CSSProperties = {
 };
 
 export default class GroupAdmins extends React.Component<GroupAdminsProps, GroupAdminsState> {
-    newAdminInput!: TextField;
+    newAdminInput!: React.RefObject<TextFieldProps>;
 
     constructor(props: GroupAdminsProps) {
         super(props);
@@ -41,18 +38,19 @@ export default class GroupAdmins extends React.Component<GroupAdminsProps, Group
             addingAdmins: false,
             groupAdmins: props.groupAdmins,
         };
+        this.newAdminInput = React.createRef();
     }
 
     UNSAFE_componentWillReceiveProps(nextProps: GroupAdminsProps) {
         this.setState({groupAdmins: nextProps.groupAdmins});
     }
 
-    setAdminRef = (newAdminInput: TextField) => {
+    setAdminRef = (newAdminInput: React.RefObject<TextFieldProps>) => {
         this.newAdminInput = newAdminInput;
     };
 
     addAdmin = () => {
-        const memberValue = this.newAdminInput.getValue();
+        const memberValue = this.newAdminInput.current?.value as string;
         if (!memberValue) {
             return;
         }
@@ -70,7 +68,7 @@ export default class GroupAdmins extends React.Component<GroupAdminsProps, Group
                     logAction(`Failed to add users '${addResult.failed.map(({id}) => id)}' as admin(s) to the group ${this.props.groupID}`, "error");
                 }
                 this.setState({addingAdmins: false}, () => {
-                    this.newAdminInput.getInputNode().value = "";
+                    this.newAdminInput.current!.value = "";
                 });
             })
             .catch((error: IronWeb.SDKError) => {
@@ -107,24 +105,18 @@ export default class GroupAdmins extends React.Component<GroupAdminsProps, Group
     getAdminList() {
         return this.state.groupAdmins.map((admin, index) => {
             const removeAdminMarkup = (
-                <IconButton
-                    className="group-remove-admin"
-                    tooltip="Remove Admin"
-                    tooltipPosition="top-left"
-                    onClick={this.removeAdmin.bind(this, admin)}
-                    style={{padding: "0"}}>
-                    <RemoveAdmin />
-                </IconButton>
+                <Tooltip title="Remove Admin" placement="top-start">
+                    <IconButton className="group-remove-admin" onClick={this.removeAdmin.bind(this, admin)} style={{padding: "0"}}>
+                        <RemoveAdmin />
+                    </IconButton>
+                </Tooltip>
             );
             return (
-                <ListItem
-                    className="group-admin-user"
-                    disabled
-                    key={index}
-                    primaryText={admin}
-                    leftIcon={admin === window.User.id ? <Star htmlColor={cyan500} /> : <Gavel />}
-                    rightIcon={removeAdminMarkup}
-                />
+                <ListItem className="group-admin-user" disabled key={index}>
+                    <ListItemIcon>{admin === window.User.id ? <Star htmlColor={cyan500} /> : <Gavel />}</ListItemIcon>
+                    <ListItemText primary={admin} />
+                    <ListItemIcon>{removeAdminMarkup}</ListItemIcon>
+                </ListItem>
             );
         });
     }
@@ -137,10 +129,10 @@ export default class GroupAdmins extends React.Component<GroupAdminsProps, Group
             ) : (
                 <TextField
                     id="newAdminInput"
-                    ref={this.setAdminRef}
+                    inputRef={this.setAdminRef}
                     onKeyPress={this.handleAdminAddEnter}
                     type="text"
-                    hintText="Add New Admin"
+                    helperText="Add New Admin"
                     style={{width: "100%", marginBottom: "10px"}}
                 />
             );
