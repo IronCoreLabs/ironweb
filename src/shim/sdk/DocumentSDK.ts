@@ -226,6 +226,7 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
 
 /**
  * Update an existing documents data in the store. Returns a Promise which will be resolved once the document has been successfully updated in the store.
+ * @deprecated Use `updateEncryptedData` instead and manage storage of the result yourself.
  * @param {string}     documentID      ID of document to update. Promise will reject if document does not exist
  * @param {Uint8Array} newDocumentData New content to encrypt and save for document
  */
