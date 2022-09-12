@@ -110,7 +110,7 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                 this.setState({loading: false, deviceList: result.result});
             });
         } catch (e: any) {
-            this.setState({loading: true});
+            this.setState({loading: false});
             logAction(`User device list error: ${e.message}. Error Code: ${e.code}`, "error");
         }
     }
