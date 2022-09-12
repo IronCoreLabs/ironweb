@@ -425,13 +425,13 @@ export interface ChangeUserPasscodeResponse {
     type: "CHANGE_USER_PASSCODE_RESPONSE";
     message: null;
 }
-export interface DeauthorizeDevice {
-    type: "DEAUTHORIZE_DEVICE";
-    message: null;
+export interface DeleteDevice {
+    type: "DELETE_DEVICE";
+    message: number | undefined;
 }
-export interface DeauthorizeDeviceResponse {
-    type: "DEAUTHORIZE_DEVICE_RESPONSE";
-    message: boolean;
+export interface DeleteDeviceResponse {
+    type: "DELETE_DEVICE_RESPONSE";
+    message: number;
 }
 export interface ListDevices {
     type: "LIST_DEVICES";
@@ -535,8 +535,8 @@ export type RequestMessage =
     | GroupRemoveSelfAsMemberRequest
     | GroupDeleteRequest
     | ChangeUserPasscode
-    | DeauthorizeDevice
     | ListDevices
+    | DeleteDevice
     | DocumentUnmanagedDecryptRequest
     | DocumentUnmanagedEncryptRequest
     | BlindSearchIndexCreate
@@ -565,8 +565,8 @@ export type ResponseMessage =
     | ChangeUserPasscodeResponse
     | CreateUserResponse
     | CreateDetachedUserDeviceResponse
-    | DeauthorizeDeviceResponse
     | ListDevicesResponse
+    | DeleteDeviceResponse
     | GroupListResponse
     | GroupGetResponse
     | GroupCreateResponse

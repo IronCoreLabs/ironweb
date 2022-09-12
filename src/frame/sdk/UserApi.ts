@@ -7,26 +7,6 @@ import {clearDeviceAndSigningKeys} from "../FrameUtils";
 import * as WorkerMediator from "../WorkerMediator";
 
 /**
- * Makes a request to delete the provided device from the DB and also clear user's device and signing keys from local storage.
- */
-export function deauthorizeDevice() {
-    return (
-        UserApiEndpoints.callUserCurrentDeviceDelete()
-            //If the delete request fails, we don't want to fail the Promise the caller gets because we'll still be able to delete
-            //their device private key from local storage. So mock out a fake ID here that we can use to decision off of.
-            .handleWith(() => Future.of({id: -1}))
-            .map((deleteResponse) => {
-                const user = ApiState.user();
-
-                const {id, segmentId} = user;
-                clearDeviceAndSigningKeys(id, segmentId);
-                ApiState.clearCurrentUser();
-                return deleteResponse.id > 0;
-            })
-    );
-}
-
-/**
  * Rotate users current private key by taking their current passcode and using it to derive a key to decrypt their user private key.
  * Then generates and augmentation factor and subtracts that augmentation factor from the users private key. The new private key is then
  * encrypted. The new encrypted private key and the augmentation factor is then passed as an authorized api request. The server then
@@ -77,6 +57,36 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
     });
 }
 
+/**
+ * Makes a request to delete the provided device from the DB and clear user's device and signing keys from local storage if it's their current device.
+ */
+export const deleteDevice = (deviceId?: number) => {
+    // if the id is undefined we're deleting the current device and need to do some more work
+    if (deviceId === undefined) {
+        console.log("good side");
+        return (
+            UserApiEndpoints.callUserCurrentDeviceDelete()
+                //If the delete request fails, we don't want to fail the Promise the caller gets because we'll still be able to delete
+                //their device private key from local storage. So mock out a fake ID here that we can use to decision off of.
+                .handleWith((e) => {
+                    console.log(`handling: ${e}`);
+                    return Future.of({id: -1});
+                })
+                .map((deleteResponse) => {
+                    const user = ApiState.user();
+
+                    console.log(user);
+                    const {id, segmentId} = user;
+                    clearDeviceAndSigningKeys(id, segmentId);
+                    ApiState.clearCurrentUser();
+                    return deleteResponse.id;
+                })
+        );
+    } else {
+        console.log("bad side");
+        return UserApiEndpoints.callUserDeviceDelete(deviceId).map((r) => r.id);
+    }
+};
 
 /**
  * Makes a request to list the devices for the currently logged in user.

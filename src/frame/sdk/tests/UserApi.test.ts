@@ -6,40 +6,42 @@ import ApiState from "../../ApiState";
 import * as TestUtils from "../../../tests/TestUtils";
 
 describe("UserApi", () => {
-    describe("deauthorizeDevice", () => {
-        it("calls API and clears items from expected key", () => {
+    describe("deleteDevice", () => {
+        it("calls API and clears items from expected key", async () => {
             jest.spyOn(UserApiEndpoints, "callUserCurrentDeviceDelete").mockReturnValue(Future.of<any>({id: 33}));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             expect(ApiState.user()).toEqual(TestUtils.getFullUser());
             jest.spyOn(Storage.prototype, "removeItem");
-            UserApi.deauthorizeDevice().engage(
-                (e) => {
-                    throw new Error(e.message);
-                },
-                (result) => {
-                    expect(UserApiEndpoints.callUserCurrentDeviceDelete).toHaveBeenCalledWith();
-                    expect(result).toBe(true);
-                    expect(localStorage.removeItem).toHaveBeenCalledWith("1-1:user-10-icldaspkn");
-                    expect(ApiState.user()).toBeUndefined();
-                }
-            );
+            const result = await UserApi.deleteDevice();
+
+            expect(UserApiEndpoints.callUserCurrentDeviceDelete).toHaveBeenCalledWith();
+            expect(result).toBe(33);
+            expect(localStorage.removeItem).toHaveBeenCalledWith("1-1:user-10-icldaspkn");
+            expect(ApiState.user()).toBeUndefined();
         });
 
-        it("clears items from local storage even if request fails", () => {
+        it("clears items from local storage even if request fails", async () => {
             jest.spyOn(UserApiEndpoints, "callUserCurrentDeviceDelete").mockReturnValue(Future.reject<any>("device delete"));
             ApiState.setCurrentUser(TestUtils.getFullUser());
             expect(ApiState.user()).toEqual(TestUtils.getFullUser());
             jest.spyOn(Storage.prototype, "removeItem");
-            UserApi.deauthorizeDevice().engage(
-                (e) => {
-                    throw new Error(e.message);
-                },
-                (result) => {
-                    expect(result).toBe(false);
-                    expect(localStorage.removeItem).toHaveBeenCalledWith("1-1:user-10-icldaspkn");
-                    expect(ApiState.user()).toBeUndefined();
-                }
-            );
+            const result = await UserApi.deleteDevice();
+
+            expect(result).toBe(-1);
+            expect(localStorage.removeItem).toHaveBeenCalledWith("1-1:user-10-icldaspkn");
+            expect(ApiState.user()).toBeUndefined();
+        });
+
+        it("calls API but doesn't clear storage if passed an ID.", async () => {
+            jest.spyOn(UserApiEndpoints, "callUserDeviceDelete").mockReturnValue(Future.of<any>({id: 33}));
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            expect(ApiState.user()).toEqual(TestUtils.getFullUser());
+            jest.spyOn(Storage.prototype, "removeItem");
+            const result = await UserApi.deleteDevice(33);
+
+            expect(result).toBe(33);
+            expect(localStorage.removeItem).not.toHaveBeenCalled();
+            expect(ApiState.user()).toBeDefined();
         });
     });
 

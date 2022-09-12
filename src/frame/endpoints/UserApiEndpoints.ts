@@ -178,6 +178,20 @@ const deleteCurrentDevice = (userID: string): RequestMeta => ({
 });
 
 /**
+ * Delete the user`s device by ID.
+ */
+ const deleteDevice = (userID: string, deviceId: number): RequestMeta => ({
+    url: `users/${encodeURIComponent(userID)}/devices/${encodeURIComponent(deviceId)}`,
+    options: {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    },
+    errorCode: ErrorCodes.USER_DEVICE_DELETE_REQUEST_FAILURE,
+});
+
+/**
  * Update a users status and/or their escrowed private key.
  * @param {string}                 userID         ID of user to update
  * @param {PrivateKey<Uint8Array>} userPrivateKey Users encrypted private key to escrow
@@ -319,6 +333,15 @@ export default {
     callUserCurrentDeviceDelete(): Future<SDKError, {id: number}> {
         const {id} = ApiState.user();
         const {url, options, errorCode} = deleteCurrentDevice(id);
+        return makeAuthorizedApiRequest(url, errorCode, options);
+    },
+
+    /**
+     * Delete the user's device by Id.
+     */
+    callUserDeviceDelete(deviceId: number): Future<SDKError, {id: number}> {
+        const {id: userId} = ApiState.user();
+        const {url, options, errorCode} = deleteDevice(userId, deviceId);
         return makeAuthorizedApiRequest(url, errorCode, options);
     },
 

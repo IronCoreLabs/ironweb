@@ -94,8 +94,8 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
 
     clearDeviceAndSigningKeys() {
         try {
-            IronWeb.user.deauthorizeDevice().then((result) => {
-                logAction(`User device successfully deauthorized. Deleted transform key: ${result.transformKeyDeleted}`);
+            IronWeb.user.deleteDevice().then(() => {
+                logAction(`User's device successfully deauthorized.`);
                 window.location.reload();
             });
         } catch (e: any) {
