@@ -589,6 +589,23 @@ describe("frame index", () => {
             expect(UserApi.rotateUserMasterKey).toHaveBeenCalledWith("current");
             done();
         });
+
+        it("LIST_DEVICES", (done) => {
+            jest.spyOn(UserApi, "listDevices").mockReturnValue(Future.of<any>("list"));
+            const payload: MT.ListDevices = {
+                type: "LIST_DEVICES",
+                message: null,
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "LIST_DEVICES_RESPONSE",
+                    message: "list",
+                });
+                expect(UserApi.listDevices).toHaveBeenCalledWith();
+                done();
+            });
+        });
     });
 
     describe("onMessage group tests", () => {

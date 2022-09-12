@@ -82,5 +82,26 @@ describe("UserSDK", () => {
                     .catch((e) => done(e));
             });
         });
+
+        describe("listDevices", () => {
+            it("throws if SDK has not yet been initialized", () => {
+                ShimUtils.clearSDKInitialized();
+                expect(() => UserSDK.listDevices()).toThrow();
+            });
+
+            it("sends list request type to frame", (done) => {
+                ShimUtils.setSDKInitialized();
+                UserSDK.listDevices()
+                    .then((result: any) => {
+                        expect(result).toEqual("messageResponse");
+                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                            type: "LIST_DEVICES",
+                            message: null,
+                        });
+                        done();
+                    })
+                    .catch((e) => done(e));
+            });
+        });
     });
 });
