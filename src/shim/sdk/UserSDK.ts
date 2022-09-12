@@ -53,3 +53,17 @@ export function deauthorizeDevice() {
         })
         .toPromise();
 }
+
+/**
+ * Lists all the devices for the currently logged in user.
+ */
+export function listDevices() {
+    checkSDKInitialized();
+    const payload: MT.ListDevices = {
+        type: "LIST_DEVICES",
+        message: null,
+    };
+    return FrameMediator.sendMessage<MT.ListDevicesResponse>(payload)
+        .map(({message: result}) => result)
+        .toPromise();
+}

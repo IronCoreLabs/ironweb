@@ -12,6 +12,7 @@ import {
     GroupMetaResponse,
     GroupUserEditResponse,
     Policy,
+    UserDeviceListResponse,
     UserOrGroup,
 } from "../ironweb";
 
@@ -432,6 +433,14 @@ export interface DeauthorizeDeviceResponse {
     type: "DEAUTHORIZE_DEVICE_RESPONSE";
     message: boolean;
 }
+export interface ListDevices {
+    type: "LIST_DEVICES";
+    message: null;
+}
+export interface ListDevicesResponse {
+    type: "LIST_DEVICES_RESPONSE";
+    message: UserDeviceListResponse;
+}
 
 // Blind index search methods
 export interface BlindSearchIndexCreate {
@@ -527,6 +536,7 @@ export type RequestMessage =
     | GroupDeleteRequest
     | ChangeUserPasscode
     | DeauthorizeDevice
+    | ListDevices
     | DocumentUnmanagedDecryptRequest
     | DocumentUnmanagedEncryptRequest
     | BlindSearchIndexCreate
@@ -556,6 +566,7 @@ export type ResponseMessage =
     | CreateUserResponse
     | CreateDetachedUserDeviceResponse
     | DeauthorizeDeviceResponse
+    | ListDevicesResponse
     | GroupListResponse
     | GroupGetResponse
     | GroupCreateResponse

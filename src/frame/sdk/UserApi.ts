@@ -76,3 +76,9 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
         return UserApiEndpoints.callUserUpdateApi(message.encryptedPrivateUserKey);
     });
 }
+
+
+/**
+ * Makes a request to list the devices for the currently logged in user.
+ */
+export const listDevices = () => UserApiEndpoints.callUserListDevices();

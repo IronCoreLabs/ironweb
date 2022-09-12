@@ -151,6 +151,17 @@ export interface DeviceKeys {
 export interface UserCreateOptions {
     needsRotation?: boolean;
 }
+export interface UserDevice {
+    id: number;
+    name: string | null;
+    created: RFC3339Timestamp;
+    updated: RFC3339Timestamp;
+    publicSigningKey: Base64String;
+    isCurrentDevice: boolean;
+}
+export interface UserDeviceListResponse {
+    result: UserDevice[];
+}
 
 /**
  * Search SDK response types
@@ -165,6 +176,7 @@ export interface BlindSearchIndex {
  */
 export interface User {
     deauthorizeDevice(): Promise<{transformKeyDeleted: boolean}>;
+    listDevices(): Promise<UserDeviceListResponse>;
     changePasscode(currentPasscode: string, newPasscode: string): Promise<void>;
     rotateMasterKey(passcode: string): Promise<void>;
 }

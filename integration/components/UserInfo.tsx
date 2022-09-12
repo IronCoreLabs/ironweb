@@ -7,6 +7,7 @@ import LoadingPlaceholder from "./LoadingPlaceholder";
 import {LOCAL_DOC_STORAGE_KEY} from "../DocumentDB";
 import * as IronWeb from "../../src/shim";
 import {logAction} from "../Logger";
+import {UserDevice} from "../../ironweb";
 
 const componentStyle: React.CSSProperties = {
     position: "fixed",
@@ -32,9 +33,11 @@ declare global {
 }
 
 interface UserInfoState {
-    showingDialog: boolean;
     changingPasscode: boolean;
     passcodeError: boolean;
+    listingDevices: boolean;
+    loading: boolean;
+    deviceList: UserDevice[];
 }
 
 export default class UserInfo extends React.Component<Record<string, never>, UserInfoState> {
@@ -44,9 +47,11 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
     constructor(props: Record<string, never>) {
         super(props);
         this.state = {
-            showingDialog: false,
             passcodeError: false,
             changingPasscode: false,
+            listingDevices: false,
+            loading: true,
+            deviceList: [],
         };
     }
 
@@ -59,18 +64,18 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
         }
         this.setState({
             passcodeError: false,
-            changingPasscode: true,
+            loading: true,
         });
         IronWeb.user
             .changePasscode(currentPasscode, newPasscode)
             .then(() => {
                 logAction("Successfully changed users passcode", "success");
-                this.setState({showingDialog: false, changingPasscode: false});
+                this.setState({loading: false, changingPasscode: false});
             })
             .catch((error: IronWeb.SDKError) => {
                 this.setState(
                     {
-                        changingPasscode: false,
+                        loading: false,
                         passcodeError: error.code === IronWeb.ErrorCodes.USER_PASSCODE_INCORRECT,
                     },
                     () => {
@@ -98,6 +103,18 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
         }
     }
 
+    listDevices() {
+        try {
+            this.setState({loading: true});
+            IronWeb.user.listDevices().then((result) => {
+                this.setState({loading: false, deviceList: result.result});
+            });
+        } catch (e: any) {
+            this.setState({loading: true});
+            logAction(`User device list error: ${e.message}. Error Code: ${e.code}`, "error");
+        }
+    }
+
     clearLocalSymmetricKey = () => {
         localStorage.removeItem("1-icldassk");
         window.location.reload();
@@ -122,24 +139,39 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                     key="changePasscode"
                     className="change-passcode"
                     style={buttonStyle}
-                    onClick={() => this.setState({showingDialog: true})}
+                    onClick={() => this.setState({changingPasscode: true})}
                     label="Change Passcode"
+                />,
+                <RaisedButton
+                    key="deviceList"
+                    className="clear-all"
+                    style={buttonStyle}
+                    onClick={() => {
+                        this.setState({
+                            listingDevices: true,
+                            deviceList: [],
+                        });
+                        this.listDevices();
+                    }}
+                    label="List Devices"
                 />,
             ];
         }
         return [];
     }
 
-    getModalContent() {
-        if (this.state.changingPasscode) {
+    getPasswordChangeContent() {
+        if (this.state.loading) {
             return <LoadingPlaceholder />;
         }
+
         const setCurrentPasscodeInput = (currentPasscodeInput: TextField) => {
             this.currentPasscodeInput = currentPasscodeInput;
         };
         const setNewPasscodeInput = (newPasscodeInput: TextField) => {
             this.newPasscodeInput = newPasscodeInput;
         };
+
         return (
             <div>
                 <TextField
@@ -153,6 +185,34 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                 <TextField id="newPasscode" ref={setNewPasscodeInput} hintText="New Passcode" />
             </div>
         );
+    }
+
+    getDeviceListContent() {
+        if (this.state.loading) {
+            return <LoadingPlaceholder />;
+        }
+
+        if (this.state.deviceList.length !== 0) {
+            return (
+                <div>
+                    {this.state.deviceList
+                        .map((device, index) => (
+                            <ul key={index}>
+                                <li>Name: {device.name}</li>
+                                <li>ID: {device.id}</li>
+                                <li>Current Device: {device.isCurrentDevice}</li>
+                                <li>Public Signing Key: {device.publicSigningKey}</li>
+                                <li>Created: {device.created}</li>
+                                <li>Updated: {device.updated}</li>
+                            </ul>
+                        ))
+                        .flatMap((e, index) => [<hr key={index}/>, e])
+                        .slice(1)}
+                </div>
+            );
+        } else {
+            return <div>No devices found.</div>;
+        }
     }
 
     render() {
@@ -171,12 +231,20 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                 {this.getPostInitializationButtons()}
                 <Dialog
                     modal={false}
-                    open={this.state.showingDialog}
-                    title="Change Passcode"
-                    onRequestClose={() => this.setState({showingDialog: false, passcodeError: false})}
+                    open={this.state.changingPasscode}
+                    title={"Change Passcode"}
+                    onRequestClose={() => this.setState({changingPasscode: false, passcodeError: false})}
                     actions={modalAction}
                     bodyClassName="password-change-dialog-body">
-                    {this.getModalContent()}
+                    {this.getPasswordChangeContent()}
+                </Dialog>
+                <Dialog
+                    modal={false}
+                    open={this.state.listingDevices}
+                    title={"User Device List"}
+                    onRequestClose={() => this.setState({listingDevices: false, deviceList: []})}
+                    bodyClassName="password-change-dialog-body">
+                    {this.getDeviceListContent()}
                 </Dialog>
             </div>
         );

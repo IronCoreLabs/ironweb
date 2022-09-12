@@ -1,6 +1,7 @@
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import {fromByteArray} from "base64-js";
 import Future from "futurejs";
+import {UserDeviceListResponse} from "ironweb";
 import {ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import {publicKeyToBase64, transformKeyToBase64} from "../../lib/Utils";
@@ -230,6 +231,17 @@ const userKeyList = (userList: string[]): RequestMeta => ({
 
 const userPublicKeyCache: UserPublicKeyCache = {};
 
+/**
+ * Generate API request to list all the current user's devices.
+ */
+const userDeviceList = (userId: string): RequestMeta => ({
+    url: `users/${encodeURIComponent(userId)}/devices`,
+    options: {
+        method: "GET",
+    },
+    errorCode: ErrorCodes.USER_DEVICE_LIST_REQUEST_FAILURE,
+});
+
 export default {
     /**
      * Invoke user verify API and maps result to determine if we got back a user or not
@@ -346,5 +358,12 @@ export default {
                 return userListResponse;
             });
         }
+    },
+    /**
+     * List the current user's devices.
+     */
+    callUserListDevices(): Future<SDKError, UserDeviceListResponse> {
+        const {url, options, errorCode} = userDeviceList(ApiState.user().id);
+        return makeAuthorizedApiRequest(url, errorCode, options);
     },
 };

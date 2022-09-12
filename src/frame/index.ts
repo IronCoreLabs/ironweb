@@ -77,6 +77,8 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             return UserApi.changeUsersPasscode(data.message.currentPasscode, data.message.newPasscode).engage(errorHandler, () =>
                 callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: null})
             );
+        case "LIST_DEVICES":
+            return UserApi.listDevices().engage(errorHandler, (result) => callback({type: "LIST_DEVICES_RESPONSE", message: result}));
         case "DOCUMENT_LIST":
             return DocumentApi.list().engage(errorHandler, (documents) => callback({type: "DOCUMENT_LIST_RESPONSE", message: documents}));
         case "DOCUMENT_META_GET":
