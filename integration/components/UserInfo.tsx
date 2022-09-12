@@ -103,6 +103,17 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
         }
     }
 
+    deleteDevice(deviceId: number) {
+        try {
+            IronWeb.user.deleteDevice(deviceId).then(() => {
+                logAction(`User's device successfully deleted.`);
+                this.listDevices();
+            });
+        } catch (e: any) {
+            logAction(`User device delete error: ${e.message}. Error Code: ${e.code}`, "error");
+        }
+    }
+
     listDevices() {
         try {
             this.setState({loading: true});
@@ -198,15 +209,16 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                     {this.state.deviceList
                         .map((device, index) => (
                             <ul key={index}>
-                                <li>Name: {device.name}</li>
+                                <li>Name: {String(device.name)}</li>
                                 <li>ID: {device.id}</li>
-                                <li>Current Device: {device.isCurrentDevice}</li>
+                                <li>Current Device: {String(device.isCurrentDevice)}</li>
                                 <li>Public Signing Key: {device.publicSigningKey}</li>
                                 <li>Created: {device.created}</li>
                                 <li>Updated: {device.updated}</li>
+                                <RaisedButton onClick={() => this.deleteDevice(device.id)}>Delete Device</RaisedButton>
                             </ul>
                         ))
-                        .flatMap((e, index) => [<hr key={index}/>, e])
+                        .flatMap((e, index) => [<hr key={index} />, e])
                         .slice(1)}
                 </div>
             );
