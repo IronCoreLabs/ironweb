@@ -19,7 +19,7 @@ describe("UserSDK", () => {
                 expect(() => UserSDK.deauthorizeDevice()).toThrow();
             });
 
-            it("sends deauth request type to frame", (done) => {
+            it("sends delete request type to frame", (done) => {
                 ShimUtils.setSDKInitialized();
                 jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
                 UserSDK.deauthorizeDevice()
@@ -93,7 +93,7 @@ describe("UserSDK", () => {
                 ShimUtils.setSDKInitialized();
                 UserSDK.listDevices()
                     .then((result: any) => {
-                        expect(result).toEqual("messageResponse");
+                        expect(result).toEqual(10);
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
                             type: "LIST_DEVICES",
                             message: null,
@@ -111,7 +111,7 @@ describe("UserSDK", () => {
             expect(() => UserSDK.deleteDevice()).toThrow();
         });
 
-        it("sends deauth request type to frame if device is defaulted to the current one", (done) => {
+        it("sends delete request type to frame if device is defaulted to the current one", (done) => {
             ShimUtils.setSDKInitialized();
             jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
             UserSDK.deleteDevice()
@@ -127,7 +127,7 @@ describe("UserSDK", () => {
                 .catch((e) => done(e));
         });
 
-        it("doesn't send deauth request type to frame if a device is passed", (done) => {
+        it("doesn't send delete request type to frame if a device is passed", (done) => {
             ShimUtils.setSDKInitialized();
             jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
             UserSDK.deleteDevice(10)
