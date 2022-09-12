@@ -63,19 +63,14 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
 export const deleteDevice = (deviceId?: number) => {
     // if the id is undefined we're deleting the current device and need to do some more work
     if (deviceId === undefined) {
-        console.log("good side");
         return (
             UserApiEndpoints.callUserCurrentDeviceDelete()
                 //If the delete request fails, we don't want to fail the Promise the caller gets because we'll still be able to delete
                 //their device private key from local storage. So mock out a fake ID here that we can use to decision off of.
-                .handleWith((e) => {
-                    console.log(`handling: ${e}`);
-                    return Future.of({id: -1});
-                })
+                .handleWith(() => Future.of({id: -1}))
                 .map((deleteResponse) => {
                     const user = ApiState.user();
 
-                    console.log(user);
                     const {id, segmentId} = user;
                     clearDeviceAndSigningKeys(id, segmentId);
                     ApiState.clearCurrentUser();
@@ -83,7 +78,6 @@ export const deleteDevice = (deviceId?: number) => {
                 })
         );
     } else {
-        console.log("bad side");
         return UserApiEndpoints.callUserDeviceDelete(deviceId).map((r) => r.id);
     }
 };
