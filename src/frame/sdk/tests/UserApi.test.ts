@@ -104,4 +104,33 @@ describe("UserApi", () => {
             );
         });
     });
+
+    describe("listDevices", () => {
+        it("calls API and returns the expected response shape", () => {
+            const iclResponse = {
+                result: [
+                    {
+                        name: null,
+                        id: 613,
+                        updated: "2022-09-09T19:15:12.374Z",
+                        publicSigningKey: "KoZEmt+JX6Ml4mTRNQmhl47xqFfyer6K8uJJoXFx+Zs=",
+                        isCurrentDevice: true,
+                        created: "2022-09-09T19:15:12.374Z",
+                    },
+                ],
+            };
+            jest.spyOn(UserApiEndpoints, "callUserListDevices").mockReturnValue(Future.of<any>(iclResponse));
+            ApiState.setCurrentUser(TestUtils.getFullUser());
+            jest.spyOn(Storage.prototype, "removeItem");
+            UserApi.listDevices().engage(
+                (e) => {
+                    throw new Error(e.message);
+                },
+                (result) => {
+                    expect(UserApiEndpoints.callUserListDevices).toHaveBeenCalledWith();
+                    expect(result).toBe(iclResponse);
+                }
+            );
+        });
+    });
 });
