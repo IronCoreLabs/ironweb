@@ -45,7 +45,6 @@ export const deauthorizeDevice = () => deleteDevice().then((deletedDevice) => ({
  * This method should usually be called whenever the current user logs out of your application or you're aware a device of their's shouldn't have access.
  * @param {number | undefined} deviceId The device id to delete. If undefined, the current device will be deleted and local storage will be cleared.
  */
-// TODO: detect if deviceId is the same as the currently operating device and set deletingCurrentDevice to true
 export const deleteDevice = (deviceId?: number) => {
     checkSDKInitialized();
     const deletingCurrentDevice = deviceId === undefined;
