@@ -50,7 +50,7 @@ export const deleteDevice = (deviceId?: number) => {
     const deletingCurrentDevice = deviceId === undefined;
     const payload: MT.DeleteDevice = {
         type: "DELETE_DEVICE",
-        message: deletingCurrentDevice ? undefined : deviceId,
+        message: deviceId,
     };
     // If current device, clear the local symmetric key from local storage, then send a request to clear the frames local storage.
     // Once that's complete clear the SDK init flag so that the user has to rerun init before the SDK methods will work again.
