@@ -5,7 +5,7 @@ import * as ShimUtils from "../../ShimUtils";
 
 describe("UserSDK", () => {
     beforeEach(() => {
-        jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "messageResponse"}));
+        jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({message: 10}));
     });
 
     afterEach(() => {
@@ -19,15 +19,15 @@ describe("UserSDK", () => {
                 expect(() => UserSDK.deauthorizeDevice()).toThrow();
             });
 
-            it("sends deauth request type to frame", (done) => {
+            it("sends delete request type to frame", (done) => {
                 ShimUtils.setSDKInitialized();
                 jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
                 UserSDK.deauthorizeDevice()
                     .then((result: any) => {
-                        expect(result).toEqual({transformKeyDeleted: "messageResponse"});
+                        expect(result).toEqual({transformKeyDeleted: true});
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
-                            type: "DEAUTHORIZE_DEVICE",
-                            message: null,
+                            type: "DELETE_DEVICE",
+                            message: undefined,
                         });
                         expect(ShimUtils.clearParentWindowSymmetricKey).toHaveBeenCalledWith();
                         done();
@@ -93,7 +93,7 @@ describe("UserSDK", () => {
                 ShimUtils.setSDKInitialized();
                 UserSDK.listDevices()
                     .then((result: any) => {
-                        expect(result).toEqual("messageResponse");
+                        expect(result).toEqual(10);
                         expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
                             type: "LIST_DEVICES",
                             message: null,
@@ -102,6 +102,45 @@ describe("UserSDK", () => {
                     })
                     .catch((e) => done(e));
             });
+        });
+    });
+
+    describe("deleteDevice", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            ShimUtils.clearSDKInitialized();
+            expect(() => UserSDK.deleteDevice()).toThrow();
+        });
+
+        it("sends delete request type to frame if device is defaulted to the current one", (done) => {
+            ShimUtils.setSDKInitialized();
+            jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
+            UserSDK.deleteDevice()
+                .then((result: any) => {
+                    expect(result).toEqual(10);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DELETE_DEVICE",
+                        message: undefined,
+                    });
+                    expect(ShimUtils.clearParentWindowSymmetricKey).toHaveBeenCalledWith();
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+
+        it("doesn't send delete request type to frame if a device is passed", (done) => {
+            ShimUtils.setSDKInitialized();
+            jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
+            UserSDK.deleteDevice(10)
+                .then((result: any) => {
+                    expect(result).toEqual(10);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DELETE_DEVICE",
+                        message: 10,
+                    });
+                    expect(ShimUtils.clearParentWindowSymmetricKey).not.toHaveBeenCalled();
+                    done();
+                })
+                .catch((e) => done(e));
         });
     });
 });

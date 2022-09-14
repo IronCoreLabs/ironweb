@@ -532,19 +532,19 @@ describe("frame index", () => {
     });
 
     describe("onMessage user tests", () => {
-        it("DEAUTHORIZE_DEVICE", (done) => {
-            jest.spyOn(UserApi, "deauthorizeDevice").mockReturnValue(Future.of<any>("deauthDevice"));
-            const payload: MT.DeauthorizeDevice = {
-                type: "DEAUTHORIZE_DEVICE",
-                message: null,
+        it("DELETE_DEVICE", (done) => {
+            jest.spyOn(UserApi, "deleteDevice").mockReturnValue(Future.of<any>(10));
+            const payload: MT.DeleteDevice = {
+                type: "DELETE_DEVICE",
+                message: undefined,
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
                 expect(result).toEqual({
-                    type: "DEAUTHORIZE_DEVICE_RESPONSE",
-                    message: "deauthDevice",
+                    type: "DELETE_DEVICE_RESPONSE",
+                    message: 10,
                 });
-                expect(UserApi.deauthorizeDevice).toHaveBeenCalledWith();
+                expect(UserApi.deleteDevice).toHaveBeenCalledWith(undefined);
                 done();
             });
         });

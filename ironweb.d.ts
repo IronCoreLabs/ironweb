@@ -175,7 +175,11 @@ export interface BlindSearchIndex {
  * SDK Namespaces
  */
 export interface User {
+    /**
+     * Deprecated, use deleteDevice() with no argument to deauthorize the current device instead.
+     */
     deauthorizeDevice(): Promise<{transformKeyDeleted: boolean}>;
+    deleteDevice(deviceId?: number): Promise<number>;
     listDevices(): Promise<UserDeviceListResponse>;
     changePasscode(currentPasscode: string, newPasscode: string): Promise<void>;
     rotateMasterKey(passcode: string): Promise<void>;
