@@ -429,6 +429,10 @@ export interface DeleteDevice {
     type: "DELETE_DEVICE";
     message: number | undefined;
 }
+export interface DeleteDeviceBySigningKey {
+    type: "DELETE_DEVICE_BY_SIGNING_KEY";
+    message: Base64String;
+}
 export interface DeleteDeviceResponse {
     type: "DELETE_DEVICE_RESPONSE";
     message: number;
@@ -537,6 +541,7 @@ export type RequestMessage =
     | ChangeUserPasscode
     | ListDevices
     | DeleteDevice
+    | DeleteDeviceBySigningKey
     | DocumentUnmanagedDecryptRequest
     | DocumentUnmanagedEncryptRequest
     | BlindSearchIndexCreate

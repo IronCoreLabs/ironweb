@@ -180,8 +180,22 @@ const deleteCurrentDevice = (userID: string): RequestMeta => ({
 /**
  * Delete the user`s device by ID.
  */
- const deleteDevice = (userID: string, deviceId: number): RequestMeta => ({
+const deleteDevice = (userID: string, deviceId: number): RequestMeta => ({
     url: `users/${encodeURIComponent(userID)}/devices/${encodeURIComponent(deviceId)}`,
+    options: {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    },
+    errorCode: ErrorCodes.USER_DEVICE_DELETE_REQUEST_FAILURE,
+});
+
+/**
+ * Delete the user`s device by public signing key.
+ */
+const deleteDeviceBySigningKey = (userID: string, publicSigningKey: Base64String): RequestMeta => ({
+    url: `users/${encodeURIComponent(userID)}/devices/${encodeURIComponent(publicSigningKey)}`,
     options: {
         method: "DELETE",
         headers: {
@@ -342,6 +356,15 @@ export default {
     callUserDeviceDelete(deviceId: number): Future<SDKError, {id: number}> {
         const {id: userId} = ApiState.user();
         const {url, options, errorCode} = deleteDevice(userId, deviceId);
+        return makeAuthorizedApiRequest(url, errorCode, options);
+    },
+
+    /**
+     * Delete the user's device by public signing key.
+     */
+    callUserDeviceDeleteBySigningKey(publicSigningKey: Base64String): Future<SDKError, {id: number}> {
+        const {id: userId} = ApiState.user();
+        const {url, options, errorCode} = deleteDeviceBySigningKey(userId, publicSigningKey);
         return makeAuthorizedApiRequest(url, errorCode, options);
     },
 
