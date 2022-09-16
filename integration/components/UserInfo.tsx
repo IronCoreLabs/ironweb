@@ -7,7 +7,7 @@ import LoadingPlaceholder from "./LoadingPlaceholder";
 import {LOCAL_DOC_STORAGE_KEY} from "../DocumentDB";
 import * as IronWeb from "../../src/shim";
 import {logAction} from "../Logger";
-import {UserDevice} from "../../ironweb";
+import {Base64String, UserDevice} from "../../ironweb";
 
 const componentStyle: React.CSSProperties = {
     position: "fixed",
@@ -103,9 +103,9 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
         }
     }
 
-    deleteDevice(deviceId: number) {
+    deleteDevice(publicSigningKey: Base64String) {
         try {
-            IronWeb.user.deleteDevice(deviceId).then(() => {
+            IronWeb.user.deleteDeviceByPublicSigningKey(publicSigningKey).then(() => {
                 logAction(`User's device successfully deleted.`);
                 this.listDevices();
             });
@@ -215,7 +215,7 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
                                 <li>Public Signing Key: {device.publicSigningKey}</li>
                                 <li>Created: {device.created}</li>
                                 <li>Updated: {device.updated}</li>
-                                <RaisedButton onClick={() => this.deleteDevice(device.id)}>Delete Device</RaisedButton>
+                                <RaisedButton onClick={() => this.deleteDevice(device.publicSigningKey)}>Delete Device</RaisedButton>
                             </ul>
                         ))
                         .flatMap((e, index) => [<hr key={index} />, e])

@@ -68,6 +68,21 @@ export const deleteDevice = (deviceId?: number) => {
 };
 
 /**
+ * Deletes a device by its public signing key.
+ * @param {Base64String} publicSigningKey The public signing key of the device to delete.
+ */
+export const deleteDeviceByPublicSigningKey = (publicSigningKey: Base64String) => {
+    checkSDKInitialized();
+    const payload: MT.DeleteDeviceBySigningKey = {
+        type: "DELETE_DEVICE_BY_SIGNING_KEY",
+        message: publicSigningKey,
+    };
+    return FrameMediator.sendMessage<MT.DeleteDeviceResponse>(payload)
+        .map(({message}) => message)
+        .toPromise();
+};
+
+/**
  * Lists all the devices for the currently logged in user.
  */
 export const listDevices = () => {

@@ -180,6 +180,7 @@ export interface User {
      */
     deauthorizeDevice(): Promise<{transformKeyDeleted: boolean}>;
     deleteDevice(deviceId?: number): Promise<number>;
+    deleteDeviceByPublicSigningKey(publicSigningKey: Base64String): Promise<number>;
     listDevices(): Promise<UserDeviceListResponse>;
     changePasscode(currentPasscode: string, newPasscode: string): Promise<void>;
     rotateMasterKey(passcode: string): Promise<void>;

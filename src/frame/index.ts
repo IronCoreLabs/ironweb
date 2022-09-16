@@ -73,6 +73,8 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             );
         case "DELETE_DEVICE":
             return UserApi.deleteDevice(data.message).engage(errorHandler, (result) => callback({type: "DELETE_DEVICE_RESPONSE", message: result}));
+        case "DELETE_DEVICE_BY_SIGNING_KEY":
+            return UserApi.deleteDeviceBySigningKey(data.message).engage(errorHandler, (result) => callback({type: "DELETE_DEVICE_RESPONSE", message: result}));
         case "CHANGE_USER_PASSCODE":
             return UserApi.changeUsersPasscode(data.message.currentPasscode, data.message.newPasscode).engage(errorHandler, () =>
                 callback({type: "CHANGE_USER_PASSCODE_RESPONSE", message: null})

@@ -83,6 +83,12 @@ export const deleteDevice = (deviceId?: number) => {
 };
 
 /**
+ * Makes a request to delete the provided device from the DB.
+ */
+export const deleteDeviceBySigningKey = (publicSigningKey: Base64String) =>
+    UserApiEndpoints.callUserDeviceDeleteBySigningKey(publicSigningKey).map((r) => r.id);
+
+/**
  * Makes a request to list the devices for the currently logged in user.
  */
 export const listDevices = () => UserApiEndpoints.callUserListDevices();
