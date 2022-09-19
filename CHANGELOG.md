@@ -7,6 +7,7 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 ## v4.1.1
 - added `listDevices()` to the User SDK. This lists all devices for the currently logged in user.
 - added `deleteDevice(deviceId?: number)` to the User SDK. This deletes a user's device by ID, and if passed no ID deletes the current device and clears its keys from browser storage.
+- deprecated `deauthorizeDevice()` in favor of `deleteDevice()`.
 - added `deleteDeviceByPublicSigningKey(publicSigningKey: Base64String)` to the User SDK. This deletes a user's device by its public signing key.
 
 ## v4.0.19
