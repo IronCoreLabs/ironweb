@@ -1,6 +1,8 @@
 import {clearParentWindowSymmetricKey, checkSDKInitialized, clearSDKInitialized} from "../ShimUtils";
 import * as FrameMediator from "../FrameMediator";
 import * as MT from "../../FrameMessageTypes";
+import {getJWT} from "../Initialize";
+import {JWTCallback} from "ironweb";
 
 /**
  * Update an existing users passcode that is used to escrow their private key. The returned Promise will resolve successfully upon passcode change or
@@ -81,6 +83,24 @@ export const deleteDeviceByPublicSigningKey = (publicSigningKey: Base64String) =
         .map(({message}) => message)
         .toPromise();
 };
+
+/**
+ * Deletes a device by its public signing key. Uses JWT auth, so it doesn't require an initialized SDK.
+ * @param {Base64String} publicSigningKey The public signing key of the device to delete.
+ */
+export const deleteDeviceByPublicSigningKeyWithJwt = (jwtCallback: JWTCallback, publicSigningKey: Base64String): Promise<number> =>
+    getJWT(jwtCallback)
+        .flatMap((jwtToken) => {
+            const payload: MT.DeleteDeviceBySigningKeyJwt = {
+                type: "DELETE_DEVICE_BY_SIGNING_KEY_JWT",
+                message: {
+                    jwtToken,
+                    publicSigningKey,
+                },
+            };
+            return FrameMediator.sendMessage<MT.DeleteDeviceResponse>(payload).map(({message}) => message);
+        })
+        .toPromise();
 
 /**
  * Lists all the devices for the currently logged in user.

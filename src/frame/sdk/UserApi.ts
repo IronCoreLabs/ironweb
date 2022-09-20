@@ -89,6 +89,12 @@ export const deleteDeviceBySigningKey = (publicSigningKey: Base64String) =>
     UserApiEndpoints.callUserDeviceDeleteBySigningKey(publicSigningKey).map((r) => r.id);
 
 /**
+* Delete a device from the DB given the public signing key of the device. Uses JWT auth.
+*/
+export const deleteDeviceBySigningKeyWithJwt = (jwtToken: string, publicSigningKey: Base64String) =>
+    UserApiEndpoints.callUserDeviceDeleteBySigningKeyWithJwt(jwtToken, publicSigningKey).map((r) => r.id);
+
+/**
  * Makes a request to list the devices for the currently logged in user.
  */
 export const listDevices = () => UserApiEndpoints.callUserListDevices();

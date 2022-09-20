@@ -135,4 +135,17 @@ describe("UserApi", () => {
             );
         });
     });
+
+    describe("deleteDeviceBySigningKeyWithJwt", () => {
+        it("calls the correct API", async () => {
+            jest.spyOn(UserApiEndpoints, "callUserDeviceDeleteBySigningKeyWithJwt").mockReturnValue(Future.of<any>({id: 33}));
+            ApiState.clearCurrentUser();
+            expect(ApiState.user()).toBeUndefined();
+            const result = await UserApi.deleteDeviceBySigningKeyWithJwt("jwt", "signingKey");
+
+            expect(UserApiEndpoints.callUserDeviceDeleteBySigningKeyWithJwt).toHaveBeenCalledWith("jwt", "signingKey");
+            expect(result).toBe(33);
+            expect(ApiState.user()).toBeUndefined();
+        });
+    });
 });

@@ -206,6 +206,20 @@ const deleteDeviceBySigningKey = (userID: string, publicSigningKey: Base64String
 });
 
 /**
+ * Delete the user`s device by public signing key.
+ */
+const deleteDeviceBySigningKeyWithJwt = (publicSigningKey: Base64String): RequestMeta => ({
+    url: `users/devices/${encodeURIComponent(publicSigningKey)}`,
+    options: {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    },
+    errorCode: ErrorCodes.USER_DEVICE_DELETE_REQUEST_FAILURE,
+});
+
+/**
  * Update a users status and/or their escrowed private key.
  * @param {string}                 userID         ID of user to update
  * @param {PrivateKey<Uint8Array>} userPrivateKey Users encrypted private key to escrow
@@ -366,6 +380,14 @@ export default {
         const {id: userId} = ApiState.user();
         const {url, options, errorCode} = deleteDeviceBySigningKey(userId, publicSigningKey);
         return makeAuthorizedApiRequest(url, errorCode, options);
+    },
+
+    /**
+     * Delete the user's device by public signing key, using JWT auth.
+     */
+    callUserDeviceDeleteBySigningKeyWithJwt(jwtToken: string, publicSigningKey: Base64String): Future<SDKError, {id: number}> {
+        const {url, options, errorCode} = deleteDeviceBySigningKeyWithJwt(publicSigningKey);
+        return makeJwtApiRequest(url, errorCode, options, jwtToken);
     },
 
     /**

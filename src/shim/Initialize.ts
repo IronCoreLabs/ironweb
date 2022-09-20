@@ -23,7 +23,7 @@ let userJWTCallback: JWTCallbackToPromise;
  * Retrieve the users JWT token and validate the result
  * @param  {CallbackToPromise} jwtCallback Method that can be used to retrieve the JWT
  */
-function getJWT(jwtCallback: JWTCallbackToPromise) {
+export function getJWT(jwtCallback: JWTCallbackToPromise): Future<Error, string> {
     return Future.tryP(() => {
         const jwtPromise = jwtCallback();
         if (jwtPromise && typeof jwtPromise.then === "function") {
