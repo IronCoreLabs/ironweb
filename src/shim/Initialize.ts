@@ -7,6 +7,8 @@ import {
     CreateUserAndDeviceRequest,
     CreateUserRequest,
     CreateUserResponse,
+    DeleteDeviceBySigningKeyJwt,
+    DeleteDeviceResponse,
     GenerateNewDeviceKeysRequest,
     InitApiPasscodeResponse,
     InitApiRequest,
@@ -23,7 +25,7 @@ let userJWTCallback: JWTCallbackToPromise;
  * Retrieve the users JWT token and validate the result
  * @param  {CallbackToPromise} jwtCallback Method that can be used to retrieve the JWT
  */
-function getJWT(jwtCallback: JWTCallbackToPromise) {
+function getJWT(jwtCallback: JWTCallbackToPromise): Future<Error, string> {
     return Future.tryP(() => {
         const jwtPromise = jwtCallback();
         if (jwtPromise && typeof jwtPromise.then === "function") {
@@ -151,3 +153,21 @@ export function initialize(jwtCallback: JWTCallbackToPromise, passcodeCallback: 
         })
         .toPromise();
 }
+
+/**
+ * Deletes a device by its public signing key. Uses JWT auth, so it doesn't require an initialized SDK.
+ * @param {Base64String} publicSigningKey The public signing key of the device to delete.
+ */
+export const deleteDeviceByPublicSigningKey = (jwtCallback: JWTCallbackToPromise, publicSigningKey: Base64String): Promise<number> =>
+    getJWT(jwtCallback)
+        .flatMap((jwtToken) => {
+            const payload: DeleteDeviceBySigningKeyJwt = {
+                type: "DELETE_DEVICE_BY_SIGNING_KEY_JWT",
+                message: {
+                    jwtToken,
+                    publicSigningKey,
+                },
+            };
+            return FrameMediator.sendMessage<DeleteDeviceResponse>(payload).map(({message}) => message);
+        })
+        .toPromise();

@@ -433,6 +433,13 @@ export interface DeleteDeviceBySigningKey {
     type: "DELETE_DEVICE_BY_SIGNING_KEY";
     message: Base64String;
 }
+export interface DeleteDeviceBySigningKeyJwt {
+    type: "DELETE_DEVICE_BY_SIGNING_KEY_JWT";
+    message: {
+        jwtToken: string;
+        publicSigningKey: Base64String;
+    };
+}
 export interface DeleteDeviceResponse {
     type: "DELETE_DEVICE_RESPONSE";
     message: number;
@@ -542,6 +549,7 @@ export type RequestMessage =
     | ListDevices
     | DeleteDevice
     | DeleteDeviceBySigningKey
+    | DeleteDeviceBySigningKeyJwt
     | DocumentUnmanagedDecryptRequest
     | DocumentUnmanagedEncryptRequest
     | BlindSearchIndexCreate

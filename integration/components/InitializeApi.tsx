@@ -12,6 +12,7 @@ interface InitializeApiProps {
 interface InitializeApiState {
     showSetPasscode: boolean;
     passcode: string;
+    devicePublicSigningKey: string;
 }
 
 declare global {
@@ -37,6 +38,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
         this.state = {
             showSetPasscode: false,
             passcode: "",
+            devicePublicSigningKey: "",
         };
     }
 
@@ -143,6 +145,16 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
             .catch((e) => logAction(`Failed to create user device: '${e.message}'`, "error"));
     };
 
+    deleteDevice = () => {
+        logAction(`Deleting a device by signing key '${this.state.devicePublicSigningKey}' manually...`);
+        IronWeb.deleteDeviceByPublicSigningKey(this.generateJWT, this.state.devicePublicSigningKey)
+            .then((res) => {
+                logAction(`User device manually deleted with signing key ${this.state.devicePublicSigningKey} and device ID ${res}.`, "success");
+                this.setState({devicePublicSigningKey: ""});
+            })
+            .catch((e) => logAction(`Failed to delete user device: '${e.message}'`, "error"));
+    };
+
     getInitUIElement() {
         if (this.state.showSetPasscode) {
             return [
@@ -166,6 +178,20 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
                         <br />
                         <br />
                         <RaisedButton className="initialize-create-device" secondary onClick={this.createDevice} label="Create Device" />
+                        <br />
+                        <br />
+                        <TextField
+                            key="deviceSigningKey"
+                            type="text"
+                            hintText="Device Signing Key"
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                this.setState({
+                                    devicePublicSigningKey: e.currentTarget.value,
+                                });
+                            }}
+                            value={this.state.devicePublicSigningKey}
+                        />
+                        <RaisedButton secondary onClick={this.deleteDevice} label="Delete Device" />
                     </div>
                 </Tab>
             </Tabs>

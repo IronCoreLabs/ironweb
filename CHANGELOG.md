@@ -4,6 +4,9 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v4.2.1
+- added `deleteDeviceByPublicSigningKey` to the SDK. This allows someone with access to a JWT for a user to delete a device for that user without initializing the SDK (and creating a new browser device).
+
 ## v4.1.1
 - added `listDevices()` to the User SDK. This lists all devices for the currently logged in user.
 - added `deleteDevice(deviceId?: number)` to the User SDK. This deletes a user's device by ID, and if passed no ID deletes the current device and clears its keys from browser storage.

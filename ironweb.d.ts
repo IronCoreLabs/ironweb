@@ -334,3 +334,4 @@ export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeC
 export function createNewUser(jwtCallback: JWTCallback, passcode: string, options?: UserCreateOptions): Promise<UserCreateResponse>;
 export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceKeys>;
 export function isInitialized(): boolean;
+export function deleteDeviceByPublicSigningKey(jwtCallback: JWTCallback, publicSigningKey: Base64String): Promise<number>;

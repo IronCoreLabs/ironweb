@@ -373,6 +373,26 @@ describe("UserApiEndpoints", () => {
         });
     });
 
+    describe("callUserDeviceDeleteBySigningKeyWithJwt", () => {
+        it("calls API and returns data as expected", () => {
+            (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
+                    id: 7,
+                })
+            );
+
+            UserApiEndpoints.callUserDeviceDeleteBySigningKeyWithJwt("jwt", "signingKey" as unknown as Base64String).engage(
+                (e) => {
+                    throw e;
+                },
+                (deletedId: any) => {
+                    expect(deletedId).toEqual({id: 7});
+                    expect(ApiRequest.makeJwtApiRequest).toHaveBeenCalledWith("users/devices/signingKey", expect.any(Number), expect.any(Object), "jwt");
+                }
+            );
+        });
+    });
+
     describe("callUserKeyListApi", () => {
         it("calls API and returns mapped response data", () => {
             (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mockReturnValue(
