@@ -431,4 +431,26 @@ describe("Initialize", () => {
                 });
         });
     });
+
+    describe("deleteDeviceByPublicSigningKey", () => {
+        it("sends the frame delete message, doesn't send delete request type to frame", (done) => {
+            ShimUtils.clearSDKInitialized();
+            jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(Future.of<any>({message: 10}));
+            Initialize.deleteDeviceByPublicSigningKey(() => Promise.resolve("jwt"), "signingKey")
+                .then((result: any) => {
+                    expect(result).toEqual(10);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DELETE_DEVICE_BY_SIGNING_KEY_JWT",
+                        message: {
+                            publicSigningKey: "signingKey",
+                            jwtToken: "jwt",
+                        },
+                    });
+                    expect(ShimUtils.clearParentWindowSymmetricKey).not.toHaveBeenCalled();
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+    });
 });

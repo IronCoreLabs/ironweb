@@ -181,7 +181,6 @@ export interface User {
     deauthorizeDevice(): Promise<{transformKeyDeleted: boolean}>;
     deleteDevice(deviceId?: number): Promise<number>;
     deleteDeviceByPublicSigningKey(publicSigningKey: Base64String): Promise<number>;
-    deleteDeviceByPublicSigningKeyWithJwt(jwtCallback: JWTCallback, publicSigningKey: Base64String): Promise<number>;
     listDevices(): Promise<UserDeviceListResponse>;
     changePasscode(currentPasscode: string, newPasscode: string): Promise<void>;
     rotateMasterKey(passcode: string): Promise<void>;
@@ -335,3 +334,4 @@ export function initialize(jwtCallback: JWTCallback, passcodeCallback: PasscodeC
 export function createNewUser(jwtCallback: JWTCallback, passcode: string, options?: UserCreateOptions): Promise<UserCreateResponse>;
 export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceKeys>;
 export function isInitialized(): boolean;
+export function deleteDeviceByPublicSigningKey(jwtCallback: JWTCallback, publicSigningKey: Base64String): Promise<number>;

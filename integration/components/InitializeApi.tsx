@@ -147,8 +147,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
 
     deleteDevice = () => {
         logAction(`Deleting a device by signing key '${this.state.devicePublicSigningKey}' manually...`);
-        IronWeb.user
-            .deleteDeviceByPublicSigningKeyWithJwt(this.generateJWT, this.state.devicePublicSigningKey)
+        IronWeb.deleteDeviceByPublicSigningKey(this.generateJWT, this.state.devicePublicSigningKey)
             .then((res) => {
                 logAction(`User device manually deleted with signing key ${this.state.devicePublicSigningKey} and device ID ${res}.`, "success");
                 this.setState({devicePublicSigningKey: ""});
