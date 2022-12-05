@@ -114,6 +114,7 @@ const frameConfig = {
             //server as the frame source is hosted from
             "/api/1/": "http://localhost:9090",
         },
+        allowedHosts: "all"
     },
     entry: {
         frame: path.join(__dirname, "../src/frame/index.ts"),

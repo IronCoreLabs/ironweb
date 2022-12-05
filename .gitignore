@@ -11,3 +11,4 @@ coverage/
 integration/private.key
 integration/projects/*
 integration/certs/*
+.direnv
