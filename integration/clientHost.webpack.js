@@ -103,6 +103,7 @@ module.exports = {
             devServer.app.get("/generateJWT/:userID", serveJWT);
             return middlewares;
         },
+        allowedHosts: "all"
     },
     mode: "development",
     entry: [path.join(__dirname, "app.tsx")],
