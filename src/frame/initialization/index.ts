@@ -95,18 +95,17 @@ export const createUser = (jwtToken: string, passcode: string, needsRotation: bo
  * @param {string} passcode Users passcode to escrow their keys
  */
 export const createUserAndDevice = (jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> =>
-    InitializationApi.createUserAndDevice(passcode, jwtToken).map(({user, keys, encryptedLocalKeys}) => {
+    InitializationApi.createUserAndDevice(passcode, jwtToken).flatMap(({user, keys, encryptedLocalKeys}) => {
         const {deviceKeys, signingKeys} = keys;
         ApiState.setCurrentUser(user);
         ApiState.setDeviceAndSigningKeys(deviceKeys, signingKeys);
-        storeDeviceAndSigningKeys(
+        return storeDeviceAndSigningKeys(
             user.id,
             user.segmentId,
             encryptedLocalKeys.encryptedDeviceKey,
             encryptedLocalKeys.encryptedSigningKey,
             encryptedLocalKeys.iv
-        );
-        return buildSDKInitCompleteResponse(user, encryptedLocalKeys.symmetricKey);
+        ).map(() => buildSDKInitCompleteResponse(user, encryptedLocalKeys.symmetricKey));
     });
 
 /**
@@ -116,11 +115,16 @@ export const createUserAndDevice = (jwtToken: string, passcode: string): Future<
  */
 export const generateUserNewDeviceKeys = (jwtToken: string, passcode: string): Future<SDKError, InitApiSdkResponse> => {
     const {id, segmentId} = ApiState.user();
-    return InitializationApi.generateDeviceAndSigningKeys(jwtToken, passcode, ApiState.encryptedUserKey(), ApiState.userPublicKey()).map(
+    return InitializationApi.generateDeviceAndSigningKeys(jwtToken, passcode, ApiState.encryptedUserKey(), ApiState.userPublicKey()).flatMap(
         ({userUpdateKeys, encryptedLocalKeys}) => {
             ApiState.setDeviceAndSigningKeys(userUpdateKeys.deviceKeys, userUpdateKeys.signingKeys);
-            storeDeviceAndSigningKeys(id, segmentId, encryptedLocalKeys.encryptedDeviceKey, encryptedLocalKeys.encryptedSigningKey, encryptedLocalKeys.iv);
-            return buildSDKInitCompleteResponse(ApiState.user(), encryptedLocalKeys.symmetricKey);
+            return storeDeviceAndSigningKeys(
+                id,
+                segmentId,
+                encryptedLocalKeys.encryptedDeviceKey,
+                encryptedLocalKeys.encryptedSigningKey,
+                encryptedLocalKeys.iv
+            ).map(() => buildSDKInitCompleteResponse(ApiState.user(), encryptedLocalKeys.symmetricKey));
         }
     );
 };
