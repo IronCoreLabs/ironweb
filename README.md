@@ -11,7 +11,7 @@ SDK for using IronCore from your browser-based JavaScript application. Read [our
 
 ## Quickstart
 
-Three quick-starts are available on the [documentation site](https://ironcorelabs.com/docs). These quick-starts will guide you through getting started with the IronWeb SDK in either a [vanilla JS](https://ironcorelabs.com/docs/getting-started/vanilla-javascript), [React](https://github.com/IronCoreLabs/getting-started-react) , or [Angular](https://ironcorelabs.com/docs/getting-started/angular) codebase.
+Three quick-starts are available on the [documentation site](https://ironcorelabs.com/docs/data-control-platform/javascript/overview/). These quick-starts will guide you through getting started with the IronWeb SDK in either a [vanilla JS](https://ironcorelabs.com/docs/data-control-platform/javascript/vanilla-javascript/), [React](https://ironcorelabs.com/docs/data-control-platform/javascript/react/) , or [Angular](https://ironcorelabs.com/docs/data-control-platform/javascript/angular/) codebase.
 
 ## Types
 

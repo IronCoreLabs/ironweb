@@ -4,6 +4,9 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v4.2.5
+- add support for browsers with privacy settings that require use of the Storage Access API
+
 ## v4.2.1
 - added `deleteDeviceByPublicSigningKey` to the SDK. This allows someone with access to a JWT for a user to delete a device for that user without initializing the SDK (and creating a new browser device).
 
