@@ -15,6 +15,13 @@ function generateFrameStorageKey(userID: string, segmentID: number) {
     return `${ENCRYPTED_DEVICE_KEY_LOCAL_STORAGE_VERSION}-${segmentID}:${userID}-icldaspkn`;
 }
 
+// Helper function to turn `document.requestStorageAccess()` into something more usable.
+const requestStorageAccess = (): Future<never, boolean> =>
+    Future.tryP(() => document.requestStorageAccess())
+        .map(() => true)
+        // since we're catching all errors and converting infallibly to bool, fix the type
+        .handleWith(() => Future.of(false)) as Future<never, boolean>;
+
 /**
  * Given a device and signing private key, combine them together, stringify, and set them in local storage
  * @param {string}                 userID            Users provided ID
@@ -22,14 +29,14 @@ function generateFrameStorageKey(userID: string, segmentID: number) {
  * @param {PrivateKey<Uint8Array>} devicePrivateKey  Users device private key
  * @param {PrivateKey<Uint8Array>} signingPrivateKey Users signing private key
  */
-export function storeDeviceAndSigningKeys(
+export const storeDeviceAndSigningKeys = (
     userID: string,
     segmentID: number,
     devicePrivateKey: PrivateKey<Uint8Array>,
     signingPrivateKey: PrivateKey<Uint8Array>,
     nonce: Uint8Array
-) {
-    try {
+): Future<never, void> => {
+    const store = () => {
         localStorage.setItem(
             generateFrameStorageKey(userID, segmentID),
             JSON.stringify({
@@ -38,10 +45,27 @@ export function storeDeviceAndSigningKeys(
                 nonce: fromByteArray(nonce),
             })
         );
+    };
+    try {
+        store();
+        return Future.of(undefined);
     } catch (e) {
-        // This catch case does not need to return any error information because keys will persist within one session but users will have to reenter their password upon triggering of a new browser session.
+        if (typeof document.requestStorageAccess === "function") {
+            return requestStorageAccess().map((hasAccess) => {
+                try {
+                    if (hasAccess) {
+                        store();
+                    }
+                } catch (e) {
+                    // at this point either storage is full or our request was rejected
+                    // either way we can't store anything, so just bail
+                }
+            });
+        } else {
+            return Future.of(undefined);
+        }
     }
-}
+};
 
 /**
  * Clear out keys from local storage
@@ -52,7 +76,8 @@ export function clearDeviceAndSigningKeys(userID: string, segmentID: number) {
     try {
         localStorage.removeItem(generateFrameStorageKey(userID, segmentID));
     } catch (e) {
-        // This catch case does not need to return any error information because failure to remove information from local storage will not cause any failure in SDK functionality.
+        // This catch case does not need to return any error information because failure to remove information from
+        // local storage will not cause any failure in SDK functionality.
     }
 }
 

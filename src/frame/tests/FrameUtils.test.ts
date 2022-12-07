@@ -2,15 +2,28 @@ import * as FrameUtils from "../FrameUtils";
 
 describe("FrameUtils", () => {
     describe("storeDeviceAndSigningKeys", () => {
+        const oldHas = document.hasStorageAccess;
+        const oldRequest = document.requestStorageAccess;
+        beforeAll(() => {
+            // our virtual dom doesn't have these new storage APIs. Implement them like a browser that supports
+            // them but doesn't have any strict settings on, so they can be spied/mocked in places that
+            // care.
+            document.hasStorageAccess = async () => true;
+            document.requestStorageAccess = async () => undefined;
+        });
         afterEach(() => {
             FrameUtils.clearDeviceAndSigningKeys("30", 3);
         });
+        afterAll(() => {
+            document.hasStorageAccess = oldHas;
+            document.requestStorageAccess = oldRequest;
+        });
 
-        it("sets keys in local storage under proper key", () => {
+        it("sets keys in local storage under proper key", async () => {
             const deviceKey = new Uint8Array(5);
             const signingKey = new Uint8Array(6);
             const nonce = new Uint8Array([88, 93, 91]);
-            FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
             const keys = localStorage.getItem("1-3:30-icldaspkn");
             expect(keys).toEqual(expect.stringContaining(""));
             const decodeKeys = JSON.parse(keys as string);
@@ -18,6 +31,68 @@ describe("FrameUtils", () => {
             expect(decodeKeys.deviceKey).toEqual("AAAAAAA=");
             expect(decodeKeys.signingKey).toEqual("AAAAAAAA");
             expect(decodeKeys.nonce).toEqual("WF1b");
+        });
+
+        it("requests access if it doesn't have it. When granted, stores.", async () => {
+            // trying to replicate a browser that has privacy settings disabling third-party access to localStorage.
+            // https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem#exceptions
+            jest.spyOn(window.localStorage.__proto__, "setItem").mockImplementationOnce(() => {
+                throw new Error("Access policy partitions third party storage.");
+            });
+            // pretend the user allowed access when prompted
+            jest.spyOn(document, "requestStorageAccess").mockResolvedValue();
+
+            const deviceKey = new Uint8Array(5);
+            const signingKey = new Uint8Array(6);
+            const nonce = new Uint8Array([88, 93, 91]);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+
+            const keys = localStorage.getItem("1-3:30-icldaspkn");
+            expect(keys).toEqual(expect.stringContaining(""));
+            const decodeKeys = JSON.parse(keys as string);
+            expect(typeof decodeKeys).toBe("object");
+            expect(decodeKeys.deviceKey).toEqual("AAAAAAA=");
+            expect(decodeKeys.signingKey).toEqual("AAAAAAAA");
+            expect(decodeKeys.nonce).toEqual("WF1b");
+        });
+
+        it("requests access if it doesn't have it. When not granted, does nothing.", async () => {
+            // trying to replicate a browser that has privacy settings disabling third-party access to localStorage.
+            // https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem#exceptions
+            jest.spyOn(window.localStorage.__proto__, "setItem").mockImplementationOnce(() => {
+                throw new Error("Access policy partitions third party storage.");
+            });
+            // pretend the user disallowed access when prompted
+            jest.spyOn(document, "requestStorageAccess").mockRejectedValue(new Error("Access denied."));
+
+            const deviceKey = new Uint8Array(5);
+            const signingKey = new Uint8Array(6);
+            const nonce = new Uint8Array([88, 93, 91]);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+
+            const keys = localStorage.getItem("1-3:30-icldaspkn");
+            expect(keys).toEqual(null);
+        });
+
+        it("if we fail to store and the browser doesn't have `requestStorageAccess`, give up", async () => {
+            // trying to replicate a browser that has privacy settings disabling third-party access to localStorage.
+            // https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem#exceptions
+            jest.spyOn(window.localStorage.__proto__, "setItem").mockImplementationOnce(() => {
+                throw new Error("Access policy partitions third party storage.");
+            });
+
+            const deviceKey = new Uint8Array(5);
+            const signingKey = new Uint8Array(6);
+            const nonce = new Uint8Array([88, 93, 91]);
+
+            // unset requestStorageAccess, like a browser that doesn't know about it.
+            const oldRequest = document.requestStorageAccess;
+            delete (document as any).requestStorageAccess;
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            document.requestStorageAccess = oldRequest;
+
+            const keys = localStorage.getItem("1-3:30-icldaspkn");
+            expect(keys).toEqual(null);
         });
     });
 
@@ -113,11 +188,11 @@ describe("FrameUtils", () => {
             );
         });
 
-        it("responds with keys found in local storage when valid", () => {
+        it("responds with keys found in local storage when valid", async () => {
             const deviceKey = new Uint8Array(5);
             const signingKey = new Uint8Array(6);
             const nonce = new Uint8Array([88, 93, 91]);
-            FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
                 (e) => {
