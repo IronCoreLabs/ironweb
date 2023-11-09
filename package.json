@@ -40,7 +40,7 @@
         "@typescript-eslint/eslint-plugin": "^5.33.0",
         "@typescript-eslint/parser": "^5.33.0",
         "animal-id": "^0.0.1",
-        "chromedriver": "^104.0.0",
+        "chromedriver": "^119.0.1",
         "cookie-parser": "^1.4.4",
         "eslint": "^8.21.0",
         "eslint-plugin-react": "^7.19.0",
