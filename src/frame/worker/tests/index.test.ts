@@ -1,5 +1,5 @@
 import Future from "futurejs";
-import {messenger} from "../";
+import {messenger, ParentThreadMessenger} from "../";
 import SDKError from "../../../lib/SDKError";
 import * as DocumentCrypto from "../DocumentCrypto";
 import * as GroupCrypto from "../GroupCrypto";
@@ -40,11 +40,11 @@ describe("worker index", () => {
         it("invokes message callback with event data when processing", () => {
             jest.spyOn(window, "postMessage").mockImplementation();
             const bytes = new Uint8Array(3);
-            jest.spyOn(messenger, "onMessageCallback");
+            jest.spyOn(ParentThreadMessenger.prototype, "onMessageCallback");
 
             messenger.processMessageIntoWorker({data: {data: {foo: "bar"}, replyID: 38}} as MessageEvent);
 
-            expect(messenger.onMessageCallback).toHaveBeenCalledWith({foo: "bar"}, expect.any(Function));
+            expect(ParentThreadMessenger.prototype.onMessageCallback).toHaveBeenCalledWith({foo: "bar"}, expect.any(Function));
             const callback = (messenger.onMessageCallback as unknown as jest.SpyInstance).mock.calls[0][1];
             callback({response: "data"}, [bytes]);
 
