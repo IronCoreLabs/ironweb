@@ -1,15 +1,32 @@
 import Future from "futurejs";
+import {ErrorCodes} from "../Constants";
 import SDKError from "../lib/SDKError";
 import {ErrorResponse, RequestMessage, ResponseMessage} from "../WorkerMessageTypes";
-import worker from "./WorkerLoader";
 
 class WorkerMessenger {
     readonly worker: Worker;
     callbackCount = 0;
     callbacks: {[key: string]: (data: ResponseMessage) => void} = {};
-    constructor(workerInstance: Worker) {
-        this.worker = workerInstance;
-        worker.addEventListener("message", this.processMessage, false);
+    workerReady: Promise<void>;
+    constructor() {
+        this.worker = new Worker(_WORKER_PATH_LOCATION_);
+
+        // create a promise that will resolve when we receive a "ready" message from our worker. Messages to the
+        // worker from this messenger will wait for this Promise to be resolved (which once done will stay resolved)
+        // before sending.
+        this.workerReady = new Promise((resolve) => {
+            this.worker.addEventListener(
+                "message",
+                (event: MessageEvent) => {
+                    if (event.data == "ready") {
+                        resolve();
+                    } else {
+                        this.processMessage(event);
+                    }
+                },
+                false
+            );
+        });
     }
 
     /**
@@ -22,10 +39,17 @@ class WorkerMessenger {
             replyID: this.callbackCount++,
             data,
         };
-        this.worker.postMessage(message, transferList.map((intByteArray) => intByteArray.buffer));
-        return new Future<SDKError, ResponseMessage>((_, resolve) => {
-            this.callbacks[message.replyID] = resolve;
-        });
+        return Future.tryP(() => this.workerReady)
+            .errorMap((e) => new SDKError(e, ErrorCodes.FRAME_LOAD_FAILURE))
+            .flatMap(() => {
+                this.worker.postMessage(
+                    message,
+                    transferList.map((intByteArray) => intByteArray.buffer)
+                );
+                return new Future<SDKError, ResponseMessage>((_, resolve) => {
+                    this.callbacks[message.replyID] = resolve;
+                });
+            });
     }
 
     /**
@@ -42,7 +66,7 @@ class WorkerMessenger {
     };
 }
 
-export const messenger = new WorkerMessenger(worker);
+export const messenger = new WorkerMessenger();
 
 /**
  * Type guard to check if returned message is an error message type

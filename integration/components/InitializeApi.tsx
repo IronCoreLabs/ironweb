@@ -49,7 +49,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
     };
 
     handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.charCode === 13) {
+        if (event.key === "Enter") {
             this.setPasscode();
         }
     };
@@ -60,7 +60,7 @@ export default class InitializeApi extends React.Component<InitializeApiProps, I
         }
     };
 
-    generateJWT(): Promise<string> {
+    async generateJWT(): Promise<string> {
         return fetch(`/generateJWT/${window.User.id}`)
             .then((response) => response.json())
             .then((jwt: string) => {
