@@ -1,13 +1,13 @@
 import Future from "futurejs";
-import * as worker from "../";
+import * as worker from "../WorkerUtil";
 import SDKError from "../../../lib/SDKError";
 import * as DocumentCrypto from "../DocumentCrypto";
 import * as GroupCrypto from "../GroupCrypto";
 import * as UserCrypto from "../UserCrypto";
 import {fromByteArray} from "base64-js";
 
-describe("worker index", () => {
-    describe("ParentThreadMessenger", () => {
+describe("worker", () => {
+    describe("utils", () => {
         it("posts proper worker message to parent window", () => {
             jest.spyOn(window, "postMessage").mockImplementation();
 
