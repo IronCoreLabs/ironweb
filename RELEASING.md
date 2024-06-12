@@ -16,12 +16,13 @@ Once the version of the frame we want to release has been pushed out to producti
 
 -   The first thing to check is whether the version we're going to release should be a major, minor, or patch release. If it's a major or minor, update that number in the `package.json` file. If the change is only a patch version, no changes to the `package.json` file are necessary.
 -   Once all changes for the release are pushed to main an automatic patch version bump will occur. At this point the two internal NPM packages are ready for consumption from ironcore-id.
--   Publish the ironweb changes to ironcore-id in dev by running [this workflow](https://github.com/IronCoreLabs/ironcore-id/actions?query=workflow%3ACI) with `bump` set to `true`. Whenever ironcore-id is built it will automatically pull new ironweb internal packages into its container.
--   Test the ironweb changes in dev/staging ironcore-id
-    -   check https://api-dev1.ironcorelabs.com/static/ironweb-frame-{VERSION}/ironweb-frame.min.js and then https://api-staging.ironcorelabs.com/static/ironweb-frame-{VERSION}/ironweb-frame.min.js
+-   Publish the ironweb changes to ironcore-id in dev by running [this workflow](https://github.com/IronCoreLabs/ironcore-id/actions/workflows/bump-version.yaml). Whenever ironcore-id is built it will automatically pull new ironweb internal packages into its container.
+-   Test the ironweb changes in staging ironcore-id
+    -   deploy ironcore-id into staging
+    -   check https://api-staging.ironcorelabs.com/static/ironweb-frame-{VERSION}/ironweb-frame.min.js
     -   create in the admin console or use an existing project/segment private key and [`project.json` file](https://github.com/IronCoreLabs/design-docs/blob/main/engineering/ironwebLocalDevelopment.md#integration-app-testing).
     -   see [these instructions](https://github.com/IronCoreLabs/design-docs/blob/main/engineering/ironwebLocalDevelopment.md#testing-against-development-stage-or-production) (if you have access) on targeting different environments with the integration app.
--   Once testing is done we need to wait for ironcore-id to be deployed to production, or create PRs to promote ahead of the weekly schedule.
+-   Once testing is done we need to deploy ironcore-id into production.
 -   _(only necessary when frame releases are involved)_ When that is complete, do a dry run of the `.github/scripts/publish.js` script with the version to publish (e.g. `--version 1.5.2`) and verify that the content that will be published looks correct. If so, then re-run the script with the `--publish` argument. This script will verify that the version you're releasing exists in production and if so, will then push our project to our public NPM repo. At this point developers will now be able to consume this new version in their project.
 
 It's worth noting that with this release process, our external version numbers that consumers see won't be sequential. We'll likely bump patch versions multiple times during our process before we decide to cut a public version. For example, if the current public version is `1.3.3` but during development we merge in 4 different PRs before release, then the next version that consumers see will be `1.3.7`. This shouldn't be a big deal as long as we correctly update our major/minor versions.
