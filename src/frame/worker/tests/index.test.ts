@@ -1,17 +1,17 @@
 import Future from "futurejs";
-import {messenger} from "../";
+import * as worker from "../WorkerUtil";
 import SDKError from "../../../lib/SDKError";
 import * as DocumentCrypto from "../DocumentCrypto";
 import * as GroupCrypto from "../GroupCrypto";
 import * as UserCrypto from "../UserCrypto";
 import {fromByteArray} from "base64-js";
 
-describe("worker index", () => {
-    describe("ParentThreadMessenger", () => {
+describe("worker", () => {
+    describe("utils", () => {
         it("posts proper worker message to parent window", () => {
             jest.spyOn(window, "postMessage").mockImplementation();
 
-            messenger.postMessageToParent({foo: "bar"} as any, 10);
+            worker.postMessageToParent({foo: "bar"} as any, 10);
 
             expect(window.postMessage).toHaveBeenCalledWith(
                 {
@@ -26,7 +26,7 @@ describe("worker index", () => {
             jest.spyOn(window, "postMessage").mockImplementation();
             const bytes = new Uint8Array(3);
 
-            messenger.postMessageToParent({foo: "bar"} as any, 10, [bytes]);
+            worker.postMessageToParent({foo: "bar"} as any, 10, [bytes]);
 
             expect(window.postMessage).toHaveBeenCalledWith(
                 {
@@ -40,12 +40,12 @@ describe("worker index", () => {
         it("invokes message callback with event data when processing", () => {
             jest.spyOn(window, "postMessage").mockImplementation();
             const bytes = new Uint8Array(3);
-            jest.spyOn(messenger, "onMessageCallback");
+            jest.spyOn(worker, "onMessageCallback");
 
-            messenger.processMessageIntoWorker({data: {data: {foo: "bar"}, replyID: 38}} as MessageEvent);
+            worker.processMessageIntoWorker({data: {data: {foo: "bar"}, replyID: 38}} as MessageEvent);
 
-            expect(messenger.onMessageCallback).toHaveBeenCalledWith({foo: "bar"}, expect.any(Function));
-            const callback = (messenger.onMessageCallback as unknown as jest.SpyInstance).mock.calls[0][1];
+            expect(worker.onMessageCallback).toHaveBeenCalledWith({foo: "bar"}, expect.any(Function));
+            const callback = (worker.onMessageCallback as unknown as jest.SpyInstance).mock.calls[0][1];
             callback({response: "data"}, [bytes]);
 
             expect(window.postMessage).toHaveBeenCalledWith(
@@ -74,7 +74,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: expect.any(String), message: "new keys"});
                 expect(UserCrypto.generateDeviceAndSigningKeys).toHaveBeenCalledWith("jwt", "passcode", "salt", "user key", "public user key");
                 done();
@@ -90,7 +90,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: expect.any(String), message: "new keys"});
                 expect(UserCrypto.generateNewUserKeys).toHaveBeenCalledWith("passcode");
                 done();
@@ -106,7 +106,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: expect.any(String), message: "new keys"});
                 expect(UserCrypto.generateNewUserAndDeviceKeys).toHaveBeenCalledWith("passcode");
                 done();
@@ -125,7 +125,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: expect.any(String), message: "decrypted keys"});
                 expect(UserCrypto.decryptDeviceAndSigningKeys).toHaveBeenCalledWith("device", "signing", "sym key", "nonce");
                 done();
@@ -138,7 +138,7 @@ describe("worker index", () => {
                 type: "ROTATE_USER_PRIVATE_KEY",
                 message: {passcode: "passcode", encryptedPrivateUserKey: "encryptedPrivateUserKey"},
             };
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: "ROTATE_USER_PRIVATE_KEY_RESPONSE", message: "rotated user key"});
                 expect(UserCrypto.rotatePrivateKey).toHaveBeenCalledWith("passcode", "encryptedPrivateUserKey");
                 done();
@@ -157,7 +157,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: "CHANGE_USER_PASSCODE_RESPONSE", message: "new encrypted private key"});
                 expect(UserCrypto.changeUsersPasscode).toHaveBeenCalledWith("current", "new", "current encrypted private key");
                 done();
@@ -177,7 +177,7 @@ describe("worker index", () => {
                     body: '{"foo":"bar"}',
                 },
             };
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: "SIGNATURE_GENERATION_RESPONSE", message: "signature"});
                 expect(UserCrypto.signRequestPayload).toHaveBeenCalledWith(
                     1,
@@ -211,7 +211,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any, transferList: any) => {
+            worker.onMessageCallback!(payload, (result: any, transferList: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual(encryptedDoc);
                 expect(transferList).toEqual([encryptedDoc.encryptedDocument.content]);
@@ -232,7 +232,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any, transferList: any) => {
+            worker.onMessageCallback!(payload, (result: any, transferList: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual({decryptedDocument: "decrypted doc"});
                 expect(transferList).toEqual(["decrypted doc"]);
@@ -256,7 +256,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any, transferList: any) => {
+            worker.onMessageCallback!(payload, (result: any, transferList: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual({encryptedDocument: encryptedDoc});
                 expect(transferList).toEqual([encryptedDoc.content]);
@@ -279,7 +279,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("key list");
                 expect(DocumentCrypto.encryptToKeys).toHaveBeenCalledWith("sym key", "user grant list", "group grant list", "priv key", "signkeys");
@@ -302,7 +302,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("created group");
                 expect(GroupCrypto.createGroup).toHaveBeenCalledWith("signkeys", [creator], [creator]);
@@ -324,7 +324,7 @@ describe("worker index", () => {
                     signingKeys: "signkeys",
                 },
             };
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("rotate group key");
                 expect(GroupCrypto.rotatePrivateKey).toHaveBeenCalledWith({foo: "bar"}, ["32", "13"], new Uint8Array(32), "signkeys");
@@ -349,7 +349,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("added admins");
                 expect(GroupCrypto.addAdminsToGroup).toHaveBeenCalledWith(
@@ -381,7 +381,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result.type).toEqual(expect.any(String));
                 expect(result.message).toEqual("added members");
                 expect(GroupCrypto.addMembersToGroup).toHaveBeenCalledWith(
@@ -409,7 +409,7 @@ describe("worker index", () => {
                 },
             };
 
-            messenger.onMessageCallback!(payload, (result: any) => {
+            worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({
                     type: "ERROR_RESPONSE",
                     message: {
@@ -422,7 +422,7 @@ describe("worker index", () => {
         });
 
         it("if you bypass typescript's checks you just get your original message back", () => {
-            messenger.onMessageCallback({type: "UNKNOWN", message: "data"} as any, (result: any) => expect(result).toBe("data"));
+            worker.onMessageCallback({type: "UNKNOWN", message: "data"} as any, (result: any) => expect(result).toBe("data"));
         });
     });
 });

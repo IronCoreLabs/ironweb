@@ -6,7 +6,6 @@ interface Window {
     msCrypto: Crypto;
 }
 
-
 /*
  * Declare types for modules without build in types
  */
