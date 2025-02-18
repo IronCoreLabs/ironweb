@@ -50,7 +50,7 @@
         "jest-extended": "^3.0.2",
         "jsonwebtoken": "^9.0.0",
         "material-ui": "^0.20.2",
-        "nightwatch": "^2.3.0",
+        "nightwatch": "^3.11.1",
         "protobufjs": "^7.2.5",
         "protobufjs-cli": "^1.0.2",
         "react": "^18.2.0",
