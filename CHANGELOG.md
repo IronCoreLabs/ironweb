@@ -4,6 +4,10 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v5.0.0 (UNRELEASED)
+- bumped the package target to ES2015/ES6 from ES5
+- dependency updates
+
 ## v4.2.5
 - add support for browsers with privacy settings that require use of the Storage Access API
 

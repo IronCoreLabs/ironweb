@@ -1,6 +1,6 @@
 {
     "license": "AGPL-3.0-only",
-    "version": "4.2.32",
+    "version": "5.0.0",
     "scripts": {
         "cleanTest": "find dist -type d -name tests -prune -exec rm -rf {} \\;",
         "lint": "eslint . --ext .ts,.tsx",
@@ -71,5 +71,8 @@
         "bracketSpacing": false,
         "jsxBracketSameLine": true,
         "arrowParens": "always"
+    },
+    "resolutions": {
+        "@types/ws": "8.5.4"
     }
 }
