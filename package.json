@@ -17,10 +17,10 @@
     "dependencies": {
         "@ironcorelabs/recrypt-wasm-binding": "0.6.0",
         "@stablelib/ed25519": "1.0.2",
-        "@stablelib/utf8": "1.0.1",
-        "base64-js": "1.5.1",
+        "@stablelib/utf8": "^0.10",
+        "base64-js": "^1.2",
         "fast-text-encoding": "1.0.4",
-        "futurejs": "2.2.0",
+        "futurejs": "^2",
         "sjcl": "1.0.8"
     },
     "peerDependencies": {
@@ -32,6 +32,7 @@
         "@types/base64-js": "^1.2.5",
         "@types/jest": "^28.1.6",
         "@types/material-ui": "^0.21.7",
+        "@types/node": "18.15.11",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "@types/react-tap-event-plugin": "^0.0.30",
