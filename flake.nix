@@ -10,8 +10,8 @@
       rec {
         devShell = pkgs.mkShell {
           buildInputs = with pkgs.nodePackages; [
-            pkgs.nodejs-18_x
-            (pkgs.yarn.override { nodejs = pkgs.nodejs-18_x; })
+            pkgs.nodejs_20
+            (pkgs.yarn.override { nodejs = pkgs.nodejs_20; })
           ];
         };
       });
