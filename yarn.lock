@@ -413,10 +413,10 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@ironcorelabs/recrypt-wasm-binding@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.npmjs.org/@ironcorelabs/recrypt-wasm-binding/-/recrypt-wasm-binding-0.6.0.tgz"
-  integrity sha512-3kWKzmvegUPOLFN7uPsS0JhjN4jDBcDk4UQv7XYp4EDvkHf+pQCS3fQ5yCLhTKC0BnfsNrXOLg+OreS4w+2O3Q==
+"@ironcorelabs/recrypt-wasm-binding@0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@ironcorelabs/recrypt-wasm-binding/-/recrypt-wasm-binding-0.7.0.tgz#ddc23d770863ee7673996c9c5a417a28f51b527f"
+  integrity sha512-Y5j0zqW89uqIARUyVhgELlzmjqmPZ31rrGSal3xfLFD42QsnEoZnf1pq6VLXsjVxUaMlbbYjThSNYjclI0JyRw==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
@@ -3315,10 +3315,10 @@ functions-have-names@^1.2.2:
   resolved "https://registry.npmjs.org/functions-have-names/-/functions-have-names-1.2.3.tgz"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
 
-futurejs@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/futurejs/-/futurejs-2.2.0.tgz#d267fd8cabef653899aa1413e27e3563b2441012"
-  integrity sha512-JgWDGfaDquVmSNvWAKulJXb/cMvxTAcPw2kW9UI2GsVw8iXuvaGh6hZHp08BkzPh2xFMYgvcwF4lK7qpbDP2HQ==
+futurejs@2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/futurejs/-/futurejs-2.2.1.tgz#cf33a34469f64afe34ddb5635bc5734ee7098b3b"
+  integrity sha512-Cu7CcMGi9pGxSgReNo2flwxLmOCKOOc5VZQvusfhtUT2MPeoap42c6ommcl0aqEI1XKO5d5z/w6fM7VyWs0GDA==
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"

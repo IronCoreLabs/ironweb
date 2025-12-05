@@ -15,12 +15,12 @@
         "nightwatch": "nightwatch"
     },
     "dependencies": {
-        "@ironcorelabs/recrypt-wasm-binding": "0.6.0",
+        "@ironcorelabs/recrypt-wasm-binding": "0.7.0",
         "@stablelib/ed25519": "1.0.2",
         "@stablelib/utf8": "1.0.1",
         "base64-js": "1.5.1",
         "fast-text-encoding": "1.0.4",
-        "futurejs": "2.2.0",
+        "futurejs": "2.2.1",
         "sjcl": "1.0.8"
     },
     "peerDependencies": {
