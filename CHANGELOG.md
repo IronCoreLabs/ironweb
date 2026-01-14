@@ -4,6 +4,15 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v4.2.45
+- update `qs` to fix a security vulnerability
+- switch release process to [Trusted Publishing](https://docs.npmjs.com/trusted-publishers)
+
+## v4.2.42
+- update various dependencies
+- update CI configuration
+- minor internal fixes
+
 ## v4.2.5
 - add support for browsers with privacy settings that require use of the Storage Access API
 

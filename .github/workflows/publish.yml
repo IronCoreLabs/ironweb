@@ -1,4 +1,4 @@
-name: IronWeb Snapshot
+name: IronWeb Publish
 
 on:
   workflow_dispatch:
