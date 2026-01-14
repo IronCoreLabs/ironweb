@@ -1,9 +1,12 @@
 name: IronWeb Snapshot
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to publish from @ironcorelabs/ironweb-internal to @ironcorelabs/ironweb. Should not start with a leading `v`.
+        type: string
+        required: true
 
 permissions:
   id-token: write # Required for OIDC
@@ -14,8 +17,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.WORKFLOW_PAT }}
       - uses: actions/setup-node@v6
         with:
           node-version: 24.x
@@ -26,9 +27,5 @@ jobs:
           sudo npm install -g npm@11.6.1
           # Necessary to overwrite the previous global version
           echo "/usr/local/bin" >> $GITHUB_PATH
-      - name: build and unit test
-        run: yarn && yarn test
-      - name: Release snapshot to @ironcorelabs/ironweb-internal and @ironcorelabs/ironweb-frame
-        env:
-          BRANCH: "main"
-        run: node ./.github/scripts/snapshot.js
+      - name: Publish release to @ironcorelabs/ironweb
+        run: node ./.github/scripts/publish.js --version ${{ inputs.version }} --publish

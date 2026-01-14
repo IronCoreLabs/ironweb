@@ -10,7 +10,7 @@ When a merge to main happens, Github Actions will run the `.github/scripts/snaps
 
 ## Public Publishing
 
-Once the version of the frame we want to release has been pushed out to production, we manually run the `.github/scripts/publish.js` script. This script takes the version to publicly publish as an argument. In then verifies that the associated version of the frame exists in production. If so, it will then download the code from the internal shim repo on NPM, and convert it over to our public NPM package and perform a deployment.
+Once the version of the frame we want to release has been pushed out to production, we manually run the [Publish](https://github.com/IronCoreLabs/ironweb/actions/workflows/publish.yml) GitHub Action. This action takes the version to publicly publish. It then verifies that the associated version of the frame exists in production. If so, it will then download the code from the internal shim repo on NPM, and convert it over to our public NPM package and perform a deployment.
 
 ## Full Deployment Process
 
@@ -23,7 +23,7 @@ Once the version of the frame we want to release has been pushed out to producti
     -   create in the admin console or use an existing project/segment private key and [`project.json` file](https://github.com/IronCoreLabs/design-docs/blob/main/engineering/ironwebLocalDevelopment.md#integration-app-testing).
     -   see [these instructions](https://github.com/IronCoreLabs/design-docs/blob/main/engineering/ironwebLocalDevelopment.md#testing-against-development-stage-or-production) (if you have access) on targeting different environments with the integration app.
 -   Once testing is done we need to deploy ironcore-id into production.
--   _(only necessary when frame releases are involved)_ When that is complete, do a dry run of the `.github/scripts/publish.js` script with the version to publish (e.g. `--version 1.5.2`) and verify that the content that will be published looks correct. If so, then re-run the script with the `--publish` argument. This script will verify that the version you're releasing exists in production and if so, will then push our project to our public NPM repo. At this point developers will now be able to consume this new version in their project.
+-   _(only necessary when frame releases are involved)_ When that is complete, do a dry run of the `.github/scripts/publish.js` script with the version to publish (e.g. `--version 1.5.2`) and verify that the content that will be published looks correct. If so, then run the [Publish](https://github.com/IronCoreLabs/ironweb/actions/workflows/publish.yml) GitHub Action. This action will verify that the version you're releasing exists in production and if so, will then push our project to our public NPM repo. At this point developers will now be able to consume this new version in their project.
 
 It's worth noting that with this release process, our external version numbers that consumers see won't be sequential. We'll likely bump patch versions multiple times during our process before we decide to cut a public version. For example, if the current public version is `1.3.3` but during development we merge in 4 different PRs before release, then the next version that consumers see will be `1.3.7`. This shouldn't be a big deal as long as we correctly update our major/minor versions.
 
