@@ -28,4 +28,4 @@ jobs:
           # Necessary to overwrite the previous global version
           echo "/usr/local/bin" >> $GITHUB_PATH
       - name: Publish release to @ironcorelabs/ironweb
-        run: node ./.github/scripts/publish.js --version ${{ inputs.version }} --publish
+        run: yarn && node ./.github/scripts/publish.js --version ${{ inputs.version }} --publish
