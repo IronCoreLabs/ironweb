@@ -4,7 +4,7 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
-## v4.2.47
+## v4.2.48
 - update `qs` to fix a security vulnerability
 - switch release process to [Trusted Publishing](https://docs.npmjs.com/trusted-publishers)
 
