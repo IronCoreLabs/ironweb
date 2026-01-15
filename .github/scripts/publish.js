@@ -31,6 +31,12 @@ if (args.indexOf("--version") === -1) {
     shell.echo("You must provide the version of ironweb to publish publicly with the '--version' argument, e.g. '--version 1.2.3'.");
     shell.exit(-1);
 }
+
+if (process.env.NODE_AUTH_TOKEN == "") {
+    shell.echo("\n\nEnvironment variable NODE_AUTH_TOKEN must be set in order to download @ironcorelabs/ironweb-internal.");
+    shell.exit(0);
+}
+
 const PUBLISH_VERSION = args[args.indexOf("--version") + 1];
 const SHOULD_PUBLISH = args.indexOf("--publish") !== -1;
 const PRODUCTION_FRAME_FILE_URL = `https://api.ironcorelabs.com/static/ironweb-frame-${PUBLISH_VERSION}/ironweb-frame.min.js`;
@@ -74,6 +80,8 @@ https.get(PRODUCTION_FRAME_FILE_URL, (response) => {
     shell.pushd("./publish");
     //Pull down the private internal ironweb content from NPM and move things around so we can republish it under the public name
     shell.exec(`npm install @ironcorelabs/ironweb-internal@${PUBLISH_VERSION} --no-save --production`);
+    // We use Trusted Publishing to publish, so we can't have this env var set anymore
+    shell.exec("unset NODE_AUTH_TOKEN");
     shell.mv("./node_modules/@ironcorelabs/ironweb-internal/*", "./");
     shell.rm("-rf", "./node_modules");
 

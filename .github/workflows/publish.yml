@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  snapshot:
+  publish:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
@@ -29,3 +29,6 @@ jobs:
           echo "/usr/local/bin" >> $GITHUB_PATH
       - name: Publish release to @ironcorelabs/ironweb
         run: yarn && node ./.github/scripts/publish.js --version ${{ inputs.version }} --publish
+        env:
+          # Needed in order to download @ironcorelabs/ironweb-internal; publishing will use Trusted Publishing instead
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
