@@ -61,7 +61,7 @@ function prepareInternalPackageForRelease(packageJsonContent) {
         }
     }
     packageJsonContent.name = "@ironcorelabs/ironweb";
-    packageJsonContent.url = "https://github.com/IronCoreLabs/ironweb";
+    packageJsonContent.repository = {url: "git+https://github.com/IronCoreLabs/ironweb.git", type: "git"};
     return packageJsonContent;
 }
 
@@ -80,7 +80,7 @@ https.get(PRODUCTION_FRAME_FILE_URL, (response) => {
     }
     shell.pushd("./publish");
     //Pull down the private internal ironweb content from NPM and move things around so we can republish it under the public name
-    shell.exec(`npm install @ironcorelabs/ironweb-internal@${PUBLISH_VERSION} --no-save --production`);
+    shell.exec(`npm install @ironcorelabs/ironweb-internal@${PUBLISH_VERSION} --no-save --omit=dev`);
     // We use Trusted Publishing to publish, so we can't have this env var set anymore
     shell.exec("unset NODE_AUTH_TOKEN");
     shell.mv("./node_modules/@ironcorelabs/ironweb-internal/*", "./");

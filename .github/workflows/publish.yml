@@ -24,7 +24,7 @@ jobs:
       # Need newer npm to use Trusted Publishing
       - name: Use newer npm version
         run: |
-          sudo npm install -g npm@11.6.1
+          sudo npm install -g npm@11.6.2
           # Necessary to overwrite the previous global version
           echo "/usr/local/bin" >> $GITHUB_PATH
       - name: Publish release to @ironcorelabs/ironweb
