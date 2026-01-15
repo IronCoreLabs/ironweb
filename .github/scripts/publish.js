@@ -32,7 +32,7 @@ if (args.indexOf("--version") === -1) {
     shell.exit(-1);
 }
 
-if (process.env.NODE_AUTH_TOKEN == "") {
+if (!process.env.NODE_AUTH_TOKEN) {
     shell.echo("\n\nEnvironment variable NODE_AUTH_TOKEN must be set in order to download @ironcorelabs/ironweb-internal.");
     shell.exit(0);
 }
@@ -61,6 +61,7 @@ function prepareInternalPackageForRelease(packageJsonContent) {
         }
     }
     packageJsonContent.name = "@ironcorelabs/ironweb";
+    packageJsonContent.url = "https://github.com/IronCoreLabs/ironweb";
     return packageJsonContent;
 }
 
