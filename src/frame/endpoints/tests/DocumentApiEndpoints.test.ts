@@ -368,26 +368,26 @@ describe("DocumentApiEndpoints", () => {
                 () => {
                     throw new Error("Doc grant should not reject");
                 },
-                    () => {
-                        const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
-                        expect(JSON.parse(request.body)).toEqual({
-                            fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
-                            to: [
-                                {
-                                    encryptedMessage: "AAAA",
-                                    publicSigningKey: "AA==",
-                                    authHash: "AA==",
-                                    signature: "A===",
-                                    ephemeralPublicKey: {x: "AAAAAAA=", y: "AAAAA=="},
-                                    userOrGroup: {
-                                        type: "group",
-                                        id: "355",
-                                        masterPublicKey: {x: "grouppublickeyx", y: "grouppublickeyy"},
-                                    },
+                () => {
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
+                    expect(JSON.parse(request.body)).toEqual({
+                        fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
+                        to: [
+                            {
+                                encryptedMessage: "AAAA",
+                                publicSigningKey: "AA==",
+                                authHash: "AA==",
+                                signature: "A===",
+                                ephemeralPublicKey: {x: "AAAAAAA=", y: "AAAAA=="},
+                                userOrGroup: {
+                                    type: "group",
+                                    id: "355",
+                                    masterPublicKey: {x: "grouppublickeyx", y: "grouppublickeyy"},
                                 },
-                            ],
-                        });
-                    }
+                            },
+                        ],
+                    });
+                }
             );
         });
 
@@ -396,38 +396,38 @@ describe("DocumentApiEndpoints", () => {
                 () => {
                     throw new Error("Doc grant should not reject");
                 },
-                    () => {
-                        const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
-                        expect(JSON.parse(request.body)).toEqual({
-                            fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
-                            to: [
-                                {
-                                    encryptedMessage: "AAA=",
-                                    publicSigningKey: "AAAA",
-                                    authHash: "AA==",
-                                    signature: "A===",
-                                    ephemeralPublicKey: {x: "", y: "AA=="},
-                                    userOrGroup: {
-                                        type: "user",
-                                        id: "37",
-                                        masterPublicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
-                                    },
+                () => {
+                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
+                    expect(JSON.parse(request.body)).toEqual({
+                        fromPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString},
+                        to: [
+                            {
+                                encryptedMessage: "AAA=",
+                                publicSigningKey: "AAAA",
+                                authHash: "AA==",
+                                signature: "A===",
+                                ephemeralPublicKey: {x: "", y: "AA=="},
+                                userOrGroup: {
+                                    type: "user",
+                                    id: "37",
+                                    masterPublicKey: {x: "firstpublickeyx", y: "firstpublickeyy"},
                                 },
-                                {
-                                    encryptedMessage: "AA==",
-                                    publicSigningKey: "AA==",
-                                    authHash: "AA==",
-                                    signature: "A===",
-                                    ephemeralPublicKey: {x: "AAAAAA==", y: "AAAA"},
-                                    userOrGroup: {
-                                        type: "user",
-                                        id: "99",
-                                        masterPublicKey: {x: "secondpublickey", y: "secondpublickeyy"},
-                                    },
+                            },
+                            {
+                                encryptedMessage: "AA==",
+                                publicSigningKey: "AA==",
+                                authHash: "AA==",
+                                signature: "A===",
+                                ephemeralPublicKey: {x: "AAAAAA==", y: "AAAA"},
+                                userOrGroup: {
+                                    type: "user",
+                                    id: "99",
+                                    masterPublicKey: {x: "secondpublickey", y: "secondpublickeyy"},
                                 },
-                            ],
-                        });
-                    }
+                            },
+                        ],
+                    });
+                }
             );
         });
     });

@@ -1,6 +1,7 @@
 import {fromByteArray} from "base64-js";
 import Future from "futurejs";
 import {ErrorCodes} from "../../../Constants";
+import SDKError from "../../../lib/SDKError";
 import {publicKeyToBase64} from "../../../lib/Utils";
 import * as TestUtils from "../../../tests/TestUtils";
 import ApiState from "../../ApiState";
@@ -101,7 +102,9 @@ describe("init index", () => {
         });
 
         it("expects passcode response when local keys cannot be found or validated", (done) => {
-            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys").mockReturnValue(Future.reject(new Error("failed")));
+            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys").mockReturnValue(
+                Future.reject(new SDKError(new Error("failed"), ErrorCodes.USER_DEVICE_KEY_DECRYPTION_FAILURE))
+            );
 
             jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
                 Future.of<any>({
@@ -135,7 +138,7 @@ describe("init index", () => {
 
             const deviceKeys = TestUtils.getEmptyKeyPair();
             const signingKeys = TestUtils.getSigningKeyPair();
-            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys").mockReturnValue(Future.of<any>({deviceKeys, signingKeys}));
+            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys").mockReturnValue(Future.of<any>({deviceKeys, signingKeys, needsMigration: false}));
 
             Init.initialize("jwtToken", "symKey").engage(
                 (e) => {
@@ -159,6 +162,58 @@ describe("init index", () => {
                     expect(ApiState.signingKeys()).toEqual(signingKeys);
                     expect(ApiState.user()).toEqual(TestUtils.getFullUser());
                     expect(InitializationApi.fetchAndValidateLocalKeys).toHaveBeenCalledWith("user-10", 1, "symKey");
+                    done();
+                }
+            );
+        });
+
+        it("re-encrypts and stores keys when needsMigration is true", (done) => {
+            jest.spyOn(InitializationApi, "initializeApi").mockReturnValue(
+                Future.of<any>({
+                    user: TestUtils.getFullUser(),
+                })
+            );
+
+            const deviceKeys = TestUtils.getEmptyKeyPair();
+            const signingKeys = TestUtils.getSigningKeyPair();
+            jest.spyOn(InitializationApi, "fetchAndValidateLocalKeys").mockReturnValue(Future.of<any>({deviceKeys, signingKeys, needsMigration: true}));
+            jest.spyOn(InitializationApi, "reEncryptLocalKeys").mockReturnValue(
+                Future.of<any>({
+                    encryptedDeviceKey: new Uint8Array([1, 2, 3]),
+                    encryptedSigningKey: new Uint8Array([4, 5, 6]),
+                    deviceIv: new Uint8Array([7, 8, 9]),
+                    signingIv: new Uint8Array([10, 11, 12]),
+                    symmetricKey: new Uint8Array([13, 14, 15]),
+                })
+            );
+            jest.spyOn(FrameUtils, "storeDeviceAndSigningKeys").mockReturnValue(Future.of<any>(undefined));
+
+            Init.initialize("jwtToken", "symKey").engage(
+                (e) => {
+                    throw e;
+                },
+                (SDK) => {
+                    expect(SDK).toEqual({
+                        type: "FULL_SDK_RESPONSE",
+                        message: {
+                            user: {
+                                id: "user-10",
+                                needsRotation: false,
+                                status: 1,
+                            },
+                            groupsNeedingRotation: [],
+                            symmetricKey: undefined,
+                        },
+                    });
+                    expect(InitializationApi.reEncryptLocalKeys).toHaveBeenCalledWith(deviceKeys.privateKey, signingKeys.privateKey, "symKey");
+                    expect(FrameUtils.storeDeviceAndSigningKeys).toHaveBeenCalledWith(
+                        "user-10",
+                        1,
+                        new Uint8Array([1, 2, 3]),
+                        new Uint8Array([4, 5, 6]),
+                        new Uint8Array([7, 8, 9]),
+                        new Uint8Array([10, 11, 12])
+                    );
                     done();
                 }
             );
@@ -223,7 +278,8 @@ describe("init index", () => {
                         encryptedDeviceKey: "edk",
                         encryptedSigningKey: "esk",
                         symmetricKey: "sk",
-                        iv: "iv",
+                        deviceIv: "deviceIv",
+                        signingIv: "signingIv",
                     },
                 })
             );
@@ -251,7 +307,7 @@ describe("init index", () => {
                     expect(ApiState.signingKeys()).toEqual(signingKeys);
                     expect(ApiState.user()).toEqual(TestUtils.getFullUser());
 
-                    expect(FrameUtils.storeDeviceAndSigningKeys).toHaveBeenCalledWith("user-10", 1, "edk", "esk", "iv");
+                    expect(FrameUtils.storeDeviceAndSigningKeys).toHaveBeenCalledWith("user-10", 1, "edk", "esk", "deviceIv", "signingIv");
                 }
             );
         });
@@ -274,7 +330,8 @@ describe("init index", () => {
                         encryptedDeviceKey: "edk",
                         encryptedSigningKey: "esk",
                         symmetricKey: "sk",
-                        iv: "iv",
+                        deviceIv: "deviceIv",
+                        signingIv: "signingIv",
                     },
                     userUpdateKeys: {deviceKeys, signingKeys},
                 })
@@ -307,7 +364,7 @@ describe("init index", () => {
                     expect(ApiState.deviceKeys()).toEqual(deviceKeys);
                     expect(ApiState.signingKeys()).toEqual(signingKeys);
 
-                    expect(FrameUtils.storeDeviceAndSigningKeys).toHaveBeenCalledWith("user-10", 1, "edk", "esk", "iv");
+                    expect(FrameUtils.storeDeviceAndSigningKeys).toHaveBeenCalledWith("user-10", 1, "edk", "esk", "deviceIv", "signingIv");
                 }
             );
         });

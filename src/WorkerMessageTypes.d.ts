@@ -50,12 +50,7 @@ export interface DeviceKeygenWorkerResponse {
 
 export interface DecryptLocalKeysWorkerRequest {
     type: "DECRYPT_LOCAL_KEYS";
-    message: {
-        encryptedDeviceKey: Uint8Array;
-        encryptedSigningKey: Uint8Array;
-        symmetricKey: Uint8Array;
-        nonce: Uint8Array;
-    };
+    message: EncryptedLocalKeys;
 }
 export interface DecryptLocalKeysWorkerResponse {
     type: "DECRYPT_LOCAL_KEYS_RESPONSE";
@@ -69,6 +64,19 @@ export interface DecryptLocalKeysWorkerResponse {
             privateKey: Uint8Array;
         };
     };
+}
+
+export interface ReEncryptLocalKeysWorkerRequest {
+    type: "REENCRYPT_LOCAL_KEYS";
+    message: {
+        devicePrivateKey: Uint8Array;
+        signingPrivateKey: Uint8Array;
+        symmetricKey: Uint8Array;
+    };
+}
+export interface ReEncryptLocalKeysWorkerResponse {
+    type: "REENCRYPT_LOCAL_KEYS_RESPONSE";
+    message: EncryptedLocalKeys;
 }
 
 export interface RotateUserPrivateKeyWorkerRequest {
@@ -302,6 +310,7 @@ export type RequestMessage =
     | ChangeUserPasscodeWorkerRequest
     | GroupCreateWorkerRequest
     | DecryptLocalKeysWorkerRequest
+    | ReEncryptLocalKeysWorkerRequest
     | GroupAddAdminWorkerRequest
     | GroupAddMemberWorkerRequest
     | SignatureGenerationWorkerRequest
@@ -320,6 +329,7 @@ export type ResponseMessage =
     | NewUserAndDeviceKeygenWorkerResponse
     | DeviceKeygenWorkerResponse
     | DecryptLocalKeysWorkerResponse
+    | ReEncryptLocalKeysWorkerResponse
     | ChangeUserPasscodeWorkerResponse
     | GroupCreateWorkerResponse
     | GroupAddAdminWorkerResponse

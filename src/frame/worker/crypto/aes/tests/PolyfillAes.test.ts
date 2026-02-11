@@ -73,17 +73,19 @@ describe("PolyfillAes", () => {
     });
 
     describe("encryptDeviceAndSigningKeys", () => {
-        it("encrypts the two keys with the provided sym key and iv", (done) => {
+        it("encrypts the two keys with the provided sym key and separate IVs", (done) => {
             const deviceKey = new Uint8Array([35, 80]);
             const signingKey = new Uint8Array([73, 33, 89]);
             const symKey = new Uint8Array(32);
-            const providedIV = new Uint8Array(12);
+            const deviceIv = new Uint8Array(12);
+            const signingIv = new Uint8Array(12);
 
-            PolyfillAes.encryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, providedIV).engage(
+            PolyfillAes.encryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, deviceIv, signingIv).engage(
                 () => done("AES encryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({
-                        iv: providedIV,
+                        deviceIv,
+                        signingIv,
                         symmetricKey: symKey,
                         encryptedDeviceKey: new Uint8Array([237, 247, 80, 81, 206, 50, 195, 202, 27, 37, 46, 249, 68, 150, 15, 37, 65, 182]),
                         encryptedSigningKey: new Uint8Array([135, 134, 25, 146, 165, 113, 127, 5, 215, 159, 166, 161, 122, 200, 192, 117, 146, 202, 178]),
@@ -95,13 +97,14 @@ describe("PolyfillAes", () => {
     });
 
     describe("decryptDeviceAndSigningKeys", () => {
-        it("decypts the provided keys", (done) => {
+        it("decrypts the provided keys with separate IVs", (done) => {
             const deviceKey = new Uint8Array([237, 247, 80, 81, 206, 50, 195, 202, 27, 37, 46, 249, 68, 150, 15, 37, 65, 182]);
             const signingKey = new Uint8Array([135, 134, 25, 146, 165, 113, 127, 5, 215, 159, 166, 161, 122, 200, 192, 117, 146, 202, 178]);
             const symKey = new Uint8Array(32);
-            const iv = new Uint8Array(12);
+            const deviceIv = new Uint8Array(12);
+            const signingIv = new Uint8Array(12);
 
-            PolyfillAes.decryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, iv).engage(
+            PolyfillAes.decryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, deviceIv, signingIv).engage(
                 () => done("AES decryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({

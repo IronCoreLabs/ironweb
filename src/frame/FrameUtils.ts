@@ -26,15 +26,18 @@ const requestStorageAccess = (): Future<never, boolean> =>
  * Given a device and signing private key, combine them together, stringify, and set them in local storage
  * @param {string}                 userID            Users provided ID
  * @param {number}                 segmentID         ID of segment to which user belongs
- * @param {PrivateKey<Uint8Array>} devicePrivateKey  Users device private key
- * @param {PrivateKey<Uint8Array>} signingPrivateKey Users signing private key
+ * @param {PrivateKey<Uint8Array>} devicePrivateKey  Users encrypted device private key
+ * @param {PrivateKey<Uint8Array>} signingPrivateKey Users encrypted signing private key
+ * @param {Uint8Array}             deviceIv          IV used for device key encryption
+ * @param {Uint8Array}             signingIv         IV used for signing key encryption
  */
 export const storeDeviceAndSigningKeys = (
     userID: string,
     segmentID: number,
     devicePrivateKey: PrivateKey<Uint8Array>,
     signingPrivateKey: PrivateKey<Uint8Array>,
-    nonce: Uint8Array
+    deviceIv: Uint8Array,
+    signingIv: Uint8Array
 ): Future<never, void> => {
     const store = () => {
         localStorage.setItem(
@@ -42,7 +45,8 @@ export const storeDeviceAndSigningKeys = (
             JSON.stringify({
                 deviceKey: fromByteArray(devicePrivateKey),
                 signingKey: fromByteArray(signingPrivateKey),
-                nonce: fromByteArray(nonce),
+                deviceIv: fromByteArray(deviceIv),
+                signingIv: fromByteArray(signingIv),
             })
         );
     };
@@ -81,25 +85,45 @@ export function clearDeviceAndSigningKeys(userID: string, segmentID: number) {
     }
 }
 
+export interface LocalEncryptedKeys {
+    encryptedDeviceKey: Uint8Array;
+    encryptedSigningKey: Uint8Array;
+    deviceIv: Uint8Array;
+    signingIv: Uint8Array;
+    // True if keys are stored in old single-IV format and need re-encryption with separate IVs
+    needsMigration: boolean;
+}
+
 /**
  * Attempt to read out the signing and device keys from local storage. Will return with null if keys don't exists or can't be parsed
  * @param {string} userID    Users provided ID
  * @param {number} segmentID ID of segment to which user belongs
  */
-export function getDeviceAndSigningKeys(
-    userID: string,
-    segmentID: number
-): Future<Error, {encryptedDeviceKey: Uint8Array; encryptedSigningKey: Uint8Array; nonce: Uint8Array}> {
+export function getDeviceAndSigningKeys(userID: string, segmentID: number): Future<Error, LocalEncryptedKeys> {
     let keys: any;
     try {
         keys = JSON.parse(localStorage.getItem(generateFrameStorageKey(userID, segmentID)) as any);
         if (!keys || typeof keys !== "object" || !keys.deviceKey || !keys.signingKey || !keys.deviceKey.length || !keys.signingKey.length) {
             throw new Error("Invalid local keys");
         }
+        // Detect old format: has single 'nonce' field instead of separate deviceIv/signingIv
+        const hasOldFormat = keys.nonce && !keys.deviceIv;
+        if (hasOldFormat) {
+            const sharedIv = toByteArray(keys.nonce);
+            return Future.of({
+                encryptedDeviceKey: toByteArray(keys.deviceKey),
+                encryptedSigningKey: toByteArray(keys.signingKey),
+                deviceIv: sharedIv,
+                signingIv: sharedIv,
+                needsMigration: true,
+            });
+        }
         return Future.of({
             encryptedDeviceKey: toByteArray(keys.deviceKey),
             encryptedSigningKey: toByteArray(keys.signingKey),
-            nonce: toByteArray(keys.nonce),
+            deviceIv: toByteArray(keys.deviceIv),
+            signingIv: toByteArray(keys.signingIv),
+            needsMigration: false,
         });
     } catch (e: any) {
         clearDeviceAndSigningKeys(userID, segmentID);

@@ -37,7 +37,10 @@ export default class FrameMessenger {
         const {data, replyID}: FrameEvent<RequestMessage> = event.data;
         this.onMessageCallback(data, (responseData: ResponseMessage, transferList: Uint8Array[] = []) => {
             if (this.messagePort) {
-                this.messagePort.postMessage({replyID, data: responseData}, transferList.map((int8Array) => int8Array.buffer));
+                this.messagePort.postMessage(
+                    {replyID, data: responseData},
+                    transferList.map((int8Array) => int8Array.buffer)
+                );
             }
         });
     };

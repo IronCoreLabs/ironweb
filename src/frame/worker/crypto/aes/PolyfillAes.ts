@@ -87,21 +87,24 @@ export function decryptDocument(encryptedDocument: Uint8Array, documentSymmetric
 }
 
 /**
- * Encrypt the users private device and signing keys using the provided symmetric key and IV
+ * Encrypt the users private device and signing keys using the provided symmetric key and separate IVs
  * @param {Uint8Array} devicePrivateKey  Users device private key
  * @param {Uint8Array} signingPrivateKey Users signing private key
  * @param {Uint8Array} symmetricKey      Symmetric key to use for encryption
- * @param {Uint8Array} iv                IV to use for encryption
+ * @param {Uint8Array} deviceIv          IV to use for device key encryption
+ * @param {Uint8Array} signingIv         IV to use for signing key encryption
  */
 export function encryptDeviceAndSigningKeys(
     devicePrivateKey: Uint8Array,
     signingPrivateKey: Uint8Array,
     symmetricKey: Uint8Array,
-    iv: Uint8Array
+    deviceIv: Uint8Array,
+    signingIv: Uint8Array
 ): Future<Error, EncryptedLocalKeys> {
-    return Future.gather2(encryptDocument(devicePrivateKey, symmetricKey, iv), encryptDocument(signingPrivateKey, symmetricKey, iv)).map(
+    return Future.gather2(encryptDocument(devicePrivateKey, symmetricKey, deviceIv), encryptDocument(signingPrivateKey, symmetricKey, signingIv)).map(
         ([encryptedDeviceKey, encryptedSigningKey]) => ({
-            iv,
+            deviceIv,
+            signingIv,
             symmetricKey,
             encryptedDeviceKey: encryptedDeviceKey.content,
             encryptedSigningKey: encryptedSigningKey.content,
@@ -110,14 +113,21 @@ export function encryptDeviceAndSigningKeys(
 }
 
 /**
- * Decrypt the users private device and signing keys using the provided symmetric key and IV
- * @param {Uint8Array} devicePrivateKey  Users device private key
- * @param {Uint8Array} signingPrivateKey Users signing private key
- * @param {Uint8Array} symmetricKey      Symmetric key to use for encryption
- * @param {Uint8Array} iv                IV to use for encryption
+ * Decrypt the users private device and signing keys using the provided symmetric key and separate IVs
+ * @param {Uint8Array} encryptedDeviceKey  Users encrypted device private key
+ * @param {Uint8Array} encryptedSigningKey Users encrypted signing private key
+ * @param {Uint8Array} symmetricKey        Symmetric key to use for decryption
+ * @param {Uint8Array} deviceIv            IV used for device key encryption
+ * @param {Uint8Array} signingIv           IV used for signing key encryption
  */
-export function decryptDeviceAndSigningKeys(devicePrivateKey: Uint8Array, signingPrivateKey: Uint8Array, symmetricKey: Uint8Array, iv: Uint8Array) {
-    return Future.gather2(decryptDocument(devicePrivateKey, symmetricKey, iv), decryptDocument(signingPrivateKey, symmetricKey, iv)).map(
+export function decryptDeviceAndSigningKeys(
+    encryptedDeviceKey: Uint8Array,
+    encryptedSigningKey: Uint8Array,
+    symmetricKey: Uint8Array,
+    deviceIv: Uint8Array,
+    signingIv: Uint8Array
+) {
+    return Future.gather2(decryptDocument(encryptedDeviceKey, symmetricKey, deviceIv), decryptDocument(encryptedSigningKey, symmetricKey, signingIv)).map(
         ([deviceKey, signingKey]) => ({deviceKey, signingKey})
     );
 }

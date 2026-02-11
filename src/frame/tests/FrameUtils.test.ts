@@ -22,15 +22,17 @@ describe("FrameUtils", () => {
         it("sets keys in local storage under proper key", async () => {
             const deviceKey = new Uint8Array(5);
             const signingKey = new Uint8Array(6);
-            const nonce = new Uint8Array([88, 93, 91]);
-            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            const deviceIv = new Uint8Array([88, 93, 91]);
+            const signingIv = new Uint8Array([99, 100, 101]);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, deviceIv, signingIv);
             const keys = localStorage.getItem("1-3:30-icldaspkn");
             expect(keys).toEqual(expect.stringContaining(""));
             const decodeKeys = JSON.parse(keys as string);
             expect(typeof decodeKeys).toBe("object");
             expect(decodeKeys.deviceKey).toEqual("AAAAAAA=");
             expect(decodeKeys.signingKey).toEqual("AAAAAAAA");
-            expect(decodeKeys.nonce).toEqual("WF1b");
+            expect(decodeKeys.deviceIv).toEqual("WF1b");
+            expect(decodeKeys.signingIv).toEqual("Y2Rl");
         });
 
         it("requests access if it doesn't have it. When granted, stores.", async () => {
@@ -44,8 +46,9 @@ describe("FrameUtils", () => {
 
             const deviceKey = new Uint8Array(5);
             const signingKey = new Uint8Array(6);
-            const nonce = new Uint8Array([88, 93, 91]);
-            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            const deviceIv = new Uint8Array([88, 93, 91]);
+            const signingIv = new Uint8Array([99, 100, 101]);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, deviceIv, signingIv);
 
             const keys = localStorage.getItem("1-3:30-icldaspkn");
             expect(keys).toEqual(expect.stringContaining(""));
@@ -53,7 +56,8 @@ describe("FrameUtils", () => {
             expect(typeof decodeKeys).toBe("object");
             expect(decodeKeys.deviceKey).toEqual("AAAAAAA=");
             expect(decodeKeys.signingKey).toEqual("AAAAAAAA");
-            expect(decodeKeys.nonce).toEqual("WF1b");
+            expect(decodeKeys.deviceIv).toEqual("WF1b");
+            expect(decodeKeys.signingIv).toEqual("Y2Rl");
         });
 
         it("requests access if it doesn't have it. When not granted, does nothing.", async () => {
@@ -67,8 +71,9 @@ describe("FrameUtils", () => {
 
             const deviceKey = new Uint8Array(5);
             const signingKey = new Uint8Array(6);
-            const nonce = new Uint8Array([88, 93, 91]);
-            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            const deviceIv = new Uint8Array([88, 93, 91]);
+            const signingIv = new Uint8Array([99, 100, 101]);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, deviceIv, signingIv);
 
             const keys = localStorage.getItem("1-3:30-icldaspkn");
             expect(keys).toEqual(null);
@@ -83,12 +88,13 @@ describe("FrameUtils", () => {
 
             const deviceKey = new Uint8Array(5);
             const signingKey = new Uint8Array(6);
-            const nonce = new Uint8Array([88, 93, 91]);
+            const deviceIv = new Uint8Array([88, 93, 91]);
+            const signingIv = new Uint8Array([99, 100, 101]);
 
             // unset requestStorageAccess, like a browser that doesn't know about it.
             const oldRequest = document.requestStorageAccess;
             delete (document as any).requestStorageAccess;
-            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, deviceIv, signingIv);
             document.requestStorageAccess = oldRequest;
 
             const keys = localStorage.getItem("1-3:30-icldaspkn");
@@ -191,8 +197,9 @@ describe("FrameUtils", () => {
         it("responds with keys found in local storage when valid", async () => {
             const deviceKey = new Uint8Array(5);
             const signingKey = new Uint8Array(6);
-            const nonce = new Uint8Array([88, 93, 91]);
-            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, nonce);
+            const deviceIv = new Uint8Array([88, 93, 91]);
+            const signingIv = new Uint8Array([99, 100, 101]);
+            await FrameUtils.storeDeviceAndSigningKeys("30", 3, deviceKey, signingKey, deviceIv, signingIv);
 
             FrameUtils.getDeviceAndSigningKeys("30", 3).engage(
                 (e) => {
@@ -201,7 +208,8 @@ describe("FrameUtils", () => {
                 (localKeys) => {
                     expect(localKeys.encryptedDeviceKey).toEqual(deviceKey);
                     expect(localKeys.encryptedSigningKey).toEqual(signingKey);
-                    expect(localKeys.nonce).toEqual(nonce);
+                    expect(localKeys.deviceIv).toEqual(deviceIv);
+                    expect(localKeys.signingIv).toEqual(signingIv);
                 }
             );
         });

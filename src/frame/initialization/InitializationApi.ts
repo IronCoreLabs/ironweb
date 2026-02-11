@@ -3,7 +3,7 @@ import Future from "futurejs";
 import UserApiEndpoints, {UserCreationKeys} from "../endpoints/UserApiEndpoints";
 import * as WMT from "../../WorkerMessageTypes";
 import * as WorkerMediator from "../WorkerMediator";
-import {CryptoConstants} from "../../Constants";
+import {CryptoConstants, ErrorCodes} from "../../Constants";
 import {getDeviceAndSigningKeys} from "../FrameUtils";
 import {sliceArrayBuffer} from "../../lib/Utils";
 import SDKError from "../../lib/SDKError";
@@ -78,6 +78,19 @@ export function generateDeviceAndSigningKeys(jwtToken: string, passcode: string,
     });
 }
 
+export interface FetchedLocalKeys {
+    deviceKeys: {
+        publicKey: PublicKey<Uint8Array>;
+        privateKey: Uint8Array;
+    };
+    signingKeys: {
+        publicKey: SigningPublicKey<Uint8Array>;
+        privateKey: Uint8Array;
+    };
+    /** True if keys were in old single-IV format and need re-encryption */
+    needsMigration: boolean;
+}
+
 /**
  * Attempt to read a users device and signing keys from local storage. If they exist and appear to be valid, use them to generate the associated public
  * key and return both pairs
@@ -85,15 +98,41 @@ export function generateDeviceAndSigningKeys(jwtToken: string, passcode: string,
  * @param {number} segmentID            ID of segment user is a part of
  * @param {string} localKeySymmetricKey Users local symmetric key provided by parent window
  */
-export function fetchAndValidateLocalKeys(userID: string, segmentID: number, localKeySymmetricKey: string) {
-    return getDeviceAndSigningKeys(userID, segmentID).flatMap((localKeys) => {
-        const payload: WMT.DecryptLocalKeysWorkerRequest = {
-            type: "DECRYPT_LOCAL_KEYS",
-            message: {
-                ...localKeys,
-                symmetricKey: toByteArray(localKeySymmetricKey),
-            },
-        };
-        return WorkerMediator.sendMessage<WMT.DecryptLocalKeysWorkerResponse>(payload).map(({message}) => message);
-    });
+export function fetchAndValidateLocalKeys(userID: string, segmentID: number, localKeySymmetricKey: string): Future<SDKError, FetchedLocalKeys> {
+    return getDeviceAndSigningKeys(userID, segmentID)
+        .errorMap((error) => new SDKError(error, ErrorCodes.USER_DEVICE_KEY_DECRYPTION_FAILURE))
+        .flatMap((localKeys) => {
+            const payload: WMT.DecryptLocalKeysWorkerRequest = {
+                type: "DECRYPT_LOCAL_KEYS",
+                message: {
+                    encryptedDeviceKey: localKeys.encryptedDeviceKey,
+                    encryptedSigningKey: localKeys.encryptedSigningKey,
+                    symmetricKey: toByteArray(localKeySymmetricKey),
+                    deviceIv: localKeys.deviceIv,
+                    signingIv: localKeys.signingIv,
+                },
+            };
+            return WorkerMediator.sendMessage<WMT.DecryptLocalKeysWorkerResponse>(payload).map(({message}) => ({
+                ...message,
+                needsMigration: localKeys.needsMigration,
+            }));
+        });
+}
+
+/**
+ * Re-encrypt device and signing keys with new IVs for migration from old single-IV format.
+ * @param {Uint8Array} devicePrivateKey  Decrypted device private key
+ * @param {Uint8Array} signingPrivateKey Decrypted signing private key
+ * @param {string}     symmetricKey      Base64-encoded symmetric key
+ */
+export function reEncryptLocalKeys(devicePrivateKey: Uint8Array, signingPrivateKey: Uint8Array, symmetricKey: string) {
+    const payload: WMT.ReEncryptLocalKeysWorkerRequest = {
+        type: "REENCRYPT_LOCAL_KEYS",
+        message: {
+            devicePrivateKey,
+            signingPrivateKey,
+            symmetricKey: toByteArray(symmetricKey),
+        },
+    };
+    return WorkerMediator.sendMessage<WMT.ReEncryptLocalKeysWorkerResponse>(payload).map(({message}) => message);
 }

@@ -8,7 +8,7 @@ import * as FrameMediator from "../FrameMediator";
 describe("Initialize", () => {
     describe("createNewUser", () => {
         it("rejects if JWT callback does not return a promise", (done) => {
-            const jwtCallback = () => ({} as any);
+            const jwtCallback = () => ({}) as any;
 
             Initialize.createNewUser(jwtCallback, "passcode", false)
                 .then(() => done("resolve should not be called when JWT CB is invalid"))
@@ -93,7 +93,7 @@ describe("Initialize", () => {
 
     describe("createUserDeviceKeys", () => {
         it("rejects if JWT callback does not return a promise", (done) => {
-            const jwtCallback = () => ({} as any);
+            const jwtCallback = () => ({}) as any;
 
             Initialize.createUserDeviceKeys(jwtCallback, "passcode")
                 .then(() => done("resolve should not be called when JWT CB is invalid"))
@@ -182,7 +182,7 @@ describe("Initialize", () => {
 
     describe("jwt failures", () => {
         it("rejects if JWT callback does not return a promise", (done) => {
-            const jwtCallback = () => ({} as any);
+            const jwtCallback = () => ({}) as any;
 
             Initialize.initialize(jwtCallback, jest.fn())
                 .then(() => done("resolve should not be called when JWT CB is invalid"))

@@ -19,7 +19,9 @@ describe("GroupApiEndpoints", () => {
     describe("callGroupListApi", () => {
         it("requests group list endpoint and maps response to data result", () => {
             GroupApiEndpoints.callGroupListApi().engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups: any) => {
                     expect(groups).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups", expect.any(Number), expect.any(Object));
@@ -42,7 +44,9 @@ describe("GroupApiEndpoints", () => {
             };
             apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.callGroupKeyListApi([id1, id2]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups: any) => {
                     expect(groups).toEqual(apiResp);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -63,7 +67,9 @@ describe("GroupApiEndpoints", () => {
             };
             apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.callGroupKeyListApi([id1, id2]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups: any) => {
                     expect(groups).toEqual(apiResp);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
@@ -77,7 +83,9 @@ describe("GroupApiEndpoints", () => {
 
         it("returns empty array if no group IDs provided", () => {
             GroupApiEndpoints.callGroupKeyListApi([]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups) => {
                     expect(groups).toEqual({result: []});
                     expect(ApiRequest.makeAuthorizedApiRequest).not.toHaveBeenCalled();
@@ -102,7 +110,9 @@ describe("GroupApiEndpoints", () => {
             for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
             apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -110,7 +120,9 @@ describe("GroupApiEndpoints", () => {
                 }
             );
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(1);
@@ -133,7 +145,9 @@ describe("GroupApiEndpoints", () => {
             for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
             apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -158,7 +172,9 @@ describe("GroupApiEndpoints", () => {
             for (var member in GroupApiEndpoints.groupPublicKeyCache) delete GroupApiEndpoints.groupPublicKeyCache[member];
             apiSpy.mockReturnValue(Future.of<any>(apiResp));
             GroupApiEndpoints.getGroupPublicKeyList([id1, id2]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (groups: any) => {
                     expect(groups).toEqual(apiResp.result);
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-20", expect.any(Number), expect.any(Object));
@@ -166,7 +182,9 @@ describe("GroupApiEndpoints", () => {
                 }
             );
             GroupApiEndpoints.getGroupPublicKeyList([id1, "group-30"]).engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (_) => {
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups?id=group-10%2Cgroup-30", expect.any(Number), expect.any(Object));
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledTimes(2);
@@ -178,7 +196,9 @@ describe("GroupApiEndpoints", () => {
     describe("callGroupGetApi", () => {
         it("requests group get with specific ID and maps response to data result", () => {
             GroupApiEndpoints.callGroupGetApi("87").engage(
-                (e) => {throw e},
+                (e) => {
+                    throw e;
+                },
                 (group: any) => {
                     expect(group).toEqual({foo: "bar"});
                     expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("groups/87", expect.any(Number), expect.any(Object));

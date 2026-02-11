@@ -196,7 +196,10 @@ describe("ShimUtils", () => {
                 groups: [{id: "35"}, {id: "11"}, {id: "11"}, {id: "35"}, {id: "83"}],
             };
 
-            expect(ShimUtils.dedupeAccessLists(accessList)).toEqual([["5", "8", "13"], ["35", "11", "83"]]);
+            expect(ShimUtils.dedupeAccessLists(accessList)).toEqual([
+                ["5", "8", "13"],
+                ["35", "11", "83"],
+            ]);
         });
 
         it("returns empty arrays for users if not provided", () => {

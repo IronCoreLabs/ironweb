@@ -1,23 +1,19 @@
 import * as $protobuf from "protobufjs";
 /** Namespace ironcorelabs. */
 export namespace ironcorelabs {
-
     /** Namespace proto. */
     namespace proto {
-
         /** Properties of a PublicKey. */
         interface IPublicKey {
-
             /** PublicKey x */
-            x?: (Uint8Array|null);
+            x?: Uint8Array | null;
 
             /** PublicKey y */
-            y?: (Uint8Array|null);
+            y?: Uint8Array | null;
         }
 
         /** Represents a PublicKey. */
         class PublicKey implements IPublicKey {
-
             /**
              * Constructs a new PublicKey.
              * @param [properties] Properties to set
@@ -49,20 +45,18 @@ export namespace ironcorelabs {
 
         /** Properties of a UserOrGroup. */
         interface IUserOrGroup {
-
             /** UserOrGroup userId */
-            userId?: (string|null);
+            userId?: string | null;
 
             /** UserOrGroup groupId */
-            groupId?: (string|null);
+            groupId?: string | null;
 
             /** UserOrGroup masterPublicKey */
-            masterPublicKey?: (ironcorelabs.proto.IPublicKey|null);
+            masterPublicKey?: ironcorelabs.proto.IPublicKey | null;
         }
 
         /** Represents a UserOrGroup. */
         class UserOrGroup implements IUserOrGroup {
-
             /**
              * Constructs a new UserOrGroup.
              * @param [properties] Properties to set
@@ -76,10 +70,10 @@ export namespace ironcorelabs {
             public groupId: string;
 
             /** UserOrGroup masterPublicKey. */
-            public masterPublicKey?: (ironcorelabs.proto.IPublicKey|null);
+            public masterPublicKey?: ironcorelabs.proto.IPublicKey | null;
 
             /** UserOrGroup UserOrGroupId. */
-            public UserOrGroupId?: ("userId"|"groupId");
+            public UserOrGroupId?: "userId" | "groupId";
 
             /**
              * Encodes the specified UserOrGroup message. Does not implicitly {@link ironcorelabs.proto.UserOrGroup.verify|verify} messages.
@@ -100,26 +94,24 @@ export namespace ironcorelabs {
 
         /** Properties of an EncryptedDekData. */
         interface IEncryptedDekData {
-
             /** EncryptedDekData encryptedBytes */
-            encryptedBytes?: (Uint8Array|null);
+            encryptedBytes?: Uint8Array | null;
 
             /** EncryptedDekData ephemeralPublicKey */
-            ephemeralPublicKey?: (ironcorelabs.proto.IPublicKey|null);
+            ephemeralPublicKey?: ironcorelabs.proto.IPublicKey | null;
 
             /** EncryptedDekData signature */
-            signature?: (Uint8Array|null);
+            signature?: Uint8Array | null;
 
             /** EncryptedDekData authHash */
-            authHash?: (Uint8Array|null);
+            authHash?: Uint8Array | null;
 
             /** EncryptedDekData publicSigningKey */
-            publicSigningKey?: (Uint8Array|null);
+            publicSigningKey?: Uint8Array | null;
         }
 
         /** Represents an EncryptedDekData. */
         class EncryptedDekData implements IEncryptedDekData {
-
             /**
              * Constructs a new EncryptedDekData.
              * @param [properties] Properties to set
@@ -130,7 +122,7 @@ export namespace ironcorelabs {
             public encryptedBytes: Uint8Array;
 
             /** EncryptedDekData ephemeralPublicKey. */
-            public ephemeralPublicKey?: (ironcorelabs.proto.IPublicKey|null);
+            public ephemeralPublicKey?: ironcorelabs.proto.IPublicKey | null;
 
             /** EncryptedDekData signature. */
             public signature: Uint8Array;
@@ -160,17 +152,15 @@ export namespace ironcorelabs {
 
         /** Properties of an EncryptedDek. */
         interface IEncryptedDek {
-
             /** EncryptedDek userOrGroup */
-            userOrGroup?: (ironcorelabs.proto.IUserOrGroup|null);
+            userOrGroup?: ironcorelabs.proto.IUserOrGroup | null;
 
             /** EncryptedDek encryptedDekData */
-            encryptedDekData?: (ironcorelabs.proto.IEncryptedDekData|null);
+            encryptedDekData?: ironcorelabs.proto.IEncryptedDekData | null;
         }
 
         /** Represents an EncryptedDek. */
         class EncryptedDek implements IEncryptedDek {
-
             /**
              * Constructs a new EncryptedDek.
              * @param [properties] Properties to set
@@ -178,10 +168,10 @@ export namespace ironcorelabs {
             constructor(properties?: ironcorelabs.proto.IEncryptedDek);
 
             /** EncryptedDek userOrGroup. */
-            public userOrGroup?: (ironcorelabs.proto.IUserOrGroup|null);
+            public userOrGroup?: ironcorelabs.proto.IUserOrGroup | null;
 
             /** EncryptedDek encryptedDekData. */
-            public encryptedDekData?: (ironcorelabs.proto.IEncryptedDekData|null);
+            public encryptedDekData?: ironcorelabs.proto.IEncryptedDekData | null;
 
             /**
              * Encodes the specified EncryptedDek message. Does not implicitly {@link ironcorelabs.proto.EncryptedDek.verify|verify} messages.
@@ -202,20 +192,18 @@ export namespace ironcorelabs {
 
         /** Properties of an EncryptedDeks. */
         interface IEncryptedDeks {
-
             /** EncryptedDeks edeks */
-            edeks?: (ironcorelabs.proto.IEncryptedDek[]|null);
+            edeks?: ironcorelabs.proto.IEncryptedDek[] | null;
 
             /** EncryptedDeks documentId */
-            documentId?: (string|null);
+            documentId?: string | null;
 
             /** EncryptedDeks segmentId */
-            segmentId?: (number|null);
+            segmentId?: number | null;
         }
 
         /** Represents an EncryptedDeks. */
         class EncryptedDeks implements IEncryptedDeks {
-
             /**
              * Constructs a new EncryptedDeks.
              * @param [properties] Properties to set

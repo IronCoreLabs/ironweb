@@ -149,11 +149,20 @@ export function generateNewUserAndDeviceKeys(passcode: string) {
 /**
  * Attempt to read a users device and signing keys from local storage. If they exist and appear to be valid, use them to generate the associated public
  * key and return both pairs
- * @param {string} userID               User composite segment ID + provided user ID
- * @param {string} localKeySymmetricKey Users local symmetric key provided by parent window
+ * @param {Uint8Array} encryptedDeviceKey  Users encrypted device private key
+ * @param {Uint8Array} encryptedSigningKey Users encrypted signing private key
+ * @param {Uint8Array} symmetricKey        Symmetric key used for decryption
+ * @param {Uint8Array} deviceIv            IV used for device key encryption
+ * @param {Uint8Array} signingIv           IV used for signing key encryption
  */
-export function decryptDeviceAndSigningKeys(encryptedDeviceKey: Uint8Array, encryptedSigningKey: Uint8Array, symmetricKey: Uint8Array, nonce: Uint8Array) {
-    return AES.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symmetricKey, nonce)
+export function decryptDeviceAndSigningKeys(
+    encryptedDeviceKey: Uint8Array,
+    encryptedSigningKey: Uint8Array,
+    symmetricKey: Uint8Array,
+    deviceIv: Uint8Array,
+    signingIv: Uint8Array
+) {
+    return AES.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symmetricKey, deviceIv, signingIv)
         .flatMap(({deviceKey, signingKey}) =>
             Future.gather2(Recrypt.derivePublicKey(deviceKey), Recrypt.getPublicSigningKeyFromPrivate(signingKey)).map(
                 ([publicDeviceKey, publicSigningKey]) => ({
@@ -195,4 +204,17 @@ export function changeUsersPasscode(currentPasscode: string, newPasscode: string
  */
 export function signRequestPayload(segmentID: number, userID: string, signingKeys: SigningKeyPair, method: string, url: string, body?: BodyInit | null) {
     return Recrypt.createRequestSignature(segmentID, userID, signingKeys, method, url, body);
+}
+
+/**
+ * Re-encrypt device and signing keys with new IVs using existing symmetric key.
+ * Used to migrate from old single-IV format to secure two-IV format.
+ * @param {Uint8Array} devicePrivateKey  Users decrypted device private key
+ * @param {Uint8Array} signingPrivateKey Users decrypted signing private key
+ * @param {Uint8Array} symmetricKey      Existing symmetric key to reuse
+ */
+export function reEncryptDeviceAndSigningKeys(devicePrivateKey: Uint8Array, signingPrivateKey: Uint8Array, symmetricKey: Uint8Array) {
+    return AES.reEncryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey).errorMap(
+        (error) => new SDKError(error, ErrorCodes.USER_DEVICE_KEY_DECRYPTION_FAILURE)
+    );
 }
