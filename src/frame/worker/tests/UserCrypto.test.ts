@@ -221,7 +221,8 @@ describe("UserCrypto", () => {
             const encryptedSigningKey = new Uint8Array(64);
             const deviceKey = new Uint8Array(22);
             const signingKey = new Uint8Array(53);
-            const nonce = new Uint8Array(12);
+            const deviceIv = new Uint8Array(12);
+            const signingIv = new Uint8Array(12);
             const symKey = new Uint8Array(30);
 
             const devicePublicKey = new Uint8Array(22);
@@ -230,7 +231,7 @@ describe("UserCrypto", () => {
             jest.spyOn(Recrypt, "getPublicSigningKeyFromPrivate").mockReturnValue(Future.of<any>(signingPublicKey));
             jest.spyOn(AES, "decryptDeviceAndSigningKeys").mockReturnValue(Future.of<any>({deviceKey, signingKey}));
 
-            UserCrypto.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symKey, nonce).engage(
+            UserCrypto.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symKey, deviceIv, signingIv).engage(
                 (e) => {
                     throw e;
                 },
@@ -245,7 +246,7 @@ describe("UserCrypto", () => {
                             privateKey: signingKey,
                         },
                     });
-                    expect(AES.decryptDeviceAndSigningKeys).toHaveBeenCalledWith(encryptedDeviceKey, encryptedSigningKey, symKey, nonce);
+                    expect(AES.decryptDeviceAndSigningKeys).toHaveBeenCalledWith(encryptedDeviceKey, encryptedSigningKey, symKey, deviceIv, signingIv);
                 }
             );
         });
@@ -253,12 +254,13 @@ describe("UserCrypto", () => {
         it("converts errors into sdk error with expected error code", () => {
             const encryptedDeviceKey = new Uint8Array(33);
             const encryptedSigningKey = new Uint8Array(64);
-            const nonce = new Uint8Array(12);
+            const deviceIv = new Uint8Array(12);
+            const signingIv = new Uint8Array(12);
             const symKey = new Uint8Array(30);
 
             jest.spyOn(AES, "decryptDeviceAndSigningKeys").mockReturnValue(Future.reject(new Error("decrypt key failure")));
 
-            UserCrypto.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symKey, nonce).engage(
+            UserCrypto.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symKey, deviceIv, signingIv).engage(
                 (error) => {
                     expect(error.message).toEqual("decrypt key failure");
                     expect(error.code).toEqual(ErrorCodes.USER_DEVICE_KEY_DECRYPTION_FAILURE);

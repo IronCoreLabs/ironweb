@@ -169,27 +169,70 @@ describe("InitializationApi", () => {
         it("looks up keys in local storage and returns public and private for device and signing", () => {
             const encryptedDeviceKey = new Uint8Array(33);
             const encryptedSigningKey = new Uint8Array(64);
-            const nonce = new Uint8Array(12);
+            const deviceIv = new Uint8Array(12);
+            const signingIv = new Uint8Array(12);
+            const decryptedKeys = {
+                deviceKeys: {publicKey: new Uint8Array(1), privateKey: new Uint8Array(2)},
+                signingKeys: {publicKey: new Uint8Array(3), privateKey: new Uint8Array(4)},
+            };
 
-            jest.spyOn(FrameUtils, "getDeviceAndSigningKeys").mockReturnValue(Future.of<any>({encryptedDeviceKey, encryptedSigningKey, nonce}));
+            jest.spyOn(FrameUtils, "getDeviceAndSigningKeys").mockReturnValue(
+                Future.of<any>({encryptedDeviceKey, encryptedSigningKey, deviceIv, signingIv, needsMigration: false})
+            );
 
-            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: "decrypted keys"}));
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: decryptedKeys}));
 
             InitApi.fetchAndValidateLocalKeys("30", 3, "AA==").engage(
                 (e) => {
                     throw e;
                 },
                 (response: any) => {
-                    expect(response).toEqual("decrypted keys");
+                    expect(response).toEqual({...decryptedKeys, needsMigration: false});
                     expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
                         type: expect.any(String),
                         message: {
                             encryptedDeviceKey,
                             encryptedSigningKey,
-                            nonce,
+                            deviceIv,
+                            signingIv,
                             symmetricKey: new Uint8Array(1),
                         },
                     });
+                }
+            );
+        });
+    });
+
+    describe("reEncryptLocalKeys", () => {
+        it("sends re-encryption request to worker with decrypted keys and symmetric key", (done) => {
+            const devicePrivateKey = new Uint8Array([1, 2, 3]);
+            const signingPrivateKey = new Uint8Array([4, 5, 6]);
+            const symmetricKey = "AQID"; // base64 for [1, 2, 3]
+            const encryptedResult = {
+                encryptedDeviceKey: new Uint8Array(32),
+                encryptedSigningKey: new Uint8Array(64),
+                deviceIv: new Uint8Array(12),
+                signingIv: new Uint8Array(12),
+                symmetricKey: new Uint8Array([1, 2, 3]),
+            };
+
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: encryptedResult}));
+
+            InitApi.reEncryptLocalKeys(devicePrivateKey, signingPrivateKey, symmetricKey).engage(
+                (e) => {
+                    throw e;
+                },
+                (result: any) => {
+                    expect(result).toEqual(encryptedResult);
+                    expect(WorkerMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "REENCRYPT_LOCAL_KEYS",
+                        message: {
+                            devicePrivateKey,
+                            signingPrivateKey,
+                            symmetricKey: new Uint8Array([1, 2, 3]),
+                        },
+                    });
+                    done();
                 }
             );
         });

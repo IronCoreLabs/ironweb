@@ -55,9 +55,23 @@ const handleVerifyResult = (
             InitializationApi.fetchAndValidateLocalKeys(user.id, user.segmentId, deviceAndSigningSymmetricKey)
                 //We need to map this error to constrain the types to say we're returning a SDK Error, even though we'll always use the handleWith below. That's why the error code here is invalid.
                 .errorMap((e) => new SDKError(e, 0))
-                .map(({deviceKeys, signingKeys}) => {
+                .flatMap(({deviceKeys, signingKeys, needsMigration}) => {
                     ApiState.setDeviceAndSigningKeys(deviceKeys, signingKeys);
-                    return buildSDKInitCompleteResponse(user);
+                    // If keys were in old single-IV format, re-encrypt with proper two-IV format
+                    if (needsMigration) {
+                        return InitializationApi.reEncryptLocalKeys(deviceKeys.privateKey, signingKeys.privateKey, deviceAndSigningSymmetricKey).flatMap(
+                            (encryptedLocalKeys) =>
+                                storeDeviceAndSigningKeys(
+                                    user.id,
+                                    user.segmentId,
+                                    encryptedLocalKeys.encryptedDeviceKey,
+                                    encryptedLocalKeys.encryptedSigningKey,
+                                    encryptedLocalKeys.deviceIv,
+                                    encryptedLocalKeys.signingIv
+                                ).map(() => buildSDKInitCompleteResponse(user))
+                        );
+                    }
+                    return Future.of(buildSDKInitCompleteResponse(user));
                 })
                 //Handles the scenario where either
                 //  + We couldn't find a local set of encrypted device/signing keys
@@ -104,7 +118,8 @@ export const createUserAndDevice = (jwtToken: string, passcode: string): Future<
             user.segmentId,
             encryptedLocalKeys.encryptedDeviceKey,
             encryptedLocalKeys.encryptedSigningKey,
-            encryptedLocalKeys.iv
+            encryptedLocalKeys.deviceIv,
+            encryptedLocalKeys.signingIv
         ).map(() => buildSDKInitCompleteResponse(user, encryptedLocalKeys.symmetricKey));
     });
 
@@ -123,7 +138,8 @@ export const generateUserNewDeviceKeys = (jwtToken: string, passcode: string): F
                 segmentId,
                 encryptedLocalKeys.encryptedDeviceKey,
                 encryptedLocalKeys.encryptedSigningKey,
-                encryptedLocalKeys.iv
+                encryptedLocalKeys.deviceIv,
+                encryptedLocalKeys.signingIv
             ).map(() => buildSDKInitCompleteResponse(ApiState.user(), encryptedLocalKeys.symmetricKey));
         }
     );

@@ -175,10 +175,16 @@ export function dedupeAccessLists(accessList: DocumentAccessList) {
     let userAccess: string[] = [];
     let groupAccess: string[] = [];
     if (accessList.users && accessList.users.length) {
-        userAccess = dedupeArray(accessList.users.map(({id}) => id), true);
+        userAccess = dedupeArray(
+            accessList.users.map(({id}) => id),
+            true
+        );
     }
     if (accessList.groups && accessList.groups.length) {
-        groupAccess = dedupeArray(accessList.groups.map(({id}) => id), true);
+        groupAccess = dedupeArray(
+            accessList.groups.map(({id}) => id),
+            true
+        );
     }
     return [userAccess, groupAccess];
 }

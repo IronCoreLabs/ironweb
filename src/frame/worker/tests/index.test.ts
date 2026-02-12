@@ -121,13 +121,14 @@ describe("worker", () => {
                     encryptedDeviceKey: "device",
                     encryptedSigningKey: "signing",
                     symmetricKey: "sym key",
-                    nonce: "nonce",
+                    deviceIv: "deviceIv",
+                    signingIv: "signingIv",
                 },
             };
 
             worker.onMessageCallback!(payload, (result: any) => {
                 expect(result).toEqual({type: expect.any(String), message: "decrypted keys"});
-                expect(UserCrypto.decryptDeviceAndSigningKeys).toHaveBeenCalledWith("device", "signing", "sym key", "nonce");
+                expect(UserCrypto.decryptDeviceAndSigningKeys).toHaveBeenCalledWith("device", "signing", "sym key", "deviceIv", "signingIv");
                 done();
             });
         });

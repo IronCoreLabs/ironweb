@@ -105,17 +105,19 @@ describe("NativeAes", () => {
     });
 
     describe("encryptDeviceAndSigningKeys", () => {
-        it("encrypts the two keys with the provided sym key and iv", (done) => {
+        it("encrypts the two keys with the provided sym key and separate IVs", (done) => {
             const deviceKey = new Uint8Array(6);
             const signingKey = new Uint8Array(10);
             const symKey = new Uint8Array(32);
-            const iv = new Uint8Array(12);
+            const deviceIv = new Uint8Array(12);
+            const signingIv = new Uint8Array(12);
 
-            NativeAes.encryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, iv).engage(
+            NativeAes.encryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, deviceIv, signingIv).engage(
                 () => done("AES encryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({
-                        iv,
+                        deviceIv,
+                        signingIv,
                         symmetricKey: symKey,
                         encryptedDeviceKey: new Uint8Array([93, 82, 72]),
                         encryptedSigningKey: new Uint8Array([93, 82, 72]),
@@ -127,13 +129,14 @@ describe("NativeAes", () => {
     });
 
     describe("decryptDeviceAndSigningKeys", () => {
-        it("decypts the provided keys", (done) => {
+        it("decrypts the provided keys with separate IVs", (done) => {
             const deviceKey = new Uint8Array(8);
             const signingKey = new Uint8Array(10);
             const symKey = new Uint8Array(32);
-            const iv = new Uint8Array(12);
+            const deviceIv = new Uint8Array(12);
+            const signingIv = new Uint8Array(12);
 
-            NativeAes.decryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, iv).engage(
+            NativeAes.decryptDeviceAndSigningKeys(deviceKey, signingKey, symKey, deviceIv, signingIv).engage(
                 () => done("AES decryption of keys should not fail"),
                 (encryptedKeys) => {
                     expect(encryptedKeys).toEqual({

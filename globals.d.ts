@@ -81,7 +81,8 @@ interface EncryptedLocalKeys {
     encryptedDeviceKey: Uint8Array;
     encryptedSigningKey: Uint8Array;
     symmetricKey: Uint8Array;
-    iv: Uint8Array;
+    deviceIv: Uint8Array;
+    signingIv: Uint8Array;
 }
 interface WorkerEvent<T> {
     replyID: number;

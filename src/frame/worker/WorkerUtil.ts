@@ -49,8 +49,14 @@ export const onMessageCallback = (data: RequestMessage, callback: (message: Resp
                 data.message.encryptedDeviceKey,
                 data.message.encryptedSigningKey,
                 data.message.symmetricKey,
-                data.message.nonce
+                data.message.deviceIv,
+                data.message.signingIv
             ).engage(errorHandler, (deviceAndSigningKeys) => callback({type: "DECRYPT_LOCAL_KEYS_RESPONSE", message: deviceAndSigningKeys}));
+        case "REENCRYPT_LOCAL_KEYS":
+            return UserCrypto.reEncryptDeviceAndSigningKeys(data.message.devicePrivateKey, data.message.signingPrivateKey, data.message.symmetricKey).engage(
+                errorHandler,
+                (encryptedKeys) => callback({type: "REENCRYPT_LOCAL_KEYS_RESPONSE", message: encryptedKeys})
+            );
         case "ROTATE_USER_PRIVATE_KEY":
             return UserCrypto.rotatePrivateKey(data.message.passcode, data.message.encryptedPrivateUserKey).engage(errorHandler, (userRotationResult) =>
                 callback({type: "ROTATE_USER_PRIVATE_KEY_RESPONSE", message: userRotationResult})
