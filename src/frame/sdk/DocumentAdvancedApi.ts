@@ -38,6 +38,26 @@ export function decryptWithProvidedEdeks(encryptedDocument: Uint8Array, edeks: U
 }
 
 /**
+ * Streaming decrypt with caller-provided EDEKs. Sends EDEKs to the server for transform, then pipes the
+ * encrypted stream through the Worker for decryption. On auth tag failure, plaintextStream is aborted.
+ */
+export function decryptStreamWithProvidedEdeks(
+    iv: Uint8Array,
+    edeks: Uint8Array,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+): Future<SDKError, {accessVia: UserOrGroup}> {
+    return EncryptedDekEndpoints.callEncryptedDekTransformApi(edeks).flatMap((transformResponse) => {
+        const {privateKey} = ApiState.deviceKeys();
+        return DocumentOperations.decryptDocumentStream(transformResponse.encryptedSymmetricKey, privateKey, iv, encryptedStream, plaintextStream).map(
+            () => ({
+                accessVia: transformResponse.userOrGroup,
+            })
+        );
+    });
+}
+
+/**
  * Encrypt the provided document but return the EDEKs to the caller instead of storing them within ironcore-id. Only calls to ironcore-id in order to
  * get a list of public keys for the provided users, groups, or policies.
  */

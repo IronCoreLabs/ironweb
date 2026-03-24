@@ -289,6 +289,21 @@ export interface SearchTransliterateStringResponse {
     message: string;
 }
 
+export interface StreamDecryptDocumentWorkerRequest {
+    type: "DOCUMENT_STREAM_DECRYPT";
+    message: {
+        encryptedSymmetricKey: TransformedEncryptedMessage;
+        privateKey: PrivateKey<Uint8Array>;
+        iv: Uint8Array;
+        encryptedStream: ReadableStream<Uint8Array>;
+        plaintextStream: WritableStream<Uint8Array>;
+    };
+}
+export interface StreamDecryptDocumentWorkerResponse {
+    type: "DOCUMENT_STREAM_DECRYPT_RESPONSE";
+    message: void;
+}
+
 export interface ErrorResponse {
     type: "ERROR_RESPONSE";
     message: {
@@ -316,7 +331,8 @@ export type RequestMessage =
     | SignatureGenerationWorkerRequest
     | SearchTokenizeQueryRequest
     | SearchTokenizeDataRequest
-    | SearchTransliterateString;
+    | SearchTransliterateString
+    | StreamDecryptDocumentWorkerRequest;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyWorkerResponse
@@ -337,4 +353,5 @@ export type ResponseMessage =
     | SignatureGenerationWorkerResponse
     | SearchTokenizeStringResponse
     | SearchTransliterateStringResponse
+    | StreamDecryptDocumentWorkerResponse
     | ErrorResponse;

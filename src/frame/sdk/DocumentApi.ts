@@ -252,6 +252,25 @@ export function decryptHostedDoc(documentID: string): Future<SDKError, Decrypted
 }
 
 /**
+ * Streaming decrypt: retrieve document metadata, then pipe the encrypted stream through the Worker for decryption.
+ * The caller provides the IV (parsed from the document header) and a ReadableStream of the ciphertext (post-header).
+ * Plaintext is written to plaintextStream. On auth tag failure, plaintextStream is aborted.
+ */
+export function decryptLocalDocStream(
+    documentID: string,
+    iv: Uint8Array,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+): Future<SDKError, {documentName: string | null}> {
+    const {privateKey} = ApiState.deviceKeys();
+    return DocumentApiEndpoints.callDocumentMetadataGetApi(documentID).flatMap((documentResponse) =>
+        DocumentOperations.decryptDocumentStream(documentResponse.encryptedSymmetricKey, privateKey, iv, encryptedStream, plaintextStream).map(() => ({
+            documentName: documentResponse.name,
+        }))
+    );
+}
+
+/**
  * Retrieves sharing/meta information for the provided document ID. Then decrypts the provided data using the current users key and returns formatted doc structure.
  * @param {string}     documentID        Unique lookup key of document to decrypt
  * @param {Uint8Array} encryptedDocument Data of document to decrypt

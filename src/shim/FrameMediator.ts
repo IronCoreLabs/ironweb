@@ -32,7 +32,7 @@ export class ShimMessenger {
      * @param {RequestMessage} data         RequestMessage to post to child iFrame
      * @param {Uint8Array[]}  transferList  List of byte arrays to transfer to frame
      */
-    postMessageToFrame(data: RequestMessage, transferList: Uint8Array[] = []): Future<SDKError, ResponseMessage> {
+    postMessageToFrame(data: RequestMessage, transferList: (Uint8Array | Transferable)[] = []): Future<SDKError, ResponseMessage> {
         const message: FrameEvent<RequestMessage> = {
             replyID: this.callbackCount++,
             data,
@@ -40,7 +40,7 @@ export class ShimMessenger {
         try {
             this.messagePort.postMessage(
                 message,
-                transferList.map(({buffer}) => buffer)
+                transferList.map((item) => (item instanceof Uint8Array ? item.buffer : item)) as Transferable[]
             );
             return new Future<SDKError, ResponseMessage>((_, resolve) => {
                 this.callbacks[message.replyID] = resolve;
@@ -116,7 +116,7 @@ function isErrorResponse(response: ResponseMessage): response is ErrorResponse {
 /**
  * Post the provided RequestMessage to the SDK frame. Returns a Future which will be resolved with the provided ResponseMessage type, or rejected with an SDKError
  */
-export function sendMessage<T extends ResponseMessage>(payload: RequestMessage, transferList?: Uint8Array[]): Future<Error, T> {
+export function sendMessage<T extends ResponseMessage>(payload: RequestMessage, transferList?: (Uint8Array | Transferable)[]): Future<Error, T> {
     return ensureFrameLoaded()
         .flatMap(() => messenger.postMessageToFrame(payload, transferList))
         .flatMap((response) => {

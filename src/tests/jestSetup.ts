@@ -34,10 +34,16 @@ class Worker {
     addEventListener() {}
 }
 
+// Use Node's real WebCrypto subtle for hardware-accelerated AES-CTR in streaming tests,
+// but keep mock stubs for importKey/deriveKey that existing tests expect to override per-test.
+const {webcrypto: nodeWebCrypto} = require("crypto");
+const realSubtle = nodeWebCrypto.subtle;
+
 const WebCryptoSubtle = {
-    importKey() {
-        return Promise.resolve(new Uint8Array(32));
-    },
+    // Delegate to Node's real WebCrypto. Individual tests that need mocks override via jest.spyOn.
+    importKey: realSubtle.importKey.bind(realSubtle),
+    encrypt: realSubtle.encrypt.bind(realSubtle),
+    decrypt: realSubtle.decrypt.bind(realSubtle),
     deriveKey() {
         return {
             type: "secret",
@@ -60,3 +66,12 @@ const WebCrypto = {
 (window as any).Worker = Worker;
 (window as any).MessageChannel = MessageChannel;
 (window as any).crypto = WebCrypto;
+// @noble/ciphers/webcrypto reads from globalThis.crypto
+(globalThis as any).crypto = WebCrypto;
+
+// Web Streams API is available in Node.js but not in jsdom's window
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const webStreams = require("stream/web");
+(window as any).ReadableStream = webStreams.ReadableStream;
+(window as any).WritableStream = webStreams.WritableStream;
+(window as any).TransformStream = webStreams.TransformStream;

@@ -507,6 +507,39 @@ export interface SearchTransliterateStringResponse {
     message: string;
 }
 
+/* Streaming Decrypt */
+export interface DocumentStreamDecryptRequest {
+    type: "DOCUMENT_STREAM_DECRYPT";
+    message: {
+        documentID: string;
+        iv: Uint8Array;
+        encryptedStream: ReadableStream<Uint8Array>;
+        plaintextStream: WritableStream<Uint8Array>;
+    };
+}
+export interface DocumentStreamDecryptResponse {
+    type: "DOCUMENT_STREAM_DECRYPT_RESPONSE";
+    message: {
+        documentName: string | null;
+    };
+}
+
+export interface DocumentUnmanagedStreamDecryptRequest {
+    type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT";
+    message: {
+        edeks: Uint8Array;
+        iv: Uint8Array;
+        encryptedStream: ReadableStream<Uint8Array>;
+        plaintextStream: WritableStream<Uint8Array>;
+    };
+}
+export interface DocumentUnmanagedStreamDecryptResponse {
+    type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE";
+    message: {
+        accessVia: UserOrGroup;
+    };
+}
+
 export interface ErrorResponse {
     type: "ERROR_RESPONSE";
     message: {
@@ -556,7 +589,9 @@ export type RequestMessage =
     | BlindSearchIndexInit
     | BlindSearchIndexTokenizeData
     | BlindSearchIndexTokenizeQuery
-    | SearchTransliterateString;
+    | SearchTransliterateString
+    | DocumentStreamDecryptRequest
+    | DocumentUnmanagedStreamDecryptRequest;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyResponse
@@ -597,4 +632,6 @@ export type ResponseMessage =
     | BlindSearchIndexInitResponse
     | BlindSearchIndexTokenizeDataResponse
     | BlindSearchIndexTokenizeQueryResponse
-    | SearchTransliterateStringResponse;
+    | SearchTransliterateStringResponse
+    | DocumentStreamDecryptResponse
+    | DocumentUnmanagedStreamDecryptResponse;

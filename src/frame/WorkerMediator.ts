@@ -34,7 +34,7 @@ class WorkerMessenger {
      * @param {RequestMessage} data         RequestMessage to post to child iFrame
      * @param {Uint8Array[]}   transferList List of Uint8Arrays to transfer to frame
      */
-    postMessageToWorker(data: RequestMessage, transferList: Uint8Array[] = []) {
+    postMessageToWorker(data: RequestMessage, transferList: (Uint8Array | Transferable)[] = []) {
         const message: WorkerEvent<RequestMessage> = {
             replyID: this.callbackCount++,
             data,
@@ -44,7 +44,7 @@ class WorkerMessenger {
             .flatMap(() => {
                 this.worker.postMessage(
                     message,
-                    transferList.map((intByteArray) => intByteArray.buffer)
+                    transferList.map((item) => (item instanceof Uint8Array ? item.buffer : item)) as Transferable[]
                 );
                 return new Future<SDKError, ResponseMessage>((_, resolve) => {
                     this.callbacks[message.replyID] = resolve;
@@ -76,7 +76,7 @@ function isErrorResponse(response: ResponseMessage): response is ErrorResponse {
     return response.type === "ERROR_RESPONSE";
 }
 
-export function sendMessage<T extends ResponseMessage>(payload: RequestMessage, transferList?: Uint8Array[]): Future<SDKError, T> {
+export function sendMessage<T extends ResponseMessage>(payload: RequestMessage, transferList?: (Uint8Array | Transferable)[]): Future<SDKError, T> {
     return messenger.postMessageToWorker(payload, transferList).flatMap((response) => {
         //Handle all error messages generically here. Convert the message details back into an error object and reject the Future
         if (isErrorResponse(response)) {

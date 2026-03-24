@@ -46,7 +46,7 @@ function convertGroupCreateOptionsToFixedValues(data: GroupCreateRequest) {
 }
 
 /* tslint:disable cyclomatic-complexity */
-function onParentPortMessage(data: RequestMessage, callback: (message: ResponseMessage, transferList?: Uint8Array[]) => void) {
+function onParentPortMessage(data: RequestMessage, callback: (message: ResponseMessage, transferList?: (Uint8Array | Transferable)[]) => void) {
     const errorHandler = errorResponse.bind(null, callback);
 
     switch (data.type) {
@@ -229,6 +229,18 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             return SearchApi.transliterateString(data.message).engage(errorHandler, (message) =>
                 callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message})
             );
+        case "DOCUMENT_STREAM_DECRYPT":
+            return DocumentApi.decryptLocalDocStream(data.message.documentID, data.message.iv, data.message.encryptedStream, data.message.plaintextStream).engage(
+                errorHandler,
+                (result) => callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: result})
+            );
+        case "DOCUMENT_UNMANAGED_STREAM_DECRYPT":
+            return DocumentAdvancedApi.decryptStreamWithProvidedEdeks(
+                data.message.iv,
+                data.message.edeks,
+                data.message.encryptedStream,
+                data.message.plaintextStream
+            ).engage(errorHandler, (result) => callback({type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE", message: result}));
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;

@@ -1,5 +1,6 @@
 import * as Recrypt from "./crypto/recrypt";
 import * as AES from "./crypto/aes";
+import {StreamingDecryptor} from "./crypto/aes/StreamingAes";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
@@ -79,4 +80,64 @@ export function encryptToKeys(
             }));
         })
         .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_GRANT_ACCESS_FAILURE));
+}
+
+/**
+ * Initialize streaming decryption: unwrap the symmetric key via PRE, then run the streaming
+ * AES-CTR + GHASH decrypt loop. Reads from encryptedStream, writes plaintext to plaintextStream.
+ * On success, closes plaintextStream. On failure (including auth tag mismatch), aborts it.
+ */
+export function decryptDocumentStream(
+    encryptedSymmetricKey: TransformedEncryptedMessage,
+    myPrivateKey: Uint8Array,
+    iv: Uint8Array,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+): Future<SDKError, void> {
+    return Recrypt.decryptPlaintext(encryptedSymmetricKey, myPrivateKey)
+        .map(([_, documentSymmetricKey]) => {
+            // Fire-and-forget: the stream loop runs in the background.
+            // Success/failure is communicated through the stream itself.
+            StreamingDecryptor.create(documentSymmetricKey, iv).then((decryptor) =>
+                runStreamDecryptLoop(decryptor, encryptedStream, plaintextStream)
+            );
+        })
+        .errorMap((error) => {
+            // PRE key decryption failed — abort the output stream so the caller sees an error
+            plaintextStream.abort(error).catch(noop);
+            return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_DECRYPT_FAILURE);
+        });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+function noop() {}
+
+async function runStreamDecryptLoop(
+    decryptor: StreamingDecryptor,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+): Promise<void> {
+    const reader = encryptedStream.getReader();
+    const writer = plaintextStream.getWriter();
+    try {
+        let done = false;
+        while (!done) {
+            const result = await reader.read();
+            done = result.done;
+            if (!done) {
+                const plaintext = await decryptor.processChunk(result.value!);
+                if (plaintext.length > 0) {
+                    await writer.write(plaintext);
+                }
+            }
+        }
+        const finalPlaintext = await decryptor.finalize();
+        if (finalPlaintext.length > 0) {
+            await writer.write(finalPlaintext);
+        }
+        await writer.close();
+    } catch (e) {
+        await writer.abort(e).catch(noop);
+        reader.cancel().catch(noop);
+    }
 }

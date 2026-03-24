@@ -89,3 +89,30 @@ export function encryptDocumentToKeys(
 
     return WorkerMediator.sendMessage<WMT.DocumentEncryptToKeysWorkerResponse>(payload).map(({message}) => message);
 }
+
+/**
+ * Streaming decrypt: send the encrypted stream + plaintext writable to the Worker along with the
+ * encrypted symmetric key. The Worker unwraps the key via PRE, then runs the streaming AES-CTR + GHASH loop.
+ */
+export function decryptDocumentStream(
+    symmetricKey: TransformedEncryptedMessage,
+    privateKey: Uint8Array,
+    iv: Uint8Array,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+) {
+    const payload: WMT.StreamDecryptDocumentWorkerRequest = {
+        type: "DOCUMENT_STREAM_DECRYPT",
+        message: {
+            encryptedSymmetricKey: symmetricKey,
+            privateKey,
+            iv,
+            encryptedStream,
+            plaintextStream,
+        },
+    };
+    return WorkerMediator.sendMessage<WMT.StreamDecryptDocumentWorkerResponse>(payload, [
+        encryptedStream as unknown as Transferable,
+        plaintextStream as unknown as Transferable,
+    ]).map(() => undefined as void);
+}
