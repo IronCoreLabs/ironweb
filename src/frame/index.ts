@@ -241,6 +241,27 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.encryptedStream,
                 data.message.plaintextStream
             ).engage(errorHandler, (result) => callback({type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE", message: result}));
+        case "DOCUMENT_STREAM_ENCRYPT":
+            return DocumentApi.encryptLocalDocStream(
+                data.message.documentID,
+                data.message.documentName,
+                data.message.userGrants,
+                data.message.groupGrants,
+                data.message.grantToAuthor !== false,
+                data.message.plaintextStream,
+                data.message.ciphertextStream,
+                data.message.policy
+            ).engage(errorHandler, (result) => callback({type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE", message: result}));
+        case "DOCUMENT_UNMANAGED_STREAM_ENCRYPT":
+            return DocumentAdvancedApi.encryptStreamWithEdeks(
+                data.message.documentID,
+                data.message.plaintextStream,
+                data.message.ciphertextStream,
+                data.message.userGrants,
+                data.message.groupGrants,
+                data.message.grantToAuthor,
+                data.message.policy
+            ).engage(errorHandler, (result) => callback({type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE", message: result}));
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;

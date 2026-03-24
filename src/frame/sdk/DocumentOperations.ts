@@ -91,6 +91,36 @@ export function encryptDocumentToKeys(
 }
 
 /**
+ * Streaming encrypt: send the plaintext stream + ciphertext writable to the Worker along with the
+ * user/group key lists. The Worker generates a document key, encrypts it to recipients, then runs the
+ * streaming AES-CTR + GHASH encrypt loop. Returns encrypted access keys.
+ */
+export function encryptDocumentStream(
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    userKeyList: UserOrGroupPublicKey[],
+    groupKeyList: UserOrGroupPublicKey[],
+    signingKeys: SigningKeyPair,
+    iv: Uint8Array
+) {
+    const payload: WMT.StreamEncryptDocumentWorkerRequest = {
+        type: "DOCUMENT_STREAM_ENCRYPT",
+        message: {
+            plaintextStream,
+            ciphertextStream,
+            userKeyList,
+            groupKeyList,
+            signingKeys,
+            iv,
+        },
+    };
+    return WorkerMediator.sendMessage<WMT.StreamEncryptDocumentWorkerResponse>(payload, [
+        plaintextStream as unknown as Transferable,
+        ciphertextStream as unknown as Transferable,
+    ]).map(({message}) => message);
+}
+
+/**
  * Streaming decrypt: send the encrypted stream + plaintext writable to the Worker along with the
  * encrypted symmetric key. The Worker unwraps the key via PRE, then runs the streaming AES-CTR + GHASH loop.
  */

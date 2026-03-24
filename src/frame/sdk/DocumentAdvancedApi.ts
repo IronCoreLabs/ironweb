@@ -6,7 +6,7 @@ import ApiState from "../ApiState";
 import EncryptedDekEndpoints from "../endpoints/EncryptedDekEndpoints";
 import {combineDocumentParts, documentToByteParts} from "../FrameUtils";
 import * as Protobuf from "../protobuf/index";
-import {getKeyListsForUsersAndGroups} from "./DocumentApi";
+import {getKeyListsForUsersAndGroups, startStreamEncrypt} from "./DocumentApi";
 import * as DocumentOperations from "./DocumentOperations";
 
 interface UnmanagedDecryptResult {
@@ -71,4 +71,24 @@ export function encrypt(documentID: string, document: Uint8Array, userGrants: st
                 documentID,
             };
         });
+}
+
+/**
+ * Streaming encrypt with caller-managed EDEKs. Writes header+IV, encrypts via Worker, returns EDEKs.
+ */
+export function encryptStreamWithEdeks(
+    documentID: string,
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean,
+    policy?: Policy
+) {
+    return startStreamEncrypt(documentID, plaintextStream, ciphertextStream, userGrants, groupGrants, grantToAuthor, policy).map(
+        ({userAccessKeys, groupAccessKeys}) => ({
+            edeks: Protobuf.encodeEdeks(ApiState.user().segmentId, documentID, userAccessKeys, groupAccessKeys),
+            documentID,
+        })
+    );
 }

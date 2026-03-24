@@ -1,6 +1,6 @@
 import * as Recrypt from "./crypto/recrypt";
 import * as AES from "./crypto/aes";
-import {StreamingDecryptor} from "./crypto/aes/StreamingAes";
+import {StreamingDecryptor, StreamingEncryptor, StreamProcessor} from "./crypto/aes/StreamingAes";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
@@ -99,7 +99,7 @@ export function decryptDocumentStream(
             // Fire-and-forget: the stream loop runs in the background.
             // Success/failure is communicated through the stream itself.
             StreamingDecryptor.create(documentSymmetricKey, iv).then((decryptor) =>
-                runStreamDecryptLoop(decryptor, encryptedStream, plaintextStream)
+                runStreamLoop(decryptor, encryptedStream, plaintextStream)
             );
         })
         .errorMap((error) => {
@@ -109,31 +109,71 @@ export function decryptDocumentStream(
         });
 }
 
+/**
+ * Initialize streaming encryption: generate a document key, encrypt it to all recipients via PRE,
+ * then run the streaming AES-CTR + GHASH encrypt loop in the background. Reads from plaintextStream,
+ * writes ciphertext to ciphertextStream. On success, closes ciphertextStream. On failure, aborts it.
+ */
+export function encryptDocumentStream(
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    userKeyList: UserOrGroupPublicKey[],
+    groupKeyList: UserOrGroupPublicKey[],
+    signingKeys: SigningKeyPair,
+    iv: Uint8Array
+): Future<SDKError, {userAccessKeys: EncryptedAccessKey[]; groupAccessKeys: EncryptedAccessKey[]}> {
+    return Recrypt.generateDocumentKey()
+        .flatMap(([documentKeyPlaintext, documentSymmetricKey]) => {
+            return Future.gather2(
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys)
+            ).map(([userAccessKeys, groupAccessKeys]) => {
+                // Fire-and-forget: the stream loop runs in the background.
+                // Success/failure is communicated through the stream itself.
+                StreamingEncryptor.create(documentSymmetricKey, iv).then((encryptor) =>
+                    runStreamLoop(encryptor, plaintextStream, ciphertextStream)
+                );
+                return {userAccessKeys, groupAccessKeys};
+            });
+        })
+        .errorMap((error) => {
+            // Key generation or PRE encryption failed — abort the output stream so the caller sees an error
+            ciphertextStream.abort(error).catch(noop);
+            return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_ENCRYPT_FAILURE);
+        });
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 function noop() {}
 
-async function runStreamDecryptLoop(
-    decryptor: StreamingDecryptor,
-    encryptedStream: ReadableStream<Uint8Array>,
-    plaintextStream: WritableStream<Uint8Array>
+/**
+ * Generic stream processing loop that drives any StreamProcessor (encrypt or decrypt).
+ * Reads chunks from inputStream, processes via processor.processChunk(), writes results
+ * to outputStream, then calls processor.finalize() for the final bytes.
+ * On success, closes outputStream. On error, aborts outputStream and cancels inputStream.
+ */
+async function runStreamLoop(
+    processor: StreamProcessor,
+    inputStream: ReadableStream<Uint8Array>,
+    outputStream: WritableStream<Uint8Array>
 ): Promise<void> {
-    const reader = encryptedStream.getReader();
-    const writer = plaintextStream.getWriter();
+    const reader = inputStream.getReader();
+    const writer = outputStream.getWriter();
     try {
         let done = false;
         while (!done) {
             const result = await reader.read();
             done = result.done;
             if (!done) {
-                const plaintext = await decryptor.processChunk(result.value!);
-                if (plaintext.length > 0) {
-                    await writer.write(plaintext);
+                const output = await processor.processChunk(result.value!);
+                if (output.length > 0) {
+                    await writer.write(output);
                 }
             }
         }
-        const finalPlaintext = await decryptor.finalize();
-        if (finalPlaintext.length > 0) {
-            await writer.write(finalPlaintext);
+        const finalBytes = await processor.finalize();
+        if (finalBytes.length > 0) {
+            await writer.write(finalBytes);
         }
         await writer.close();
     } catch (e) {

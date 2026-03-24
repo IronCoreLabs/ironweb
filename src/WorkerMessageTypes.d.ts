@@ -304,6 +304,25 @@ export interface StreamDecryptDocumentWorkerResponse {
     message: void;
 }
 
+export interface StreamEncryptDocumentWorkerRequest {
+    type: "DOCUMENT_STREAM_ENCRYPT";
+    message: {
+        plaintextStream: ReadableStream<Uint8Array>;
+        ciphertextStream: WritableStream<Uint8Array>;
+        userKeyList: UserOrGroupPublicKey[];
+        groupKeyList: UserOrGroupPublicKey[];
+        signingKeys: SigningKeyPair;
+        iv: Uint8Array;
+    };
+}
+export interface StreamEncryptDocumentWorkerResponse {
+    type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE";
+    message: {
+        userAccessKeys: EncryptedAccessKey[];
+        groupAccessKeys: EncryptedAccessKey[];
+    };
+}
+
 export interface ErrorResponse {
     type: "ERROR_RESPONSE";
     message: {
@@ -332,7 +351,8 @@ export type RequestMessage =
     | SearchTokenizeQueryRequest
     | SearchTokenizeDataRequest
     | SearchTransliterateString
-    | StreamDecryptDocumentWorkerRequest;
+    | StreamDecryptDocumentWorkerRequest
+    | StreamEncryptDocumentWorkerRequest;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyWorkerResponse
@@ -354,4 +374,5 @@ export type ResponseMessage =
     | SearchTokenizeStringResponse
     | SearchTransliterateStringResponse
     | StreamDecryptDocumentWorkerResponse
+    | StreamEncryptDocumentWorkerResponse
     | ErrorResponse;

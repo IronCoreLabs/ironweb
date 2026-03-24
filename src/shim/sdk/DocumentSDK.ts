@@ -439,6 +439,53 @@ async function parseStreamHeader(
 }
 
 /**
+ * Encrypt a plaintext stream. Returns a Promise which resolves with the encrypted stream and document metadata.
+ * The output stream produces bytes in the same format as encrypt(): [header][IV][ciphertext][auth_tag].
+ *
+ * @param {ReadableStream<Uint8Array>} plaintextStream  Plaintext data as a ReadableStream
+ * @param {DocumentCreateOptions}      options           Document create options
+ */
+export function encryptStream(
+    plaintextStream: ReadableStream<Uint8Array>,
+    options?: DocumentCreateOptions
+): Promise<{documentID: string; documentName: string | null; encryptedStream: ReadableStream<Uint8Array>; created: string; updated: string}> {
+    ShimUtils.checkSDKInitialized();
+    const encryptOptions = calculateDocumentCreateOptionsDefault(options);
+    if (encryptOptions.documentID) {
+        ShimUtils.validateID(encryptOptions.documentID);
+    }
+    const [userGrants, groupGrants] = ShimUtils.dedupeAccessLists(encryptOptions.accessList);
+    const {readable: encryptedStream, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+
+    const payload: MT.DocumentStreamEncryptRequest = {
+        type: "DOCUMENT_STREAM_ENCRYPT",
+        message: {
+            documentID: encryptOptions.documentID,
+            documentName: encryptOptions.documentName,
+            plaintextStream,
+            ciphertextStream: ciphertextWritable,
+            userGrants,
+            groupGrants,
+            grantToAuthor: encryptOptions.accessList.grantToAuthor,
+            policy: encryptOptions.policy,
+        },
+    };
+
+    return FrameMediator.sendMessage<MT.DocumentStreamEncryptResponse>(payload, [
+        plaintextStream as unknown as Transferable,
+        ciphertextWritable as unknown as Transferable,
+    ])
+        .map(({message}) => ({
+            documentID: message.documentID,
+            documentName: message.documentName,
+            encryptedStream,
+            created: message.created,
+            updated: message.updated,
+        }))
+        .toPromise();
+}
+
+/**
  * Decrypt an encrypted document stream. Parses the header and IV from the stream, then streams decrypted
  * plaintext back via the returned ReadableStream. If the auth tag fails at the end of the stream, the
  * readable side errors — which propagates through pipeTo() to abort any destination WritableStream.
@@ -537,6 +584,47 @@ export const advanced = {
                 }))
                 .toPromise();
         });
+    },
+
+    /**
+     * Streaming encrypt with caller-managed EDEKs. Returns the encrypted stream and EDEKs to the caller.
+     * The output stream produces bytes in the same format as encrypt(): [header][IV][ciphertext][auth_tag].
+     */
+    encryptStreamUnmanaged: (
+        plaintextStream: ReadableStream<Uint8Array>,
+        options?: Omit<DocumentCreateOptions, "documentName">
+    ): Promise<{documentID: string; encryptedStream: ReadableStream<Uint8Array>; edeks: Uint8Array}> => {
+        ShimUtils.checkSDKInitialized();
+        const encryptOptions = calculateDocumentCreateOptionsDefault(options);
+        if (encryptOptions.documentID) {
+            ShimUtils.validateID(encryptOptions.documentID);
+        }
+        const [userGrants, groupGrants] = ShimUtils.dedupeAccessLists(encryptOptions.accessList);
+        const {readable: encryptedStream, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+
+        const payload: MT.DocumentUnmanagedStreamEncryptRequest = {
+            type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT",
+            message: {
+                documentID: encryptOptions.documentID,
+                plaintextStream,
+                ciphertextStream: ciphertextWritable,
+                userGrants,
+                groupGrants,
+                grantToAuthor: encryptOptions.accessList.grantToAuthor,
+                policy: encryptOptions.policy,
+            },
+        };
+
+        return FrameMediator.sendMessage<MT.DocumentUnmanagedStreamEncryptResponse>(payload, [
+            plaintextStream as unknown as Transferable,
+            ciphertextWritable as unknown as Transferable,
+        ])
+            .map(({message}) => ({
+                documentID: message.documentID,
+                encryptedStream,
+                edeks: message.edeks,
+            }))
+            .toPromise();
     },
 
     /**

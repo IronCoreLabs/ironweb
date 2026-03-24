@@ -540,6 +540,50 @@ export interface DocumentUnmanagedStreamDecryptResponse {
     };
 }
 
+/* Streaming Encrypt */
+export interface DocumentStreamEncryptRequest {
+    type: "DOCUMENT_STREAM_ENCRYPT";
+    message: {
+        documentID: string;
+        documentName: string;
+        plaintextStream: ReadableStream<Uint8Array>;
+        ciphertextStream: WritableStream<Uint8Array>;
+        userGrants: string[];
+        groupGrants: string[];
+        grantToAuthor: boolean;
+        policy?: Policy;
+    };
+}
+export interface DocumentStreamEncryptResponse {
+    type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE";
+    message: {
+        documentID: string;
+        documentName: string | null;
+        created: string;
+        updated: string;
+    };
+}
+
+export interface DocumentUnmanagedStreamEncryptRequest {
+    type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT";
+    message: {
+        documentID: string;
+        plaintextStream: ReadableStream<Uint8Array>;
+        ciphertextStream: WritableStream<Uint8Array>;
+        userGrants: string[];
+        groupGrants: string[];
+        grantToAuthor: boolean;
+        policy?: Policy;
+    };
+}
+export interface DocumentUnmanagedStreamEncryptResponse {
+    type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE";
+    message: {
+        documentID: string;
+        edeks: Uint8Array;
+    };
+}
+
 export interface ErrorResponse {
     type: "ERROR_RESPONSE";
     message: {
@@ -591,7 +635,9 @@ export type RequestMessage =
     | BlindSearchIndexTokenizeQuery
     | SearchTransliterateString
     | DocumentStreamDecryptRequest
-    | DocumentUnmanagedStreamDecryptRequest;
+    | DocumentUnmanagedStreamDecryptRequest
+    | DocumentStreamEncryptRequest
+    | DocumentUnmanagedStreamEncryptRequest;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyResponse
@@ -634,4 +680,6 @@ export type ResponseMessage =
     | BlindSearchIndexTokenizeQueryResponse
     | SearchTransliterateStringResponse
     | DocumentStreamDecryptResponse
-    | DocumentUnmanagedStreamDecryptResponse;
+    | DocumentUnmanagedStreamDecryptResponse
+    | DocumentStreamEncryptResponse
+    | DocumentUnmanagedStreamEncryptResponse;

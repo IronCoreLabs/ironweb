@@ -186,6 +186,19 @@ export interface User {
     rotateMasterKey(passcode: string): Promise<void>;
 }
 
+export interface StreamEncryptResult {
+    documentID: string;
+    documentName: string | null;
+    encryptedStream: ReadableStream<Uint8Array>;
+    created: RFC3339Timestamp;
+    updated: RFC3339Timestamp;
+}
+export interface StreamEncryptUnmanagedResult {
+    documentID: string;
+    encryptedStream: ReadableStream<Uint8Array>;
+    edeks: Uint8Array;
+}
+
 export interface StreamDecryptResult {
     documentID: string;
     documentName: string | null;
@@ -205,6 +218,7 @@ export interface Document {
     decryptStream(documentID: string, encryptedStream: ReadableStream<Uint8Array>): Promise<StreamDecryptResult>;
     decryptFromStore(documentID: string): Promise<DecryptedDocumentResponse>;
     encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse>;
+    encryptStream(plaintextStream: ReadableStream<Uint8Array>, options?: DocumentCreateOptions): Promise<StreamEncryptResult>;
     encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<DocumentIDNameResponse>;
     updateEncryptedData(documentID: string, newDocumentData: Uint8Array): Promise<EncryptedDocumentResponse>;
     updateEncryptedDataInStore(documentID: string, newDocumentData: Uint8Array): Promise<DocumentIDNameResponse>;
@@ -215,6 +229,7 @@ export interface Document {
         decryptUnmanaged(data: Uint8Array, edeks: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
         decryptStreamUnmanaged(encryptedStream: ReadableStream<Uint8Array>, edeks: Uint8Array): Promise<StreamDecryptUnmanagedResult>;
         encryptUnmanaged(documentData: Uint8Array, options?: Omit<DocumentCreateOptions, "documentName">): Promise<EncryptedUnmanagedDocumentResponse>;
+        encryptStreamUnmanaged(plaintextStream: ReadableStream<Uint8Array>, options?: Omit<DocumentCreateOptions, "documentName">): Promise<StreamEncryptUnmanagedResult>;
     };
 }
 
@@ -311,6 +326,7 @@ export interface ErrorCodes {
     DOCUMENT_HEADER_PARSE_FAILURE: 312;
     DOCUMENT_TRANSFORM_REQUEST_FAILURE: 313;
     DOCUMENT_STREAM_DECRYPT_FAILURE: 314;
+    DOCUMENT_STREAM_ENCRYPT_FAILURE: 315;
     GROUP_LIST_REQUEST_FAILURE: 400;
     GROUP_GET_REQUEST_FAILURE: 401;
     GROUP_CREATE_REQUEST_FAILURE: 402;

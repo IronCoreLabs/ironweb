@@ -149,6 +149,15 @@ export const onMessageCallback = (data: RequestMessage, callback: (message: Resp
                 data.message.encryptedStream,
                 data.message.plaintextStream
             ).engage(errorHandler, () => callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: undefined}));
+        case "DOCUMENT_STREAM_ENCRYPT":
+            return DocumentCrypto.encryptDocumentStream(
+                data.message.plaintextStream,
+                data.message.ciphertextStream,
+                data.message.userKeyList,
+                data.message.groupKeyList,
+                data.message.signingKeys,
+                data.message.iv
+            ).engage(errorHandler, (result) => callback({type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE", message: result}));
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;

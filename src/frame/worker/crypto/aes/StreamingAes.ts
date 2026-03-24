@@ -38,29 +38,50 @@ function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
 }
 
 /**
- * Streaming AES-GCM decryptor that decomposes AES-GCM into AES-CTR + GHASH.
- *
- * AES-CTR uses the WebCrypto API (hardware-accelerated) via @noble/ciphers/webcrypto.
- * GHASH uses the pure-JS implementation from @noble/ciphers/_polyval (no WebCrypto
- * equivalent exists for standalone GHASH).
- *
- * Decrypted plaintext is emitted incrementally via processChunk(). The auth tag
- * is verified in finalize(). If the tag is invalid, finalize() throws.
- *
- * The last 16 bytes of the ciphertext stream are always held back as the potential
- * auth tag. Additionally, data is block-aligned before feeding to GHASH to avoid
- * @noble/ciphers' GHASH zero-padding partial blocks prematurely between update() calls.
+ * Compute the GHASH key (H) and encrypted J0 block needed for AES-GCM.
  */
-export class StreamingDecryptor {
-    private readonly key: Uint8Array;
-    private readonly iv: Uint8Array;
-    private readonly ghashInstance: ReturnType<typeof ghash.create>;
-    private readonly encryptedJ0: Uint8Array;
-    private heldBack: Uint8Array;
-    private ctrBlockOffset: number;
-    private ciphertextLen: number;
+async function initGcmState(key: Uint8Array, iv: Uint8Array): Promise<{H: Uint8Array; encryptedJ0: Uint8Array}> {
+    const zeroBlock = new Uint8Array(BLOCK_SIZE);
 
-    private constructor(key: Uint8Array, iv: Uint8Array, H: Uint8Array, encryptedJ0: Uint8Array) {
+    // H = AES_K(0^128): encrypt zero block with CTR at counter=0^128
+    const H = await ctr(key, zeroBlock).encrypt(zeroBlock);
+
+    // encryptedJ0 = AES_K(IV || 0x00000001)
+    const j0 = buildCounterBlock(iv, 1);
+    const encryptedJ0 = await ctr(key, j0).encrypt(new Uint8Array(BLOCK_SIZE));
+
+    return {H, encryptedJ0};
+}
+
+/**
+ * Common interface for streaming AES-GCM processors (both encrypt and decrypt).
+ * Enables a single generic stream loop to drive either operation.
+ */
+export interface StreamProcessor {
+    processChunk(chunk: Uint8Array): Promise<Uint8Array>;
+    finalize(): Promise<Uint8Array>;
+}
+
+/**
+ * Base class for streaming AES-GCM encrypt/decrypt. Decomposes AES-GCM into
+ * AES-CTR (hardware-accelerated via @noble/ciphers/webcrypto) + GHASH (pure-JS
+ * via @noble/ciphers/_polyval).
+ *
+ * Manages all shared GCM state: key, IV, GHASH instance, CTR counter offset,
+ * the held-back buffer for GHASH block alignment, and ciphertext length tracking.
+ * Subclasses implement processChunk() and finalize() with their encrypt/decrypt
+ * specific logic.
+ */
+abstract class StreamingCipher implements StreamProcessor {
+    protected readonly key: Uint8Array;
+    protected readonly iv: Uint8Array;
+    protected readonly ghashInstance: ReturnType<typeof ghash.create>;
+    protected readonly encryptedJ0: Uint8Array;
+    protected heldBack: Uint8Array;
+    protected ctrBlockOffset: number;
+    protected ciphertextLen: number;
+
+    protected constructor(key: Uint8Array, iv: Uint8Array, H: Uint8Array, encryptedJ0: Uint8Array) {
         this.key = key;
         this.iv = iv;
         this.heldBack = new Uint8Array(0);
@@ -70,34 +91,64 @@ export class StreamingDecryptor {
         this.ghashInstance = ghash.create(H);
     }
 
-    /**
-     * Create a new StreamingDecryptor. Async because it derives the GHASH key (H) and
-     * encrypted J0 block via WebCrypto AES-CTR.
-     */
+    abstract processChunk(chunk: Uint8Array): Promise<Uint8Array>;
+    abstract finalize(): Promise<Uint8Array>;
+
+    /** Build the AES-CTR counter block for the current offset. */
+    protected buildCounter(): Uint8Array {
+        return buildCounterBlock(this.iv, 2 + this.ctrBlockOffset);
+    }
+
+    /** Feed ciphertext to GHASH and track total ciphertext length. */
+    protected ghashUpdate(ciphertext: Uint8Array): void {
+        this.ghashInstance.update(ciphertext);
+        this.ciphertextLen += ciphertext.length;
+    }
+
+    /** Advance the CTR block counter after processing data. */
+    protected advanceCounter(bytesProcessed: number): void {
+        this.ctrBlockOffset += bytesProcessed / BLOCK_SIZE;
+    }
+
+    /** Compute the final GCM auth tag from GHASH state. */
+    protected computeTag(): Uint8Array {
+        // Length block: [AAD_len_bits(64) || ciphertext_len_bits(64)] big-endian
+        const lengthBlock = new Uint8Array(BLOCK_SIZE);
+        const bits = this.ciphertextLen * 8;
+        const view = new DataView(lengthBlock.buffer);
+        view.setUint32(8, Math.floor(bits / 0x100000000), false);
+        view.setUint32(12, bits % 0x100000000, false);
+        this.ghashInstance.update(lengthBlock);
+
+        const ghashOutput = this.ghashInstance.digest();
+
+        const tag = new Uint8Array(TAG_LENGTH);
+        for (let i = 0; i < TAG_LENGTH; i++) {
+            tag[i] = ghashOutput[i] ^ this.encryptedJ0[i];
+        }
+        return tag;
+    }
+}
+
+/**
+ * Streaming AES-GCM decryptor.
+ *
+ * Decrypted plaintext is emitted incrementally via processChunk(). The auth tag
+ * is verified in finalize(). If the tag is invalid, finalize() throws.
+ *
+ * The last 16 bytes of the ciphertext stream are always held back as the potential
+ * auth tag. Additionally, data is block-aligned before feeding to GHASH to avoid
+ * @noble/ciphers' GHASH zero-padding partial blocks prematurely between update() calls.
+ */
+export class StreamingDecryptor extends StreamingCipher {
     static async create(key: Uint8Array, iv: Uint8Array): Promise<StreamingDecryptor> {
-        const zeroBlock = new Uint8Array(BLOCK_SIZE);
-
-        // H = AES_K(0^128): encrypt zero block with CTR at counter=0^128
-        // Keystream = AES_K(0^128), XOR with 0^128 = AES_K(0^128)
-        const H = await ctr(key, zeroBlock).encrypt(zeroBlock);
-
-        // encryptedJ0 = AES_K(IV || 0x00000001)
-        const j0 = buildCounterBlock(iv, 1);
-        const encryptedJ0 = await ctr(key, j0).encrypt(new Uint8Array(BLOCK_SIZE));
-
+        const {H, encryptedJ0} = await initGcmState(key, iv);
         return new StreamingDecryptor(key, iv, H, encryptedJ0);
     }
 
-    /**
-     * Process a chunk of encrypted data (ciphertext || tag bytes).
-     * Returns decrypted plaintext for the processable portion of this chunk.
-     * Always holds back at least 16 bytes (potential auth tag) plus any
-     * remainder needed for GHASH block alignment.
-     */
     async processChunk(chunk: Uint8Array): Promise<Uint8Array> {
         const combined = concat(this.heldBack, chunk);
 
-        // Must always hold back at least TAG_LENGTH bytes
         if (combined.length <= TAG_LENGTH) {
             this.heldBack = combined;
             return new Uint8Array(0);
@@ -114,22 +165,15 @@ export class StreamingDecryptor {
         const toProcess = combined.subarray(0, aligned);
         this.heldBack = new Uint8Array(combined.subarray(aligned));
 
-        // Update GHASH with ciphertext BEFORE decryption
-        this.ghashInstance.update(toProcess);
-        this.ciphertextLen += toProcess.length;
+        // GHASH ciphertext BEFORE decryption
+        this.ghashUpdate(toProcess);
 
-        // Decrypt via AES-CTR (hardware-accelerated) starting at counter = IV || (2 + blockOffset)
-        const counter = buildCounterBlock(this.iv, 2 + this.ctrBlockOffset);
-        const plaintext = await ctr(this.key, counter).decrypt(toProcess);
-        this.ctrBlockOffset += toProcess.length / BLOCK_SIZE;
+        const plaintext = await ctr(this.key, this.buildCounter()).decrypt(toProcess);
+        this.advanceCounter(toProcess.length);
 
         return plaintext;
     }
 
-    /**
-     * Finalize decryption: verify the auth tag and return any remaining plaintext.
-     * Throws if the auth tag does not match (data was tampered with or wrong key).
-     */
     async finalize(): Promise<Uint8Array> {
         if (this.heldBack.length < TAG_LENGTH) {
             throw new Error("Insufficient data: stream ended before auth tag");
@@ -142,36 +186,64 @@ export class StreamingDecryptor {
         let decryptedRemainder = new Uint8Array(0);
 
         if (remainderLen > 0) {
-            // Feed remainder to GHASH (noble-ciphers zero-pads the partial block internally)
-            this.ghashInstance.update(remainder);
-            this.ciphertextLen += remainderLen;
-
-            // Decrypt remainder via AES-CTR (CTR handles partial blocks correctly)
-            const counter = buildCounterBlock(this.iv, 2 + this.ctrBlockOffset);
-            decryptedRemainder = await ctr(this.key, counter).decrypt(remainder);
+            this.ghashUpdate(remainder);
+            decryptedRemainder = await ctr(this.key, this.buildCounter()).decrypt(remainder);
         }
 
-        // Length block: [AAD_len_bits(64) || ciphertext_len_bits(64)] big-endian
-        // No AAD, so first 8 bytes are zero
-        const lengthBlock = new Uint8Array(BLOCK_SIZE);
-        const bits = this.ciphertextLen * 8;
-        const view = new DataView(lengthBlock.buffer);
-        view.setUint32(8, Math.floor(bits / 0x100000000), false);
-        view.setUint32(12, bits % 0x100000000, false);
-        this.ghashInstance.update(lengthBlock);
-
-        const ghashOutput = this.ghashInstance.digest();
-
-        // Tag = GHASH_output XOR AES_K(J0)
-        const computedTag = new Uint8Array(TAG_LENGTH);
-        for (let i = 0; i < TAG_LENGTH; i++) {
-            computedTag[i] = ghashOutput[i] ^ this.encryptedJ0[i];
-        }
-
-        if (!constantTimeEqual(computedTag, tag)) {
+        if (!constantTimeEqual(this.computeTag(), tag)) {
             throw new Error("AES-GCM auth tag verification failed");
         }
 
         return decryptedRemainder;
+    }
+}
+
+/**
+ * Streaming AES-GCM encryptor.
+ *
+ * Ciphertext is emitted incrementally via processChunk(). The auth tag is
+ * computed and appended in finalize().
+ *
+ * Unlike the decryptor, no tag reservation is needed — the held-back buffer
+ * only handles GHASH alignment (0–15 bytes).
+ *
+ * Key GHASH ordering difference: encrypt FIRST (plaintext → ciphertext via
+ * AES-CTR), THEN feed the ciphertext to GHASH.
+ */
+export class StreamingEncryptor extends StreamingCipher {
+    static async create(key: Uint8Array, iv: Uint8Array): Promise<StreamingEncryptor> {
+        const {H, encryptedJ0} = await initGcmState(key, iv);
+        return new StreamingEncryptor(key, iv, H, encryptedJ0);
+    }
+
+    async processChunk(chunk: Uint8Array): Promise<Uint8Array> {
+        const combined = concat(this.heldBack, chunk);
+        const aligned = combined.length - (combined.length % BLOCK_SIZE);
+
+        if (aligned === 0) {
+            this.heldBack = combined;
+            return new Uint8Array(0);
+        }
+
+        const toProcess = combined.subarray(0, aligned);
+        this.heldBack = new Uint8Array(combined.subarray(aligned));
+
+        // Encrypt FIRST, then GHASH the ciphertext
+        const ciphertext = await ctr(this.key, this.buildCounter()).encrypt(toProcess);
+        this.advanceCounter(toProcess.length);
+        this.ghashUpdate(ciphertext);
+
+        return ciphertext;
+    }
+
+    async finalize(): Promise<Uint8Array> {
+        let lastCiphertext = new Uint8Array(0);
+
+        if (this.heldBack.length > 0) {
+            lastCiphertext = await ctr(this.key, this.buildCounter()).encrypt(this.heldBack);
+            this.ghashUpdate(lastCiphertext);
+        }
+
+        return concat(lastCiphertext, this.computeTag());
     }
 }

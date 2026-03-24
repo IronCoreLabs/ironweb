@@ -8,7 +8,7 @@ import {
     Policy,
     UserOrGroup,
 } from "../../../ironweb";
-import {ErrorCodes, UserAndGroupTypes} from "../../Constants";
+import {CryptoConstants, ErrorCodes, UserAndGroupTypes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import * as Utils from "../../lib/Utils";
 import ApiState from "../ApiState";
@@ -16,7 +16,8 @@ import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetRespons
 import GroupApiEndpoints, {GroupPublicKeyObject} from "../endpoints/GroupApiEndpoints";
 import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoints";
 import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
-import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64} from "../FrameUtils";
+import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64, generateDocumentHeaderBytes} from "../FrameUtils";
+import {concatArrayBuffers} from "../../lib/Utils";
 import * as DocumentOperations from "./DocumentOperations";
 
 /**
@@ -268,6 +269,59 @@ export function decryptLocalDocStream(
             documentName: documentResponse.name,
         }))
     );
+}
+
+/**
+ * Shared setup for streaming encrypt: generate IV, write header+IV to the output stream,
+ * resolve user/group keys, and start the Worker encrypt loop. Returns the encrypted access keys.
+ */
+export function startStreamEncrypt(
+    documentID: string,
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean,
+    policy?: Policy
+) {
+    const iv = crypto.getRandomValues(new Uint8Array(CryptoConstants.IV_LENGTH));
+    const headerAndIv = concatArrayBuffers(generateDocumentHeaderBytes(documentID, ApiState.user().segmentId), iv);
+
+    return Future.tryP(async () => {
+        const writer = ciphertextStream.getWriter();
+        await writer.write(headerAndIv);
+        writer.releaseLock();
+    })
+        .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_ENCRYPT_FAILURE))
+        .flatMap(() => getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy))
+        .flatMap(({userKeys, groupKeys}) =>
+            DocumentOperations.encryptDocumentStream(plaintextStream, ciphertextStream, userKeys, groupKeys, ApiState.signingKeys(), iv)
+        );
+}
+
+/**
+ * Streaming encrypt: write header+IV, encrypt via Worker, create document record via API.
+ */
+export function encryptLocalDocStream(
+    documentID: string,
+    documentName: string,
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean,
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    policy?: Policy
+) {
+    return startStreamEncrypt(documentID, plaintextStream, ciphertextStream, userGrants, groupGrants, grantToAuthor, policy)
+        .flatMap(({userAccessKeys, groupAccessKeys}) =>
+            DocumentApiEndpoints.callDocumentCreateApi(documentID, null, userAccessKeys, groupAccessKeys, documentName)
+        )
+        .map((createdDocument) => ({
+            documentID: createdDocument.id,
+            documentName: createdDocument.name,
+            created: createdDocument.created,
+            updated: createdDocument.updated,
+        }));
 }
 
 /**
