@@ -398,6 +398,60 @@ describe("worker", () => {
         });
     });
 
+    describe("streaming message handling", () => {
+        it("DOCUMENT_STREAM_DECRYPT", (done) => {
+            jest.spyOn(DocumentCrypto, "decryptDocumentStream").mockReturnValue(Future.of<any>(undefined));
+
+            const payload: any = {
+                type: "DOCUMENT_STREAM_DECRYPT",
+                message: {
+                    encryptedSymmetricKey: "sym key",
+                    privateKey: "priv key",
+                    iv: new Uint8Array(12),
+                    encryptedStream: new ReadableStream<Uint8Array>(),
+                    plaintextStream: new WritableStream<Uint8Array>(),
+                },
+            };
+
+            worker.onMessageCallback!(payload, (result: any) => {
+                expect(result.type).toEqual("DOCUMENT_STREAM_DECRYPT_RESPONSE");
+                expect(result.message).toBeUndefined();
+                expect(DocumentCrypto.decryptDocumentStream).toHaveBeenCalledWith("sym key", "priv key", payload.message.iv, payload.message.encryptedStream, payload.message.plaintextStream);
+                done();
+            });
+        });
+
+        it("DOCUMENT_STREAM_ENCRYPT", (done) => {
+            jest.spyOn(DocumentCrypto, "encryptDocumentStream").mockReturnValue(Future.of<any>({userAccessKeys: [], groupAccessKeys: []}));
+
+            const payload: any = {
+                type: "DOCUMENT_STREAM_ENCRYPT",
+                message: {
+                    plaintextStream: new ReadableStream<Uint8Array>(),
+                    ciphertextStream: new WritableStream<Uint8Array>(),
+                    userKeyList: [],
+                    groupKeyList: [],
+                    signingKeys: "signkeys",
+                    iv: new Uint8Array(12),
+                },
+            };
+
+            worker.onMessageCallback!(payload, (result: any) => {
+                expect(result.type).toEqual("DOCUMENT_STREAM_ENCRYPT_RESPONSE");
+                expect(result.message).toEqual({userAccessKeys: [], groupAccessKeys: []});
+                expect(DocumentCrypto.encryptDocumentStream).toHaveBeenCalledWith(
+                    payload.message.plaintextStream,
+                    payload.message.ciphertextStream,
+                    [],
+                    [],
+                    "signkeys",
+                    payload.message.iv
+                );
+                done();
+            });
+        });
+    });
+
     describe("error message handling", () => {
         it("returns error response with formatted code and message", (done) => {
             jest.spyOn(DocumentCrypto, "encryptToKeys").mockReturnValue(Future.reject(new SDKError(new Error("invalid"), 34)));

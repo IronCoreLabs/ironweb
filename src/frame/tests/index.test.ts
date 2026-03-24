@@ -987,6 +987,103 @@ describe("frame index", () => {
         });
     });
 
+    describe("streaming encrypt/decrypt dispatch", () => {
+        it("DOCUMENT_STREAM_DECRYPT", (done) => {
+            jest.spyOn(DocumentApi, "decryptLocalDocStream").mockReturnValue(Future.of<any>({documentName: "myDoc"}));
+            const payload: any = {
+                type: "DOCUMENT_STREAM_DECRYPT",
+                message: {
+                    documentID: "docID",
+                    iv: new Uint8Array(12),
+                    encryptedStream: new ReadableStream<Uint8Array>(),
+                    plaintextStream: new WritableStream<Uint8Array>(),
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "DOCUMENT_STREAM_DECRYPT_RESPONSE",
+                    message: {documentName: "myDoc"},
+                });
+                done();
+            });
+        });
+
+        it("DOCUMENT_UNMANAGED_STREAM_DECRYPT", (done) => {
+            jest.spyOn(DocumentAdvancedApi, "decryptStreamWithProvidedEdeks").mockReturnValue(
+                Future.of<any>({accessVia: {type: "user", id: "u1"}})
+            );
+            const payload: any = {
+                type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT",
+                message: {
+                    iv: new Uint8Array(12),
+                    edeks: new Uint8Array(100),
+                    encryptedStream: new ReadableStream<Uint8Array>(),
+                    plaintextStream: new WritableStream<Uint8Array>(),
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE",
+                    message: {accessVia: {type: "user", id: "u1"}},
+                });
+                done();
+            });
+        });
+
+        it("DOCUMENT_STREAM_ENCRYPT", (done) => {
+            jest.spyOn(DocumentApi, "encryptLocalDocStream").mockReturnValue(
+                Future.of<any>({documentID: "docID", documentName: "myDoc", created: "c", updated: "u"})
+            );
+            const payload: any = {
+                type: "DOCUMENT_STREAM_ENCRYPT",
+                message: {
+                    documentID: "docID",
+                    documentName: "myDoc",
+                    plaintextStream: new ReadableStream<Uint8Array>(),
+                    ciphertextStream: new WritableStream<Uint8Array>(),
+                    userGrants: [],
+                    groupGrants: [],
+                    grantToAuthor: true,
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE",
+                    message: {documentID: "docID", documentName: "myDoc", created: "c", updated: "u"},
+                });
+                done();
+            });
+        });
+
+        it("DOCUMENT_UNMANAGED_STREAM_ENCRYPT", (done) => {
+            jest.spyOn(DocumentAdvancedApi, "encryptStreamWithEdeks").mockReturnValue(
+                Future.of<any>({documentID: "docID", edeks: new Uint8Array([1, 2, 3])})
+            );
+            const payload: any = {
+                type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT",
+                message: {
+                    documentID: "docID",
+                    plaintextStream: new ReadableStream<Uint8Array>(),
+                    ciphertextStream: new WritableStream<Uint8Array>(),
+                    userGrants: [],
+                    groupGrants: [],
+                    grantToAuthor: true,
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE",
+                    message: {documentID: "docID", edeks: new Uint8Array([1, 2, 3])},
+                });
+                done();
+            });
+        });
+    });
+
     describe("error message handling", () => {
         it("returns error response with formatted code and message", (done) => {
             jest.spyOn(DocumentApi, "decryptHostedDoc").mockReturnValue(Future.reject(new SDKError(new Error("invalid"), 34)));

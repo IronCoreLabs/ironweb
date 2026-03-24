@@ -1003,4 +1003,65 @@ describe("DocumentApi", () => {
             );
         });
     });
+
+    describe("decryptLocalDocStream", () => {
+        it("fetches document metadata and calls DocumentOperations.decryptDocumentStream", (done) => {
+            jest.spyOn(DocumentApiEndpoints, "callDocumentMetadataGetApi").mockReturnValue(
+                Future.of<any>({
+                    id: "docID",
+                    name: "docName",
+                    encryptedSymmetricKey: TestUtils.getTransformedSymmetricKey(),
+                })
+            );
+            jest.spyOn(DocumentOperations, "decryptDocumentStream").mockReturnValue(Future.of<any>(undefined));
+
+            const iv = new Uint8Array(12);
+            const encryptedStream = new ReadableStream<Uint8Array>();
+            const plaintextStream = new WritableStream<Uint8Array>();
+
+            DocumentApi.decryptLocalDocStream("docID", iv, encryptedStream, plaintextStream).engage(
+                (e) => done(e),
+                (result) => {
+                    expect(result).toEqual({documentName: "docName"});
+                    expect(DocumentOperations.decryptDocumentStream).toHaveBeenCalledWith(
+                        expect.any(Object),
+                        privateDeviceKey,
+                        iv,
+                        encryptedStream,
+                        plaintextStream
+                    );
+                    done();
+                }
+            );
+        });
+    });
+
+    describe("encryptLocalDocStream", () => {
+        it("writes header, resolves keys, and creates document record", (done) => {
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: []}));
+            jest.spyOn(GroupApiEndpoints, "getGroupPublicKeyList").mockReturnValue(Future.of<any>([]));
+            jest.spyOn(PolicyApiEndpoints, "callApplyPolicyApi").mockReturnValue(
+                Future.of<any>({usersAndGroups: [], invalidUsersAndGroups: []})
+            );
+            jest.spyOn(DocumentOperations, "encryptDocumentStream").mockReturnValue(
+                Future.of<any>({userAccessKeys: [], groupAccessKeys: []})
+            );
+            jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(
+                Future.of<any>({id: "docID", name: "docName", created: "c", updated: "u"})
+            );
+
+            const plaintextStream = new ReadableStream<Uint8Array>();
+            const ciphertextStream = new WritableStream<Uint8Array>();
+
+            DocumentApi.encryptLocalDocStream("docID", "docName", [], [], true, plaintextStream, ciphertextStream).engage(
+                (e) => done(e),
+                (result) => {
+                    expect(result).toEqual({documentID: "docID", documentName: "docName", created: "c", updated: "u"});
+                    expect(DocumentOperations.encryptDocumentStream).toHaveBeenCalled();
+                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith("docID", null, [], [], "docName");
+                    done();
+                }
+            );
+        });
+    });
 });

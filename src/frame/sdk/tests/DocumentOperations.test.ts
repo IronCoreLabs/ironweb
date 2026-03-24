@@ -114,6 +114,64 @@ describe("DocumentOperations", () => {
         });
     });
 
+    describe("encryptDocumentStream", () => {
+        it("sends stream encrypt message to worker with streams in transfer list", () => {
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({message: {userAccessKeys: ["uak"], groupAccessKeys: ["gak"]}})
+            );
+
+            const plaintextStream = new ReadableStream<Uint8Array>();
+            const ciphertextStream = new WritableStream<Uint8Array>();
+            const userList = [{id: "user1", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+            const groupList = [{id: "group1", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
+            const signingKeys = TestUtils.getSigningKeyPair();
+            const iv = new Uint8Array(12);
+
+            DocumentOperations.encryptDocumentStream(plaintextStream, ciphertextStream, userList, groupList, signingKeys, iv).engage(
+                (e) => {
+                    throw e;
+                },
+                (result: any) => {
+                    expect(result).toEqual({userAccessKeys: ["uak"], groupAccessKeys: ["gak"]});
+                    expect(WorkerMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_STREAM_ENCRYPT",
+                            message: {plaintextStream, ciphertextStream, userKeyList: userList, groupKeyList: groupList, signingKeys, iv},
+                        },
+                        [plaintextStream, ciphertextStream]
+                    );
+                }
+            );
+        });
+    });
+
+    describe("decryptDocumentStream", () => {
+        it("sends stream decrypt message to worker with streams in transfer list", () => {
+            jest.spyOn(WorkerMediator, "sendMessage").mockReturnValue(Future.of<any>({message: undefined}));
+
+            const symKey = TestUtils.getTransformedSymmetricKey();
+            const privKey = new Uint8Array(32);
+            const iv = new Uint8Array(12);
+            const encryptedStream = new ReadableStream<Uint8Array>();
+            const plaintextStream = new WritableStream<Uint8Array>();
+
+            DocumentOperations.decryptDocumentStream(symKey, privKey, iv, encryptedStream, plaintextStream).engage(
+                (e) => {
+                    throw e;
+                },
+                () => {
+                    expect(WorkerMediator.sendMessage).toHaveBeenCalledWith(
+                        {
+                            type: "DOCUMENT_STREAM_DECRYPT",
+                            message: {encryptedSymmetricKey: symKey, privateKey: privKey, iv, encryptedStream, plaintextStream},
+                        },
+                        [encryptedStream, plaintextStream]
+                    );
+                }
+            );
+        });
+    });
+
     describe("encryptDocumentToKeys", () => {
         it("encrypts new list of symmetric keys and calls document grant endpoint", () => {
             const symKey = TestUtils.getTransformedSymmetricKey();

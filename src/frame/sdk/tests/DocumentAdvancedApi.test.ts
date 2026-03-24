@@ -136,4 +136,56 @@ describe("DocumentAdvancedApi", () => {
             );
         });
     });
+
+    describe("decryptStreamWithProvidedEdeks", () => {
+        it("transforms edeks then calls DocumentOperations.decryptDocumentStream", (done) => {
+            jest.spyOn(EncryptedDekEndpoints, "callEncryptedDekTransformApi").mockReturnValue(
+                Future.of<any>({
+                    encryptedSymmetricKey: TestUtils.getTransformedSymmetricKey(),
+                    userOrGroup: {type: "user", id: "userId"},
+                })
+            );
+            jest.spyOn(DocumentOperations, "decryptDocumentStream").mockReturnValue(Future.of<any>(undefined));
+
+            const iv = new Uint8Array(12);
+            const edeks = new Uint8Array(100);
+            const encryptedStream = new ReadableStream<Uint8Array>();
+            const plaintextStream = new WritableStream<Uint8Array>();
+
+            DocumentAdvancedApi.decryptStreamWithProvidedEdeks(iv, edeks, encryptedStream, plaintextStream).engage(
+                (e) => done(e),
+                (result) => {
+                    expect(result).toEqual({accessVia: {type: "user", id: "userId"}});
+                    expect(DocumentOperations.decryptDocumentStream).toHaveBeenCalled();
+                    done();
+                }
+            );
+        });
+    });
+
+    describe("encryptStreamWithEdeks", () => {
+        it("writes header, resolves keys, and returns edeks", (done) => {
+            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: []}));
+            jest.spyOn(GroupApiEndpoints, "getGroupPublicKeyList").mockReturnValue(Future.of<any>([]));
+            jest.spyOn(PolicyApiEndpoints, "callApplyPolicyApi").mockReturnValue(
+                Future.of<any>({usersAndGroups: [], invalidUsersAndGroups: []})
+            );
+            jest.spyOn(DocumentOperations, "encryptDocumentStream").mockReturnValue(
+                Future.of<any>({userAccessKeys: [], groupAccessKeys: []})
+            );
+
+            const plaintextStream = new ReadableStream<Uint8Array>();
+            const ciphertextStream = new WritableStream<Uint8Array>();
+
+            DocumentAdvancedApi.encryptStreamWithEdeks("docID", plaintextStream, ciphertextStream, [], [], true).engage(
+                (e) => done(e),
+                (result) => {
+                    expect(result.documentID).toEqual("docID");
+                    expect(result.edeks).toEqual(expect.any(Uint8Array));
+                    expect(DocumentOperations.encryptDocumentStream).toHaveBeenCalled();
+                    done();
+                }
+            );
+        });
+    });
 });
