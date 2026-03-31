@@ -1,4 +1,5 @@
 import {RequestMessage, ResponseMessage} from "../FrameMessageTypes";
+import {toTransferables} from "../lib/Utils";
 
 type FrameMessageCallback = (message: RequestMessage, callback: (response: ResponseMessage, transferList?: (Uint8Array | Transferable)[]) => void) => void;
 
@@ -37,10 +38,7 @@ export default class FrameMessenger {
         const {data, replyID}: FrameEvent<RequestMessage> = event.data;
         this.onMessageCallback(data, (responseData: ResponseMessage, transferList: (Uint8Array | Transferable)[] = []) => {
             if (this.messagePort) {
-                this.messagePort.postMessage(
-                    {replyID, data: responseData},
-                    transferList.map((item) => (item instanceof Uint8Array ? item.buffer : item)) as Transferable[]
-                );
+                this.messagePort.postMessage({replyID, data: responseData}, toTransferables(transferList));
             }
         });
     };

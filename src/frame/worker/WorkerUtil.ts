@@ -148,7 +148,10 @@ export const onMessageCallback = (data: RequestMessage, callback: (message: Resp
                 data.message.iv,
                 data.message.encryptedStream,
                 data.message.plaintextStream
-            ).engage(errorHandler, () => callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: undefined}));
+            ).engage(errorHandler, () =>
+                // message is explicitly undefined, all the output has already gone out in the plaintext stream
+                callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: undefined})
+            );
         case "DOCUMENT_STREAM_ENCRYPT":
             return DocumentCrypto.encryptDocumentStream(
                 data.message.plaintextStream,

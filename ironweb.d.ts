@@ -96,6 +96,22 @@ export interface DocumentAccessResponse {
     succeeded: UserOrGroup[];
     failed: (UserOrGroup & {error: string})[];
 }
+export interface StreamEncryptResponse extends DocumentIDNameResponse {
+    encryptedStream: ReadableStream<Uint8Array>;
+}
+export interface StreamEncryptUnmanagedResponse {
+    documentID: string;
+    encryptedStream: ReadableStream<Uint8Array>;
+    edeks: Uint8Array;
+}
+export interface StreamDecryptResponse extends DocumentMetaResponse {
+    plaintextStream: ReadableStream<Uint8Array>;
+}
+export interface StreamDecryptUnmanagedResponse {
+    documentID: string;
+    plaintextStream: ReadableStream<Uint8Array>;
+    accessVia: UserOrGroup;
+}
 
 /**
  * Group SDK response types
@@ -186,39 +202,15 @@ export interface User {
     rotateMasterKey(passcode: string): Promise<void>;
 }
 
-export interface StreamEncryptResult {
-    documentID: string;
-    documentName: string | null;
-    encryptedStream: ReadableStream<Uint8Array>;
-    created: RFC3339Timestamp;
-    updated: RFC3339Timestamp;
-}
-export interface StreamEncryptUnmanagedResult {
-    documentID: string;
-    encryptedStream: ReadableStream<Uint8Array>;
-    edeks: Uint8Array;
-}
-
-export interface StreamDecryptResult {
-    documentID: string;
-    documentName: string | null;
-    plaintextStream: ReadableStream<Uint8Array>;
-}
-export interface StreamDecryptUnmanagedResult {
-    documentID: string;
-    plaintextStream: ReadableStream<Uint8Array>;
-    accessVia: UserOrGroup;
-}
-
 export interface Document {
     list(): Promise<DocumentListResponse>;
     getMetadata(documentID: string): Promise<DocumentMetaResponse>;
     getDocumentIDFromBytes(encryptedDocument: Uint8Array): Promise<string | null>;
     decrypt(documentID: string, encryptedDocument: Uint8Array): Promise<DecryptedDocumentResponse>;
-    decryptStream(documentID: string, encryptedStream: ReadableStream<Uint8Array>): Promise<StreamDecryptResult>;
+    decryptStream(documentID: string, encryptedStream: ReadableStream<Uint8Array>): Promise<StreamDecryptResponse>;
     decryptFromStore(documentID: string): Promise<DecryptedDocumentResponse>;
     encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse>;
-    encryptStream(plaintextStream: ReadableStream<Uint8Array>, options?: DocumentCreateOptions): Promise<StreamEncryptResult>;
+    encryptStream(plaintextStream: ReadableStream<Uint8Array>, options?: DocumentCreateOptions): Promise<StreamEncryptResponse>;
     encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<DocumentIDNameResponse>;
     updateEncryptedData(documentID: string, newDocumentData: Uint8Array): Promise<EncryptedDocumentResponse>;
     updateEncryptedDataInStore(documentID: string, newDocumentData: Uint8Array): Promise<DocumentIDNameResponse>;
@@ -227,9 +219,12 @@ export interface Document {
     revokeAccess(documentID: string, revokeList: DocumentAccessList): Promise<DocumentAccessResponse>;
     advanced: {
         decryptUnmanaged(data: Uint8Array, edeks: Uint8Array): Promise<DecryptedUnmanagedDocumentResponse>;
-        decryptStreamUnmanaged(encryptedStream: ReadableStream<Uint8Array>, edeks: Uint8Array): Promise<StreamDecryptUnmanagedResult>;
+        decryptStreamUnmanaged(encryptedStream: ReadableStream<Uint8Array>, edeks: Uint8Array): Promise<StreamDecryptUnmanagedResponse>;
         encryptUnmanaged(documentData: Uint8Array, options?: Omit<DocumentCreateOptions, "documentName">): Promise<EncryptedUnmanagedDocumentResponse>;
-        encryptStreamUnmanaged(plaintextStream: ReadableStream<Uint8Array>, options?: Omit<DocumentCreateOptions, "documentName">): Promise<StreamEncryptUnmanagedResult>;
+        encryptStreamUnmanaged(
+            plaintextStream: ReadableStream<Uint8Array>,
+            options?: Omit<DocumentCreateOptions, "documentName">
+        ): Promise<StreamEncryptUnmanagedResponse>;
     };
 }
 

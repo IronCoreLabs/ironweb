@@ -247,9 +247,11 @@ export function getDocumentMeta(documentID: string): Future<SDKError, DocumentMe
  * @param {string} documentID Unique lookup key of document to retrieve
  */
 export function decryptHostedDoc(documentID: string): Future<SDKError, DecryptedDocumentResponse> {
-    return DocumentApiEndpoints.callDocumentGetApi(documentID).flatMap((documentResponse) => {
-        return decryptAndFormatDocument(documentToByteParts(documentResponse.data.content), documentResponse);
-    });
+    return DocumentApiEndpoints.callDocumentGetApi(documentID).flatMap((documentResponse) =>
+        documentToByteParts(documentResponse.data.content).flatMap((documentParts) =>
+            decryptAndFormatDocument(documentParts, documentResponse)
+        )
+    );
 }
 
 /**
@@ -262,11 +264,15 @@ export function decryptLocalDocStream(
     iv: Uint8Array,
     encryptedStream: ReadableStream<Uint8Array>,
     plaintextStream: WritableStream<Uint8Array>
-): Future<SDKError, {documentName: string | null}> {
+): Future<SDKError, Omit<DocumentMetaResponse, "documentID">> {
     const {privateKey} = ApiState.deviceKeys();
     return DocumentApiEndpoints.callDocumentMetadataGetApi(documentID).flatMap((documentResponse) =>
         DocumentOperations.decryptDocumentStream(documentResponse.encryptedSymmetricKey, privateKey, iv, encryptedStream, plaintextStream).map(() => ({
             documentName: documentResponse.name,
+            association: documentResponse.association.type,
+            visibleTo: documentResponse.visibleTo,
+            created: documentResponse.created,
+            updated: documentResponse.updated,
         }))
     );
 }
@@ -330,15 +336,11 @@ export function encryptLocalDocStream(
  * @param {Uint8Array} encryptedDocument Data of document to decrypt
  */
 export function decryptLocalDoc(documentID: string, encryptedDocument: Uint8Array): Future<SDKError, DecryptedDocumentResponse> {
-    //Early verification to check that the bytes we got appear to be an IronCore encrypted document. We have two versions so reject early if the bytes provided
-    //don't match either of those two versions.
-    if (encryptedDocument[0] !== 1 && encryptedDocument[0] !== 2) {
-        return Future.reject(
-            new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE)
-        );
-    }
-    const documentParts = documentToByteParts(encryptedDocument);
-    return DocumentApiEndpoints.callDocumentMetadataGetApi(documentID).flatMap((documentResponse) => decryptAndFormatDocument(documentParts, documentResponse));
+    return documentToByteParts(encryptedDocument).flatMap((documentParts) =>
+        DocumentApiEndpoints.callDocumentMetadataGetApi(documentID).flatMap((documentResponse) =>
+            decryptAndFormatDocument(documentParts, documentResponse)
+        )
+    );
 }
 
 /**

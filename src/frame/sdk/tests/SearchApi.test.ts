@@ -8,7 +8,7 @@ import * as SearchApi from "../SearchApi";
 describe("SearchApi", () => {
     describe("createBlindSearchIndex", () => {
         it("generates a random salt, encrypts it, and returns unmanaged doc", () => {
-            jest.spyOn(DocAdvancedApi, "encrypt").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "encryptWithProvidedEdeks").mockReturnValue(
                 Future.of<any>({
                     document: "encDoc",
                     edeks: ["edek1", "edek2"],
@@ -24,13 +24,19 @@ describe("SearchApi", () => {
                         searchIndexEncryptedSalt: "encDoc",
                         searchIndexEdeks: ["edek1", "edek2"],
                     });
-                    expect(DocAdvancedApi.encrypt).toHaveBeenCalledWith(expect.any(String), expect.any(Uint8Array), [], ["mySearchIndexGroup"], false);
+                    expect(DocAdvancedApi.encryptWithProvidedEdeks).toHaveBeenCalledWith(
+                        expect.any(String),
+                        expect.any(Uint8Array),
+                        [],
+                        ["mySearchIndexGroup"],
+                        false
+                    );
                 }
             );
         });
 
         it("maps error to search index error", () => {
-            jest.spyOn(DocAdvancedApi, "encrypt").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "encryptWithProvidedEdeks").mockReturnValue(
                 Future.reject(new SDKError(new Error("unmanaged decrypt error"), ErrorCodes.DOCUMENT_ENCRYPT_FAILURE))
             );
 

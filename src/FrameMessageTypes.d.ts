@@ -519,9 +519,7 @@ export interface DocumentStreamDecryptRequest {
 }
 export interface DocumentStreamDecryptResponse {
     type: "DOCUMENT_STREAM_DECRYPT_RESPONSE";
-    message: {
-        documentName: string | null;
-    };
+    message: Omit<DocumentMetaResponse, "documentID">;
 }
 
 export interface DocumentUnmanagedStreamDecryptRequest {
@@ -608,6 +606,10 @@ export type RequestMessage =
     | DocumentStoreEncryptRequest
     | DocumentEncryptRequest
     | DocumentStoreUpdateDataRequest
+    | DocumentStreamDecryptRequest
+    | DocumentUnmanagedStreamDecryptRequest
+    | DocumentStreamEncryptRequest
+    | DocumentUnmanagedStreamEncryptRequest
     | DocumentUpdateDataRequest
     | DocumentUpdateNameRequest
     | DocumentGrantRequest
@@ -633,11 +635,7 @@ export type RequestMessage =
     | BlindSearchIndexInit
     | BlindSearchIndexTokenizeData
     | BlindSearchIndexTokenizeQuery
-    | SearchTransliterateString
-    | DocumentStreamDecryptRequest
-    | DocumentUnmanagedStreamDecryptRequest
-    | DocumentStreamEncryptRequest
-    | DocumentUnmanagedStreamEncryptRequest;
+    | SearchTransliterateString;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyResponse
@@ -652,6 +650,10 @@ export type ResponseMessage =
     | DocumentStoreEncryptResponse
     | DocumentEncryptResponse
     | DocumentStoreUpdateDataResponse
+    | DocumentStreamDecryptResponse
+    | DocumentUnmanagedStreamDecryptResponse
+    | DocumentStreamEncryptResponse
+    | DocumentUnmanagedStreamEncryptResponse
     | DocumentUpdateDataResponse
     | DocumentUpdateNameResponse
     | DocumentGrantResponse
@@ -678,8 +680,4 @@ export type ResponseMessage =
     | BlindSearchIndexInitResponse
     | BlindSearchIndexTokenizeDataResponse
     | BlindSearchIndexTokenizeQueryResponse
-    | SearchTransliterateStringResponse
-    | DocumentStreamDecryptResponse
-    | DocumentUnmanagedStreamDecryptResponse
-    | DocumentStreamEncryptResponse
-    | DocumentUnmanagedStreamEncryptResponse;
+    | SearchTransliterateStringResponse;

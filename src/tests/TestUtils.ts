@@ -1,6 +1,8 @@
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import {fromByteArray, toByteArray} from "base64-js";
 import {DocumentGetResponseType, DocumentMetaGetResponseType} from "../frame/endpoints/DocumentApiEndpoints";
+import {generateDocumentHeaderBytes} from "../frame/FrameUtils";
+import {concatArrayBuffers} from "../lib/Utils";
 
 export const userPublicXString = "upkx";
 export const userPublicYString = "upky";
@@ -30,6 +32,15 @@ export function getEncryptedDocument(): EncryptedDocument {
         iv: new Uint8Array([110, 111, 110, 99, 101]),
         content: new Uint8Array([98, 97, 115, 101]),
     };
+}
+
+/**
+ * Build a valid v2 encrypted document byte array with a proper header, IV, and content.
+ */
+export function getEncryptedDocumentBytes(content = new Uint8Array([92, 103])): Uint8Array {
+    const header = generateDocumentHeaderBytes("docID", 32);
+    const iv = new Uint8Array(12);
+    return concatArrayBuffers(header, iv, content);
 }
 
 export function getEncryptedSymmetricKey(): PREEncryptedMessage {

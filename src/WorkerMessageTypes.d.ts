@@ -301,6 +301,9 @@ export interface StreamDecryptDocumentWorkerRequest {
 }
 export interface StreamDecryptDocumentWorkerResponse {
     type: "DOCUMENT_STREAM_DECRYPT_RESPONSE";
+    // There's nothing to send back (all the data already went out in the `plaintextResponse` from the request), but
+    // this response indicates to the frame that the decrypt work is done. The explicit void is to (try) to communicate
+    // that we have no data for the frame but we're done.
     message: void;
 }
 
@@ -338,6 +341,8 @@ export type RequestMessage =
     | ReencryptDocumentWorkerRequest
     | DecryptDocumentWorkerRequest
     | DocumentEncryptToKeysWorkerRequest
+    | StreamDecryptDocumentWorkerRequest
+    | StreamEncryptDocumentWorkerRequest
     | NewUserKeygenWorkerRequest
     | NewUserAndDeviceKeygenWorkerRequest
     | DeviceKeygenWorkerRequest
@@ -350,9 +355,7 @@ export type RequestMessage =
     | SignatureGenerationWorkerRequest
     | SearchTokenizeQueryRequest
     | SearchTokenizeDataRequest
-    | SearchTransliterateString
-    | StreamDecryptDocumentWorkerRequest
-    | StreamEncryptDocumentWorkerRequest;
+    | SearchTransliterateString;
 
 export type ResponseMessage =
     | RotateGroupPrivateKeyWorkerResponse
@@ -361,6 +364,8 @@ export type ResponseMessage =
     | ReencryptDocumentWorkerResponse
     | DecryptDocumentWorkerResponse
     | DocumentEncryptToKeysWorkerResponse
+    | StreamDecryptDocumentWorkerResponse
+    | StreamEncryptDocumentWorkerResponse
     | NewUserKeygenWorkerResponse
     | NewUserAndDeviceKeygenWorkerResponse
     | DeviceKeygenWorkerResponse
@@ -373,6 +378,4 @@ export type ResponseMessage =
     | SignatureGenerationWorkerResponse
     | SearchTokenizeStringResponse
     | SearchTransliterateStringResponse
-    | StreamDecryptDocumentWorkerResponse
-    | StreamEncryptDocumentWorkerResponse
     | ErrorResponse;

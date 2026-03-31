@@ -47,7 +47,7 @@ describe("DocumentAdvancedApi", () => {
         });
 
         it("returns doc in raw bytes when asked", () => {
-            const eDoc = new Uint8Array([2, 35, 52, 13, 63, 23, 63, 34]);
+            const eDoc = TestUtils.getEncryptedDocumentBytes();
             const decryptedBytes = new Uint8Array([36, 89, 72]);
             const edeks = new Uint8Array([22, 33, 44]);
 
@@ -104,7 +104,7 @@ describe("DocumentAdvancedApi", () => {
                 })
             );
 
-            DocumentAdvancedApi.encrypt("doc key", new Uint8Array([88, 73, 92]), ["user-55", "user-33"], ["group-20"], true, {}).engage(
+            DocumentAdvancedApi.encryptWithProvidedEdeks("doc key", new Uint8Array([88, 73, 92]), ["user-55", "user-33"], ["group-20"], true, {}).engage(
                 (e) => done(e),
                 ({edeks, document, documentID}) => {
                     const userKeyList = [
@@ -167,12 +167,8 @@ describe("DocumentAdvancedApi", () => {
         it("writes header, resolves keys, and returns edeks", (done) => {
             jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(Future.of<any>({result: []}));
             jest.spyOn(GroupApiEndpoints, "getGroupPublicKeyList").mockReturnValue(Future.of<any>([]));
-            jest.spyOn(PolicyApiEndpoints, "callApplyPolicyApi").mockReturnValue(
-                Future.of<any>({usersAndGroups: [], invalidUsersAndGroups: []})
-            );
-            jest.spyOn(DocumentOperations, "encryptDocumentStream").mockReturnValue(
-                Future.of<any>({userAccessKeys: [], groupAccessKeys: []})
-            );
+            jest.spyOn(PolicyApiEndpoints, "callApplyPolicyApi").mockReturnValue(Future.of<any>({usersAndGroups: [], invalidUsersAndGroups: []}));
+            jest.spyOn(DocumentOperations, "encryptDocumentStream").mockReturnValue(Future.of<any>({userAccessKeys: [], groupAccessKeys: []}));
 
             const plaintextStream = new ReadableStream<Uint8Array>();
             const ciphertextStream = new WritableStream<Uint8Array>();

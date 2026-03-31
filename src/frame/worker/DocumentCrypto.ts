@@ -1,6 +1,6 @@
 import * as Recrypt from "./crypto/recrypt";
 import * as AES from "./crypto/aes";
-import {StreamingDecryptor, StreamingEncryptor, StreamProcessor} from "./crypto/aes/StreamingAes";
+import {StreamingDecryptor, StreamingEncryptor} from "./crypto/aes/StreamingAes";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
@@ -96,15 +96,12 @@ export function decryptDocumentStream(
 ): Future<SDKError, void> {
     return Recrypt.decryptPlaintext(encryptedSymmetricKey, myPrivateKey)
         .map(([_, documentSymmetricKey]) => {
-            // Fire-and-forget: the stream loop runs in the background.
-            // Success/failure is communicated through the stream itself.
-            StreamingDecryptor.create(documentSymmetricKey, iv).then((decryptor) =>
-                runStreamLoop(decryptor, encryptedStream, plaintextStream)
-            );
+            // pipeTo runs in the background. Success/failure is communicated through the stream itself.
+            StreamingDecryptor.create(documentSymmetricKey, iv).then((decryptor) => encryptedStream.pipeThrough(decryptor).pipeTo(plaintextStream));
         })
         .errorMap((error) => {
             // PRE key decryption failed — abort the output stream so the caller sees an error
-            plaintextStream.abort(error).catch(noop);
+            plaintextStream.abort(error).catch(() => {});
             return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_DECRYPT_FAILURE);
         });
 }
@@ -128,56 +125,14 @@ export function encryptDocumentStream(
                 Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
                 Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys)
             ).map(([userAccessKeys, groupAccessKeys]) => {
-                // Fire-and-forget: the stream loop runs in the background.
-                // Success/failure is communicated through the stream itself.
-                StreamingEncryptor.create(documentSymmetricKey, iv).then((encryptor) =>
-                    runStreamLoop(encryptor, plaintextStream, ciphertextStream)
-                );
+                // pipeTo runs in the background. Success/failure is communicated through the stream itself.
+                StreamingEncryptor.create(documentSymmetricKey, iv).then((encryptor) => plaintextStream.pipeThrough(encryptor).pipeTo(ciphertextStream));
                 return {userAccessKeys, groupAccessKeys};
             });
         })
         .errorMap((error) => {
             // Key generation or PRE encryption failed — abort the output stream so the caller sees an error
-            ciphertextStream.abort(error).catch(noop);
+            ciphertextStream.abort(error).catch(() => {});
             return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_ENCRYPT_FAILURE);
         });
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-function noop() {}
-
-/**
- * Generic stream processing loop that drives any StreamProcessor (encrypt or decrypt).
- * Reads chunks from inputStream, processes via processor.processChunk(), writes results
- * to outputStream, then calls processor.finalize() for the final bytes.
- * On success, closes outputStream. On error, aborts outputStream and cancels inputStream.
- */
-async function runStreamLoop(
-    processor: StreamProcessor,
-    inputStream: ReadableStream<Uint8Array>,
-    outputStream: WritableStream<Uint8Array>
-): Promise<void> {
-    const reader = inputStream.getReader();
-    const writer = outputStream.getWriter();
-    try {
-        let done = false;
-        while (!done) {
-            const result = await reader.read();
-            done = result.done;
-            if (!done) {
-                const output = await processor.processChunk(result.value!);
-                if (output.length > 0) {
-                    await writer.write(output);
-                }
-            }
-        }
-        const finalBytes = await processor.finalize();
-        if (finalBytes.length > 0) {
-            await writer.write(finalBytes);
-        }
-        await writer.close();
-    } catch (e) {
-        await writer.abort(e).catch(noop);
-        reader.cancel().catch(noop);
-    }
 }

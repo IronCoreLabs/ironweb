@@ -2,6 +2,7 @@ import Future from "futurejs";
 import {ErrorCodes, Frame, Versions} from "../Constants";
 import {ErrorResponse, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
 import SDKError from "../lib/SDKError";
+import {toTransferables} from "../lib/Utils";
 
 interface FrameEvent<T> {
     replyID: number;
@@ -30,7 +31,7 @@ export class ShimMessenger {
     /**
      * Post request message to child iFrame
      * @param {RequestMessage} data         RequestMessage to post to child iFrame
-     * @param {Uint8Array[]}  transferList  List of byte arrays to transfer to frame
+     * @param {Uint8Array[]}  transferList  List of byte arrays or transferables to transfer to frame
      */
     postMessageToFrame(data: RequestMessage, transferList: (Uint8Array | Transferable)[] = []): Future<SDKError, ResponseMessage> {
         const message: FrameEvent<RequestMessage> = {
@@ -38,17 +39,18 @@ export class ShimMessenger {
             data,
         };
         try {
-            this.messagePort.postMessage(
-                message,
-                transferList.map((item) => (item instanceof Uint8Array ? item.buffer : item)) as Transferable[]
-            );
+            this.messagePort.postMessage(message, toTransferables(transferList));
             return new Future<SDKError, ResponseMessage>((_, resolve) => {
                 this.callbacks[message.replyID] = resolve;
             });
-        } catch (_) {
-            return Future.reject(
-                new SDKError(new Error("Failure occurred when passing message due to the lack of browser support."), ErrorCodes.BROWSER_FRAME_MESSAGE_FAILURE)
-            );
+        } catch (e) {
+            const hasStreams = transferList.some((item) => item instanceof ReadableStream || item instanceof WritableStream);
+            // Safari is the notable holdout here (https://github.com/WebKit/standards-positions/issues/643). For now,
+            // give an informative message about support.
+            const message = hasStreams
+                ? "Streaming encrypt/decrypt requires transferable streams, which is not supported by this browser. It is known to be supported by Chrome, Firefox, and Edge."
+                : "Failure occurred when passing message due to the lack of browser support.";
+            return Future.reject(new SDKError(new Error(message), ErrorCodes.BROWSER_FRAME_MESSAGE_FAILURE));
         }
     }
 

@@ -401,7 +401,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UNMANAGED_ENCRYPT", (done) => {
-            jest.spyOn(DocumentAdvancedApi, "encrypt").mockReturnValue(Future.of<any>("umanagedEncrypt"));
+            jest.spyOn(DocumentAdvancedApi, "encryptWithProvidedEdeks").mockReturnValue(Future.of<any>("umanagedEncrypt"));
             const payload: any = {
                 type: "DOCUMENT_UNMANAGED_ENCRYPT",
                 message: {
@@ -415,7 +415,14 @@ describe("frame index", () => {
             };
 
             messenger.onMessageCallback(payload, () => {
-                expect(DocumentAdvancedApi.encrypt).toHaveBeenCalledWith("my doc", new Uint8Array([36]), "list of user ids", "list of group ids", true, {});
+                expect(DocumentAdvancedApi.encryptWithProvidedEdeks).toHaveBeenCalledWith(
+                    "my doc",
+                    new Uint8Array([36]),
+                    "list of user ids",
+                    "list of group ids",
+                    true,
+                    {}
+                );
                 done();
             });
         });
@@ -1010,9 +1017,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UNMANAGED_STREAM_DECRYPT", (done) => {
-            jest.spyOn(DocumentAdvancedApi, "decryptStreamWithProvidedEdeks").mockReturnValue(
-                Future.of<any>({accessVia: {type: "user", id: "u1"}})
-            );
+            jest.spyOn(DocumentAdvancedApi, "decryptStreamWithProvidedEdeks").mockReturnValue(Future.of<any>({accessVia: {type: "user", id: "u1"}}));
             const payload: any = {
                 type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT",
                 message: {
@@ -1059,9 +1064,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UNMANAGED_STREAM_ENCRYPT", (done) => {
-            jest.spyOn(DocumentAdvancedApi, "encryptStreamWithEdeks").mockReturnValue(
-                Future.of<any>({documentID: "docID", edeks: new Uint8Array([1, 2, 3])})
-            );
+            jest.spyOn(DocumentAdvancedApi, "encryptStreamWithEdeks").mockReturnValue(Future.of<any>({documentID: "docID", edeks: new Uint8Array([1, 2, 3])}));
             const payload: any = {
                 type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT",
                 message: {

@@ -5,14 +5,15 @@ import {
     DocumentCreateOptions,
     EncryptedDocumentResponse,
     EncryptedUnmanagedDocumentResponse,
+    StreamDecryptResponse,
     UserOrGroup,
 } from "../../../ironweb";
-import {CryptoConstants, ErrorCodes, HEADER_META_LENGTH_LENGTH, VERSION_HEADER_LENGTH} from "../../Constants";
+import {ErrorCodes, HEADER_META_LENGTH_LENGTH, VERSION_HEADER_LENGTH} from "../../Constants";
 import * as MT from "../../FrameMessageTypes";
 import SDKError from "../../lib/SDKError";
+import {parseDocumentHeader} from "../../lib/Utils";
 import * as FrameMediator from "../FrameMediator";
 import * as ShimUtils from "../ShimUtils";
-import {utf8} from "./CodecSDK";
 
 const MAX_DOCUMENT_SIZE = 1024 * 2 * 1000; //2MB
 
@@ -75,28 +76,9 @@ export function getMetadata(documentID: string) {
 export function getDocumentIDFromBytes(documentData: Uint8Array): Promise<string | null> {
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateEncryptedDocument(documentData);
-
-    //Version 1 document, we don't have the document ID as it's not encoded in the header
-    if (documentData[0] === 1) {
-        return Promise.resolve(null);
-    }
-    //Check to see if the document is a version we don't support and reject if so
-    if (documentData[0] !== 2) {
-        return Promise.reject(
-            new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE)
-        );
-    }
-    const headerLength = new DataView(documentData.buffer).getUint16(documentData.byteOffset + VERSION_HEADER_LENGTH, false);
-    const headerContent = documentData.slice(
-        VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH,
-        VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerLength
-    );
-    try {
-        const headerObject: DocumentHeader = JSON.parse(utf8.fromBytes(headerContent));
-        return Promise.resolve(headerObject._did_);
-    } catch {
-        return Promise.reject(new SDKError(new Error("Unable to parse document header. Header value is corrupted."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE));
-    }
+    return parseDocumentHeader(documentData)
+        .map(({documentID}) => documentID)
+        .toPromise();
 }
 
 /**
@@ -352,90 +334,75 @@ export function revokeAccess(documentID: string, revokeList: DocumentAccessList)
  * Parse the version header, header JSON, and IV from the beginning of an encrypted ReadableStream.
  * Returns the document ID, IV, and a new ReadableStream starting after the header+IV (ciphertext only).
  */
-async function parseStreamHeader(
+function parseStreamHeader(
     encryptedStream: ReadableStream<Uint8Array>
-): Promise<{documentID: string | null; iv: Uint8Array; ciphertextStream: ReadableStream<Uint8Array>}> {
-    const reader = encryptedStream.getReader();
-    let buffer = new Uint8Array(0);
+): Future<Error, {documentID: string | null; iv: Uint8Array; ciphertextStream: ReadableStream<Uint8Array>}> {
+    return Future.tryP<SDKError, Uint8Array>(async () => {
+        const reader = encryptedStream.getReader();
+        let buffer = new Uint8Array(0);
 
-    // Read enough bytes to parse the header. Worst case we need: 1 (version) + 2 (header len) + headerLen + 12 (IV).
-    // We won't know headerLen until we read the first 3 bytes.
-    async function readAtLeast(n: number): Promise<void> {
-        while (buffer.length < n) {
-            const {done, value} = await reader.read();
-            if (done) throw new SDKError(new Error("Encrypted stream ended before header could be parsed"), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
-            const next = new Uint8Array(buffer.length + value.length);
-            next.set(buffer, 0);
-            next.set(value, buffer.length);
-            buffer = next;
+        async function readAtLeast(n: number): Promise<void> {
+            while (buffer.length < n) {
+                const {done, value} = await reader.read();
+                if (done) throw new SDKError(new Error("Encrypted stream ended before header could be parsed"), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                const next = new Uint8Array(buffer.length + value.length);
+                next.set(buffer, 0);
+                next.set(value, buffer.length);
+                buffer = next;
+            }
         }
-    }
 
-    // Read version byte
-    await readAtLeast(VERSION_HEADER_LENGTH);
-    const version = buffer[0];
-
-    let documentID: string | null = null;
-    let headerTotalLength: number;
-
-    if (version === 1) {
-        headerTotalLength = VERSION_HEADER_LENGTH;
-    } else if (version === 2) {
+        // Buffer enough to determine the full header size: version(1) + potentially header length(2)
         await readAtLeast(VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH);
-        const headerJsonLength = new DataView(buffer.buffer, buffer.byteOffset).getUint16(VERSION_HEADER_LENGTH, false);
-        headerTotalLength = VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerJsonLength;
-        await readAtLeast(headerTotalLength);
-        const headerContent = buffer.slice(VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH, headerTotalLength);
-        try {
-            const headerObject: DocumentHeader = JSON.parse(utf8.fromBytes(headerContent));
-            documentID = headerObject._did_;
-        } catch {
-            throw new SDKError(new Error("Unable to parse document header from stream"), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+        // For v2, compute total needed: version + length prefix + headerJson + IV(12)
+        // For v1, we just need version + IV(12) — but we've already buffered more than that
+        let totalNeeded: number;
+        if (buffer[0] === 2) {
+            const headerJsonLength = new DataView(buffer.buffer, buffer.byteOffset).getUint16(VERSION_HEADER_LENGTH, false);
+            totalNeeded = VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerJsonLength + 12;
+        } else {
+            totalNeeded = VERSION_HEADER_LENGTH + 12;
         }
-    } else {
-        throw new SDKError(new Error("Provided encrypted stream doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
-    }
+        await readAtLeast(totalNeeded);
 
-    // Read IV
-    const ivStart = headerTotalLength;
-    await readAtLeast(ivStart + CryptoConstants.IV_LENGTH);
-    const iv = buffer.slice(ivStart, ivStart + CryptoConstants.IV_LENGTH);
+        reader.releaseLock();
+        return buffer;
+    }).flatMap((buffer) =>
+        parseDocumentHeader(buffer).map((parsed) => {
+            const remainder = buffer.slice(parsed.contentOffset);
 
-    // Remaining bytes in buffer after header+IV
-    const remainder = buffer.slice(ivStart + CryptoConstants.IV_LENGTH);
-
-    // Release the reader lock and create a new stream: remainder bytes first, then the rest of the original stream
-    reader.releaseLock();
-    let remainderSent = false;
-    let ongoingReader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-    const ciphertextStream = new ReadableStream<Uint8Array>({
-        pull(controller) {
-            if (!remainderSent) {
-                remainderSent = true;
-                if (remainder.length > 0) {
-                    controller.enqueue(remainder);
-                    return;
-                }
-            }
-            if (!ongoingReader) {
-                ongoingReader = encryptedStream.getReader();
-            }
-            return ongoingReader.read().then(({done, value}) => {
-                if (done) {
-                    controller.close();
-                } else {
-                    controller.enqueue(value);
-                }
+            let remainderSent = false;
+            let ongoingReader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+            const ciphertextStream = new ReadableStream<Uint8Array>({
+                pull(controller) {
+                    if (!remainderSent) {
+                        remainderSent = true;
+                        if (remainder.length > 0) {
+                            controller.enqueue(remainder);
+                            return;
+                        }
+                    }
+                    if (!ongoingReader) {
+                        ongoingReader = encryptedStream.getReader();
+                    }
+                    return ongoingReader.read().then(({done, value}) => {
+                        if (done) {
+                            controller.close();
+                        } else {
+                            controller.enqueue(value);
+                        }
+                    });
+                },
+                cancel() {
+                    if (ongoingReader) {
+                        ongoingReader.cancel();
+                    }
+                },
             });
-        },
-        cancel() {
-            if (ongoingReader) {
-                ongoingReader.cancel();
-            }
-        },
-    });
 
-    return {documentID, iv, ciphertextStream};
+            return {documentID: parsed.documentID, iv: parsed.iv, ciphertextStream};
+        })
+    );
 }
 
 /**
@@ -471,6 +438,7 @@ export function encryptStream(
         },
     };
 
+    // Cast needed because TS's Transferable type doesn't yet include ReadableStream/WritableStream
     return FrameMediator.sendMessage<MT.DocumentStreamEncryptResponse>(payload, [
         plaintextStream as unknown as Transferable,
         ciphertextWritable as unknown as Transferable,
@@ -496,29 +464,33 @@ export function encryptStream(
 export function decryptStream(
     documentID: string,
     encryptedStream: ReadableStream<Uint8Array>
-): Promise<{documentID: string; documentName: string | null; plaintextStream: ReadableStream<Uint8Array>}> {
+): Promise<StreamDecryptResponse> {
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateID(documentID);
 
-    return parseStreamHeader(encryptedStream).then(({iv, ciphertextStream}) => {
-        const {readable: plaintextStream, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+    return parseStreamHeader(encryptedStream)
+        .flatMap(({iv, ciphertextStream}) => {
+            const {readable: plaintextStream, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
 
-        const payload: MT.DocumentStreamDecryptRequest = {
-            type: "DOCUMENT_STREAM_DECRYPT",
-            message: {documentID, iv, encryptedStream: ciphertextStream, plaintextStream: plaintextWritable},
-        };
+            const payload: MT.DocumentStreamDecryptRequest = {
+                type: "DOCUMENT_STREAM_DECRYPT",
+                message: {documentID, iv, encryptedStream: ciphertextStream, plaintextStream: plaintextWritable},
+            };
 
-        return FrameMediator.sendMessage<MT.DocumentStreamDecryptResponse>(payload, [
-            ciphertextStream as unknown as Transferable,
-            plaintextWritable as unknown as Transferable,
-        ])
-            .map(({message}) => ({
+            return FrameMediator.sendMessage<MT.DocumentStreamDecryptResponse>(payload, [
+                ciphertextStream as unknown as Transferable,
+                plaintextWritable as unknown as Transferable,
+            ]).map(({message}) => ({
                 documentID,
                 documentName: message.documentName,
+                visibleTo: message.visibleTo,
+                association: message.association,
+                created: message.created,
+                updated: message.updated,
                 plaintextStream,
-            }))
-            .toPromise();
-    });
+            }));
+        })
+        .toPromise();
 }
 
 /**
@@ -565,25 +537,25 @@ export const advanced = {
         ShimUtils.checkSDKInitialized();
         ShimUtils.validateEncryptedDeks(edeks);
 
-        return parseStreamHeader(encryptedStream).then(({documentID, iv, ciphertextStream}) => {
-            const {readable: plaintextStream, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+        return parseStreamHeader(encryptedStream)
+            .flatMap(({documentID, iv, ciphertextStream}) => {
+                const {readable: plaintextStream, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
 
-            const payload: MT.DocumentUnmanagedStreamDecryptRequest = {
-                type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT",
-                message: {edeks, iv, encryptedStream: ciphertextStream, plaintextStream: plaintextWritable},
-            };
+                const payload: MT.DocumentUnmanagedStreamDecryptRequest = {
+                    type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT",
+                    message: {edeks, iv, encryptedStream: ciphertextStream, plaintextStream: plaintextWritable},
+                };
 
-            return FrameMediator.sendMessage<MT.DocumentUnmanagedStreamDecryptResponse>(payload, [
-                ciphertextStream as unknown as Transferable,
-                plaintextWritable as unknown as Transferable,
-            ])
-                .map(({message}) => ({
+                return FrameMediator.sendMessage<MT.DocumentUnmanagedStreamDecryptResponse>(payload, [
+                    ciphertextStream as unknown as Transferable,
+                    plaintextWritable as unknown as Transferable,
+                ]).map(({message}) => ({
                     documentID: documentID!,
                     plaintextStream,
                     accessVia: message.accessVia,
-                }))
-                .toPromise();
-        });
+                }));
+            })
+            .toPromise();
     },
 
     /**

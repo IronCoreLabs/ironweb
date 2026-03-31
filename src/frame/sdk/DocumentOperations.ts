@@ -115,6 +115,7 @@ export function encryptDocumentStream(
         },
     };
     return WorkerMediator.sendMessage<WMT.StreamEncryptDocumentWorkerResponse>(payload, [
+        // unknowns are needed until we update TS, where Readable/Writable Stream are in Transferable.
         plaintextStream as unknown as Transferable,
         ciphertextStream as unknown as Transferable,
     ]).map(({message}) => message);
@@ -142,6 +143,7 @@ export function decryptDocumentStream(
         },
     };
     return WorkerMediator.sendMessage<WMT.StreamDecryptDocumentWorkerResponse>(payload, [
+        // unknowns are needed until we update TS, where Readable/Writable Stream are in Transferable.
         encryptedStream as unknown as Transferable,
         plaintextStream as unknown as Transferable,
     ]).map(() => undefined as void);

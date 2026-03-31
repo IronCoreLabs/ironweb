@@ -130,7 +130,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.policy
             ).engage(errorHandler, (encryptedDoc) => callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedDoc}, [encryptedDoc.document]));
         case "DOCUMENT_UNMANAGED_ENCRYPT":
-            return DocumentAdvancedApi.encrypt(
+            return DocumentAdvancedApi.encryptWithProvidedEdeks(
                 data.message.documentID,
                 data.message.documentData,
                 data.message.userGrants,
@@ -230,10 +230,12 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message})
             );
         case "DOCUMENT_STREAM_DECRYPT":
-            return DocumentApi.decryptLocalDocStream(data.message.documentID, data.message.iv, data.message.encryptedStream, data.message.plaintextStream).engage(
-                errorHandler,
-                (result) => callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: result})
-            );
+            return DocumentApi.decryptLocalDocStream(
+                data.message.documentID,
+                data.message.iv,
+                data.message.encryptedStream,
+                data.message.plaintextStream
+            ).engage(errorHandler, (result) => callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: result}));
         case "DOCUMENT_UNMANAGED_STREAM_DECRYPT":
             return DocumentAdvancedApi.decryptStreamWithProvidedEdeks(
                 data.message.iv,

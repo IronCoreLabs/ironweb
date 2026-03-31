@@ -129,7 +129,7 @@ describe("DocumentApi", () => {
         });
 
         it("returns doc in raw bytes when asked", () => {
-            const eDoc = new Uint8Array([2, 35, 52, 13, 63, 23, 63, 34]);
+            const eDoc = TestUtils.getEncryptedDocumentBytes();
             const decryptedBytes = new Uint8Array([36, 89, 72]);
             const docMeta = TestUtils.getEncryptedDocumentMetaResponse();
 
@@ -1010,6 +1010,10 @@ describe("DocumentApi", () => {
                 Future.of<any>({
                     id: "docID",
                     name: "docName",
+                    association: {type: "owner"},
+                    visibleTo: {users: [{id: "user1"}], groups: []},
+                    created: "2023-01-01T00:00:00Z",
+                    updated: "2023-01-02T00:00:00Z",
                     encryptedSymmetricKey: TestUtils.getTransformedSymmetricKey(),
                 })
             );
@@ -1022,7 +1026,13 @@ describe("DocumentApi", () => {
             DocumentApi.decryptLocalDocStream("docID", iv, encryptedStream, plaintextStream).engage(
                 (e) => done(e),
                 (result) => {
-                    expect(result).toEqual({documentName: "docName"});
+                    expect(result).toEqual({
+                        documentName: "docName",
+                        association: "owner",
+                        visibleTo: {users: [{id: "user1"}], groups: []},
+                        created: "2023-01-01T00:00:00Z",
+                        updated: "2023-01-02T00:00:00Z",
+                    });
                     expect(DocumentOperations.decryptDocumentStream).toHaveBeenCalledWith(
                         expect.any(Object),
                         privateDeviceKey,

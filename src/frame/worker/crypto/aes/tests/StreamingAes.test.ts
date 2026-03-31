@@ -18,44 +18,40 @@ function gcmEncrypt(key: Uint8Array, iv: Uint8Array, plaintext: Uint8Array): Uin
 }
 
 /**
- * Helper: streaming-decrypt the given data through StreamingDecryptor with specified chunk size.
+ * Helper: pipe encrypted data through a StreamingDecryptor with specified chunk size.
  */
 async function streamingDecrypt(key: Uint8Array, iv: Uint8Array, encrypted: Uint8Array, chunkSize: number): Promise<Uint8Array> {
-    const decryptor = await StreamingDecryptor.create(key, iv);
     const chunks = chunkArray(encrypted, chunkSize);
-    const outputParts: Uint8Array[] = [];
-    for (const chunk of chunks) {
-        const result = await decryptor.processChunk(chunk);
-        if (result.length > 0) {
-            outputParts.push(result);
-        }
-    }
-    const finalPart = await decryptor.finalize();
-    if (finalPart.length > 0) {
-        outputParts.push(finalPart);
-    }
-    return concatArrayBuffers(...outputParts);
+    const input = new ReadableStream<Uint8Array>({
+        start(controller) {
+            for (const chunk of chunks) controller.enqueue(chunk);
+            controller.close();
+        },
+    });
+    const decryptor = await StreamingDecryptor.create(key, iv);
+    const outputChunks: Uint8Array[] = [];
+    const output = new WritableStream<Uint8Array>({write(chunk) { outputChunks.push(new Uint8Array(chunk)); }});
+    await input.pipeThrough(decryptor).pipeTo(output);
+    return concatArrayBuffers(...outputChunks);
 }
 
 /**
- * Helper: streaming-encrypt plaintext through StreamingEncryptor with specified chunk size.
+ * Helper: pipe plaintext through a StreamingEncryptor with specified chunk size.
  * Returns ciphertext || tag.
  */
 async function streamingEncrypt(key: Uint8Array, iv: Uint8Array, plaintext: Uint8Array, chunkSize: number): Promise<Uint8Array> {
-    const encryptor = await StreamingEncryptor.create(key, iv);
     const chunks = chunkArray(plaintext, chunkSize);
-    const outputParts: Uint8Array[] = [];
-    for (const chunk of chunks) {
-        const result = await encryptor.processChunk(chunk);
-        if (result.length > 0) {
-            outputParts.push(result);
-        }
-    }
-    const finalPart = await encryptor.finalize();
-    if (finalPart.length > 0) {
-        outputParts.push(finalPart);
-    }
-    return concatArrayBuffers(...outputParts);
+    const input = new ReadableStream<Uint8Array>({
+        start(controller) {
+            for (const chunk of chunks) controller.enqueue(chunk);
+            controller.close();
+        },
+    });
+    const encryptor = await StreamingEncryptor.create(key, iv);
+    const outputChunks: Uint8Array[] = [];
+    const output = new WritableStream<Uint8Array>({write(chunk) { outputChunks.push(new Uint8Array(chunk)); }});
+    await input.pipeThrough(encryptor).pipeTo(output);
+    return concatArrayBuffers(...outputChunks);
 }
 
 /**
@@ -163,9 +159,7 @@ describe("StreamingDecryptor", () => {
             const tampered = new Uint8Array(encrypted);
             tampered[0] ^= 0xff;
 
-            const decryptor = await StreamingDecryptor.create(key, iv);
-            await decryptor.processChunk(tampered);
-            await expect(decryptor.finalize()).rejects.toThrow("AES-GCM auth tag verification failed");
+            await expect(streamingDecrypt(key, iv, tampered, tampered.length)).rejects.toThrow("AES-GCM auth tag verification failed");
         });
 
         it("throws when a tag byte is tampered with", async () => {
@@ -174,9 +168,7 @@ describe("StreamingDecryptor", () => {
             const tampered = new Uint8Array(encrypted);
             tampered[tampered.length - 1] ^= 0x01;
 
-            const decryptor = await StreamingDecryptor.create(key, iv);
-            await decryptor.processChunk(tampered);
-            await expect(decryptor.finalize()).rejects.toThrow("AES-GCM auth tag verification failed");
+            await expect(streamingDecrypt(key, iv, tampered, tampered.length)).rejects.toThrow("AES-GCM auth tag verification failed");
         });
 
         it("throws when using the wrong key", async () => {
@@ -185,9 +177,7 @@ describe("StreamingDecryptor", () => {
             const wrongKey = new Uint8Array(32);
             wrongKey.set([99, 98, 97]);
 
-            const decryptor = await StreamingDecryptor.create(wrongKey, iv);
-            await decryptor.processChunk(encrypted);
-            await expect(decryptor.finalize()).rejects.toThrow("AES-GCM auth tag verification failed");
+            await expect(streamingDecrypt(wrongKey, iv, encrypted, encrypted.length)).rejects.toThrow("AES-GCM auth tag verification failed");
         });
 
         it("throws when using the wrong IV", async () => {
@@ -196,9 +186,7 @@ describe("StreamingDecryptor", () => {
             const wrongIv = new Uint8Array(12);
             wrongIv.set([99, 98, 97]);
 
-            const decryptor = await StreamingDecryptor.create(key, wrongIv);
-            await decryptor.processChunk(encrypted);
-            await expect(decryptor.finalize()).rejects.toThrow("AES-GCM auth tag verification failed");
+            await expect(streamingDecrypt(key, wrongIv, encrypted, encrypted.length)).rejects.toThrow("AES-GCM auth tag verification failed");
         });
     });
 
@@ -212,9 +200,7 @@ describe("StreamingDecryptor", () => {
         });
 
         it("throws on insufficient data (less than 16 bytes)", async () => {
-            const decryptor = await StreamingDecryptor.create(key, iv);
-            await decryptor.processChunk(new Uint8Array(10));
-            await expect(decryptor.finalize()).rejects.toThrow("Insufficient data");
+            await expect(streamingDecrypt(key, iv, new Uint8Array(10), 10)).rejects.toThrow("Insufficient data");
         });
 
         it("handles data fed in many tiny 2-byte chunks", async () => {
