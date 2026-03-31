@@ -1,0 +1,9 @@
+# Ignore everything
+**/*
+
+# Un-ignore the file types we want Prettier to format
+!**/*.ts
+!**/*.tsx
+!**/*.js
+!**/*.jsx
+!**/*.json
