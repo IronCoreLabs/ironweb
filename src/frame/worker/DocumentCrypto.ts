@@ -6,6 +6,14 @@ import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
 
 /**
+ * Abort a writable stream to signal an error to its readable side when the pipeline was never started.
+ * The catch is defensive — abort() can reject if the stream is already closed/errored.
+ */
+function signalStreamFailure(stream: WritableStream<Uint8Array>, error: Error): void {
+    stream.abort(error).catch(() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
+}
+
+/**
  * Decrypt a document given the document container and the private key needed to decrypt
  * @param {EncryptedDocument<Uint8Array>} document     Container of the encrypted document. Contains encrypted document, symmetric key, and nonce necessary for decryption
  * @param {TransformedEncryptedMessage}   symmetricKey Encrypted symmetric key for this document
@@ -100,8 +108,7 @@ export function decryptDocumentStream(
             StreamingDecryptor.create(documentSymmetricKey, iv).then((decryptor) => encryptedStream.pipeThrough(decryptor).pipeTo(plaintextStream));
         })
         .errorMap((error) => {
-            // PRE key decryption failed — abort the output stream so the caller sees an error
-            plaintextStream.abort(error).catch(() => {});
+            signalStreamFailure(plaintextStream, error);
             return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_DECRYPT_FAILURE);
         });
 }
@@ -131,8 +138,7 @@ export function encryptDocumentStream(
             });
         })
         .errorMap((error) => {
-            // Key generation or PRE encryption failed — abort the output stream so the caller sees an error
-            ciphertextStream.abort(error).catch(() => {});
+            signalStreamFailure(ciphertextStream, error);
             return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_ENCRYPT_FAILURE);
         });
 }
