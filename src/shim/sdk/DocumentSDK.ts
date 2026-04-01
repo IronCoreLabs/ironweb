@@ -11,7 +11,7 @@ import {
 import {ErrorCodes, HEADER_META_LENGTH_LENGTH, VERSION_HEADER_LENGTH} from "../../Constants";
 import * as MT from "../../FrameMessageTypes";
 import SDKError from "../../lib/SDKError";
-import {parseDocumentHeader} from "../../lib/Utils";
+import {concatArrayBuffers, parseDocumentHeader} from "../../lib/Utils";
 import * as FrameMediator from "../FrameMediator";
 import * as ShimUtils from "../ShimUtils";
 
@@ -337,71 +337,73 @@ export function revokeAccess(documentID: string, revokeList: DocumentAccessList)
 function parseStreamHeader(
     encryptedStream: ReadableStream<Uint8Array>
 ): Future<Error, {documentID: string | null; iv: Uint8Array; ciphertextStream: ReadableStream<Uint8Array>}> {
-    return Future.tryP<SDKError, Uint8Array>(async () => {
+    return Future.tryP<SDKError, {reader: ReadableStreamDefaultReader<Uint8Array>; buffer: Uint8Array}>(async () => {
         const reader = encryptedStream.getReader();
-        let buffer = new Uint8Array(0);
+        try {
+            const chunks: Uint8Array[] = [];
+            let totalLen = 0;
 
-        async function readAtLeast(n: number): Promise<void> {
-            while (buffer.length < n) {
-                const {done, value} = await reader.read();
-                if (done) throw new SDKError(new Error("Encrypted stream ended before header could be parsed"), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
-                const next = new Uint8Array(buffer.length + value.length);
-                next.set(buffer, 0);
-                next.set(value, buffer.length);
-                buffer = next;
+            // Reads at least n bytes into the `chunks` array above.
+            // We keep track of the total bytes we've gathered via totalLen.
+            const readAtLeastIntoChunks = async (n: number) => {
+                while (totalLen < n) {
+                    const {done, value} = await reader.read();
+                    if (done) throw new SDKError(new Error("Encrypted stream ended before header could be parsed"), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                    chunks.push(value);
+                    totalLen += value.length;
+                }
+            };
+
+            // Need to read the header length prefix to know total size.
+            await readAtLeastIntoChunks(VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH);
+            // Concat after we know we have enough for the header
+            // Peek at version to determine full header size
+            const initialHeaderBytes = concatArrayBuffers(...chunks);
+            if (initialHeaderBytes[0] === 2) {
+                const headerJsonLength = new DataView(initialHeaderBytes.buffer, initialHeaderBytes.byteOffset).getUint16(VERSION_HEADER_LENGTH, false);
+                await readAtLeastIntoChunks(VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerJsonLength + 12);
+            } else {
+                await readAtLeastIntoChunks(VERSION_HEADER_LENGTH + 12);
             }
+
+            return {reader, buffer: concatArrayBuffers(...chunks)};
+        } catch (e) {
+            // On any error in reading header chunks we need to release the reader
+            reader.releaseLock();
+            throw e;
         }
+    }).flatMap(({reader, buffer}) =>
+        parseDocumentHeader(buffer)
+            .map((parsed) => {
+                const remainder = buffer.slice(parsed.contentOffset);
 
-        // Buffer enough to determine the full header size: version(1) + potentially header length(2)
-        await readAtLeast(VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH);
-        // For v2, compute total needed: version + length prefix + headerJson + IV(12)
-        // For v1, we just need version + IV(12) — but we've already buffered more than that
-        let totalNeeded: number;
-        if (buffer[0] === 2) {
-            const headerJsonLength = new DataView(buffer.buffer, buffer.byteOffset).getUint16(VERSION_HEADER_LENGTH, false);
-            totalNeeded = VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerJsonLength + 12;
-        } else {
-            totalNeeded = VERSION_HEADER_LENGTH + 12;
-        }
-        await readAtLeast(totalNeeded);
-
-        reader.releaseLock();
-        return buffer;
-    }).flatMap((buffer) =>
-        parseDocumentHeader(buffer).map((parsed) => {
-            const remainder = buffer.slice(parsed.contentOffset);
-
-            let remainderSent = false;
-            let ongoingReader: ReadableStreamDefaultReader<Uint8Array> | null = null;
-            const ciphertextStream = new ReadableStream<Uint8Array>({
-                pull(controller) {
-                    if (!remainderSent) {
-                        remainderSent = true;
+                // Once we've parsed the header we might have remaining bytes. If
+                // we do we start out the ciphertextStream by writing them and then pull
+                // can just pull from the reader we had previously read from.
+                const ciphertextStream = new ReadableStream<Uint8Array>({
+                    start(controller) {
                         if (remainder.length > 0) {
                             controller.enqueue(remainder);
-                            return;
                         }
-                    }
-                    if (!ongoingReader) {
-                        ongoingReader = encryptedStream.getReader();
-                    }
-                    return ongoingReader.read().then(({done, value}) => {
-                        if (done) {
-                            controller.close();
-                        } else {
-                            controller.enqueue(value);
-                        }
-                    });
-                },
-                cancel() {
-                    if (ongoingReader) {
-                        ongoingReader.cancel();
-                    }
-                },
-            });
+                    },
+                    pull(controller) {
+                        return reader.read().then(({done, value}) => {
+                            done ? controller.close() : controller.enqueue(value);
+                        });
+                    },
+                    cancel() {
+                        return reader.cancel();
+                    },
+                });
 
-            return {documentID: parsed.documentID, iv: parsed.iv, ciphertextStream};
-        })
+                return {documentID: parsed.documentID, iv: parsed.iv, ciphertextStream};
+            })
+            .errorMap((e) => {
+                // On any error in preparing the new stream we need to release the reader lock
+                // This is purely defensive.
+                reader.releaseLock();
+                return e;
+            })
     );
 }
 
@@ -461,10 +463,7 @@ export function encryptStream(
  * @param {string}                     documentID      ID of the document to decrypt
  * @param {ReadableStream<Uint8Array>} encryptedStream Encrypted document as a ReadableStream (from fetch().body, file.stream(), etc.)
  */
-export function decryptStream(
-    documentID: string,
-    encryptedStream: ReadableStream<Uint8Array>
-): Promise<StreamDecryptResponse> {
+export function decryptStream(documentID: string, encryptedStream: ReadableStream<Uint8Array>): Promise<StreamDecryptResponse> {
     ShimUtils.checkSDKInitialized();
     ShimUtils.validateID(documentID);
 

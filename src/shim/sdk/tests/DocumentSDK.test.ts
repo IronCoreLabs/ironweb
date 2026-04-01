@@ -1329,9 +1329,7 @@ describe("DocumentSDK", () => {
 
         it("parses v2 header and sends correct message with IV and ciphertext stream", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
-                Future.of<any>({message: {documentName: "myDoc"}})
-            );
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {documentName: "myDoc"}}));
 
             // Build a v2 document: version(1) + headerLen(2) + headerJSON + IV(12) + ciphertext
             const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
@@ -1371,9 +1369,7 @@ describe("DocumentSDK", () => {
 
         it("parses v1 header (no document ID in header)", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
-                Future.of<any>({message: {documentName: "myDoc"}})
-            );
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {documentName: "myDoc"}}));
 
             // v1 document: version(1) + IV(12) + ciphertext
             const iv = new Uint8Array(12).fill(55);
@@ -1458,13 +1454,16 @@ describe("DocumentSDK", () => {
             new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
             const iv = new Uint8Array(12).fill(42);
             const ciphertextData = new Uint8Array([10, 20, 30, 40, 50]);
-            const firstChunk = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, headerBytes, iv, ciphertextData);
-            const secondChunk = new Uint8Array([60, 70, 80]);
+            // This ensures multiple passes will need to be made in the parseStreamHeader read loop.
+            const firstChunk = new Uint8Array([2]);
+            const secondChunk = concatArrayBuffers(headerLenBuf, headerBytes, iv, ciphertextData);
+            const thirdChunk = new Uint8Array([60, 70, 80]);
 
             const stream = new ReadableStream<Uint8Array>({
                 start(controller) {
                     controller.enqueue(firstChunk);
                     controller.enqueue(secondChunk);
+                    controller.enqueue(thirdChunk);
                     controller.close();
                 },
             });
@@ -1483,12 +1482,95 @@ describe("DocumentSDK", () => {
                     }
                     pump().then(() => {
                         const all = concatArrayBuffers(...chunks);
-                        // Should contain the remainder from the first chunk + the second chunk
-                        expect(all).toEqual(concatArrayBuffers(ciphertextData, secondChunk));
+                        // Should contain the remainder from the second chunk + the second chunk
+                        expect(all).toEqual(concatArrayBuffers(ciphertextData, thirdChunk));
                         done();
                     });
                 })
                 .catch((e) => done(e));
+        });
+
+        it("closes ciphertextStream immediately when source stream contains only header and IV with no ciphertext", (done) => {
+            ShimUtils.setSDKInitialized();
+            let capturedCiphertextStream: ReadableStream<Uint8Array> | null = null;
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockImplementation((payload: any) => {
+                capturedCiphertextStream = payload.message.encryptedStream;
+                return Future.of<any>({message: {documentName: "myDoc"}});
+            });
+
+            const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
+            const headerBytes = UTF8.encode(headerJson);
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const fullDoc = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, headerBytes, iv);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(fullDoc);
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => {
+                    const reader = capturedCiphertextStream!.getReader();
+                    reader.read().then(({done: d, value}) => {
+                        expect(d).toBe(true);
+                        expect(value).toBeUndefined();
+                        done();
+                    });
+                })
+                .catch((e) => done(e));
+        });
+
+        it("propagates cancellation of ciphertextStream to the underlying source stream", (done) => {
+            ShimUtils.setSDKInitialized();
+            let capturedCiphertextStream: ReadableStream<Uint8Array> | null = null;
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockImplementation((payload: any) => {
+                capturedCiphertextStream = payload.message.encryptedStream;
+                return Future.of<any>({message: {documentName: "myDoc"}});
+            });
+
+            let sourceCancelled = false;
+            const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
+            const headerBytes = UTF8.encode(headerJson);
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const headerAndIv = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, headerBytes, iv);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(concatArrayBuffers(headerAndIv, new Uint8Array([1, 2, 3])));
+                },
+                cancel() {
+                    sourceCancelled = true;
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => {
+                    capturedCiphertextStream!.cancel().then(() => {
+                        expect(sourceCancelled).toBe(true);
+                        done();
+                    });
+                })
+                .catch((e) => done(e));
+        });
+
+        it("cleans up the source stream reader when header parse fails", async () => {
+            ShimUtils.setSDKInitialized();
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(new Uint8Array([2, 0, 50])); // v2, header len=50, but no data
+                    controller.close();
+                },
+            });
+
+            await expect(DocumentSDK.decryptStream("docID", stream)).rejects.toThrow();
+            // Stream should no longer be locked — reader was cleaned up on failure
+            expect(stream.locked).toBe(false);
         });
 
         it("rejects when stream ends before header is complete", (done) => {
@@ -1517,9 +1599,7 @@ describe("DocumentSDK", () => {
 
         it("parses header and sends correct message type with edeks", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
-                Future.of<any>({message: {accessVia: {type: "user", id: "userId"}}})
-            );
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {accessVia: {type: "user", id: "userId"}}}));
 
             const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
             const headerBytes = UTF8.encode(headerJson);
@@ -1564,9 +1644,7 @@ describe("DocumentSDK", () => {
         it("sends correct message type and returns edeks", (done) => {
             ShimUtils.setSDKInitialized();
             const edeksResponse = new Uint8Array([10, 20, 30]);
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
-                Future.of<any>({message: {documentID: "docId", edeks: edeksResponse}})
-            );
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {documentID: "docId", edeks: edeksResponse}}));
 
             const stream = new ReadableStream<Uint8Array>();
             DocumentSDK.advanced
