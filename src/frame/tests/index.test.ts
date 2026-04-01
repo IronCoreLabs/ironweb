@@ -1003,15 +1003,13 @@ describe("frame index", () => {
                     documentID: "docID",
                     iv: new Uint8Array(12),
                     encryptedStream: new ReadableStream<Uint8Array>(),
-                    plaintextStream: new WritableStream<Uint8Array>(),
                 },
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
-                expect(result).toEqual({
-                    type: "DOCUMENT_STREAM_DECRYPT_RESPONSE",
-                    message: {documentName: "myDoc"},
-                });
+                expect(result.type).toEqual("DOCUMENT_STREAM_DECRYPT_RESPONSE");
+                expect(result.message.documentName).toEqual("myDoc");
+                expect(result.message.plaintextStream).toBeInstanceOf(ReadableStream);
                 done();
             });
         });
@@ -1024,15 +1022,13 @@ describe("frame index", () => {
                     iv: new Uint8Array(12),
                     edeks: new Uint8Array(100),
                     encryptedStream: new ReadableStream<Uint8Array>(),
-                    plaintextStream: new WritableStream<Uint8Array>(),
                 },
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
-                expect(result).toEqual({
-                    type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE",
-                    message: {accessVia: {type: "user", id: "u1"}},
-                });
+                expect(result.type).toEqual("DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE");
+                expect(result.message.accessVia).toEqual({type: "user", id: "u1"});
+                expect(result.message.plaintextStream).toBeInstanceOf(ReadableStream);
                 done();
             });
         });
@@ -1047,7 +1043,6 @@ describe("frame index", () => {
                     documentID: "docID",
                     documentName: "myDoc",
                     plaintextStream: new ReadableStream<Uint8Array>(),
-                    ciphertextStream: new WritableStream<Uint8Array>(),
                     userGrants: [],
                     groupGrants: [],
                     grantToAuthor: true,
@@ -1055,10 +1050,10 @@ describe("frame index", () => {
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
-                expect(result).toEqual({
-                    type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE",
-                    message: {documentID: "docID", documentName: "myDoc", created: "c", updated: "u"},
-                });
+                expect(result.type).toEqual("DOCUMENT_STREAM_ENCRYPT_RESPONSE");
+                expect(result.message.documentID).toEqual("docID");
+                expect(result.message.documentName).toEqual("myDoc");
+                expect(result.message.encryptedStream).toBeInstanceOf(ReadableStream);
                 done();
             });
         });
@@ -1070,7 +1065,6 @@ describe("frame index", () => {
                 message: {
                     documentID: "docID",
                     plaintextStream: new ReadableStream<Uint8Array>(),
-                    ciphertextStream: new WritableStream<Uint8Array>(),
                     userGrants: [],
                     groupGrants: [],
                     grantToAuthor: true,
@@ -1078,10 +1072,10 @@ describe("frame index", () => {
             };
 
             messenger.onMessageCallback(payload, (result: any) => {
-                expect(result).toEqual({
-                    type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE",
-                    message: {documentID: "docID", edeks: new Uint8Array([1, 2, 3])},
-                });
+                expect(result.type).toEqual("DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE");
+                expect(result.message.documentID).toEqual("docID");
+                expect(result.message.edeks).toEqual(new Uint8Array([1, 2, 3]));
+                expect(result.message.encryptedStream).toBeInstanceOf(ReadableStream);
                 done();
             });
         });

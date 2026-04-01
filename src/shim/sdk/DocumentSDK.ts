@@ -424,7 +424,6 @@ export function encryptStream(
         ShimUtils.validateID(encryptOptions.documentID);
     }
     const [userGrants, groupGrants] = ShimUtils.dedupeAccessLists(encryptOptions.accessList);
-    const {readable: encryptedStream, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
 
     const payload: MT.DocumentStreamEncryptRequest = {
         type: "DOCUMENT_STREAM_ENCRYPT",
@@ -432,7 +431,6 @@ export function encryptStream(
             documentID: encryptOptions.documentID,
             documentName: encryptOptions.documentName,
             plaintextStream,
-            ciphertextStream: ciphertextWritable,
             userGrants,
             groupGrants,
             grantToAuthor: encryptOptions.accessList.grantToAuthor,
@@ -441,14 +439,11 @@ export function encryptStream(
     };
 
     // Cast needed because TS's Transferable type doesn't yet include ReadableStream/WritableStream
-    return FrameMediator.sendMessage<MT.DocumentStreamEncryptResponse>(payload, [
-        plaintextStream as unknown as Transferable,
-        ciphertextWritable as unknown as Transferable,
-    ])
+    return FrameMediator.sendMessage<MT.DocumentStreamEncryptResponse>(payload, [plaintextStream as unknown as Transferable])
         .map(({message}) => ({
             documentID: message.documentID,
             documentName: message.documentName,
-            encryptedStream,
+            encryptedStream: message.encryptedStream,
             created: message.created,
             updated: message.updated,
         }))
@@ -469,25 +464,22 @@ export function decryptStream(documentID: string, encryptedStream: ReadableStrea
 
     return parseStreamHeader(encryptedStream)
         .flatMap(({iv, ciphertextStream}) => {
-            const {readable: plaintextStream, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
-
             const payload: MT.DocumentStreamDecryptRequest = {
                 type: "DOCUMENT_STREAM_DECRYPT",
-                message: {documentID, iv, encryptedStream: ciphertextStream, plaintextStream: plaintextWritable},
+                message: {documentID, iv, encryptedStream: ciphertextStream},
             };
 
-            return FrameMediator.sendMessage<MT.DocumentStreamDecryptResponse>(payload, [
-                ciphertextStream as unknown as Transferable,
-                plaintextWritable as unknown as Transferable,
-            ]).map(({message}) => ({
-                documentID,
-                documentName: message.documentName,
-                visibleTo: message.visibleTo,
-                association: message.association,
-                created: message.created,
-                updated: message.updated,
-                plaintextStream,
-            }));
+            return FrameMediator.sendMessage<MT.DocumentStreamDecryptResponse>(payload, [ciphertextStream as unknown as Transferable]).map(
+                ({message}) => ({
+                    documentID,
+                    documentName: message.documentName,
+                    visibleTo: message.visibleTo,
+                    association: message.association,
+                    created: message.created,
+                    updated: message.updated,
+                    plaintextStream: message.plaintextStream,
+                })
+            );
         })
         .toPromise();
 }
@@ -538,19 +530,16 @@ export const advanced = {
 
         return parseStreamHeader(encryptedStream)
             .flatMap(({documentID, iv, ciphertextStream}) => {
-                const {readable: plaintextStream, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
-
                 const payload: MT.DocumentUnmanagedStreamDecryptRequest = {
                     type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT",
-                    message: {edeks, iv, encryptedStream: ciphertextStream, plaintextStream: plaintextWritable},
+                    message: {edeks, iv, encryptedStream: ciphertextStream},
                 };
 
                 return FrameMediator.sendMessage<MT.DocumentUnmanagedStreamDecryptResponse>(payload, [
                     ciphertextStream as unknown as Transferable,
-                    plaintextWritable as unknown as Transferable,
                 ]).map(({message}) => ({
                     documentID: documentID!,
-                    plaintextStream,
+                    plaintextStream: message.plaintextStream,
                     accessVia: message.accessVia,
                 }));
             })
@@ -571,14 +560,12 @@ export const advanced = {
             ShimUtils.validateID(encryptOptions.documentID);
         }
         const [userGrants, groupGrants] = ShimUtils.dedupeAccessLists(encryptOptions.accessList);
-        const {readable: encryptedStream, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
 
         const payload: MT.DocumentUnmanagedStreamEncryptRequest = {
             type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT",
             message: {
                 documentID: encryptOptions.documentID,
                 plaintextStream,
-                ciphertextStream: ciphertextWritable,
                 userGrants,
                 groupGrants,
                 grantToAuthor: encryptOptions.accessList.grantToAuthor,
@@ -586,13 +573,10 @@ export const advanced = {
             },
         };
 
-        return FrameMediator.sendMessage<MT.DocumentUnmanagedStreamEncryptResponse>(payload, [
-            plaintextStream as unknown as Transferable,
-            ciphertextWritable as unknown as Transferable,
-        ])
+        return FrameMediator.sendMessage<MT.DocumentUnmanagedStreamEncryptResponse>(payload, [plaintextStream as unknown as Transferable])
             .map(({message}) => ({
                 documentID: message.documentID,
-                encryptedStream,
+                encryptedStream: message.encryptedStream,
                 edeks: message.edeks,
             }))
             .toPromise();

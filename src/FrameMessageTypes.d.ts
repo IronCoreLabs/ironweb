@@ -514,12 +514,11 @@ export interface DocumentStreamDecryptRequest {
         documentID: string;
         iv: Uint8Array;
         encryptedStream: ReadableStream<Uint8Array>;
-        plaintextStream: WritableStream<Uint8Array>;
     };
 }
 export interface DocumentStreamDecryptResponse {
     type: "DOCUMENT_STREAM_DECRYPT_RESPONSE";
-    message: Omit<DocumentMetaResponse, "documentID">;
+    message: Omit<DocumentMetaResponse, "documentID"> & {plaintextStream: ReadableStream<Uint8Array>};
 }
 
 export interface DocumentUnmanagedStreamDecryptRequest {
@@ -528,13 +527,13 @@ export interface DocumentUnmanagedStreamDecryptRequest {
         edeks: Uint8Array;
         iv: Uint8Array;
         encryptedStream: ReadableStream<Uint8Array>;
-        plaintextStream: WritableStream<Uint8Array>;
     };
 }
 export interface DocumentUnmanagedStreamDecryptResponse {
     type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE";
     message: {
         accessVia: UserOrGroup;
+        plaintextStream: ReadableStream<Uint8Array>;
     };
 }
 
@@ -545,7 +544,6 @@ export interface DocumentStreamEncryptRequest {
         documentID: string;
         documentName: string;
         plaintextStream: ReadableStream<Uint8Array>;
-        ciphertextStream: WritableStream<Uint8Array>;
         userGrants: string[];
         groupGrants: string[];
         grantToAuthor: boolean;
@@ -557,6 +555,7 @@ export interface DocumentStreamEncryptResponse {
     message: {
         documentID: string;
         documentName: string | null;
+        encryptedStream: ReadableStream<Uint8Array>;
         created: string;
         updated: string;
     };
@@ -567,7 +566,6 @@ export interface DocumentUnmanagedStreamEncryptRequest {
     message: {
         documentID: string;
         plaintextStream: ReadableStream<Uint8Array>;
-        ciphertextStream: WritableStream<Uint8Array>;
         userGrants: string[];
         groupGrants: string[];
         grantToAuthor: boolean;
@@ -579,6 +577,7 @@ export interface DocumentUnmanagedStreamEncryptResponse {
     message: {
         documentID: string;
         edeks: Uint8Array;
+        encryptedStream: ReadableStream<Uint8Array>;
     };
 }
 

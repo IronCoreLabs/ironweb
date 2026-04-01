@@ -1281,11 +1281,13 @@ describe("DocumentSDK", () => {
 
         it("sends correct message type with streams in transfer list", (done) => {
             ShimUtils.setSDKInitialized();
+            const mockEncryptedStream = new ReadableStream<Uint8Array>();
             (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
                 Future.of<any>({
                     message: {
                         documentID: "docId",
                         documentName: "docName",
+                        encryptedStream: mockEncryptedStream,
                         created: "2024-01-01",
                         updated: "2024-01-01",
                     },
@@ -1297,7 +1299,7 @@ describe("DocumentSDK", () => {
                 .then((result) => {
                     expect(result.documentID).toEqual("docId");
                     expect(result.documentName).toEqual("docName");
-                    expect(result.encryptedStream).toBeInstanceOf(ReadableStream);
+                    expect(result.encryptedStream).toBe(mockEncryptedStream);
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
                         expect.objectContaining({
                             type: "DOCUMENT_STREAM_ENCRYPT",
@@ -1329,7 +1331,10 @@ describe("DocumentSDK", () => {
 
         it("parses v2 header and sends correct message with IV and ciphertext stream", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {documentName: "myDoc"}}));
+            const mockPlaintextStream = new ReadableStream<Uint8Array>();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {documentName: "myDoc", plaintextStream: mockPlaintextStream}})
+            );
 
             // Build a v2 document: version(1) + headerLen(2) + headerJSON + IV(12) + ciphertext
             const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
@@ -1351,7 +1356,7 @@ describe("DocumentSDK", () => {
                 .then((result) => {
                     expect(result.documentID).toEqual("docID");
                     expect(result.documentName).toEqual("myDoc");
-                    expect(result.plaintextStream).toBeInstanceOf(ReadableStream);
+                    expect(result.plaintextStream).toBe(mockPlaintextStream);
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
                         expect.objectContaining({
                             type: "DOCUMENT_STREAM_DECRYPT",
@@ -1369,7 +1374,9 @@ describe("DocumentSDK", () => {
 
         it("parses v1 header (no document ID in header)", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {documentName: "myDoc"}}));
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {documentName: "myDoc", plaintextStream: new ReadableStream<Uint8Array>()}})
+            );
 
             // v1 document: version(1) + IV(12) + ciphertext
             const iv = new Uint8Array(12).fill(55);
@@ -1444,7 +1451,7 @@ describe("DocumentSDK", () => {
             let capturedCiphertextStream: ReadableStream<Uint8Array> | null = null;
             (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockImplementation((payload: any) => {
                 capturedCiphertextStream = payload.message.encryptedStream;
-                return Future.of<any>({message: {documentName: "myDoc"}});
+                return Future.of<any>({message: {documentName: "myDoc", plaintextStream: new ReadableStream<Uint8Array>()}});
             });
 
             // Build v2 doc with header + IV + multi-byte ciphertext
@@ -1599,7 +1606,10 @@ describe("DocumentSDK", () => {
 
         it("parses header and sends correct message type with edeks", (done) => {
             ShimUtils.setSDKInitialized();
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {accessVia: {type: "user", id: "userId"}}}));
+            const mockPlaintextStream = new ReadableStream<Uint8Array>();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {accessVia: {type: "user", id: "userId"}, plaintextStream: mockPlaintextStream}})
+            );
 
             const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
             const headerBytes = UTF8.encode(headerJson);
@@ -1620,7 +1630,7 @@ describe("DocumentSDK", () => {
                 .decryptStreamUnmanaged(stream, edeks)
                 .then((result) => {
                     expect(result.documentID).toEqual("docID");
-                    expect(result.plaintextStream).toBeInstanceOf(ReadableStream);
+                    expect(result.plaintextStream).toBe(mockPlaintextStream);
                     expect(result.accessVia).toEqual({type: "user", id: "userId"});
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
                         expect.objectContaining({
@@ -1644,7 +1654,10 @@ describe("DocumentSDK", () => {
         it("sends correct message type and returns edeks", (done) => {
             ShimUtils.setSDKInitialized();
             const edeksResponse = new Uint8Array([10, 20, 30]);
-            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(Future.of<any>({message: {documentID: "docId", edeks: edeksResponse}}));
+            const mockEncryptedStream = new ReadableStream<Uint8Array>();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {documentID: "docId", edeks: edeksResponse, encryptedStream: mockEncryptedStream}})
+            );
 
             const stream = new ReadableStream<Uint8Array>();
             DocumentSDK.advanced
@@ -1652,7 +1665,7 @@ describe("DocumentSDK", () => {
                 .then((result) => {
                     expect(result.documentID).toEqual("docId");
                     expect(result.edeks).toEqual(edeksResponse);
-                    expect(result.encryptedStream).toBeInstanceOf(ReadableStream);
+                    expect(result.encryptedStream).toBe(mockEncryptedStream);
                     expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
                         expect.objectContaining({
                             type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT",
