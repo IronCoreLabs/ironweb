@@ -55,7 +55,7 @@ describe("FrameMediator", () => {
                     postMessage: jest.fn(),
                 };
 
-                const transfer1 = new Uint8Array([1]);
+                const transfer1 = new WritableStream();
                 const transfer2 = new Uint8Array([2]);
                 messenger.postMessageToFrame({foo: "bar"} as any, [transfer1, transfer2] as any).engage(
                     (e) => done(e),
@@ -65,7 +65,7 @@ describe("FrameMediator", () => {
                     }
                 );
 
-                expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0}, [transfer1.buffer, transfer2.buffer]);
+                expect(messenger.messagePort.postMessage).toHaveBeenCalledWith({data: {foo: "bar"}, replyID: 0}, [transfer1, transfer2.buffer]);
                 expect(messenger.callbacks).toEqual({
                     0: expect.any(Function),
                 });

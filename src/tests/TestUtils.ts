@@ -37,10 +37,10 @@ export function getEncryptedDocument(): EncryptedDocument {
 /**
  * Build a valid v2 encrypted document byte array with a proper header, IV, and content.
  */
-export function getEncryptedDocumentBytes(content = new Uint8Array([92, 103])): Uint8Array {
+export function getEncryptedDocumentBytes(): Uint8Array {
     const header = generateDocumentHeaderBytes("docID", 32);
     const iv = new Uint8Array(12);
-    return concatArrayBuffers(header, iv, content);
+    return concatArrayBuffers(header, iv, new Uint8Array([2, 35, 52, 13, 63, 23, 63, 34]));
 }
 
 export function getEncryptedSymmetricKey(): PREEncryptedMessage {

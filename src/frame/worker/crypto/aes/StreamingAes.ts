@@ -124,15 +124,15 @@ export const StreamingDecryptor = {
                 }
 
                 const available = combined.length - TAG_LENGTH;
-                const aligned = available - (available % BLOCK_SIZE);
+                const length_of_bytes_aligned_to_block_windows = available - (available % BLOCK_SIZE);
 
-                if (aligned === 0) {
+                if (length_of_bytes_aligned_to_block_windows === 0) {
                     s.heldBack = combined;
                     return;
                 }
 
-                const toProcess = combined.subarray(0, aligned);
-                s.heldBack = new Uint8Array(combined.subarray(aligned));
+                const toProcess = combined.subarray(0, length_of_bytes_aligned_to_block_windows);
+                s.heldBack = new Uint8Array(combined.subarray(length_of_bytes_aligned_to_block_windows));
 
                 // GHASH ciphertext BEFORE decryption
                 s.ghashUpdate(toProcess);
@@ -184,15 +184,15 @@ export const StreamingEncryptor = {
         return new TransformStream<Uint8Array, Uint8Array>({
             async transform(chunk, controller) {
                 const combined = concatArrayBuffers(s.heldBack, chunk);
-                const aligned = combined.length - (combined.length % BLOCK_SIZE);
+                const length_of_bytes_aligned_to_block_windows = combined.length - (combined.length % BLOCK_SIZE);
 
-                if (aligned === 0) {
+                if (length_of_bytes_aligned_to_block_windows === 0) {
                     s.heldBack = combined;
                     return;
                 }
 
-                const toProcess = combined.subarray(0, aligned);
-                s.heldBack = new Uint8Array(combined.subarray(aligned));
+                const toProcess = combined.subarray(0, length_of_bytes_aligned_to_block_windows);
+                s.heldBack = new Uint8Array(combined.subarray(length_of_bytes_aligned_to_block_windows));
 
                 // Encrypt FIRST, then GHASH the ciphertext
                 const ciphertext = await ctr(s.key, s.buildCounter()).encrypt(toProcess);

@@ -43,7 +43,7 @@ export class ShimMessenger {
             return new Future<SDKError, ResponseMessage>((_, resolve) => {
                 this.callbacks[message.replyID] = resolve;
             });
-        } catch (e) {
+        } catch (_e) {
             const hasStreams = transferList.some((item) => item instanceof ReadableStream || item instanceof WritableStream);
             // Safari is the notable holdout here (https://github.com/WebKit/standards-positions/issues/643). For now,
             // give an informative message about support.
