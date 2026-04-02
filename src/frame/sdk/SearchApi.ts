@@ -5,7 +5,7 @@ import SDKError from "../../lib/SDKError";
 import * as WMT from "../../WorkerMessageTypes";
 import {encodeBytesAsHex} from "../FrameUtils";
 import * as WorkerMediator from "../WorkerMediator";
-import {decryptWithProvidedEdeks, encryptWithProvidedEdeks} from "./DocumentAdvancedApi";
+import {decryptUnmanaged, encryptUnmanaged} from "./DocumentAdvancedApi";
 
 //In-memory storage for the decrypted salts used for multiple search indexes. Each search index decrypted salt
 //is stored in this cache with a random string key after the index is initialized so that the salt can be used
@@ -20,7 +20,7 @@ export const createBlindSearchIndex = (groupId: string): Future<SDKError, BlindS
     const randomBytes = window.crypto.getRandomValues(new Uint8Array(CryptoConstants.SALT_LENGTH + 16));
     const salt = randomBytes.slice(0, CryptoConstants.SALT_LENGTH);
     const randomHexDocId = encodeBytesAsHex(randomBytes.slice(CryptoConstants.SALT_LENGTH));
-    return encryptWithProvidedEdeks(randomHexDocId, salt, [], [groupId], false)
+    return encryptUnmanaged(randomHexDocId, salt, [], [groupId], false)
         .map((unmanagedDoc) => ({
             searchIndexEncryptedSalt: unmanagedDoc.document,
             searchIndexEdeks: unmanagedDoc.edeks,
@@ -34,7 +34,7 @@ export const createBlindSearchIndex = (groupId: string): Future<SDKError, BlindS
  */
 export const initializeBlindSearchIndex = (encryptedSalt: Uint8Array, searchIndexEdeks: Uint8Array): Future<SDKError, string> => {
     const searchIndexId = encodeBytesAsHex(window.crypto.getRandomValues(new Uint8Array(8)));
-    return decryptWithProvidedEdeks(encryptedSalt, searchIndexEdeks)
+    return decryptUnmanaged(encryptedSalt, searchIndexEdeks)
         .map((index) => {
             searchIndexCache[searchIndexId] = index.data;
             return searchIndexId;

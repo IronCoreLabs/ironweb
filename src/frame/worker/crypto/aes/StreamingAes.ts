@@ -1,7 +1,9 @@
 import {ctr} from "@noble/ciphers/webcrypto";
 import {ghash} from "@noble/ciphers/_polyval";
 import {equalBytes} from "@noble/ciphers/utils";
+import Future from "futurejs";
 import {concatArrayBuffers} from "../../../../lib/Utils";
+import {CryptoConstants} from "../../../../Constants";
 
 /**
  * See https://github.com/IronCoreLabs/ironoxide/blob/main/src/crypto/streaming.rs for a nice graphical explainer of
@@ -14,9 +16,9 @@ const TAG_LENGTH = 16;
  * Build a GCM counter block: IV (12 bytes) || counterValue (4 bytes big-endian)
  */
 function buildCounterBlock(iv: Uint8Array, counterValue: number): Uint8Array {
-    const block = new Uint8Array(16);
+    const block = new Uint8Array(BLOCK_SIZE);
     block.set(iv, 0);
-    new DataView(block.buffer).setUint32(12, counterValue, false);
+    new DataView(block.buffer).setUint32(CryptoConstants.IV_LENGTH, counterValue, false);
     return block;
 }
 
@@ -111,56 +113,58 @@ class StreamingAesGcmState {
  * @noble/ciphers' GHASH zero-padding partial blocks prematurely between update() calls.
  */
 export const StreamingDecryptor = {
-    async create(key: Uint8Array, iv: Uint8Array): Promise<TransformStream<Uint8Array, Uint8Array>> {
-        const {H, encryptedJ0} = await initGcmState(key, iv);
-        const s = new StreamingAesGcmState(key, iv, H, encryptedJ0);
-        return new TransformStream<Uint8Array, Uint8Array>({
-            async transform(chunk, controller) {
-                const combined = concatArrayBuffers(s.heldBack, chunk);
+    create(key: Uint8Array, iv: Uint8Array): Future<Error, TransformStream<Uint8Array, Uint8Array>> {
+        return Future.tryP(async () => {
+            const {H, encryptedJ0} = await initGcmState(key, iv);
+            const s = new StreamingAesGcmState(key, iv, H, encryptedJ0);
+            return new TransformStream<Uint8Array, Uint8Array>({
+                async transform(chunk, controller) {
+                    const combined = concatArrayBuffers(s.heldBack, chunk);
 
-                if (combined.length <= TAG_LENGTH) {
-                    s.heldBack = combined;
-                    return;
-                }
+                    if (combined.length <= TAG_LENGTH) {
+                        s.heldBack = combined;
+                        return;
+                    }
 
-                const available = combined.length - TAG_LENGTH;
-                const length_of_bytes_aligned_to_block_windows = available - (available % BLOCK_SIZE);
+                    const available = combined.length - TAG_LENGTH;
+                    const length_of_bytes_aligned_to_block_windows = available - (available % BLOCK_SIZE);
 
-                if (length_of_bytes_aligned_to_block_windows === 0) {
-                    s.heldBack = combined;
-                    return;
-                }
+                    if (length_of_bytes_aligned_to_block_windows === 0) {
+                        s.heldBack = combined;
+                        return;
+                    }
 
-                const toProcess = combined.subarray(0, length_of_bytes_aligned_to_block_windows);
-                s.heldBack = new Uint8Array(combined.subarray(length_of_bytes_aligned_to_block_windows));
+                    const toProcess = combined.subarray(0, length_of_bytes_aligned_to_block_windows);
+                    s.heldBack = new Uint8Array(combined.subarray(length_of_bytes_aligned_to_block_windows));
 
-                // GHASH ciphertext BEFORE decryption
-                s.ghashUpdate(toProcess);
+                    // GHASH ciphertext BEFORE decryption
+                    s.ghashUpdate(toProcess);
 
-                const plaintext = await ctr(s.key, s.buildCounter()).decrypt(toProcess);
-                s.advanceCounter(toProcess.length);
+                    const plaintext = await ctr(s.key, s.buildCounter()).decrypt(toProcess);
+                    s.advanceCounter(toProcess.length);
 
-                controller.enqueue(plaintext);
-            },
-            async flush(controller) {
-                if (s.heldBack.length < TAG_LENGTH) {
-                    throw new Error("Insufficient data: stream ended before auth tag");
-                }
+                    controller.enqueue(plaintext);
+                },
+                async flush(controller) {
+                    if (s.heldBack.length < TAG_LENGTH) {
+                        throw new Error("Insufficient data: stream ended before auth tag");
+                    }
 
-                const remainderLen = s.heldBack.length - TAG_LENGTH;
-                const remainder = s.heldBack.subarray(0, remainderLen);
-                const tag = s.heldBack.subarray(remainderLen);
+                    const remainderLen = s.heldBack.length - TAG_LENGTH;
+                    const remainder = s.heldBack.subarray(0, remainderLen);
+                    const tag = s.heldBack.subarray(remainderLen);
 
-                if (remainderLen > 0) {
-                    s.ghashUpdate(remainder);
-                    const decryptedRemainder = await ctr(s.key, s.buildCounter()).decrypt(remainder);
-                    controller.enqueue(decryptedRemainder);
-                }
+                    if (remainderLen > 0) {
+                        s.ghashUpdate(remainder);
+                        const decryptedRemainder = await ctr(s.key, s.buildCounter()).decrypt(remainder);
+                        controller.enqueue(decryptedRemainder);
+                    }
 
-                if (!equalBytes(s.computeTag(), tag)) {
-                    throw new Error("AES-GCM auth tag verification failed");
-                }
-            },
+                    if (!equalBytes(s.computeTag(), tag)) {
+                        throw new Error("AES-GCM auth tag verification failed");
+                    }
+                },
+            });
         });
     },
 };
@@ -178,39 +182,41 @@ export const StreamingDecryptor = {
  * AES-CTR), THEN feed the ciphertext to GHASH.
  */
 export const StreamingEncryptor = {
-    async create(key: Uint8Array, iv: Uint8Array): Promise<TransformStream<Uint8Array, Uint8Array>> {
-        const {H, encryptedJ0} = await initGcmState(key, iv);
-        const s = new StreamingAesGcmState(key, iv, H, encryptedJ0);
-        return new TransformStream<Uint8Array, Uint8Array>({
-            async transform(chunk, controller) {
-                const combined = concatArrayBuffers(s.heldBack, chunk);
-                const length_of_bytes_aligned_to_block_windows = combined.length - (combined.length % BLOCK_SIZE);
+    create(key: Uint8Array, iv: Uint8Array): Future<Error, TransformStream<Uint8Array, Uint8Array>> {
+        return Future.tryP(async () => {
+            const {H, encryptedJ0} = await initGcmState(key, iv);
+            const s = new StreamingAesGcmState(key, iv, H, encryptedJ0);
+            return new TransformStream<Uint8Array, Uint8Array>({
+                async transform(chunk, controller) {
+                    const combined = concatArrayBuffers(s.heldBack, chunk);
+                    const length_of_bytes_aligned_to_block_windows = combined.length - (combined.length % BLOCK_SIZE);
 
-                if (length_of_bytes_aligned_to_block_windows === 0) {
-                    s.heldBack = combined;
-                    return;
-                }
+                    if (length_of_bytes_aligned_to_block_windows === 0) {
+                        s.heldBack = combined;
+                        return;
+                    }
 
-                const toProcess = combined.subarray(0, length_of_bytes_aligned_to_block_windows);
-                s.heldBack = new Uint8Array(combined.subarray(length_of_bytes_aligned_to_block_windows));
+                    const toProcess = combined.subarray(0, length_of_bytes_aligned_to_block_windows);
+                    s.heldBack = new Uint8Array(combined.subarray(length_of_bytes_aligned_to_block_windows));
 
-                // Encrypt FIRST, then GHASH the ciphertext
-                const ciphertext = await ctr(s.key, s.buildCounter()).encrypt(toProcess);
-                s.advanceCounter(toProcess.length);
-                s.ghashUpdate(ciphertext);
+                    // Encrypt FIRST, then GHASH the ciphertext
+                    const ciphertext = await ctr(s.key, s.buildCounter()).encrypt(toProcess);
+                    s.advanceCounter(toProcess.length);
+                    s.ghashUpdate(ciphertext);
 
-                controller.enqueue(ciphertext);
-            },
-            async flush(controller) {
-                let lastCiphertext = new Uint8Array(0);
+                    controller.enqueue(ciphertext);
+                },
+                async flush(controller) {
+                    let lastCiphertext = new Uint8Array(0);
 
-                if (s.heldBack.length > 0) {
-                    lastCiphertext = await ctr(s.key, s.buildCounter()).encrypt(s.heldBack);
-                    s.ghashUpdate(lastCiphertext);
-                }
+                    if (s.heldBack.length > 0) {
+                        lastCiphertext = await ctr(s.key, s.buildCounter()).encrypt(s.heldBack);
+                        s.ghashUpdate(lastCiphertext);
+                    }
 
-                controller.enqueue(concatArrayBuffers(lastCiphertext, s.computeTag()));
-            },
+                    controller.enqueue(concatArrayBuffers(lastCiphertext, s.computeTag()));
+                },
+            });
         });
     },
 };

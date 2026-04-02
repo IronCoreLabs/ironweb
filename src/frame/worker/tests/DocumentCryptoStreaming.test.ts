@@ -146,6 +146,37 @@ describe("DocumentCrypto streaming", () => {
             );
         });
 
+        it("resolves with access keys before the stream pipeline finishes", (done) => {
+            mockRecryptForEncrypt();
+            let sourceController: ReadableStreamDefaultController<Uint8Array>;
+            const plaintextStream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    sourceController = controller;
+                },
+            });
+            const output = collectStream();
+
+            DocumentCrypto.encryptDocumentStream(plaintextStream, output.writable, [], [], mockSigningKeys, iv).engage(
+                (e) => done(e),
+                (result) => {
+                    // Future resolved — verify we got the access keys back
+                    expect(result.userAccessKeys).toEqual([]);
+                    expect(result.groupAccessKeys).toEqual([]);
+                    // The source stream is still open — no data has been enqueued or closed yet,
+                    // proving the Future resolved before the pipeline finished.
+                    expect(output.chunks).toHaveLength(0);
+
+                    // Now feed data and close to let the pipeline complete
+                    sourceController.enqueue(new Uint8Array([1, 2, 3]));
+                    sourceController.close();
+                    setTimeout(() => {
+                        expect(output.chunks.length).toBeGreaterThan(0);
+                        done();
+                    }, 50);
+                }
+            );
+        });
+
         it("maps key generation failures to DOCUMENT_STREAM_ENCRYPT_FAILURE", (done) => {
             jest.spyOn(Recrypt, "generateDocumentKey").mockReturnValue(Future.reject(new Error("keygen failure")));
 

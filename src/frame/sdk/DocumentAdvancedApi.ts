@@ -18,7 +18,7 @@ interface UnmanagedDecryptResult {
  * @param {Uint8Array} encryptedDocument Data of document to decrypt
  * @param {Uint8Array} edeks             The edeks to use to do the decryption.
  */
-export function decryptWithProvidedEdeks(encryptedDocument: Uint8Array, edeks: Uint8Array): Future<SDKError, UnmanagedDecryptResult> {
+export function decryptUnmanaged(encryptedDocument: Uint8Array, edeks: Uint8Array): Future<SDKError, UnmanagedDecryptResult> {
     return documentToByteParts(encryptedDocument).flatMap((documentParts) =>
         EncryptedDekEndpoints.callEncryptedDekTransformApi(edeks).flatMap((transformResponse) => {
             const {privateKey} = ApiState.deviceKeys();
@@ -34,7 +34,7 @@ export function decryptWithProvidedEdeks(encryptedDocument: Uint8Array, edeks: U
  * Streaming decrypt with caller-provided EDEKs. Sends EDEKs to the server for transform, then pipes the
  * encrypted stream through the Worker for decryption. On auth tag failure, plaintextStream is aborted.
  */
-export function decryptStreamWithProvidedEdeks(
+export function decryptStreamUnmanaged(
     iv: Uint8Array,
     edeks: Uint8Array,
     encryptedStream: ReadableStream<Uint8Array>,
@@ -52,7 +52,7 @@ export function decryptStreamWithProvidedEdeks(
  * Encrypt the provided document but return the EDEKs to the caller instead of storing them within ironcore-id. Only calls to ironcore-id in order to
  * get a list of public keys for the provided users, groups, or policies.
  */
-export function encryptWithProvidedEdeks(
+export function encryptUnmanaged(
     documentID: string,
     document: Uint8Array,
     userGrants: string[],
@@ -74,7 +74,7 @@ export function encryptWithProvidedEdeks(
 /**
  * Streaming encrypt with caller-managed EDEKs. Writes header+IV, encrypts via Worker, returns EDEKs.
  */
-export function encryptStreamWithEdeks(
+export function encryptStreamUnmanaged(
     documentID: string,
     plaintextStream: ReadableStream<Uint8Array>,
     ciphertextStream: WritableStream<Uint8Array>,

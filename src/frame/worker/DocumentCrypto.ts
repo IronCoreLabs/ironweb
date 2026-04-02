@@ -10,7 +10,9 @@ import {ErrorCodes} from "../../Constants";
  * The catch is defensive — abort() can reject if the stream is already closed/errored.
  */
 function signalStreamFailure(stream: WritableStream<Uint8Array>, error: Error): void {
-    stream.abort(error).catch(() => {}); // eslint-disable-line @typescript-eslint/no-empty-function
+    stream.abort(error).catch(() => {
+        /* `abort` causes errors to propagate up through the stream */
+    });
 }
 
 /**
@@ -103,10 +105,17 @@ export function decryptDocumentStream(
     plaintextStream: WritableStream<Uint8Array>
 ): Future<SDKError, void> {
     return Recrypt.decryptPlaintext(encryptedSymmetricKey, myPrivateKey)
-        .map(([_, documentSymmetricKey]) => {
-            // pipeTo runs in the background. Success/failure is communicated through the stream itself.
-            StreamingDecryptor.create(documentSymmetricKey, iv).then((decryptor) => encryptedStream.pipeThrough(decryptor).pipeTo(plaintextStream));
-        })
+        .flatMap(([_, documentSymmetricKey]) =>
+            StreamingDecryptor.create(documentSymmetricKey, iv).map((decryptor) => {
+                // pipeTo runs in the background. Errors propagate through the stream; suppress the Promise rejection.
+                encryptedStream
+                    .pipeThrough(decryptor)
+                    .pipeTo(plaintextStream)
+                    .catch(() => {
+                        /* `pipeTo` causes errors to propagate through the stream */
+                    });
+            })
+        )
         .errorMap((error) => {
             signalStreamFailure(plaintextStream, error);
             return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_DECRYPT_FAILURE);
@@ -131,11 +140,18 @@ export function encryptDocumentStream(
             return Future.gather2(
                 Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
                 Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys)
-            ).map(([userAccessKeys, groupAccessKeys]) => {
-                // pipeTo runs in the background. Success/failure is communicated through the stream itself.
-                StreamingEncryptor.create(documentSymmetricKey, iv).then((encryptor) => plaintextStream.pipeThrough(encryptor).pipeTo(ciphertextStream));
-                return {userAccessKeys, groupAccessKeys};
-            });
+            ).flatMap(([userAccessKeys, groupAccessKeys]) =>
+                StreamingEncryptor.create(documentSymmetricKey, iv).map((encryptor) => {
+                    // pipeTo runs in the background. Errors propagate through the stream; suppress the Promise rejection.
+                    plaintextStream
+                        .pipeThrough(encryptor)
+                        .pipeTo(ciphertextStream)
+                        .catch(() => {
+                            /* `pipeTo` causes errors to propagate through the stream */
+                        });
+                    return {userAccessKeys, groupAccessKeys};
+                })
+            );
         })
         .errorMap((error) => {
             signalStreamFailure(ciphertextStream, error);
