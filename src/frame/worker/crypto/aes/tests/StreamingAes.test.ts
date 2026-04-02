@@ -320,6 +320,30 @@ describe("byte-for-byte compatibility", () => {
     }
 });
 
+describe("incorrect IV length", () => {
+    it("StreamingDecryptor.create errors with a short IV", async () => {
+        const shortIv = new Uint8Array([1, 2, 3, 4, 5]);
+        const encrypted = gcmEncrypt(key, iv, new Uint8Array([42]));
+        await expect(streamingDecrypt(key, shortIv, encrypted, 64)).rejects.toThrow();
+    });
+
+    it("StreamingDecryptor.create errors with a long IV", async () => {
+        const longIv = new Uint8Array(16);
+        const encrypted = gcmEncrypt(key, iv, new Uint8Array([42]));
+        await expect(streamingDecrypt(key, longIv, encrypted, 64)).rejects.toThrow();
+    });
+
+    it("StreamingEncryptor.create errors with a short IV", async () => {
+        const shortIv = new Uint8Array([1, 2, 3, 4, 5]);
+        await expect(streamingEncrypt(key, shortIv, new Uint8Array([42]), 64)).rejects.toThrow();
+    });
+
+    it("StreamingEncryptor.create errors with a long IV", async () => {
+        const longIv = new Uint8Array(16);
+        await expect(streamingEncrypt(key, longIv, new Uint8Array([42]), 64)).rejects.toThrow();
+    });
+});
+
 describe("streaming encrypt → streaming decrypt roundtrip", () => {
     describe("matching chunk sizes", () => {
         const sizes = [0, 1, 15, 16, 17, 1000, 65536];

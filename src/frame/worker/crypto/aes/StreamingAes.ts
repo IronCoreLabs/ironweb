@@ -115,6 +115,7 @@ class StreamingAesGcmState {
 export const StreamingDecryptor = {
     create(key: Uint8Array, iv: Uint8Array): Future<Error, TransformStream<Uint8Array, Uint8Array>> {
         return Future.tryP(async () => {
+            if (iv.length !== CryptoConstants.IV_LENGTH) throw new Error(`IV must be ${CryptoConstants.IV_LENGTH} bytes, got ${iv.length}`);
             const {H, encryptedJ0} = await initGcmState(key, iv);
             const s = new StreamingAesGcmState(key, iv, H, encryptedJ0);
             return new TransformStream<Uint8Array, Uint8Array>({
@@ -184,6 +185,7 @@ export const StreamingDecryptor = {
 export const StreamingEncryptor = {
     create(key: Uint8Array, iv: Uint8Array): Future<Error, TransformStream<Uint8Array, Uint8Array>> {
         return Future.tryP(async () => {
+            if (iv.length !== CryptoConstants.IV_LENGTH) throw new Error(`IV must be ${CryptoConstants.IV_LENGTH} bytes, got ${iv.length}`);
             const {H, encryptedJ0} = await initGcmState(key, iv);
             const s = new StreamingAesGcmState(key, iv, H, encryptedJ0);
             return new TransformStream<Uint8Array, Uint8Array>({
