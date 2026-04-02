@@ -84,7 +84,8 @@ describe("AES", () => {
             );
         });
 
-        it("uses polyfill API if native is not available", () => {
+        it("falls back to polyfill API if native rejects", () => {
+            jest.spyOn(NativeAes, "encryptDocument").mockReturnValue(Future.reject(new Error("native unavailable")));
             jest.spyOn(PolyfillAes, "encryptDocument").mockReturnValue(Future.of<any>({foo: "bar"}));
 
             const document = new Uint8Array(40);

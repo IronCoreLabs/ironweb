@@ -507,6 +507,80 @@ export interface SearchTransliterateStringResponse {
     message: string;
 }
 
+/* Streaming Decrypt */
+export interface DocumentStreamDecryptRequest {
+    type: "DOCUMENT_STREAM_DECRYPT";
+    message: {
+        documentID: string;
+        iv: Uint8Array;
+        encryptedStream: ReadableStream<Uint8Array>;
+    };
+}
+export interface DocumentStreamDecryptResponse {
+    type: "DOCUMENT_STREAM_DECRYPT_RESPONSE";
+    message: Omit<DocumentMetaResponse, "documentID"> & {plaintextStream: ReadableStream<Uint8Array>};
+}
+
+export interface DocumentUnmanagedStreamDecryptRequest {
+    type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT";
+    message: {
+        edeks: Uint8Array;
+        iv: Uint8Array;
+        encryptedStream: ReadableStream<Uint8Array>;
+    };
+}
+export interface DocumentUnmanagedStreamDecryptResponse {
+    type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE";
+    message: {
+        accessVia: UserOrGroup;
+        plaintextStream: ReadableStream<Uint8Array>;
+    };
+}
+
+/* Streaming Encrypt */
+export interface DocumentStreamEncryptRequest {
+    type: "DOCUMENT_STREAM_ENCRYPT";
+    message: {
+        documentID: string;
+        documentName: string;
+        plaintextStream: ReadableStream<Uint8Array>;
+        userGrants: string[];
+        groupGrants: string[];
+        grantToAuthor: boolean;
+        policy?: Policy;
+    };
+}
+export interface DocumentStreamEncryptResponse {
+    type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE";
+    message: {
+        documentID: string;
+        documentName: string | null;
+        encryptedStream: ReadableStream<Uint8Array>;
+        created: string;
+        updated: string;
+    };
+}
+
+export interface DocumentUnmanagedStreamEncryptRequest {
+    type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT";
+    message: {
+        documentID: string;
+        plaintextStream: ReadableStream<Uint8Array>;
+        userGrants: string[];
+        groupGrants: string[];
+        grantToAuthor: boolean;
+        policy?: Policy;
+    };
+}
+export interface DocumentUnmanagedStreamEncryptResponse {
+    type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE";
+    message: {
+        documentID: string;
+        edeks: Uint8Array;
+        encryptedStream: ReadableStream<Uint8Array>;
+    };
+}
+
 export interface ErrorResponse {
     type: "ERROR_RESPONSE";
     message: {
@@ -531,6 +605,10 @@ export type RequestMessage =
     | DocumentStoreEncryptRequest
     | DocumentEncryptRequest
     | DocumentStoreUpdateDataRequest
+    | DocumentStreamDecryptRequest
+    | DocumentUnmanagedStreamDecryptRequest
+    | DocumentStreamEncryptRequest
+    | DocumentUnmanagedStreamEncryptRequest
     | DocumentUpdateDataRequest
     | DocumentUpdateNameRequest
     | DocumentGrantRequest
@@ -571,6 +649,10 @@ export type ResponseMessage =
     | DocumentStoreEncryptResponse
     | DocumentEncryptResponse
     | DocumentStoreUpdateDataResponse
+    | DocumentStreamDecryptResponse
+    | DocumentUnmanagedStreamDecryptResponse
+    | DocumentStreamEncryptResponse
+    | DocumentUnmanagedStreamEncryptResponse
     | DocumentUpdateDataResponse
     | DocumentUpdateNameResponse
     | DocumentGrantResponse

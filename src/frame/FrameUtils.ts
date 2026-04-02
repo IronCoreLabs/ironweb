@@ -1,8 +1,9 @@
 import {encode} from "@stablelib/utf8";
 import {fromByteArray, toByteArray} from "base64-js";
 import Future from "futurejs";
-import {CryptoConstants, DOCUMENT_ENCRYPTION_DETAILS_VERSION_NUMBER, HEADER_META_LENGTH_LENGTH, VERSION_HEADER_LENGTH} from "../Constants";
-import {concatArrayBuffers, sliceArrayBuffer} from "../lib/Utils";
+import {DOCUMENT_ENCRYPTION_DETAILS_VERSION_NUMBER, HEADER_META_LENGTH_LENGTH} from "../Constants";
+import SDKError from "../lib/SDKError";
+import {concatArrayBuffers, parseDocumentHeader, sliceArrayBuffer} from "../lib/Utils";
 
 const ENCRYPTED_DEVICE_KEY_LOCAL_STORAGE_VERSION = "1";
 
@@ -136,23 +137,12 @@ export function getDeviceAndSigningKeys(userID: string, segmentID: number): Futu
  * from the actual encrypted content and returns all three portions.
  * @param {Uint8Array} document Document to break apart into fields
  */
-export function documentToByteParts(document: Uint8Array | string): EncryptedDocument {
+export function documentToByteParts(document: Uint8Array | string): Future<SDKError, EncryptedDocument> {
     const encryptedDocumentBytes = document instanceof Uint8Array ? document : toByteArray(document);
-    const version = sliceArrayBuffer(encryptedDocumentBytes, 0, VERSION_HEADER_LENGTH);
-    if (version[0] === 1) {
-        return {
-            iv: sliceArrayBuffer(encryptedDocumentBytes, VERSION_HEADER_LENGTH, CryptoConstants.IV_LENGTH + VERSION_HEADER_LENGTH),
-            content: sliceArrayBuffer(encryptedDocumentBytes, CryptoConstants.IV_LENGTH + VERSION_HEADER_LENGTH),
-        };
-    }
-    //Get the header byte length (represented as two bytes) out as big endian so we can get the length of the JSON encoded header
-    const headerLength = new DataView(encryptedDocumentBytes.buffer).getUint16(encryptedDocumentBytes.byteOffset + VERSION_HEADER_LENGTH, false);
-    const fullLeadingBytesLength = VERSION_HEADER_LENGTH + HEADER_META_LENGTH_LENGTH + headerLength;
-
-    return {
-        iv: sliceArrayBuffer(encryptedDocumentBytes, fullLeadingBytesLength, fullLeadingBytesLength + CryptoConstants.IV_LENGTH),
-        content: sliceArrayBuffer(encryptedDocumentBytes, fullLeadingBytesLength + CryptoConstants.IV_LENGTH),
-    };
+    return parseDocumentHeader(encryptedDocumentBytes).map(({iv, contentOffset}) => ({
+        iv,
+        content: sliceArrayBuffer(encryptedDocumentBytes, contentOffset),
+    }));
 }
 
 /**

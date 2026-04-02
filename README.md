@@ -39,5 +39,5 @@ To run a subset of the tests you can use the `-t` option of Jest to only run tes
 
 `yarn run unit GroupCrypto`
 
-Copyright (c) 2022 IronCore Labs, Inc.
+Copyright (c) 2026 IronCore Labs, Inc.
 All rights reserved.

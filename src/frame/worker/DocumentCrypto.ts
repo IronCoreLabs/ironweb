@@ -1,8 +1,19 @@
 import * as Recrypt from "./crypto/recrypt";
 import * as AES from "./crypto/aes";
+import {StreamingDecryptor, StreamingEncryptor} from "./crypto/aes/StreamingAes";
 import Future from "futurejs";
 import SDKError from "../../lib/SDKError";
 import {ErrorCodes} from "../../Constants";
+
+/**
+ * Abort a writable stream to signal an error to its readable side when the pipeline was never started.
+ * The catch is defensive — abort() can reject if the stream is already closed/errored.
+ */
+function signalStreamFailure(stream: WritableStream<Uint8Array>, error: Error): void {
+    stream.abort(error).catch(() => {
+        /* `abort` causes errors to propagate up through the stream */
+    });
+}
 
 /**
  * Decrypt a document given the document container and the private key needed to decrypt
@@ -79,4 +90,71 @@ export function encryptToKeys(
             }));
         })
         .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_GRANT_ACCESS_FAILURE));
+}
+
+/**
+ * Initialize streaming decryption: unwrap the symmetric key via PRE, then run the streaming
+ * AES-CTR + GHASH decrypt loop. Reads from encryptedStream, writes plaintext to plaintextStream.
+ * On success, closes plaintextStream. On failure (including auth tag mismatch), aborts it.
+ */
+export function decryptDocumentStream(
+    encryptedSymmetricKey: TransformedEncryptedMessage,
+    myPrivateKey: Uint8Array,
+    iv: Uint8Array,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+): Future<SDKError, void> {
+    return Recrypt.decryptPlaintext(encryptedSymmetricKey, myPrivateKey)
+        .flatMap(([_, documentSymmetricKey]) =>
+            StreamingDecryptor.create(documentSymmetricKey, iv).map((decryptor) => {
+                // pipeTo runs in the background. Errors propagate through the stream; suppress the Promise rejection.
+                encryptedStream
+                    .pipeThrough(decryptor)
+                    .pipeTo(plaintextStream)
+                    .catch(() => {
+                        /* `pipeTo` causes errors to propagate through the stream */
+                    });
+            })
+        )
+        .errorMap((error) => {
+            signalStreamFailure(plaintextStream, error);
+            return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_DECRYPT_FAILURE);
+        });
+}
+
+/**
+ * Initialize streaming encryption: generate a document key, encrypt it to all recipients via PRE,
+ * then run the streaming AES-CTR + GHASH encrypt loop in the background. Reads from plaintextStream,
+ * writes ciphertext to ciphertextStream. On success, closes ciphertextStream. On failure, aborts it.
+ */
+export function encryptDocumentStream(
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    userKeyList: UserOrGroupPublicKey[],
+    groupKeyList: UserOrGroupPublicKey[],
+    signingKeys: SigningKeyPair,
+    iv: Uint8Array
+): Future<SDKError, {userAccessKeys: EncryptedAccessKey[]; groupAccessKeys: EncryptedAccessKey[]}> {
+    return Recrypt.generateDocumentKey()
+        .flatMap(([documentKeyPlaintext, documentSymmetricKey]) => {
+            return Future.gather2(
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, userKeyList, signingKeys),
+                Recrypt.encryptPlaintextToList(documentKeyPlaintext, groupKeyList, signingKeys)
+            ).flatMap(([userAccessKeys, groupAccessKeys]) =>
+                StreamingEncryptor.create(documentSymmetricKey, iv).map((encryptor) => {
+                    // pipeTo runs in the background. Errors propagate through the stream; suppress the Promise rejection.
+                    plaintextStream
+                        .pipeThrough(encryptor)
+                        .pipeTo(ciphertextStream)
+                        .catch(() => {
+                            /* `pipeTo` causes errors to propagate through the stream */
+                        });
+                    return {userAccessKeys, groupAccessKeys};
+                })
+            );
+        })
+        .errorMap((error) => {
+            signalStreamFailure(ciphertextStream, error);
+            return new SDKError(error, ErrorCodes.DOCUMENT_STREAM_ENCRYPT_FAILURE);
+        });
 }

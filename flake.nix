@@ -7,9 +7,10 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
       in
-      rec {
+      {
         devShell = pkgs.mkShell {
-          buildInputs = with pkgs.nodePackages; [
+          buildInputs = [
+            pkgs.prettier
             pkgs.nodejs_24
             (pkgs.yarn.override { nodejs = pkgs.nodejs_24; })
           ];

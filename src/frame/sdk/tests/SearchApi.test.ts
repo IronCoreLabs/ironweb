@@ -8,7 +8,7 @@ import * as SearchApi from "../SearchApi";
 describe("SearchApi", () => {
     describe("createBlindSearchIndex", () => {
         it("generates a random salt, encrypts it, and returns unmanaged doc", () => {
-            jest.spyOn(DocAdvancedApi, "encrypt").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "encryptUnmanaged").mockReturnValue(
                 Future.of<any>({
                     document: "encDoc",
                     edeks: ["edek1", "edek2"],
@@ -24,13 +24,13 @@ describe("SearchApi", () => {
                         searchIndexEncryptedSalt: "encDoc",
                         searchIndexEdeks: ["edek1", "edek2"],
                     });
-                    expect(DocAdvancedApi.encrypt).toHaveBeenCalledWith(expect.any(String), expect.any(Uint8Array), [], ["mySearchIndexGroup"], false);
+                    expect(DocAdvancedApi.encryptUnmanaged).toHaveBeenCalledWith(expect.any(String), expect.any(Uint8Array), [], ["mySearchIndexGroup"], false);
                 }
             );
         });
 
         it("maps error to search index error", () => {
-            jest.spyOn(DocAdvancedApi, "encrypt").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "encryptUnmanaged").mockReturnValue(
                 Future.reject(new SDKError(new Error("unmanaged decrypt error"), ErrorCodes.DOCUMENT_ENCRYPT_FAILURE))
             );
 
@@ -47,7 +47,7 @@ describe("SearchApi", () => {
 
     describe("initializeBlindSearchIndex", () => {
         it("decrypts the provided salt, generates a random ID and stores the ID", () => {
-            jest.spyOn(DocAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "decryptUnmanaged").mockReturnValue(
                 Future.of<any>({
                     data: new Uint8Array([82, 32, 87, 109, 139]),
                     accessVia: {type: "group", id: "mySearchIndexGroup"},
@@ -61,13 +61,13 @@ describe("SearchApi", () => {
                 (searchIndexId) => {
                     expect(searchIndexId).toEqual(expect.any(String));
                     expect(searchIndexId).toHaveLength(16);
-                    expect(DocAdvancedApi.decryptWithProvidedEdeks).toHaveBeenCalledWith(new Uint8Array([99, 193]), new Uint8Array([135, 166]));
+                    expect(DocAdvancedApi.decryptUnmanaged).toHaveBeenCalledWith(new Uint8Array([99, 193]), new Uint8Array([135, 166]));
                 }
             );
         });
 
         it("converts error to search index error if decrypt fails", () => {
-            jest.spyOn(DocAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "decryptUnmanaged").mockReturnValue(
                 Future.reject(new SDKError(new Error("decrypt failed"), ErrorCodes.DOCUMENT_DECRYPT_FAILURE))
             );
 
@@ -96,7 +96,7 @@ describe("SearchApi", () => {
         });
 
         it("sends message to frame to tokenize data", () => {
-            jest.spyOn(DocAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "decryptUnmanaged").mockReturnValue(
                 Future.of<any>({
                     data: new Uint8Array([82, 32, 87, 109, 139]),
                     accessVia: {type: "group", id: "mySearchIndexGroup"},
@@ -140,7 +140,7 @@ describe("SearchApi", () => {
         });
 
         it("sends message to frame to tokenize query", () => {
-            jest.spyOn(DocAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(
+            jest.spyOn(DocAdvancedApi, "decryptUnmanaged").mockReturnValue(
                 Future.of<any>({
                     data: new Uint8Array([82, 32, 87, 109, 139]),
                     accessVia: {type: "group", id: "mySearchIndexGroup"},

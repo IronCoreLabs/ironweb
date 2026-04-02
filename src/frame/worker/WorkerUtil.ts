@@ -141,6 +141,26 @@ export const onMessageCallback = (data: RequestMessage, callback: (message: Resp
             const message = SearchCrypto.transliterateString(data.message);
             return callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message});
         }
+        case "DOCUMENT_STREAM_DECRYPT":
+            return DocumentCrypto.decryptDocumentStream(
+                data.message.encryptedSymmetricKey,
+                data.message.privateKey,
+                data.message.iv,
+                data.message.encryptedStream,
+                data.message.plaintextStream
+            ).engage(errorHandler, () =>
+                // message is explicitly undefined, all the output has already gone out in the plaintext stream
+                callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: undefined})
+            );
+        case "DOCUMENT_STREAM_ENCRYPT":
+            return DocumentCrypto.encryptDocumentStream(
+                data.message.plaintextStream,
+                data.message.ciphertextStream,
+                data.message.userKeyList,
+                data.message.groupKeyList,
+                data.message.signingKeys,
+                data.message.iv
+            ).engage(errorHandler, (result) => callback({type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE", message: result}));
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;

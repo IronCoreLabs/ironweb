@@ -89,3 +89,62 @@ export function encryptDocumentToKeys(
 
     return WorkerMediator.sendMessage<WMT.DocumentEncryptToKeysWorkerResponse>(payload).map(({message}) => message);
 }
+
+/**
+ * Streaming encrypt: send the plaintext stream + ciphertext writable to the Worker along with the
+ * user/group key lists. The Worker generates a document key, encrypts it to recipients, then runs the
+ * streaming AES-CTR + GHASH encrypt loop. Returns encrypted access keys.
+ */
+export function encryptDocumentStream(
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    userKeyList: UserOrGroupPublicKey[],
+    groupKeyList: UserOrGroupPublicKey[],
+    signingKeys: SigningKeyPair,
+    iv: Uint8Array
+) {
+    const payload: WMT.StreamEncryptDocumentWorkerRequest = {
+        type: "DOCUMENT_STREAM_ENCRYPT",
+        message: {
+            plaintextStream,
+            ciphertextStream,
+            userKeyList,
+            groupKeyList,
+            signingKeys,
+            iv,
+        },
+    };
+    return WorkerMediator.sendMessage<WMT.StreamEncryptDocumentWorkerResponse>(payload, [
+        // unknowns are needed until we update TS, where Readable/Writable Stream are in Transferable.
+        plaintextStream as unknown as Transferable,
+        ciphertextStream as unknown as Transferable,
+    ]).map(({message}) => message);
+}
+
+/**
+ * Streaming decrypt: send the encrypted stream + plaintext writable to the Worker along with the
+ * encrypted symmetric key. The Worker unwraps the key via PRE, then runs the streaming AES-CTR + GHASH loop.
+ */
+export function decryptDocumentStream(
+    symmetricKey: TransformedEncryptedMessage,
+    privateKey: Uint8Array,
+    iv: Uint8Array,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+) {
+    const payload: WMT.StreamDecryptDocumentWorkerRequest = {
+        type: "DOCUMENT_STREAM_DECRYPT",
+        message: {
+            encryptedSymmetricKey: symmetricKey,
+            privateKey,
+            iv,
+            encryptedStream,
+            plaintextStream,
+        },
+    };
+    return WorkerMediator.sendMessage<WMT.StreamDecryptDocumentWorkerResponse>(payload, [
+        // unknowns are needed until we update TS, where Readable/Writable Stream are in Transferable.
+        encryptedStream as unknown as Transferable,
+        plaintextStream as unknown as Transferable,
+    ]).map(() => undefined as void);
+}

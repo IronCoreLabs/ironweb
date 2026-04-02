@@ -1266,4 +1266,416 @@ describe("DocumentSDK", () => {
                 .catch((e) => done(e));
         });
     });
+
+    describe("encryptStream", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            const stream = new ReadableStream<Uint8Array>();
+            expect(() => DocumentSDK.encryptStream(stream)).toThrow();
+        });
+
+        it("throws errors if documentID option is invalid", () => {
+            ShimUtils.setSDKInitialized();
+            const stream = new ReadableStream<Uint8Array>();
+            expect(() => DocumentSDK.encryptStream(stream, {documentID: "(bad)"})).toThrow();
+        });
+
+        it("sends correct message type with streams in transfer list", (done) => {
+            ShimUtils.setSDKInitialized();
+            const mockEncryptedStream = new ReadableStream<Uint8Array>();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
+                    message: {
+                        documentID: "docId",
+                        documentName: "docName",
+                        encryptedStream: mockEncryptedStream,
+                        created: "2024-01-01",
+                        updated: "2024-01-01",
+                    },
+                })
+            );
+
+            const stream = new ReadableStream<Uint8Array>();
+            DocumentSDK.encryptStream(stream, {documentID: "myDoc", documentName: "myName"})
+                .then((result) => {
+                    expect(result.documentID).toEqual("docId");
+                    expect(result.documentName).toEqual("docName");
+                    expect(result.encryptedStream).toBe(mockEncryptedStream);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            type: "DOCUMENT_STREAM_ENCRYPT",
+                            message: expect.objectContaining({
+                                documentID: "myDoc",
+                                documentName: "myName",
+                            }),
+                        }),
+                        expect.any(Array)
+                    );
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+    });
+
+    describe("decryptStream", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            const stream = new ReadableStream<Uint8Array>();
+            expect(() => DocumentSDK.decryptStream("docID", stream)).toThrow();
+        });
+
+        it("throws errors if document ID is invalid", () => {
+            ShimUtils.setSDKInitialized();
+            const stream = new ReadableStream<Uint8Array>();
+            expect(() => DocumentSDK.decryptStream("", stream)).toThrow();
+            expect(() => DocumentSDK.decryptStream("(bad)", stream)).toThrow();
+        });
+
+        it("parses v2 header and sends correct message with IV and ciphertext stream", (done) => {
+            ShimUtils.setSDKInitialized();
+            const mockPlaintextStream = new ReadableStream<Uint8Array>();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {documentName: "myDoc", plaintextStream: mockPlaintextStream}})
+            );
+
+            // Build a v2 document: version(1) + headerLen(2) + headerJSON + IV(12) + ciphertext
+            const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
+            const headerBytes = UTF8.encode(headerJson);
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const ciphertext = new Uint8Array([1, 2, 3, 4, 5]);
+            const fullDoc = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, headerBytes, iv, ciphertext);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(fullDoc);
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then((result) => {
+                    expect(result.documentID).toEqual("docID");
+                    expect(result.documentName).toEqual("myDoc");
+                    expect(result.plaintextStream).toBe(mockPlaintextStream);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            type: "DOCUMENT_STREAM_DECRYPT",
+                            message: expect.objectContaining({
+                                documentID: "docID",
+                                iv,
+                            }),
+                        }),
+                        expect.any(Array)
+                    );
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+
+        it("parses v1 header (no document ID in header)", (done) => {
+            ShimUtils.setSDKInitialized();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {documentName: "myDoc", plaintextStream: new ReadableStream<Uint8Array>()}})
+            );
+
+            // v1 document: version(1) + IV(12) + ciphertext
+            const iv = new Uint8Array(12).fill(55);
+            const ciphertext = new Uint8Array([1, 2, 3]);
+            const fullDoc = concatArrayBuffers(new Uint8Array([1]), iv, ciphertext);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(fullDoc);
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then((result) => {
+                    expect(result.documentID).toEqual("docID");
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            type: "DOCUMENT_STREAM_DECRYPT",
+                            message: expect.objectContaining({iv}),
+                        }),
+                        expect.any(Array)
+                    );
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+
+        it("rejects on corrupted v2 header JSON", (done) => {
+            ShimUtils.setSDKInitialized();
+            // v2 header with invalid JSON
+            const badJson = new Uint8Array([123, 0, 0, 0]); // "{\0\0\0" — invalid JSON
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, badJson.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const fullDoc = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, badJson, iv);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(fullDoc);
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => done("should have rejected"))
+                .catch((e) => {
+                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                    done();
+                });
+        });
+
+        it("rejects on invalid version byte", (done) => {
+            ShimUtils.setSDKInitialized();
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(new Uint8Array([99])); // Invalid version
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => done("should have rejected"))
+                .catch((e) => {
+                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                    done();
+                });
+        });
+
+        it("produces a ciphertextStream that yields remaining bytes from header parse then original stream data", (done) => {
+            ShimUtils.setSDKInitialized();
+            let capturedCiphertextStream: ReadableStream<Uint8Array> | null = null;
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockImplementation((payload: any) => {
+                capturedCiphertextStream = payload.message.encryptedStream;
+                return Future.of<any>({message: {documentName: "myDoc", plaintextStream: new ReadableStream<Uint8Array>()}});
+            });
+
+            // Build v2 doc with header + IV + multi-byte ciphertext
+            const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
+            const headerBytes = UTF8.encode(headerJson);
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const ciphertextData = new Uint8Array([10, 20, 30, 40, 50]);
+            // This ensures multiple passes will need to be made in the parseStreamHeader read loop.
+            const firstChunk = new Uint8Array([2]);
+            const secondChunk = concatArrayBuffers(headerLenBuf, headerBytes, iv, ciphertextData);
+            const thirdChunk = new Uint8Array([60, 70, 80]);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(firstChunk);
+                    controller.enqueue(secondChunk);
+                    controller.enqueue(thirdChunk);
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => {
+                    // Read all bytes from the captured ciphertext stream
+                    const reader = capturedCiphertextStream!.getReader();
+                    const chunks: Uint8Array[] = [];
+                    function pump(): Promise<void> {
+                        return reader.read().then(({done: d, value}) => {
+                            if (d) return;
+                            chunks.push(value!);
+                            return pump();
+                        });
+                    }
+                    pump().then(() => {
+                        const all = concatArrayBuffers(...chunks);
+                        // Should contain the remainder from the second chunk + the second chunk
+                        expect(all).toEqual(concatArrayBuffers(ciphertextData, thirdChunk));
+                        done();
+                    });
+                })
+                .catch((e) => done(e));
+        });
+
+        it("closes ciphertextStream immediately when source stream contains only header and IV with no ciphertext", (done) => {
+            ShimUtils.setSDKInitialized();
+            let capturedCiphertextStream: ReadableStream<Uint8Array> | null = null;
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockImplementation((payload: any) => {
+                capturedCiphertextStream = payload.message.encryptedStream;
+                return Future.of<any>({message: {documentName: "myDoc"}});
+            });
+
+            const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
+            const headerBytes = UTF8.encode(headerJson);
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const fullDoc = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, headerBytes, iv);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(fullDoc);
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => {
+                    const reader = capturedCiphertextStream!.getReader();
+                    reader.read().then(({done: d, value}) => {
+                        expect(d).toBe(true);
+                        expect(value).toBeUndefined();
+                        done();
+                    });
+                })
+                .catch((e) => done(e));
+        });
+
+        it("propagates cancellation of ciphertextStream to the underlying source stream", (done) => {
+            ShimUtils.setSDKInitialized();
+            let capturedCiphertextStream: ReadableStream<Uint8Array> | null = null;
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockImplementation((payload: any) => {
+                capturedCiphertextStream = payload.message.encryptedStream;
+                return Future.of<any>({message: {documentName: "myDoc"}});
+            });
+
+            let sourceCancelled = false;
+            const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
+            const headerBytes = UTF8.encode(headerJson);
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const headerAndIv = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, headerBytes, iv);
+
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(concatArrayBuffers(headerAndIv, new Uint8Array([1, 2, 3])));
+                },
+                cancel() {
+                    sourceCancelled = true;
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => {
+                    capturedCiphertextStream!.cancel().then(() => {
+                        expect(sourceCancelled).toBe(true);
+                        done();
+                    });
+                })
+                .catch((e) => done(e));
+        });
+
+        it("cleans up the source stream reader when header parse fails", async () => {
+            ShimUtils.setSDKInitialized();
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(new Uint8Array([2, 0, 50])); // v2, header len=50, but no data
+                    controller.close();
+                },
+            });
+
+            await expect(DocumentSDK.decryptStream("docID", stream)).rejects.toThrow();
+            // Stream should no longer be locked — reader was cleaned up on failure
+            expect(stream.locked).toBe(false);
+        });
+
+        it("rejects when stream ends before header is complete", (done) => {
+            ShimUtils.setSDKInitialized();
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(new Uint8Array([2, 0, 50])); // v2, header len=50, but no data
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.decryptStream("docID", stream)
+                .then(() => done("should have rejected"))
+                .catch((e) => {
+                    expect(e.code).toEqual(ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE);
+                    done();
+                });
+        });
+    });
+
+    describe("advanced.decryptStreamUnmanaged", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            const stream = new ReadableStream<Uint8Array>();
+            expect(() => DocumentSDK.advanced.decryptStreamUnmanaged(stream, new Uint8Array(100))).toThrow();
+        });
+
+        it("parses header and sends correct message type with edeks", (done) => {
+            ShimUtils.setSDKInitialized();
+            const mockPlaintextStream = new ReadableStream<Uint8Array>();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {accessVia: {type: "user", id: "userId"}, plaintextStream: mockPlaintextStream}})
+            );
+
+            const headerJson = JSON.stringify({_did_: "docID", _sid_: 1});
+            const headerBytes = UTF8.encode(headerJson);
+            const headerLenBuf = new Uint8Array(2);
+            new DataView(headerLenBuf.buffer).setUint16(0, headerBytes.length, false);
+            const iv = new Uint8Array(12).fill(42);
+            const fullDoc = concatArrayBuffers(new Uint8Array([2]), headerLenBuf, headerBytes, iv, new Uint8Array([1, 2, 3]));
+
+            const edeks = new Uint8Array(100);
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    controller.enqueue(fullDoc);
+                    controller.close();
+                },
+            });
+
+            DocumentSDK.advanced
+                .decryptStreamUnmanaged(stream, edeks)
+                .then((result) => {
+                    expect(result.documentID).toEqual("docID");
+                    expect(result.plaintextStream).toBe(mockPlaintextStream);
+                    expect(result.accessVia).toEqual({type: "user", id: "userId"});
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT",
+                            message: expect.objectContaining({edeks, iv}),
+                        }),
+                        expect.any(Array)
+                    );
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+    });
+
+    describe("advanced.encryptStreamUnmanaged", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            const stream = new ReadableStream<Uint8Array>();
+            expect(() => DocumentSDK.advanced.encryptStreamUnmanaged(stream)).toThrow();
+        });
+
+        it("sends correct message type and returns edeks", (done) => {
+            ShimUtils.setSDKInitialized();
+            const edeksResponse = new Uint8Array([10, 20, 30]);
+            const mockEncryptedStream = new ReadableStream<Uint8Array>();
+            (FrameMediator.sendMessage as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({message: {documentID: "docId", edeks: edeksResponse, encryptedStream: mockEncryptedStream}})
+            );
+
+            const stream = new ReadableStream<Uint8Array>();
+            DocumentSDK.advanced
+                .encryptStreamUnmanaged(stream, {documentID: "myDoc"})
+                .then((result) => {
+                    expect(result.documentID).toEqual("docId");
+                    expect(result.edeks).toEqual(edeksResponse);
+                    expect(result.encryptedStream).toBe(mockEncryptedStream);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT",
+                            message: expect.objectContaining({documentID: "myDoc"}),
+                        }),
+                        expect.any(Array)
+                    );
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+    });
 });

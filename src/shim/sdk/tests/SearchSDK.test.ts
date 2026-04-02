@@ -5,7 +5,7 @@ import * as ShimUtils from "../../ShimUtils";
 import * as SearchSDK from "../SearchSDK";
 
 describe("SearchSDK", () => {
-    let sendMessageMock: jest.SpyInstance<Future<Error, ResponseMessage>, [RequestMessage, (Uint8Array[] | undefined)?]>;
+    let sendMessageMock: jest.SpyInstance<Future<Error, ResponseMessage>, [RequestMessage, ((Uint8Array | Transferable)[] | undefined)?]>;
     beforeEach(() => {
         sendMessageMock = jest.spyOn(FrameMediator, "sendMessage");
         sendMessageMock.mockReturnValue(Future.of<any>({message: "messageResponse"} as any));

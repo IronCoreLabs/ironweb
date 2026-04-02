@@ -1,6 +1,6 @@
 {
     "license": "AGPL-3.0-only",
-    "version": "4.2.56",
+    "version": "4.3.0",
     "scripts": {
         "cleanTest": "find dist -type d -name tests -prune -exec rm -rf {} \\;",
         "lint": "eslint . --ext .ts,.tsx",
@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "@ironcorelabs/recrypt-wasm-binding": "0.7.1",
+        "@noble/ciphers": "1.2.1",
         "@stablelib/ed25519": "1.0.2",
         "@stablelib/utf8": "1.0.1",
         "base64-js": "1.5.1",

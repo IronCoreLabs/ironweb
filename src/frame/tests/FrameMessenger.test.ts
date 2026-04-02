@@ -77,8 +77,10 @@ describe("FrameMessenger", () => {
             messenger.processMessageIntoFrame({data: {data: "mock data", replyID: 23}} as any);
             const afterProcess = (callbackMethod as unknown as jest.SpyInstance).mock.calls[0][1];
 
-            afterProcess("callback data", [{buffer: "1"}, {buffer: "2"}]);
-            expect(fauxPort.postMessage).toHaveBeenCalledWith({replyID: 23, data: "callback data"}, ["1", "2"]);
+            const transfer1 = new Uint8Array([1]);
+            const transfer2 = new Uint8Array([2]);
+            afterProcess("callback data", [transfer1, transfer2]);
+            expect(fauxPort.postMessage).toHaveBeenCalledWith({replyID: 23, data: "callback data"}, [transfer1.buffer, transfer2.buffer]);
         });
     });
 });

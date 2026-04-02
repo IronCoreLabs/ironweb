@@ -46,7 +46,7 @@ function convertGroupCreateOptionsToFixedValues(data: GroupCreateRequest) {
 }
 
 /* tslint:disable cyclomatic-complexity */
-function onParentPortMessage(data: RequestMessage, callback: (message: ResponseMessage, transferList?: Uint8Array[]) => void) {
+function onParentPortMessage(data: RequestMessage, callback: (message: ResponseMessage, transferList?: (Uint8Array | Transferable)[]) => void) {
     const errorHandler = errorResponse.bind(null, callback);
 
     switch (data.type) {
@@ -100,7 +100,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 callback({type: "DOCUMENT_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
             );
         case "DOCUMENT_UNMANAGED_DECRYPT":
-            return DocumentAdvancedApi.decryptWithProvidedEdeks(data.message.documentData, data.message.edeks).engage(errorHandler, (documentData) =>
+            return DocumentAdvancedApi.decryptUnmanaged(data.message.documentData, data.message.edeks).engage(errorHandler, (documentData) =>
                 callback({type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
             );
         case "DOCUMENT_STORE_ENCRYPT":
@@ -130,7 +130,7 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.policy
             ).engage(errorHandler, (encryptedDoc) => callback({type: "DOCUMENT_ENCRYPT_RESPONSE", message: encryptedDoc}, [encryptedDoc.document]));
         case "DOCUMENT_UNMANAGED_ENCRYPT":
-            return DocumentAdvancedApi.encrypt(
+            return DocumentAdvancedApi.encryptUnmanaged(
                 data.message.documentID,
                 data.message.documentData,
                 data.message.userGrants,
@@ -229,6 +229,59 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             return SearchApi.transliterateString(data.message).engage(errorHandler, (message) =>
                 callback({type: "SEARCH_TRANSLITERATE_STRING_RESPONSE", message})
             );
+        case "DOCUMENT_STREAM_DECRYPT": {
+            const {readable: plaintextReadable, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+            return DocumentApi.decryptLocalDocStream(data.message.documentID, data.message.iv, data.message.encryptedStream, plaintextWritable).engage(
+                errorHandler,
+                (result) =>
+                    callback({type: "DOCUMENT_STREAM_DECRYPT_RESPONSE", message: {...result, plaintextStream: plaintextReadable}}, [
+                        plaintextReadable as unknown as Transferable,
+                    ])
+            );
+        }
+        case "DOCUMENT_UNMANAGED_STREAM_DECRYPT": {
+            const {readable: plaintextReadable, writable: plaintextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+            return DocumentAdvancedApi.decryptStreamUnmanaged(data.message.iv, data.message.edeks, data.message.encryptedStream, plaintextWritable).engage(
+                errorHandler,
+                (result) =>
+                    callback({type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE", message: {...result, plaintextStream: plaintextReadable}}, [
+                        plaintextReadable as unknown as Transferable,
+                    ])
+            );
+        }
+        case "DOCUMENT_STREAM_ENCRYPT": {
+            const {readable: ciphertextReadable, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+            return DocumentApi.encryptLocalDocStream(
+                data.message.documentID,
+                data.message.documentName,
+                data.message.userGrants,
+                data.message.groupGrants,
+                data.message.grantToAuthor !== false,
+                data.message.plaintextStream,
+                ciphertextWritable,
+                data.message.policy
+            ).engage(errorHandler, (result) =>
+                callback({type: "DOCUMENT_STREAM_ENCRYPT_RESPONSE", message: {...result, encryptedStream: ciphertextReadable}}, [
+                    ciphertextReadable as unknown as Transferable,
+                ])
+            );
+        }
+        case "DOCUMENT_UNMANAGED_STREAM_ENCRYPT": {
+            const {readable: ciphertextReadable, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+            return DocumentAdvancedApi.encryptStreamUnmanaged(
+                data.message.documentID,
+                data.message.plaintextStream,
+                ciphertextWritable,
+                data.message.userGrants,
+                data.message.groupGrants,
+                data.message.grantToAuthor,
+                data.message.policy
+            ).engage(errorHandler, (result) =>
+                callback({type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE", message: {...result, encryptedStream: ciphertextReadable}}, [
+                    ciphertextReadable as unknown as Transferable,
+                ])
+            );
+        }
         default:
             //Force TS to tell us if we ever create a new request type that we don't handle here
             const exhaustiveCheck: never = data;

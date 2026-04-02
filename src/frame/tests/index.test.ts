@@ -202,7 +202,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UNMANAGED_DECRYPT", (done) => {
-            jest.spyOn(DocumentAdvancedApi, "decryptWithProvidedEdeks").mockReturnValue(Future.of<any>("umanagedDecrypt"));
+            jest.spyOn(DocumentAdvancedApi, "decryptUnmanaged").mockReturnValue(Future.of<any>("umanagedDecrypt"));
             const payload: any = {
                 type: "DOCUMENT_UNMANAGED_DECRYPT",
                 message: {
@@ -215,7 +215,7 @@ describe("frame index", () => {
                     type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE",
                     message: "umanagedDecrypt",
                 });
-                expect(DocumentAdvancedApi.decryptWithProvidedEdeks).toHaveBeenCalledWith(new Uint8Array([35, 88, 37]), "edeks");
+                expect(DocumentAdvancedApi.decryptUnmanaged).toHaveBeenCalledWith(new Uint8Array([35, 88, 37]), "edeks");
                 done();
             });
         });
@@ -401,7 +401,7 @@ describe("frame index", () => {
         });
 
         it("DOCUMENT_UNMANAGED_ENCRYPT", (done) => {
-            jest.spyOn(DocumentAdvancedApi, "encrypt").mockReturnValue(Future.of<any>("umanagedEncrypt"));
+            jest.spyOn(DocumentAdvancedApi, "encryptUnmanaged").mockReturnValue(Future.of<any>("umanagedEncrypt"));
             const payload: any = {
                 type: "DOCUMENT_UNMANAGED_ENCRYPT",
                 message: {
@@ -415,7 +415,14 @@ describe("frame index", () => {
             };
 
             messenger.onMessageCallback(payload, () => {
-                expect(DocumentAdvancedApi.encrypt).toHaveBeenCalledWith("my doc", new Uint8Array([36]), "list of user ids", "list of group ids", true, {});
+                expect(DocumentAdvancedApi.encryptUnmanaged).toHaveBeenCalledWith(
+                    "my doc",
+                    new Uint8Array([36]),
+                    "list of user ids",
+                    "list of group ids",
+                    true,
+                    {}
+                );
                 done();
             });
         });
@@ -982,6 +989,93 @@ describe("frame index", () => {
                     message: "groupCreate",
                 });
                 expect(GroupApi.create).toHaveBeenCalledWith("my-group", "bar", false, ["groupCreatorId"], ["groupCreatorId"], undefined);
+                done();
+            });
+        });
+    });
+
+    describe("streaming encrypt/decrypt dispatch", () => {
+        it("DOCUMENT_STREAM_DECRYPT", (done) => {
+            jest.spyOn(DocumentApi, "decryptLocalDocStream").mockReturnValue(Future.of<any>({documentName: "myDoc"}));
+            const payload: any = {
+                type: "DOCUMENT_STREAM_DECRYPT",
+                message: {
+                    documentID: "docID",
+                    iv: new Uint8Array(12),
+                    encryptedStream: new ReadableStream<Uint8Array>(),
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result.type).toEqual("DOCUMENT_STREAM_DECRYPT_RESPONSE");
+                expect(result.message.documentName).toEqual("myDoc");
+                expect(result.message.plaintextStream).toBeInstanceOf(ReadableStream);
+                done();
+            });
+        });
+
+        it("DOCUMENT_UNMANAGED_STREAM_DECRYPT", (done) => {
+            jest.spyOn(DocumentAdvancedApi, "decryptStreamUnmanaged").mockReturnValue(Future.of<any>({accessVia: {type: "user", id: "u1"}}));
+            const payload: any = {
+                type: "DOCUMENT_UNMANAGED_STREAM_DECRYPT",
+                message: {
+                    iv: new Uint8Array(12),
+                    edeks: new Uint8Array(100),
+                    encryptedStream: new ReadableStream<Uint8Array>(),
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result.type).toEqual("DOCUMENT_UNMANAGED_STREAM_DECRYPT_RESPONSE");
+                expect(result.message.accessVia).toEqual({type: "user", id: "u1"});
+                expect(result.message.plaintextStream).toBeInstanceOf(ReadableStream);
+                done();
+            });
+        });
+
+        it("DOCUMENT_STREAM_ENCRYPT", (done) => {
+            jest.spyOn(DocumentApi, "encryptLocalDocStream").mockReturnValue(
+                Future.of<any>({documentID: "docID", documentName: "myDoc", created: "c", updated: "u"})
+            );
+            const payload: any = {
+                type: "DOCUMENT_STREAM_ENCRYPT",
+                message: {
+                    documentID: "docID",
+                    documentName: "myDoc",
+                    plaintextStream: new ReadableStream<Uint8Array>(),
+                    userGrants: [],
+                    groupGrants: [],
+                    grantToAuthor: true,
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result.type).toEqual("DOCUMENT_STREAM_ENCRYPT_RESPONSE");
+                expect(result.message.documentID).toEqual("docID");
+                expect(result.message.documentName).toEqual("myDoc");
+                expect(result.message.encryptedStream).toBeInstanceOf(ReadableStream);
+                done();
+            });
+        });
+
+        it("DOCUMENT_UNMANAGED_STREAM_ENCRYPT", (done) => {
+            jest.spyOn(DocumentAdvancedApi, "encryptStreamUnmanaged").mockReturnValue(Future.of<any>({documentID: "docID", edeks: new Uint8Array([1, 2, 3])}));
+            const payload: any = {
+                type: "DOCUMENT_UNMANAGED_STREAM_ENCRYPT",
+                message: {
+                    documentID: "docID",
+                    plaintextStream: new ReadableStream<Uint8Array>(),
+                    userGrants: [],
+                    groupGrants: [],
+                    grantToAuthor: true,
+                },
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result.type).toEqual("DOCUMENT_UNMANAGED_STREAM_ENCRYPT_RESPONSE");
+                expect(result.message.documentID).toEqual("docID");
+                expect(result.message.edeks).toEqual(new Uint8Array([1, 2, 3]));
+                expect(result.message.encryptedStream).toBeInstanceOf(ReadableStream);
                 done();
             });
         });

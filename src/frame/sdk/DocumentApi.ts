@@ -8,7 +8,7 @@ import {
     Policy,
     UserOrGroup,
 } from "../../../ironweb";
-import {ErrorCodes, UserAndGroupTypes} from "../../Constants";
+import {CryptoConstants, ErrorCodes, UserAndGroupTypes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
 import * as Utils from "../../lib/Utils";
 import ApiState from "../ApiState";
@@ -16,7 +16,8 @@ import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetRespons
 import GroupApiEndpoints, {GroupPublicKeyObject} from "../endpoints/GroupApiEndpoints";
 import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoints";
 import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
-import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64} from "../FrameUtils";
+import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64, generateDocumentHeaderBytes} from "../FrameUtils";
+import {concatArrayBuffers} from "../../lib/Utils";
 import * as DocumentOperations from "./DocumentOperations";
 
 /**
@@ -246,9 +247,87 @@ export function getDocumentMeta(documentID: string): Future<SDKError, DocumentMe
  * @param {string} documentID Unique lookup key of document to retrieve
  */
 export function decryptHostedDoc(documentID: string): Future<SDKError, DecryptedDocumentResponse> {
-    return DocumentApiEndpoints.callDocumentGetApi(documentID).flatMap((documentResponse) => {
-        return decryptAndFormatDocument(documentToByteParts(documentResponse.data.content), documentResponse);
-    });
+    return DocumentApiEndpoints.callDocumentGetApi(documentID).flatMap((documentResponse) =>
+        documentToByteParts(documentResponse.data.content).flatMap((documentParts) =>
+            decryptAndFormatDocument(documentParts, documentResponse)
+        )
+    );
+}
+
+/**
+ * Streaming decrypt: retrieve document metadata, then pipe the encrypted stream through the Worker for decryption.
+ * The caller provides the IV (parsed from the document header) and a ReadableStream of the ciphertext (post-header).
+ * Plaintext is written to plaintextStream. On auth tag failure, plaintextStream is aborted.
+ */
+export function decryptLocalDocStream(
+    documentID: string,
+    iv: Uint8Array,
+    encryptedStream: ReadableStream<Uint8Array>,
+    plaintextStream: WritableStream<Uint8Array>
+): Future<SDKError, Omit<DocumentMetaResponse, "documentID">> {
+    const {privateKey} = ApiState.deviceKeys();
+    return DocumentApiEndpoints.callDocumentMetadataGetApi(documentID).flatMap((documentResponse) =>
+        DocumentOperations.decryptDocumentStream(documentResponse.encryptedSymmetricKey, privateKey, iv, encryptedStream, plaintextStream).map(() => ({
+            documentName: documentResponse.name,
+            association: documentResponse.association.type,
+            visibleTo: documentResponse.visibleTo,
+            created: documentResponse.created,
+            updated: documentResponse.updated,
+        }))
+    );
+}
+
+/**
+ * Shared setup for streaming encrypt: generate IV, write header+IV to the output stream,
+ * resolve user/group keys, and start the Worker encrypt loop. Returns the encrypted access keys.
+ */
+export function startStreamEncrypt(
+    documentID: string,
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean,
+    policy?: Policy
+) {
+    const iv = crypto.getRandomValues(new Uint8Array(CryptoConstants.IV_LENGTH));
+    const headerAndIv = concatArrayBuffers(generateDocumentHeaderBytes(documentID, ApiState.user().segmentId), iv);
+
+    return Future.tryP(async () => {
+        const writer = ciphertextStream.getWriter();
+        await writer.write(headerAndIv);
+        writer.releaseLock();
+    })
+        .errorMap((error) => new SDKError(error, ErrorCodes.DOCUMENT_ENCRYPT_FAILURE))
+        .flatMap(() => getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy))
+        .flatMap(({userKeys, groupKeys}) =>
+            DocumentOperations.encryptDocumentStream(plaintextStream, ciphertextStream, userKeys, groupKeys, ApiState.signingKeys(), iv)
+        );
+}
+
+/**
+ * Streaming encrypt: write header+IV, encrypt via Worker, create document record via API.
+ */
+export function encryptLocalDocStream(
+    documentID: string,
+    documentName: string,
+    userGrants: string[],
+    groupGrants: string[],
+    grantToAuthor: boolean,
+    plaintextStream: ReadableStream<Uint8Array>,
+    ciphertextStream: WritableStream<Uint8Array>,
+    policy?: Policy
+) {
+    return startStreamEncrypt(documentID, plaintextStream, ciphertextStream, userGrants, groupGrants, grantToAuthor, policy)
+        .flatMap(({userAccessKeys, groupAccessKeys}) =>
+            DocumentApiEndpoints.callDocumentCreateApi(documentID, null, userAccessKeys, groupAccessKeys, documentName)
+        )
+        .map((createdDocument) => ({
+            documentID: createdDocument.id,
+            documentName: createdDocument.name,
+            created: createdDocument.created,
+            updated: createdDocument.updated,
+        }));
 }
 
 /**
@@ -257,15 +336,11 @@ export function decryptHostedDoc(documentID: string): Future<SDKError, Decrypted
  * @param {Uint8Array} encryptedDocument Data of document to decrypt
  */
 export function decryptLocalDoc(documentID: string, encryptedDocument: Uint8Array): Future<SDKError, DecryptedDocumentResponse> {
-    //Early verification to check that the bytes we got appear to be an IronCore encrypted document. We have two versions so reject early if the bytes provided
-    //don't match either of those two versions.
-    if (encryptedDocument[0] !== 1 && encryptedDocument[0] !== 2) {
-        return Future.reject(
-            new SDKError(new Error("Provided encrypted document doesn't appear to be valid. Invalid version."), ErrorCodes.DOCUMENT_HEADER_PARSE_FAILURE)
-        );
-    }
-    const documentParts = documentToByteParts(encryptedDocument);
-    return DocumentApiEndpoints.callDocumentMetadataGetApi(documentID).flatMap((documentResponse) => decryptAndFormatDocument(documentParts, documentResponse));
+    return documentToByteParts(encryptedDocument).flatMap((documentParts) =>
+        DocumentApiEndpoints.callDocumentMetadataGetApi(documentID).flatMap((documentResponse) =>
+            decryptAndFormatDocument(documentParts, documentResponse)
+        )
+    );
 }
 
 /**
