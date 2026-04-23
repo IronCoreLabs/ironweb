@@ -44,8 +44,8 @@ export const encodeEdeks = (segmentId: number, documentId: string, userKeys: Enc
     const groupDeks = groupKeys.map(convertEncryptedAccessKey("groupId"));
     const encodedEdeks = PBEDeks.encode(new PBEDeks({edeks: [...groupDeks, ...userDeks], segmentId, documentId})).finish();
     // This is a workaround for a breaking change in protobuf 7.0.0, https://github.com/protobufjs/protobuf.js/issues/1791
-    if (Buffer) {
-        return new Uint8Array((encodedEdeks as Buffer).buffer);
+    if (typeof Buffer != "undefined" && encodedEdeks instanceof Buffer) {
+        return new Uint8Array(encodedEdeks.buffer);
     } else {
         return encodedEdeks;
     }

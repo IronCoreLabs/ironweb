@@ -72,7 +72,7 @@ function serveIndex(req, res) {
  */
 function serveJWT(req, res) {
     res.json(
-        jwt.sign({pid: projectIDs.projectId, sid: projectIDs.segmentId, kid: projectIDs.serviceKeyId || undefined}, privateKey, {
+        jwt.sign({pid: projectIDs.projectId, sid: projectIDs.segmentId, kid: projectIDs.identityAssertionKeyId}, privateKey, {
             algorithm: "ES256",
             expiresIn: "2m",
             subject: req.params.userID,

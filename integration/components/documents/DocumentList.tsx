@@ -17,6 +17,7 @@ import * as IronWeb from "../../../src/shim";
 import {isLocalDocument} from "../../DocumentDB";
 import {logAction} from "../../Logger";
 import AddDocumentData from "./AddDocumentData";
+import LockIcon from "material-ui/svg-icons/action/lock";
 
 interface DocumentListProps {
     onListSelect: (list: DocumentIDNameResponse | "new") => void;
@@ -26,6 +27,7 @@ interface DocumentListState {
     storeLocal: boolean;
     lists: DocumentAssociationResponse[];
     documentDataAdd: DocumentAssociationResponse | null;
+    unmanagedTestResult: "success" | "error" | null;
 }
 
 export default class DocumentList extends React.Component<DocumentListProps, DocumentListState> {
@@ -35,12 +37,39 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
             storeLocal: false,
             lists: [],
             documentDataAdd: null,
+            unmanagedTestResult: null,
         };
     }
 
     componentDidMount() {
         this.loadDocuments();
     }
+
+    testUnmanagedEncrypt = () => {
+        this.setState({unmanagedTestResult: null});
+        logAction("Testing unmanaged encrypt/decrypt round-trip...");
+        const testData = IronWeb.codec.utf8.toBytes(JSON.stringify({test: "unmanaged encryption"}));
+        IronWeb.document.advanced
+            .encryptUnmanaged(testData)
+            .then((encryptResult) => {
+                logAction(`Unmanaged encrypt succeeded, documentID: ${encryptResult.documentID}`);
+                return IronWeb.document.advanced.decryptUnmanaged(encryptResult.document, encryptResult.edeks);
+            })
+            .then((decryptResult) => {
+                const decrypted = JSON.parse(IronWeb.codec.utf8.fromBytes(decryptResult.data));
+                if (decrypted.test === "unmanaged encryption") {
+                    logAction("Unmanaged encrypt/decrypt round-trip succeeded.", "success");
+                    this.setState({unmanagedTestResult: "success"});
+                } else {
+                    logAction("Unmanaged decrypt returned unexpected data.", "error");
+                    this.setState({unmanagedTestResult: "error"});
+                }
+            })
+            .catch((error: IronWeb.SDKError) => {
+                logAction(`Unmanaged encrypt/decrypt failed: ${error.message}. Error Code: ${error.code}`, "error");
+                this.setState({unmanagedTestResult: "error"});
+            });
+    };
 
     loadDocuments = () => {
         logAction(`Retrieving users list of documents`);
@@ -156,11 +185,19 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
                     </FloatingActionButton>
                 </div>
                 <List style={{backgroundColor: "#f5f5f5", padding: 0, maxHeight: "350px", overflowY: "auto"}}>{this.getDocumentsMarkup(this.state.lists)}</List>
-                <div style={{display: "flex", justifyContent: "flex-end", margin: "10px 0"}}>
+                <div style={{display: "flex", justifyContent: "flex-end", gap: "10px", margin: "10px 0"}}>
+                    <FloatingActionButton className="test-unmanaged" onClick={this.testUnmanagedEncrypt} mini backgroundColor={orange400}>
+                        <LockIcon />
+                    </FloatingActionButton>
                     <FloatingActionButton className="new-document" onClick={this.props.onListSelect.bind(null, "new")} mini backgroundColor={cyan500}>
                         <Add />
                     </FloatingActionButton>
                 </div>
+                {this.state.unmanagedTestResult && (
+                    <div className={`unmanaged-test-${this.state.unmanagedTestResult}`} style={{textAlign: "center", padding: "5px", fontSize: "12px"}}>
+                        {this.state.unmanagedTestResult === "success" ? "Unmanaged round-trip OK" : "Unmanaged round-trip FAILED"}
+                    </div>
+                )}
                 <AddDocumentData document={this.state.documentDataAdd} onClose={() => this.setState({documentDataAdd: null})} />
             </div>
         );

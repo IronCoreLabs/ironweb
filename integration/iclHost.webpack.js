@@ -107,13 +107,16 @@ const frameConfig = {
             });
             return middlewares;
         },
-        proxy: {
-            //Proxy through API requests through webpack. We're doing this because the API is hosted locally over port 9090 over
-            //HTTP, but since we're running local dev over https those requests will fail. So we proxy here so everything on the
-            //client is over HTTPS. This also makes the environment setup closer to production since the API is on the same
-            //server as the frame source is hosted from
-            "/api/1/": "http://localhost:9090",
-        },
+        proxy: [
+            {
+                //Proxy through API requests through webpack. We're doing this because the API is hosted locally over port 9090 over
+                //HTTP, but since we're running local dev over https those requests will fail. So we proxy here so everything on the
+                //client is over HTTPS. This also makes the environment setup closer to production since the API is on the same
+                //server as the frame source is hosted from
+                context: ["/api/1/"],
+                target: "http://localhost:9090",
+            },
+        ],
         allowedHosts: "all"
     },
     entry: {
