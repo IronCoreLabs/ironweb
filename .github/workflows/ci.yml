@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: 24.x
       - uses: browser-actions/setup-chrome@latest
+        id: setup-chrome
         with:
           chrome-version: stable
           install-chromedriver: true
@@ -50,4 +51,7 @@ jobs:
             done
           done
       - name: run nightwatch tests
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+          CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
         run: yarn nightwatch

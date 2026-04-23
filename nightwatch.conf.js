@@ -1,8 +1,8 @@
 const {execSync} = require("child_process");
 
-// Resolve chromedriver and chrome from PATH
-const chromedriverPath = execSync("which chromedriver", {encoding: "utf8"}).trim();
-const chromePath = execSync("which google-chrome-stable || which google-chrome || which chromium", {encoding: "utf8"}).trim();
+// Resolve chromedriver and chrome from env vars (set by CI) or PATH
+const chromedriverPath = process.env.CHROMEDRIVER_PATH || execSync("which chromedriver", {encoding: "utf8"}).trim();
+const chromePath = process.env.CHROME_PATH || execSync("which google-chrome-stable || which google-chrome || which chromium", {encoding: "utf8"}).trim();
 
 module.exports = {
     src_folders: ["integration/nightwatch/tests/"],
