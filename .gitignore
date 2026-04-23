@@ -8,7 +8,8 @@ bin/
 dist/
 docs/
 coverage/
-integration/private.key
 integration/projects/*
+!integration/projects/*.iron
 integration/certs/*
 .direnv
+logs/

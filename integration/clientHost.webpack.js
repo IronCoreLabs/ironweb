@@ -8,8 +8,11 @@ const projectIDs = require("./projects/project.json");
 const keyFile = path.join(__dirname, "./projects/private.key");
 const privateKey = fs.readFileSync(keyFile, "utf8");
 
-const SB_HOST = "dev1.scrambledbits.org";
-const SB_PORT = 4500;
+const SB_HOST = process.env.CLIENT_HOST || "localhost";
+const SB_PORT = parseInt(process.env.CLIENT_PORT, 10) || 4500;
+const FRAME_HOST = process.env.FRAME_HOST || "localhost";
+const FRAME_PORT = parseInt(process.env.FRAME_PORT, 10) || 4501;
+const CERT_DIR = path.join(__dirname, process.env.CLIENT_CERT_DIR || "certs/localhost");
 
 if ((process.env.HOSTED_VERSION && !process.env.HOSTED_ENV) || (!process.env.HOSTED_VERSION && process.env.HOSTED_ENV)) {
     throw new Error("In order to run against a non-local environment you need to set both the `HOSTED_VERSION` and `HOSTED_ENV` environment variables.");
@@ -26,11 +29,9 @@ function getFrameDomain() {
         case "dev":
             return "https://api-dev1.ironcorelabs.com";
         default:
-            return "https://dev1.ironcorelabs.com:4501";
+            return `https://${FRAME_HOST}:${FRAME_PORT}`;
     }
 }
-
-const runtimeEnvironment = process.env.HOSTED_VERSION ? "production" : "";
 
 /**
  * Serve the app index.html page. This figures out who the current user is, and if one doesn't exist, generates a new random user
@@ -92,9 +93,8 @@ module.exports = {
         server: {
             type: "https",
             options: {
-                key: fs.readFileSync(path.join(__dirname, "certs/sb/privkey.pem")),
-                cert: fs.readFileSync(path.join(__dirname, "certs/sb/cert.pem")),
-                ca: fs.readFileSync(path.join(__dirname, "certs/sb/chain.pem")),
+                key: fs.readFileSync(path.join(CERT_DIR, "privkey.pem")),
+                cert: fs.readFileSync(path.join(CERT_DIR, "cert.pem")),
             },
         },
         setupMiddlewares: (middlewares, devServer) => {
@@ -131,7 +131,6 @@ module.exports = {
     },
     plugins: [
         new webpack.DefinePlugin({
-            //"process.env.NODE_ENV": JSON.stringify(runtimeEnvironment), not sure why this conflicting problem comes up
             SDK_NPM_VERSION_PLACEHOLDER: JSON.stringify(process.env.HOSTED_VERSION || "SDK_NPM_VERSION_PLACEHOLDER"),
             _ICL_FRAME_DOMAIN_REPLACEMENT_: JSON.stringify(getFrameDomain()),
         }),

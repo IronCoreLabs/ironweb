@@ -2,8 +2,10 @@ const path = require("path");
 const fs = require("fs");
 const webpack = require("webpack");
 
-const IRONCORE_HOST = "dev1.ironcorelabs.com";
-const IRONCORE_PORT = 4501;
+const IRONCORE_HOST = process.env.FRAME_HOST || "localhost";
+const IRONCORE_PORT = parseInt(process.env.FRAME_PORT, 10) || 4501;
+const CERT_DIR = path.join(__dirname, process.env.FRAME_CERT_DIR || "certs/localhost");
+const API_TARGET = process.env.API_PROXY_TARGET || "https://api-staging.ironcorelabs.com";
 
 /**
  * Serve HTML for frame. Contains shell of a page, but includes necessary frame JS which will then pull down web worker source
@@ -93,9 +95,8 @@ const frameConfig = {
         server: {
             type: "https",
             options: {
-                key: fs.readFileSync(path.join(__dirname, "certs/icl/privkey.pem")),
-                cert: fs.readFileSync(path.join(__dirname, "certs/icl/cert.pem")),
-                ca: fs.readFileSync(path.join(__dirname, "certs/icl/chain.pem")),
+                key: fs.readFileSync(path.join(CERT_DIR, "privkey.pem")),
+                cert: fs.readFileSync(path.join(CERT_DIR, "cert.pem")),
             },
         },
         setupMiddlewares: (middlewares, devServer) => {
@@ -109,12 +110,11 @@ const frameConfig = {
         },
         proxy: [
             {
-                //Proxy through API requests through webpack. We're doing this because the API is hosted locally over port 9090 over
-                //HTTP, but since we're running local dev over https those requests will fail. So we proxy here so everything on the
-                //client is over HTTPS. This also makes the environment setup closer to production since the API is on the same
-                //server as the frame source is hosted from
+                //Proxy API requests through webpack. Defaults to stage ironcore-id.
+                //Set API_PROXY_TARGET=http://localhost:9090 to use a local ironcore-id instead.
                 context: ["/api/1/"],
-                target: "http://localhost:9090",
+                target: API_TARGET,
+                changeOrigin: true,
             },
         ],
         allowedHosts: "all"

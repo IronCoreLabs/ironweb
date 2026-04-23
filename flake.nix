@@ -5,7 +5,11 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfreePredicate = pkg:
+            builtins.elem (nixpkgs.lib.getName pkg) [ "google-chrome" ];
+        };
       in
       {
         devShell = pkgs.mkShell {
@@ -13,6 +17,8 @@
             pkgs.prettier
             pkgs.nodejs_24
             (pkgs.yarn.override { nodejs = pkgs.nodejs_24; })
+            pkgs.google-chrome
+            pkgs.chromedriver
           ];
         };
       });

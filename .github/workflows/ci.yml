@@ -18,3 +18,36 @@ jobs:
         run: |
           yarn
           yarn test
+
+  integration_test:
+    runs-on: ubuntu-24.04
+    needs: build_and_test
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+      - uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
+          install-chromedriver: true
+      - name: install dependencies
+        run: yarn
+      - name: write project credentials
+        run: |
+          echo '${{ secrets.INTEGRATION_PROJECT_JSON }}' > integration/projects/project.json
+          echo '${{ secrets.INTEGRATION_PRIVATE_KEY }}' > integration/projects/private.key
+      - name: start integration servers
+        run: |
+          yarn start &
+          for port in 4500 4501; do
+            for i in $(seq 1 30); do
+              if curl -sk https://localhost:$port > /dev/null 2>&1; then
+                echo "Server on port $port is ready"
+                break
+              fi
+              sleep 1
+            done
+          done
+      - name: run nightwatch tests
+        run: yarn nightwatch

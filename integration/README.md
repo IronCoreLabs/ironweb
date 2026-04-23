@@ -2,22 +2,33 @@
 
 ## Architecture
 
-The integration test setup has two components:
+The integration test setup has three components:
 
-1. **Client app** (`clientHost.webpack.js`) — serves the demo app at `https://dev1.scrambledbits.org:4500`. This is the UI that nightwatch interacts with.
-2. **Frame/Worker host** (`iclHost.webpack.js`) — serves the iframe + web worker code at `https://dev1.ironcorelabs.com:4501`. This is where the SDK's frame and crypto worker run.
+1. **Client app** (`clientHost.webpack.js`) — serves the demo app at `https://localhost:4500`. This is the UI that nightwatch interacts with.
+2. **Frame/Worker host** (`iclHost.webpack.js`) — serves the iframe + web worker code at `https://localhost:4501`. This is where the SDK's frame and crypto worker run, built from your local source.
+3. **API backend** — by default, API requests are proxied to stage ironcore-id (`https://api-staging.ironcorelabs.com`). Set `API_PROXY_TARGET=http://localhost:9090` to use a local ironcore-id instead.
 
-By default both point to local dev servers. To test against a hosted environment (dev/stage), set `HOSTED_VERSION` and `HOSTED_ENV` environment variables — in that case the frame code is loaded from the remote environment rather than locally.
+All three SDK layers (shim, frame, worker) run locally from source, so your uncommitted changes are under test.
 
 ## Prerequisites
 
-- **Certs**: TLS certificates for `dev1.scrambledbits.org` and `dev1.ironcorelabs.com` must be present in `integration/certs/sb/` and `integration/certs/icl/` respectively. Extract `devcerts.zip` if needed.
-- **DNS**: Both hostnames must resolve to `127.0.0.1` (e.g. via `/etc/hosts`).
-- **Chrome**: A Chrome or Chromium browser must be available. On NixOS/nix you can get one with:
-  ```
-  NIXPKGS_ALLOW_UNFREE=1 nix shell nixpkgs#google-chrome nixpkgs#chromedriver --impure
-  ```
-- **ChromeDriver**: Must match the Chrome version. The `chromedriver` npm package is bundled but may be outdated — if versions don't match, use the nix chromedriver (see above).
+### Nix dev shell (recommended)
+
+The project flake provides everything you need: Node.js, yarn, Chrome, and ChromeDriver (version-matched from the same nixpkgs):
+
+```bash
+nix develop
+```
+
+### Project credentials
+
+The project credentials are encrypted with ironhide. Decrypt them before first use:
+
+```bash
+ironhide file decrypt integration/projects/*
+```
+
+This produces `integration/projects/project.json` and `integration/projects/private.key`, which contain the project ID, segment ID, identity assertion key ID, and signing key for the stage environment.
 
 ## Running the Integration App
 
@@ -25,31 +36,42 @@ By default both point to local dev servers. To test against a hosted environment
 yarn start
 ```
 
-This starts both webpack dev servers in parallel (client on port 4500, frame on port 4501). Visit `https://dev1.scrambledbits.org:4500` to use the demo app.
+This generates self-signed localhost TLS certs (if not already present) and starts both webpack dev servers in parallel (client on port 4500, frame on port 4501).
 
-To run against a hosted frame environment (e.g. stage):
+Navigate to **`https://localhost:4500`** in your browser (the `https://` is required). If your browser shows a certificate warning for the self-signed cert, click through to proceed.
+
+### Testing against a hosted frame environment
+
+To test against a specific deployed frame version (e.g. to reproduce a reported bug or confirm a regression against a release), set `HOSTED_ENV` and `HOSTED_VERSION`. This loads the frame and worker from the remote environment instead of local source:
 
 ```bash
 HOSTED_VERSION=4.3.1 HOSTED_ENV=stage yarn start
 ```
 
-In this mode, only the client app runs locally — the frame/worker code is loaded from the remote environment. This means local changes to frame or worker code won't take effect until deployed to that environment.
+In this mode the client app still runs locally, but the iframe loads from the remote environment (e.g. `https://api-staging.ironcorelabs.com`). Local changes to frame or worker code will **not** be reflected — only shim changes are tested.
+
+Available environments: `stage`, `dev`, `prod`.
+
+### Environment variables
+
+| Variable           | Default                                    | Description                                |
+|--------------------|--------------------------------------------|--------------------------------------------|
+| `CLIENT_HOST`      | `localhost`                                | Hostname for the client app server         |
+| `CLIENT_PORT`      | `4500`                                     | Port for the client app server             |
+| `FRAME_HOST`       | `localhost`                                | Hostname for the frame/worker server       |
+| `FRAME_PORT`       | `4501`                                     | Port for the frame/worker server           |
+| `CLIENT_CERT_DIR`  | `certs/localhost`                           | TLS cert directory for the client server   |
+| `FRAME_CERT_DIR`   | `certs/localhost`                           | TLS cert directory for the frame server    |
+| `API_PROXY_TARGET` | `https://api-staging.ironcorelabs.com`     | Backend API to proxy `/api/1/` requests to |
+| `HOSTED_ENV`       | _(unset)_                                  | Load frame from a remote env instead of local (`stage`, `dev`, `prod`) |
+| `HOSTED_VERSION`   | _(unset)_                                  | SDK version string (required with `HOSTED_ENV`) |
 
 ## Running Nightwatch Tests
 
-### 1. Start ChromeDriver
-
-If using the bundled chromedriver and it matches your Chrome version:
+### 1. Start the integration app
 
 ```bash
-npx chromedriver --port=9515
-```
-
-If using nix (recommended for version matching):
-
-```bash
-NIXPKGS_ALLOW_UNFREE=1 nix shell nixpkgs#google-chrome nixpkgs#chromedriver --impure
-chromedriver --port=9515
+yarn start
 ```
 
 ### 2. Run tests
@@ -63,45 +85,11 @@ yarn nightwatch
 Run tests by tag:
 
 ```bash
-npx nightwatch --tag unmanagedEncrypt
+yarn nightwatch --tag unmanagedEncrypt
 ```
-
-### ChromeDriver version mismatch
-
-The `nightwatch.json` config and `globalsModule.js` both reference the bundled `chromedriver` npm package. If your Chrome version doesn't match (you'll see "This version of ChromeDriver only supports Chrome version X"), you have two options:
-
-1. **Replace the bundled binary** temporarily:
-   ```bash
-   cp $(which chromedriver) node_modules/chromedriver/lib/chromedriver/chromedriver
-   ```
-
-2. **Use a custom nightwatch config** with `webdriver.server_path` pointing to the correct chromedriver and `chromeOptions.binary` pointing to your Chrome:
-   ```json
-   {
-     "webdriver": {
-       "start_process": true,
-       "server_path": "/path/to/chromedriver",
-       "port": 9515
-     },
-     "test_settings": {
-       "default": {
-         "desiredCapabilities": {
-           "chromeOptions": {
-             "binary": "/path/to/google-chrome-stable"
-           }
-         }
-       }
-     }
-   }
-   ```
 
 ## Test Tags
 
 | Tag                | Test file                              | Description                              |
 |--------------------|----------------------------------------|------------------------------------------|
 | `unmanagedEncrypt` | `document-unmanaged-encrypt.test.js`   | Unmanaged encrypt/decrypt round-trip     |
-
-## Important Notes
-
-- The frame code runs in an iframe on a separate origin. If you're testing changes to frame or worker code against a hosted environment (`HOSTED_ENV=stage`), your local changes won't be reflected until they're deployed to that environment.
-- The `globalsModule.js` auto-starts and stops chromedriver via the `chromedriver` npm package. If you're managing chromedriver externally, you may need to adjust this or use a custom config with `globals_path` set to empty string.
