@@ -90,7 +90,8 @@ yarn nightwatch --tag unmanagedEncrypt
 
 ## Test Tags
 
-| Tag                 | Test file                               | Description                              |
-|---------------------|----------------------------------------|------------------------------------------|
-| `unmanagedEncrypt`  | `document-unmanaged-encrypt.test.js`   | Unmanaged encrypt/decrypt round-trip     |
-| `streamingEncrypt`  | `document-streaming-encrypt.test.js`   | Streaming encrypt/decrypt round-trip     |
+| Tag                         | Test file                                        | Description                                      |
+|-----------------------------|--------------------------------------------------|--------------------------------------------------|
+| `unmanagedEncrypt`          | `document-unmanaged-encrypt.test.js`             | Unmanaged encrypt/decrypt round-trip             |
+| `streamingEncrypt`          | `document-streaming-encrypt.test.js`             | Streaming encrypt/decrypt round-trip             |
+| `unmanagedStreamingEncrypt` | `document-unmanaged-streaming-encrypt.test.js`   | Unmanaged streaming encrypt/decrypt round-trip   |

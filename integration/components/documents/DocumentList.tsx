@@ -30,6 +30,7 @@ interface DocumentListState {
     documentDataAdd: DocumentAssociationResponse | null;
     unmanagedTestResult: "success" | "error" | null;
     streamingTestResult: "success" | "error" | null;
+    unmanagedStreamingTestResult: "success" | "error" | null;
 }
 
 export default class DocumentList extends React.Component<DocumentListProps, DocumentListState> {
@@ -41,6 +42,7 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
             documentDataAdd: null,
             unmanagedTestResult: null,
             streamingTestResult: null,
+            unmanagedStreamingTestResult: null,
         };
     }
 
@@ -123,6 +125,58 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
             .catch((error: IronWeb.SDKError) => {
                 logAction(`Streaming encrypt/decrypt failed: ${error.message}. Error Code: ${error.code}`, "error");
                 this.setState({streamingTestResult: "error"});
+            });
+    };
+
+    testUnmanagedStreamingEncrypt = () => {
+        this.setState({unmanagedStreamingTestResult: null});
+        logAction("Testing unmanaged streaming encrypt/decrypt round-trip...");
+        const testData = IronWeb.codec.utf8.toBytes(JSON.stringify({test: "unmanaged streaming encryption"}));
+        const plaintextStream = new ReadableStream<Uint8Array>({
+            start(controller) {
+                controller.enqueue(testData);
+                controller.close();
+            },
+        });
+        IronWeb.document.advanced
+            .encryptStreamUnmanaged(plaintextStream)
+            .then((encryptResult) => {
+                logAction(`Unmanaged stream encrypt succeeded, documentID: ${encryptResult.documentID}`);
+                return IronWeb.document.advanced.decryptStreamUnmanaged(encryptResult.encryptedStream, encryptResult.edeks);
+            })
+            .then((decryptResult) => {
+                const reader = decryptResult.plaintextStream.getReader();
+                const chunks: Uint8Array[] = [];
+                const pump = (): Promise<void> =>
+                    reader.read().then(({done, value}) => {
+                        if (done) return;
+                        chunks.push(value!);
+                        return pump();
+                    });
+                return pump().then(() => {
+                    const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
+                    const combined = new Uint8Array(totalLength);
+                    let offset = 0;
+                    for (const chunk of chunks) {
+                        combined.set(chunk, offset);
+                        offset += chunk.length;
+                    }
+                    return combined;
+                });
+            })
+            .then((decryptedBytes) => {
+                const decrypted = JSON.parse(IronWeb.codec.utf8.fromBytes(decryptedBytes));
+                if (decrypted.test === "unmanaged streaming encryption") {
+                    logAction("Unmanaged streaming encrypt/decrypt round-trip succeeded.", "success");
+                    this.setState({unmanagedStreamingTestResult: "success"});
+                } else {
+                    logAction("Unmanaged streaming decrypt returned unexpected data.", "error");
+                    this.setState({unmanagedStreamingTestResult: "error"});
+                }
+            })
+            .catch((error: IronWeb.SDKError) => {
+                logAction(`Unmanaged streaming encrypt/decrypt failed: ${error.message}. Error Code: ${error.code}`, "error");
+                this.setState({unmanagedStreamingTestResult: "error"});
             });
     };
 
@@ -241,11 +295,19 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
                 </div>
                 <List style={{backgroundColor: "#f5f5f5", padding: 0, maxHeight: "350px", overflowY: "auto"}}>{this.getDocumentsMarkup(this.state.lists)}</List>
                 <div style={{display: "flex", justifyContent: "flex-end", gap: "10px", margin: "10px 0"}}>
-                    <FloatingActionButton className="test-unmanaged" onClick={this.testUnmanagedEncrypt} mini backgroundColor={orange400}>
+                    <FloatingActionButton className="test-unmanaged" onClick={this.testUnmanagedEncrypt} mini backgroundColor={orange400} title="Test unmanaged encrypt/decrypt">
                         <LockIcon />
                     </FloatingActionButton>
-                    <FloatingActionButton className="test-streaming" onClick={this.testStreamingEncrypt} mini backgroundColor={brown400}>
+                    <FloatingActionButton className="test-streaming" onClick={this.testStreamingEncrypt} mini backgroundColor={brown400} title="Test streaming encrypt/decrypt">
                         <SwapIcon />
+                    </FloatingActionButton>
+                    <FloatingActionButton
+                        className="test-unmanaged-streaming"
+                        onClick={this.testUnmanagedStreamingEncrypt}
+                        mini
+                        backgroundColor={brown200}
+                        title="Test unmanaged streaming encrypt/decrypt">
+                        <LockIcon />
                     </FloatingActionButton>
                     <FloatingActionButton className="new-document" onClick={this.props.onListSelect.bind(null, "new")} mini backgroundColor={cyan500}>
                         <Add />
@@ -259,6 +321,11 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
                 {this.state.streamingTestResult && (
                     <div className={`streaming-test-${this.state.streamingTestResult}`} style={{textAlign: "center", padding: "5px", fontSize: "12px"}}>
                         {this.state.streamingTestResult === "success" ? "Streaming round-trip OK" : "Streaming round-trip FAILED"}
+                    </div>
+                )}
+                {this.state.unmanagedStreamingTestResult && (
+                    <div className={`unmanaged-streaming-test-${this.state.unmanagedStreamingTestResult}`} style={{textAlign: "center", padding: "5px", fontSize: "12px"}}>
+                        {this.state.unmanagedStreamingTestResult === "success" ? "Unmanaged streaming round-trip OK" : "Unmanaged streaming round-trip FAILED"}
                     </div>
                 )}
                 <AddDocumentData document={this.state.documentDataAdd} onClose={() => this.setState({documentDataAdd: null})} />
