@@ -250,7 +250,13 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             );
         }
         case "DOCUMENT_STREAM_ENCRYPT": {
-            const {readable: ciphertextReadable, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+            // The readable side of this TransformStream isn't transferred back to the caller until the
+            // encrypt operation completes. But the frame writes the header+IV to the writable side before
+            // that. With the default highWaterMark of 0, that write blocks on backpressure (no reader yet).
+            // Setting a non-zero highWaterMark allows the header+IV to be buffered until the caller reads.
+            const {readable: ciphertextReadable, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>(
+                undefined, undefined, {highWaterMark: 256}
+            );
             return DocumentApi.encryptLocalDocStream(
                 data.message.documentID,
                 data.message.documentName,
@@ -267,7 +273,10 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             );
         }
         case "DOCUMENT_UNMANAGED_STREAM_ENCRYPT": {
-            const {readable: ciphertextReadable, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>();
+            // See DOCUMENT_STREAM_ENCRYPT for why highWaterMark is needed here.
+            const {readable: ciphertextReadable, writable: ciphertextWritable} = new TransformStream<Uint8Array, Uint8Array>(
+                undefined, undefined, {highWaterMark: 256}
+            );
             return DocumentAdvancedApi.encryptStreamUnmanaged(
                 data.message.documentID,
                 data.message.plaintextStream,

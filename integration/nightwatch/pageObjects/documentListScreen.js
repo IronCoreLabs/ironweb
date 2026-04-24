@@ -39,6 +39,9 @@ const documentListActions = {
     clickTestUnmanaged(){
         return this.click('@testUnmanagedButton');
     },
+    clickTestStreaming(){
+        return this.click('@testStreamingButton');
+    },
     clickOnNthTodoList(item){
         browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
             this.api.elementIdClick(Object.values(elements.value[item])[0]);
@@ -56,6 +59,9 @@ const documentListElements = {
     testUnmanagedButton: {selector: '.test-unmanaged'},
     unmanagedTestSuccess: {selector: '.unmanaged-test-success'},
     unmanagedTestError: {selector: '.unmanaged-test-error'},
+    testStreamingButton: {selector: '.test-streaming'},
+    streamingTestSuccess: {selector: '.streaming-test-success'},
+    streamingTestError: {selector: '.streaming-test-error'},
 };
 
 module.exports = {
