@@ -59,9 +59,6 @@ module.exports = {
                 .assertUserVisibleToSize(2)
                 .clickRevokeAccessButton();
 
-            //Wait for the removal to complete
-            browser.pause(350);
-
             documentView.assertUserVisibleToSize(1);
 
             browser.end();

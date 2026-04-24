@@ -20,6 +20,7 @@ const commandBarActions = {
         });
     },
     clickChangePasscodeButton(){
+        this.waitForElementVisible('@changePasscodeButton');
         return this.click('@changePasscodeButton');
     }
 };

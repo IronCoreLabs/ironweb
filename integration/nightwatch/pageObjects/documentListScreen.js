@@ -17,9 +17,8 @@ const documentListActions = {
         return this.click('@newDocumentButton');
     },
     expectCountOfTodoLists(length){
-        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.assert.equal(elements.value.length, length, `Todo list length, expected item count of "${length}, found "${elements.value.length}"`);
-        });
+        browser.waitForElementPresent('css selector', `.document-list[data-doc-count="${length}"]`, 5000,
+            `Expected document count of "${length}"`);
         return this;
     },
     expectTodoListNameAtPosition(position, name){

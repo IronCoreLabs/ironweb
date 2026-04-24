@@ -15,15 +15,13 @@ const groupDetailActions = {
         return this.click("@backToGroupListButton");
     },
     assertGroupMemberSize(length) {
-        browser.elements(this.client.locateStrategy, this.elements.groupMemberListItem.selector, (elements) => {
-            this.assert.equal(elements.value.length, length, `Expected member count of "${length}", found "${elements.value.length}"`);
-        });
+        browser.waitForElementPresent(`css selector`, `.groupMembers[data-member-count="${length}"]`, 5000,
+            `Expected member count of "${length}"`);
         return this;
     },
     assertGroupAdminSize(length) {
-        browser.elements(this.client.locateStrategy, this.elements.groupAdminListItem.selector, (elements) => {
-            this.assert.equal(elements.value.length, length, `Expected admin count of "${length}", found "${elements.value.length}"`);
-        });
+        browser.waitForElementPresent(`css selector`, `.groupAdmins[data-admin-count="${length}"]`, 5000,
+            `Expected admin count of "${length}"`);
         return this;
     },
     addNewAdminID(id) {

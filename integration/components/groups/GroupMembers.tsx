@@ -172,7 +172,7 @@ export default class GroupMembers extends React.Component<GroupMembersProps, Gro
             );
         }
         return (
-            <div className="groupMembers" style={{borderRight: "1px solid #e0e0e0", width: "50%", padding: "5px"}}>
+            <div className="groupMembers" data-member-count={this.state.groupMembers.length} style={{borderRight: "1px solid #e0e0e0", width: "50%", padding: "5px"}}>
                 <div style={{fontSize: "18px", textAlign: "center", paddingBottom: "5px"}}>Members</div>
                 <List style={listStyles}>{this.getMembersList()}</List>
                 {addMemberMarkup}

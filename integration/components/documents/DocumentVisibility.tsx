@@ -117,8 +117,11 @@ export default class DocumentVisibility extends React.Component<DocumentVisibili
             marginBottom: "10px",
         };
 
+        const userCount = this.props.visibleTo ? this.props.visibleTo.users.length : 0;
+        const groupCount = this.props.visibleTo ? this.props.visibleTo.groups.length : 0;
+
         return (
-            <div style={{width: "50%", padding: "5px"}}>
+            <div style={{width: "50%", padding: "5px"}} className="document-visibility" data-user-count={userCount} data-group-count={groupCount}>
                 <div style={{fontSize: "18px", textAlign: "center", paddingBottom: "5px"}}>Visibility</div>
                 <List style={listStyle}>
                     {this.getUserSharingList()}

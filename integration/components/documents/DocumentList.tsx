@@ -286,7 +286,7 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
 
     render() {
         return (
-            <div className="document-list">
+            <div className="document-list" data-doc-count={this.state.lists.length}>
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", margin: "10px 0"}}>
                     <h1 className="page-title">Documents</h1>
                     <FloatingActionButton className="refresh-document-list" onClick={this.loadDocuments} mini backgroundColor={lightGreenA700}>

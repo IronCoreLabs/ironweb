@@ -35,11 +35,9 @@ module.exports = {
                 .clickOnGroupGrantAccessCheckbox(groupID)
                 .clickGrantAccessButton()
                 .assertUserVisibleToSize(1)
-                .clickGroupList()
                 .assertGroupVisibleToSize(1)
+                .clickGroupList()
                 .clickRevokeAccessButton();
-
-            browser.pause(350);
 
             documentView.assertGroupVisibleToSize(0);
 

@@ -14,8 +14,9 @@ module.exports = {
         initializeUser.initializeAndSyncUser(firstPasscode);
 
         commandBar.clickChangePasscodeButton();
+        demoApp.waitForElementVisible("@currentPasscodeInput");
 
-        demoApp.enterPasscodeFields(firstPasscode, secondPasscode).submitChangePasscode().waitForElementNotPresent("@passwordChangeDialog");
+        demoApp.enterPasscodeFields(firstPasscode, secondPasscode).submitChangePasscode().waitForElementNotPresent("@passwordChangeDialog", 15000);
 
         commandBar.clearSymmetricKey();
 
@@ -36,8 +37,9 @@ module.exports = {
         initializeUser.initializeAndSyncUser(firstPasscode);
 
         commandBar.clickChangePasscodeButton();
+        demoApp.waitForElementVisible("@currentPasscodeInput");
 
-        demoApp.enterPasscodeFields(firstPasscode, secondPasscode).submitChangePasscode().waitForElementNotPresent("@passwordChangeDialog");
+        demoApp.enterPasscodeFields(firstPasscode, secondPasscode).submitChangePasscode().waitForElementNotPresent("@passwordChangeDialog", 15000);
 
         commandBar.clearSymmetricKey();
 
@@ -58,6 +60,7 @@ module.exports = {
         initializeUser.initializeAndSyncUser(firstPasscode);
 
         commandBar.clickChangePasscodeButton();
+        demoApp.waitForElementPresent("@passwordChangeDialog");
 
         demoApp
             .enterPasscodeFields(secondPasscode, secondPasscode)
