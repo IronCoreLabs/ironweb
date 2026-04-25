@@ -40,9 +40,8 @@ const documentViewActions = {
         return this;
     },
     assertUserVisibleToSize(size) {
-        browser.elements(this.client.locateStrategy, this.elements.userVisibleItem.selector, (elements) => {
-            this.assert.equal(elements.value.length, size, `Expected user visible count of "${size}", found "${elements.value.length}"`);
-        });
+        browser.waitForElementPresent(`css selector`, `.document-visibility[data-user-count="${size}"]`, 5000,
+            `Expected user visible count of "${size}"`);
         return this;
     },
     assertUserVisibleIDAtPosition(position, id) {
@@ -54,9 +53,8 @@ const documentViewActions = {
         return this;
     },
     assertGroupVisibleToSize(size) {
-        browser.elements(this.client.locateStrategy, this.elements.groupVisibleItem.selector, (elements) => {
-            this.assert.equal(elements.value.length, size, `Expected group visible count of "${size}", found "${elements.value.length}"`);
-        });
+        browser.waitForElementPresent(`css selector`, `.document-visibility[data-group-count="${size}"]`, 5000,
+            `Expected group visible count of "${size}"`);
         return this;
     },
     enterUserIDToGrantAccess(id) {
@@ -76,6 +74,7 @@ const documentViewActions = {
         return this.click("@revokeAccessButton");
     },
     clickOnGroupGrantAccessCheckbox(groupID) {
+        browser.waitForElementPresent("css selector", `#${groupID}`, 5000);
         browser.element("css selector", `#${groupID}`, (element) => {
             browser.elementIdClick(Object.values(element.value)[0]);
         });

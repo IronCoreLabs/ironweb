@@ -103,7 +103,7 @@ export default class GroupList extends React.Component<GroupListProps, GroupList
 
     render() {
         return (
-            <div className="group-list">
+            <div className="group-list" data-group-count={this.state.groups.length}>
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", margin: "10px 0"}}>
                     <h1>Groups</h1>
                     <FloatingActionButton className="refresh-group-list" onClick={this.loadGroups} mini backgroundColor={lightGreenA700}>

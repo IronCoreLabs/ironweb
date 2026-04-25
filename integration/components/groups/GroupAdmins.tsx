@@ -145,7 +145,7 @@ export default class GroupAdmins extends React.Component<GroupAdminsProps, Group
             );
         }
         return (
-            <div className="groupAdmins" style={{width: "50%", padding: "5px"}}>
+            <div className="groupAdmins" data-admin-count={this.state.groupAdmins.length} style={{width: "50%", padding: "5px"}}>
                 <div style={{fontSize: "18px", textAlign: "center", paddingBottom: "5px"}}>Admins</div>
                 <List style={listStyles}>{this.getAdminList()}</List>
                 {addAdminMarkup}

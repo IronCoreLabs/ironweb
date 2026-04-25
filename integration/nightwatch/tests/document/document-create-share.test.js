@@ -53,8 +53,6 @@ module.exports = {
 
             documentView.waitForElementVisible("@documentViewDetails").assertUserVisibleToSize(1).assertGroupVisibleToSize(1).clickRevokeAccessButton();
 
-            browser.pause(350);
-
             documentView.assertGroupVisibleToSize(0);
 
             browser.end();

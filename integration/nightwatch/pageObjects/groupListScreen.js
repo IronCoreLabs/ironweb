@@ -26,9 +26,8 @@ const groupListActions = {
         return this.click("@createNewGroupButton");
     },
     expectCountOfGroups(length) {
-        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            this.assert.equal(elements.value.length, length, `Expected group count of "${length}, found "${elements.value.length}"`);
-        });
+        browser.waitForElementPresent('css selector', `.group-list[data-group-count="${length}"]`, 5000,
+            `Expected group count of "${length}"`);
         return this;
     },
     expectGroupNameAtPosition(position, name) {

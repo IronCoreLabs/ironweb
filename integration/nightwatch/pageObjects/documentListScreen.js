@@ -17,9 +17,8 @@ const documentListActions = {
         return this.click('@newDocumentButton');
     },
     expectCountOfTodoLists(length){
-        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.assert.equal(elements.value.length, length, `Todo list length, expected item count of "${length}, found "${elements.value.length}"`);
-        });
+        browser.waitForElementPresent('css selector', `.document-list[data-doc-count="${length}"]`, 5000,
+            `Expected document count of "${length}"`);
         return this;
     },
     expectTodoListNameAtPosition(position, name){
@@ -36,6 +35,15 @@ const documentListActions = {
     expectTodoListLocalAtPosition(position){
         return this.expectTodoListStorageType(this.elements.localStorageChip.selector, position);
     },
+    clickTestUnmanaged(){
+        return this.click('@testUnmanagedButton');
+    },
+    clickTestStreaming(){
+        return this.click('@testStreamingButton');
+    },
+    clickTestUnmanagedStreaming(){
+        return this.click('@testUnmanagedStreamingButton');
+    },
     clickOnNthTodoList(item){
         browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
             this.api.elementIdClick(Object.values(elements.value[item])[0]);
@@ -50,6 +58,15 @@ const documentListElements = {
     hostedStorageChip: {selector: '.storage-type-hosted'},
     localStorageChip: {selector: '.storage-type-local'},
     refreshDocumentList: {selector: '.refresh-document-list'},
+    testUnmanagedButton: {selector: '.test-unmanaged'},
+    unmanagedTestSuccess: {selector: '.unmanaged-test-success'},
+    unmanagedTestError: {selector: '.unmanaged-test-error'},
+    testStreamingButton: {selector: '.test-streaming'},
+    streamingTestSuccess: {selector: '.streaming-test-success'},
+    streamingTestError: {selector: '.streaming-test-error'},
+    testUnmanagedStreamingButton: {selector: '.test-unmanaged-streaming'},
+    unmanagedStreamingTestSuccess: {selector: '.unmanaged-streaming-test-success'},
+    unmanagedStreamingTestError: {selector: '.unmanaged-streaming-test-error'},
 };
 
 module.exports = {

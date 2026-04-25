@@ -50,7 +50,7 @@ export default class UserInfo extends React.Component<Record<string, never>, Use
             passcodeError: false,
             changingPasscode: false,
             listingDevices: false,
-            loading: true,
+            loading: false,
             deviceList: [],
         };
     }

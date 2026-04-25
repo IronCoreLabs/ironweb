@@ -21,6 +21,7 @@ const documentCreateActions = {
         return this.setValue('@userGrantInput', id);
     },
     clickOnGroupGrantAccessCheckbox(groupID){
+        browser.waitForElementPresent("css selector", `#${groupID}`, 5000);
         browser.element(this.client.locateStrategy, `#${groupID}`, (element) => {
             this.api.elementIdClick(Object.values(element.value)[0]);
         });
