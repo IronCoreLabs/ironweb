@@ -4,7 +4,7 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
-## v4.3.1
+## v4.3.6
 
 - fix a streaming bug, encrypt could get blocked with no reader yet on writing the header+IV.
 - fix a bug in unmanaged encryption if ironweb was used without a bundler that could provide a `Buffer` polyfill.
