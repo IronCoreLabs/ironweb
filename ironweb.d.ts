@@ -155,6 +155,18 @@ export interface UserCreateResponse {
     userMasterPublicKey: PublicKey<Base64String>;
     needsRotation: boolean;
 }
+export interface UserUpdateResponse {
+    accountID: string;
+    segmentID: number;
+    status: UserStatus;
+    userMasterPublicKey: PublicKey<Base64String>;
+    needsRotation: boolean;
+}
+export const UserStatus: {
+    DISABLED: 0;
+    ENABLED: 1;
+};
+export type UserStatus = 0 | 1;
 export interface DeviceKeys {
     accountId: string;
     segmentId: number;
@@ -200,6 +212,7 @@ export interface User {
     listDevices(): Promise<UserDeviceListResponse>;
     changePasscode(currentPasscode: string, newPasscode: string): Promise<void>;
     rotateMasterKey(passcode: string): Promise<void>;
+    disableSelf(): Promise<UserUpdateResponse>;
 }
 
 export interface Document {
@@ -306,6 +319,7 @@ export interface ErrorCodes {
     USER_DEVICE_DELETE_REQUEST_FAILURE: 210;
     USER_UPDATE_KEY_REQUEST_FAILURE: 211;
     USER_PRIVATE_KEY_ROTATION_FAILURE: 212;
+    USER_UPDATE_STATUS_REQUEST_FAILURE: 214;
     DOCUMENT_LIST_REQUEST_FAILURE: 300;
     DOCUMENT_GET_REQUEST_FAILURE: 301;
     DOCUMENT_CREATE_REQUEST_FAILURE: 302;
@@ -360,3 +374,4 @@ export function createNewUser(jwtCallback: JWTCallback, passcode: string, option
 export function createNewDeviceKeys(jwtCallback: JWTCallback, passcode: string): Promise<DeviceKeys>;
 export function isInitialized(): boolean;
 export function deleteDeviceByPublicSigningKey(jwtCallback: JWTCallback, publicSigningKey: Base64String): Promise<number>;
+export function updateUserStatus(jwtCallback: JWTCallback, status: UserStatus): Promise<UserUpdateResponse>;

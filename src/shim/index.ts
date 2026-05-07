@@ -3,7 +3,8 @@ import {ErrorCodes} from "../Constants";
 import SDKError from "../lib/SDKError";
 import * as Init from "./Initialize";
 import {checkSDKInitialized} from "./ShimUtils";
-export {deleteDeviceByPublicSigningKey} from "./Initialize";
+export {deleteDeviceByPublicSigningKey, updateUserStatus} from "./Initialize";
+export {UserStatus} from "../Constants";
 
 /**
  * Checks bowser functionality to ensure random number generation is supported.

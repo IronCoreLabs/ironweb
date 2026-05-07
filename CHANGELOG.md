@@ -4,6 +4,11 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v4.4.0
+
+- add `IronWeb.user.disableSelf()` which the currently authenticated user can call to disable their own account. Disabled users can still be members of groups but will be unable to call SDK functions.
+- add `IronWeb.updateUserStatus(jwtCallback, status)` which uses a JWT to enable or disable a user without an initialized SDK. Use this to re-enable a user that has previously been disabled.
+
 ## v4.3.6
 
 - fix a streaming bug, encrypt could get blocked with no reader yet on writing the header+IV.

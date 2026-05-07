@@ -105,6 +105,44 @@ describe("UserSDK", () => {
         });
     });
 
+    describe("disableSelf", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            ShimUtils.clearSDKInitialized();
+            expect(() => UserSDK.disableSelf()).toThrow();
+        });
+
+        it("sends DISABLE_USER_SELF to the frame and remaps the response", (done) => {
+            ShimUtils.setSDKInitialized();
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
+                    message: {
+                        id: "user-10",
+                        segmentId: 5,
+                        status: 0,
+                        userMasterPublicKey: {x: "x", y: "y"},
+                        needsRotation: false,
+                    },
+                })
+            );
+            UserSDK.disableSelf()
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        accountID: "user-10",
+                        segmentID: 5,
+                        status: 0,
+                        userMasterPublicKey: {x: "x", y: "y"},
+                        needsRotation: false,
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DISABLE_USER_SELF",
+                        message: null,
+                    });
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+    });
+
     describe("deleteDevice", () => {
         it("throws if SDK has not yet been initialized", () => {
             ShimUtils.clearSDKInitialized();

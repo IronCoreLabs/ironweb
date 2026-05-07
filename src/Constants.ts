@@ -49,6 +49,7 @@ export enum ErrorCodes {
     USER_UPDATE_KEY_REQUEST_FAILURE = 211,
     USER_PRIVATE_KEY_ROTATION_FAILURE = 212,
     USER_DEVICE_LIST_REQUEST_FAILURE = 213,
+    USER_UPDATE_STATUS_REQUEST_FAILURE = 214,
     DOCUMENT_LIST_REQUEST_FAILURE = 300,
     DOCUMENT_GET_REQUEST_FAILURE = 301,
     DOCUMENT_CREATE_REQUEST_FAILURE = 302,
@@ -118,6 +119,16 @@ export const UserAndGroupTypes = {
     USER: "user",
     GROUP: "group",
 };
+
+/**
+ * Status values for a user. A disabled user cannot call SDK functions but
+ * remains a member of any groups they were added to.
+ */
+export const UserStatus = {
+    DISABLED: 0,
+    ENABLED: 1,
+} as const;
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
 
 export const Versions = {
     //This define is replaced at runtime during development, and at build time in the build script with the proper version

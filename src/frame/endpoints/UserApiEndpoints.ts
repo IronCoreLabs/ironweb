@@ -241,6 +241,23 @@ const userUpdate = (userID: string, userPrivateKey?: PrivateKey<Uint8Array>, sta
 });
 
 /**
+ * Update a users status using JWT authorization.
+ * @param {string} userID ID of user to update
+ * @param {number} status Updated status of user
+ */
+const userUpdateStatusWithJwt = (userID: string, status: number): RequestMeta => ({
+    url: `users/${encodeURIComponent(userID)}`,
+    options: {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({status}),
+    },
+    errorCode: ErrorCodes.USER_UPDATE_STATUS_REQUEST_FAILURE,
+});
+
+/**
  * Generate an API request to rotate the users private key passing the augmentation factor that the key is rotated by and
  * the users encrypted private key that has been augmented by that same factor.
  */
@@ -334,6 +351,17 @@ export default {
         const {id} = ApiState.user();
         const {url, options, errorCode} = userUpdate(id, userPrivateKey, status);
         return makeAuthorizedApiRequest(url, errorCode, options);
+    },
+
+    /**
+     * Invoke user update API to change a user's status using JWT authorization.
+     * @param {string} jwtToken Authorized JWT for the user
+     * @param {string} userId   ID of the user (must match the JWT subject)
+     * @param {number} status   Status to set for the user
+     */
+    callUserUpdateStatusWithJwt(jwtToken: string, userId: string, status: number): Future<SDKError, UserUpdateResponseType> {
+        const {url, options, errorCode} = userUpdateStatusWithJwt(userId, status);
+        return makeJwtApiRequest<UserUpdateResponseType>(url, errorCode, options, jwtToken);
     },
 
     /**

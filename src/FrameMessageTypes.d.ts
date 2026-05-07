@@ -452,6 +452,21 @@ export interface ListDevicesResponse {
     type: "LIST_DEVICES_RESPONSE";
     message: UserDeviceListResponse;
 }
+export interface DisableUserSelf {
+    type: "DISABLE_USER_SELF";
+    message: null;
+}
+export interface UpdateUserStatusJwt {
+    type: "UPDATE_USER_STATUS_JWT";
+    message: {
+        jwtToken: string;
+        status: number;
+    };
+}
+export interface UpdateUserStatusResponse {
+    type: "UPDATE_USER_STATUS_RESPONSE";
+    message: ApiUserResponse;
+}
 
 // Blind index search methods
 export interface BlindSearchIndexCreate {
@@ -628,6 +643,8 @@ export type RequestMessage =
     | DeleteDevice
     | DeleteDeviceBySigningKey
     | DeleteDeviceBySigningKeyJwt
+    | DisableUserSelf
+    | UpdateUserStatusJwt
     | DocumentUnmanagedDecryptRequest
     | DocumentUnmanagedEncryptRequest
     | BlindSearchIndexCreate
@@ -662,6 +679,7 @@ export type ResponseMessage =
     | CreateDetachedUserDeviceResponse
     | ListDevicesResponse
     | DeleteDeviceResponse
+    | UpdateUserStatusResponse
     | GroupListResponse
     | GroupGetResponse
     | GroupCreateResponse

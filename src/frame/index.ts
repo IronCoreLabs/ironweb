@@ -85,6 +85,12 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             );
         case "LIST_DEVICES":
             return UserApi.listDevices().engage(errorHandler, (result) => callback({type: "LIST_DEVICES_RESPONSE", message: result}));
+        case "DISABLE_USER_SELF":
+            return UserApi.disableSelf().engage(errorHandler, (result) => callback({type: "UPDATE_USER_STATUS_RESPONSE", message: result}));
+        case "UPDATE_USER_STATUS_JWT":
+            return UserApi.updateUserStatusWithJwt(data.message.jwtToken, data.message.status).engage(errorHandler, (result) =>
+                callback({type: "UPDATE_USER_STATUS_RESPONSE", message: result})
+            );
         case "DOCUMENT_LIST":
             return DocumentApi.list().engage(errorHandler, (documents) => callback({type: "DOCUMENT_LIST_RESPONSE", message: documents}));
         case "DOCUMENT_META_GET":
