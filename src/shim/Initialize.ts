@@ -99,7 +99,6 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
             return FrameMediator.sendMessage<CreateUserResponse>(payload);
         })
         //Rename a few fields and strip out the users private key and currentKeyId since they'll probably be confusing that they're getting back an encrypted private key
-        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => ({
             accountID: id,
             segmentID: segmentId,
@@ -188,7 +187,6 @@ export const updateUserStatus = (jwtCallback: JWTCallbackToPromise, status: User
             };
             return FrameMediator.sendMessage<UpdateUserStatusResponse>(payload);
         })
-        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => ({
             accountID: id,
             segmentID: segmentId,

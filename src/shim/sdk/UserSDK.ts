@@ -1,7 +1,7 @@
 import {clearParentWindowSymmetricKey, checkSDKInitialized, clearSDKInitialized} from "../ShimUtils";
 import * as FrameMediator from "../FrameMediator";
 import * as MT from "../../FrameMessageTypes";
-import {UserStatus} from "../../../ironweb";
+import {UserStatus} from "../../Constants";
 
 /**
  * Update an existing users passcode that is used to escrow their private key. The returned Promise will resolve successfully upon passcode change or

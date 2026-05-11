@@ -92,11 +92,7 @@ export const deleteDevice = (deviceId?: number) => {
                 //their device private key from local storage. So mock out a fake ID here that we can use to decision off of.
                 .handleWith(() => Future.of({id: -1}))
                 .map((deleteResponse) => {
-                    const user = ApiState.user();
-
-                    const {id, segmentId} = user;
-                    clearDeviceAndSigningKeys(id, segmentId);
-                    ApiState.clearCurrentUser();
+                    deleteLocalDeviceAndClearUser();
                     return deleteResponse.id;
                 })
         );
@@ -122,12 +118,23 @@ export const deleteDeviceBySigningKeyWithJwt = (jwtToken: string, publicSigningK
  */
 export const listDevices = () => UserApiEndpoints.callUserListDevices();
 
+const deleteLocalDeviceAndClearUser = () => {
+    const user = ApiState.user();
+    const {id, segmentId} = user;
+    clearDeviceAndSigningKeys(id, segmentId);
+    ApiState.clearCurrentUser();
+};
+
 /**
  * Disables the currently authenticated user. After this call succeeds the user
  * will not be able to invoke any other authorized SDK functions. Disabled users
  * remain members of any groups they belonged to but cannot use them.
  */
-export const disableSelf = () => UserApiEndpoints.callUserUpdateApi(undefined, UserStatus.DISABLED);
+export const disableSelf = () =>
+    UserApiEndpoints.callUserUpdateApi(undefined, UserStatus.DISABLED).map((r) => {
+        deleteLocalDeviceAndClearUser();
+        return r;
+    });
 
 /**
  * Update the status of the user identified by the provided JWT.
