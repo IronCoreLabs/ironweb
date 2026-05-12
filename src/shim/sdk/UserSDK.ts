@@ -110,13 +110,21 @@ export const disableSelf = () => {
         type: "DISABLE_USER_SELF",
         message: null,
     };
+    // The frame wipes its ApiState and device keys on a successful disable, so mirror the
+    // current-device path of `deleteDevice` here: drop the parent-window symmetric key now
+    // and clear the init flag on success. Otherwise `isInitialized()` keeps returning true
+    // while the frame is empty, and the next SDK call fails confusingly in the frame.
+    clearParentWindowSymmetricKey();
     return FrameMediator.sendMessage<MT.UpdateUserStatusResponse>(payload)
-        .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => ({
-            accountID: id,
-            segmentID: segmentId,
-            needsRotation,
-            status: status as UserStatus,
-            userMasterPublicKey,
-        }))
+        .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => {
+            clearSDKInitialized();
+            return {
+                accountID: id,
+                segmentID: segmentId,
+                needsRotation,
+                status: status as UserStatus,
+                userMasterPublicKey,
+            };
+        })
         .toPromise();
 };

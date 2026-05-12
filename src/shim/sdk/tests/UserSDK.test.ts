@@ -141,6 +141,37 @@ describe("UserSDK", () => {
                 })
                 .catch((e) => done(e));
         });
+
+        it("clears the shim-side init flag and symmetric key after successful disable", (done) => {
+            // The frame clears its own ApiState and device keys after a successful disable, but the
+            // shim still holds the parent-window symmetric key and the `hasInitializedSDK` flag.
+            // Without clearing those, `IronWeb.isInitialized()` keeps returning true while the
+            // frame is wiped, leaving the SDK in a half-initialized state where the next call
+            // fails in a confusing way. This test pins down the contract by mirroring what
+            // `deleteDevice` does for the current-device path.
+            ShimUtils.setSDKInitialized();
+            jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
+            jest.spyOn(ShimUtils, "clearSDKInitialized");
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
+                    message: {
+                        id: "user-10",
+                        segmentId: 5,
+                        status: 0,
+                        userMasterPublicKey: {x: "x", y: "y"},
+                        needsRotation: false,
+                    },
+                })
+            );
+            UserSDK.disableSelf()
+                .then(() => {
+                    expect(ShimUtils.clearParentWindowSymmetricKey).toHaveBeenCalledWith();
+                    expect(ShimUtils.clearSDKInitialized).toHaveBeenCalledWith();
+                    expect(() => ShimUtils.checkSDKInitialized()).toThrow();
+                    done();
+                })
+                .catch((e) => done(e));
+        });
     });
 
     describe("deleteDevice", () => {
