@@ -1,5 +1,5 @@
 import Future from "futurejs";
-import {DeviceKeys, SDKInitializationResult, UserCreateResponse} from "ironweb";
+import {DeviceKeys, SDKInitializationResult, UserCreateResponse, UserStatus, UserUpdateResponse} from "ironweb";
 import {ErrorCodes} from "../Constants";
 import {
     CreateDetachedUserDeviceRequest,
@@ -13,6 +13,8 @@ import {
     InitApiPasscodeResponse,
     InitApiRequest,
     InitApiSdkResponse,
+    UpdateUserStatusJwt,
+    UpdateUserStatusResponse,
 } from "../FrameMessageTypes";
 import SDKError from "../lib/SDKError";
 import * as FrameMediator from "./FrameMediator";
@@ -97,7 +99,6 @@ export const createNewUser = (jwtCallback: JWTCallbackToPromise, passcode: strin
             return FrameMediator.sendMessage<CreateUserResponse>(payload);
         })
         //Rename a few fields and strip out the users private key and currentKeyId since they'll probably be confusing that they're getting back an encrypted private key
-        //eslint-disable-next-line @typescript-eslint/no-unused-vars
         .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => ({
             accountID: id,
             segmentID: segmentId,
@@ -170,4 +171,27 @@ export const deleteDeviceByPublicSigningKey = (jwtCallback: JWTCallbackToPromise
             };
             return FrameMediator.sendMessage<DeleteDeviceResponse>(payload).map(({message}) => message);
         })
+        .toPromise();
+
+/**
+ * Update the status (enabled or disabled) of the user identified by the provided JWT.
+ * Authenticates with a JWT and does not require an initialized SDK. The user id is taken
+ * from the `sub` claim of the JWT.
+ */
+export const updateUserStatus = (jwtCallback: JWTCallbackToPromise, status: UserStatus): Promise<UserUpdateResponse> =>
+    getJWT(jwtCallback)
+        .flatMap((jwtToken) => {
+            const payload: UpdateUserStatusJwt = {
+                type: "UPDATE_USER_STATUS_JWT",
+                message: {jwtToken, status},
+            };
+            return FrameMediator.sendMessage<UpdateUserStatusResponse>(payload);
+        })
+        .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => ({
+            accountID: id,
+            segmentID: segmentId,
+            needsRotation,
+            status: status as UserStatus,
+            userMasterPublicKey,
+        }))
         .toPromise();

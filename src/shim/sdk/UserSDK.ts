@@ -1,6 +1,7 @@
 import {clearParentWindowSymmetricKey, checkSDKInitialized, clearSDKInitialized} from "../ShimUtils";
 import * as FrameMediator from "../FrameMediator";
 import * as MT from "../../FrameMessageTypes";
+import {UserStatus} from "../../Constants";
 
 /**
  * Update an existing users passcode that is used to escrow their private key. The returned Promise will resolve successfully upon passcode change or
@@ -94,5 +95,36 @@ export const listDevices = () => {
     };
     return FrameMediator.sendMessage<MT.ListDevicesResponse>(payload)
         .map(({message: result}) => result)
+        .toPromise();
+};
+
+/**
+ * Disables the currently authenticated user. Disabled users are unable to call any
+ * other authorized SDK functions but remain in any groups they belonged to. Users
+ * cannot re-enable themselves; an admin must call `updateUserStatus` with a JWT for
+ * the user to re-enable them.
+ */
+export const disableSelf = () => {
+    checkSDKInitialized();
+    const payload: MT.DisableUserSelf = {
+        type: "DISABLE_USER_SELF",
+        message: null,
+    };
+    // The frame wipes its ApiState and device keys on a successful disable, so mirror the
+    // current-device path of `deleteDevice` here: drop the parent-window symmetric key now
+    // and clear the init flag on success. Otherwise `isInitialized()` keeps returning true
+    // while the frame is empty, and the next SDK call fails confusingly in the frame.
+    clearParentWindowSymmetricKey();
+    return FrameMediator.sendMessage<MT.UpdateUserStatusResponse>(payload)
+        .map(({message: {id, segmentId, needsRotation, status, userMasterPublicKey}}) => {
+            clearSDKInitialized();
+            return {
+                accountID: id,
+                segmentID: segmentId,
+                needsRotation,
+                status: status as UserStatus,
+                userMasterPublicKey,
+            };
+        })
         .toPromise();
 };

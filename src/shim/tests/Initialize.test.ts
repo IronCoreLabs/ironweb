@@ -432,6 +432,48 @@ describe("Initialize", () => {
         });
     });
 
+    describe("updateUserStatus", () => {
+        it("sends UPDATE_USER_STATUS_JWT to the frame with the JWT and status, and remaps the response", (done) => {
+            ShimUtils.clearSDKInitialized();
+            jest.spyOn(FrameMediator, "sendMessage").mockReturnValue(
+                Future.of<any>({
+                    message: {
+                        id: "user-10",
+                        segmentId: 5,
+                        status: 1,
+                        userMasterPublicKey: {x: "x", y: "y"},
+                        needsRotation: false,
+                    },
+                })
+            );
+            Initialize.updateUserStatus(() => Promise.resolve("jwt"), 1)
+                .then((result: any) => {
+                    expect(result).toEqual({
+                        accountID: "user-10",
+                        segmentID: 5,
+                        status: 1,
+                        userMasterPublicKey: {x: "x", y: "y"},
+                        needsRotation: false,
+                    });
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "UPDATE_USER_STATUS_JWT",
+                        message: {jwtToken: "jwt", status: 1},
+                    });
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+
+        it("rejects when JWT callback rejects", (done) => {
+            Initialize.updateUserStatus(() => Promise.reject(new Error("nope")), 0)
+                .then(() => done(new Error("expected rejection")))
+                .catch((e: Error) => {
+                    expect(e.message).toEqual("nope");
+                    done();
+                });
+        });
+    });
+
     describe("deleteDeviceByPublicSigningKey", () => {
         it("sends the frame delete message, doesn't send delete request type to frame", (done) => {
             ShimUtils.clearSDKInitialized();

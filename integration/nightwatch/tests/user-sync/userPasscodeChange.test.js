@@ -45,7 +45,12 @@ module.exports = {
 
         initializeUser.clickInitializeAppButton().enterUserPasscode(firstPasscode).submitPasscode();
 
-        initializeUser.expect.element("@submitPasscode").to.not.have.value;
+        // The old passcode must be rejected by SDK init, so the user should remain on the
+        // initialize screen and never reach the document list page. Pause briefly to let the
+        // async init promise reject before we assert.
+        browser.pause(2000);
+        demoApp.expect.element("@browserListPage").to.not.be.present;
+        initializeUser.expect.element("@submitPasscode").to.be.visible;
 
         browser.end();
     },
@@ -65,8 +70,11 @@ module.exports = {
         demoApp
             .enterPasscodeFields(secondPasscode, secondPasscode)
             .submitChangePasscode()
-            .waitForElementPresent("@currentPasscodeInput")
-            .expect.element("@currentPasscodeInput").to.not.have.value;
+            .waitForElementPresent("@passwordChangeDialog");
+        // On a wrong current passcode, the SDK rejects the change and the component renders
+        // an "Incorrect passcode" error inside the dialog. That message is what proves this 
+        // specific failure path ran.
+        demoApp.expect.element("@passwordChangeDialog").text.to.contain("Incorrect passcode");
 
         browser.end();
     },

@@ -1,10 +1,33 @@
+import {decode as utf8Decode} from "@stablelib/utf8";
 import Future from "futurejs";
-import SDKError from "src/lib/SDKError";
+import SDKError from "../../lib/SDKError";
+import {ErrorCodes, UserStatus} from "../../Constants";
 import * as WMT from "../../WorkerMessageTypes";
 import ApiState from "../ApiState";
 import UserApiEndpoints from "../endpoints/UserApiEndpoints";
 import {clearDeviceAndSigningKeys} from "../FrameUtils";
 import * as WorkerMediator from "../WorkerMediator";
+
+/**
+ * Extract the `sub` claim from a JWT token to identify the user the JWT is for. The JWT is
+ * not verified here; the server is the authority. UTF-8 safe for non-ASCII user IDs.
+ */
+export const userIdFromJwt = (jwt: string): Future<SDKError, string> => {
+    try {
+        const payload = jwt.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        const bytes = Uint8Array.from(window.atob(payload), (c) => c.charCodeAt(0));
+        const claims = JSON.parse(utf8Decode(bytes));
+        if (typeof claims.sub !== "string" || claims.sub.length === 0) {
+            throw new Error("JWT is missing required 'sub' claim.");
+        }
+        return Future.of(claims.sub);
+    } catch (e) {
+        // Wrap in a fresh Error so SDKError applies our error code instead of inheriting one from
+        // the underlying exception (e.g. DOMException from atob exposes a numeric `code` property).
+        const message = e instanceof Error ? e.message : String(e);
+        return Future.reject(new SDKError(new Error(message), ErrorCodes.JWT_FORMAT_FAILURE));
+    }
+};
 
 /**
  * Rotate users current private key by taking their current passcode and using it to derive a key to decrypt their user private key.
@@ -69,11 +92,7 @@ export const deleteDevice = (deviceId?: number) => {
                 //their device private key from local storage. So mock out a fake ID here that we can use to decision off of.
                 .handleWith(() => Future.of({id: -1}))
                 .map((deleteResponse) => {
-                    const user = ApiState.user();
-
-                    const {id, segmentId} = user;
-                    clearDeviceAndSigningKeys(id, segmentId);
-                    ApiState.clearCurrentUser();
+                    deleteLocalDeviceAndClearUser();
                     return deleteResponse.id;
                 })
         );
@@ -98,3 +117,29 @@ export const deleteDeviceBySigningKeyWithJwt = (jwtToken: string, publicSigningK
  * Makes a request to list the devices for the currently logged in user.
  */
 export const listDevices = () => UserApiEndpoints.callUserListDevices();
+
+const deleteLocalDeviceAndClearUser = () => {
+    const user = ApiState.user();
+    const {id, segmentId} = user;
+    clearDeviceAndSigningKeys(id, segmentId);
+    ApiState.clearCurrentUser();
+};
+
+/**
+ * Disables the currently authenticated user. After this call succeeds the user
+ * will not be able to invoke any other authorized SDK functions. Disabled users
+ * remain members of any groups they belonged to but cannot use them.
+ */
+export const disableSelf = () =>
+    UserApiEndpoints.callUserUpdateApi(undefined, UserStatus.DISABLED).map((r) => {
+        deleteLocalDeviceAndClearUser();
+        return r;
+    });
+
+/**
+ * Update the status of the user identified by the provided JWT.
+ * Allows changing a user's status using JWT auth, without an initialized SDK.
+ * The user id is taken from the `sub` claim of the JWT.
+ */
+export const updateUserStatusWithJwt = (jwtToken: string, status: number) =>
+    userIdFromJwt(jwtToken).flatMap((userId) => UserApiEndpoints.callUserUpdateStatusWithJwt(jwtToken, userId, status));

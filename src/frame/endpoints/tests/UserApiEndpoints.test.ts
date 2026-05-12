@@ -304,6 +304,35 @@ describe("UserApiEndpoints", () => {
         });
     });
 
+    describe("callUserUpdateStatusWithJwt", () => {
+        it("calls API and updates status using JWT auth", () => {
+            (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue(
+                Future.of<any>({
+                    id: "user-10",
+                    foo: "bar",
+                })
+            );
+
+            UserApiEndpoints.callUserUpdateStatusWithJwt("jwtToken", "user-special~!@#$", 0).engage(
+                (e) => {
+                    throw new Error(e.message);
+                },
+                (response: any) => {
+                    expect(response).toEqual({id: "user-10", foo: "bar"});
+                    expect(ApiRequest.makeJwtApiRequest).toHaveBeenCalledWith(
+                        "users/user-special~!%40%23%24",
+                        expect.any(Number),
+                        expect.any(Object),
+                        "jwtToken"
+                    );
+                    const request = (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
+                    expect(request.method).toEqual("PUT");
+                    expect(JSON.parse(request.body)).toEqual({status: 0});
+                }
+            );
+        });
+    });
+
     describe("callUserDeviceAdd", () => {
         it("calls API and returns data as expected", () => {
             (ApiRequest.makeJwtApiRequest as unknown as jest.SpyInstance).mockReturnValue(
