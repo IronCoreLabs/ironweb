@@ -1,22 +1,11 @@
 const groupListActions = {
     expectGroupRoleChipAtPosition(position, chipSelector, shouldExist = true) {
-        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            browser.elementIdElement(Object.values(elements.value[position])[0], this.client.locateStrategy, chipSelector, (chipElement) => {
-                if (shouldExist) {
-                    if (Array.isArray(chipElement.value)) {
-                        this.assert.equal(true, false, "Expected role chip not found");
-                    } else if (typeof chipElement.value === "object") {
-                        this.assert.equal(true, true, "Found expected role chip");
-                    }
-                } else {
-                    if (Array.isArray(chipElement.value)) {
-                        this.assert.equal(true, true, "Role chip not found as expected");
-                    } else if (typeof chipElement.value === "object") {
-                        this.assert.equal(true, false, "Found unexpected role chip");
-                    }
-                }
-            });
-        });
+        const item = browser.element.findAll(this.elements.groupItems.selector).nth(position);
+        if (shouldExist) {
+            item.find(chipSelector).assert.present(`Expected role chip "${chipSelector}" at group position ${position}`);
+        } else {
+            item.findAll(chipSelector).count().assert.equals(0, `Expected no role chip "${chipSelector}" at group position ${position}`);
+        }
         return this;
     },
     switchToGroupUITab() {
@@ -31,10 +20,8 @@ const groupListActions = {
         return this;
     },
     expectGroupNameAtPosition(position, name) {
-        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            this.api.elementIdText(Object.values(elements.value[position])[0], (elementText) => {
-                this.assert.equal(elementText.value.includes(name), true, `Expected roughly group name "${name}", found "${elementText.value}"`);
-            });
+        browser.element.findAll(this.elements.groupItems.selector).nth(position).getText((result) => {
+            this.assert.equal(result.value.includes(name), true, `Expected roughly group name "${name}", found "${result.value}"`);
         });
         return this;
     },
@@ -48,9 +35,8 @@ const groupListActions = {
         return this.expectGroupRoleChipAtPosition(position, this.elements.memberChip.selector, false);
     },
     clickOnNthGroup(item) {
-        browser.elements(this.client.locateStrategy, this.elements.groupItems.selector, (elements) => {
-            this.api.elementIdClick(Object.values(elements.value[item])[0]);
-        });
+        browser.element.findAll(this.elements.groupItems.selector).nth(item).click();
+        return this;
     },
     refreshList() {
         return this.click("@refreshGroupListButton");

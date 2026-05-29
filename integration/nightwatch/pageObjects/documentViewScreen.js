@@ -11,21 +11,17 @@ const documentViewActions = {
         return this;
     },
     changeDocumentName(newName) {
-        this.setValue("@documentNameInput", newName);
-        this.api.elementIdClick(this.elements.documentNameInput.selector, () => {
-            this.api.keys(this.api.Keys.TAB);
-            this.waitForElementPresent("@documentNameInput");
-        });
-        return this;
+        return this.clearValue("@documentNameInput")
+            .setValue("@documentNameInput", newName)
+            .sendKeys("@documentNameInput", this.api.Keys.TAB)
+            .waitForElementPresent("@documentNameInput");
     },
     backToDocumentList() {
         return this.click("@backToListButton");
     },
     assertHasTodoItemAtIndex(todoText, index = 0) {
-        browser.elements("css selector", this.elements.todoListItems.selector, (elements) => {
-            this.api.elementIdText(Object.values(elements.value[index])[0], (elementText) => {
-                this.assert.equal(elementText.value, todoText, `Todo list item content, expected "${todoText}, found "${elementText.value}"`);
-            });
+        browser.element.findAll(this.elements.todoListItems.selector).nth(index).getText((result) => {
+            this.assert.equal(result.value, todoText, `Todo list item content, expected "${todoText}", found "${result.value}"`);
         });
         return this;
     },
@@ -33,11 +29,9 @@ const documentViewActions = {
         return this.setValue("@updateTodoInput", todoText);
     },
     submitNewTodo() {
-        this.api.elementIdClick(this.elements.updateTodoInput.selector, () => {
-            this.api.sendKeys("#newTodoItem", this.api.Keys.ENTER);
-            this.waitForElementVisible("@updateTodoInput");
-        });
-        return this;
+        return this.click("@updateTodoInput")
+            .sendKeys("@updateTodoInput", this.api.Keys.ENTER)
+            .waitForElementVisible("@updateTodoInput");
     },
     assertUserVisibleToSize(size) {
         browser.waitForElementPresent(`css selector`, `.document-visibility[data-user-count="${size}"]`, 5000,
@@ -45,10 +39,8 @@ const documentViewActions = {
         return this;
     },
     assertUserVisibleIDAtPosition(position, id) {
-        browser.elements(this.client.locateStrategy, this.elements.userVisibleItem.selector, (elements) => {
-            this.api.elementIdText(Object.values(elements.value[position])[0], (elementText) => {
-                this.assert.equal(elementText.value.includes(id), true, `Expected roughly visible to ID "${id}", found "${elementText.value}"`);
-            });
+        browser.element.findAll(this.elements.userVisibleItem.selector).nth(position).getText((result) => {
+            this.assert.equal(result.value.includes(id), true, `Expected roughly visible to ID "${id}", found "${result.value}"`);
         });
         return this;
     },
@@ -75,9 +67,7 @@ const documentViewActions = {
     },
     clickOnGroupGrantAccessCheckbox(groupID) {
         browser.waitForElementPresent("css selector", `#${groupID}`, 5000);
-        browser.element("css selector", `#${groupID}`, (element) => {
-            browser.elementIdClick(Object.values(element.value)[0]);
-        });
+        browser.click("css selector", `#${groupID}`);
         return this;
     },
 };
