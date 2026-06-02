@@ -18,6 +18,7 @@ jobs:
         run: |
           yarn
           yarn test
+          ./.github/scripts/build.js
 
   integration_test:
     runs-on: ubuntu-24.04
