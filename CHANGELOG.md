@@ -4,6 +4,10 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
+## v5.0.0 (unreleased)
+
+- Raised TypeScript compile target from ES5 to ES6. 
+
 ## v4.4.0
 
 - add `IronWeb.user.disableSelf()` which the currently authenticated user can call to disable their own account. Disabled users can still be members of groups but will be unable to call SDK functions.

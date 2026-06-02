@@ -28,32 +28,24 @@ const groupDetailActions = {
         return this.setValue("@groupAdminInput", id);
     },
     submitNewAdmin() {
-        this.api.elementIdClick(this.elements.groupAdminInput.selector, () => {
-            browser.sendKeys(this.elements.groupAdminInput.selector, browser.Keys.ENTER);
-            this.waitForElementPresent("@groupAdminInput");
-        });
-        return this;
+        return this.click("@groupAdminInput")
+            .sendKeys("@groupAdminInput", browser.Keys.ENTER)
+            .waitForElementPresent("@groupAdminInput");
     },
     addNewMemberID(id) {
         return this.setValue("@groupMemberInput", id);
     },
     submitNewMember() {
-        this.api.elementIdClick(this.elements.groupMemberInput.selector, () => {
-            browser.sendKeys(this.elements.groupMemberInput.selector, browser.Keys.ENTER);
-            this.waitForElementPresent("@groupMemberInput");
-        });
-        return this;
+        return this.click("@groupMemberInput")
+            .sendKeys("@groupMemberInput", browser.Keys.ENTER)
+            .waitForElementPresent("@groupMemberInput");
     },
     removeMemberAtPosition(position) {
-        browser.elements(this.client.locateStrategy, this.elements.groupRemoveMemberButton.selector, (elements) => {
-            this.api.elementIdClick(Object.values(elements.value[position])[0]);
-        });
+        browser.element.findAll(this.elements.groupRemoveMemberButton.selector).nth(position).click();
         return this;
     },
     removeAdminAtPosition(position) {
-        browser.elements(this.client.locateStrategy, this.elements.groupRemoveAdminButton.selector, (elements) => {
-            this.api.elementIdClick(Object.values(elements.value[position])[0]);
-        });
+        browser.element.findAll(this.elements.groupRemoveAdminButton.selector).nth(position).click();
         return this;
     },
     getGroupID(callback) {

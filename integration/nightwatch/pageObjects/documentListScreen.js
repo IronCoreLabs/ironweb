@@ -3,11 +3,7 @@
  */
 const documentListActions = {
     expectTodoListStorageType(selector, position){
-        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.api.elementIdElement(Object.values(elements.value[position])[0], this.client.locateStrategy, selector, (chipElement) => {
-                this.assert.equal(chipElement.status, 0, chipElement.status === -1 ? chipElement.value.message : "Found correct storage chip");
-            });
-        });
+        browser.element.findAll(this.elements.listItems.selector).nth(position).find(selector).assert.present(`Expected storage chip "${selector}" at document position ${position}`);
         return this;
     },
     refreshList(){
@@ -22,10 +18,8 @@ const documentListActions = {
         return this;
     },
     expectTodoListNameAtPosition(position, name){
-        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.api.elementIdText(Object.values(elements.value[position])[0], (elementText) => {
-                this.assert.equal(elementText.value.includes(name), true, `Todo list content, expected roughly "${name}", found "${elementText.value}"`);
-            });
+        browser.element.findAll(this.elements.listItems.selector).nth(position).getText((result) => {
+            this.assert.equal(result.value.includes(name), true, `Todo list content, expected roughly "${name}", found "${result.value}"`);
         });
         return this;
     },
@@ -45,9 +39,8 @@ const documentListActions = {
         return this.click('@testUnmanagedStreamingButton');
     },
     clickOnNthTodoList(item){
-        browser.elements(this.client.locateStrategy, this.elements.listItems.selector, (elements) => {
-            this.api.elementIdClick(Object.values(elements.value[item])[0]);
-        });
+        browser.element.findAll(this.elements.listItems.selector).nth(item).click();
+        return this;
     },
 };
 
