@@ -189,4 +189,25 @@ describe("UserSDK", () => {
                 .catch((e) => done(e));
         });
     });
+
+    describe("deleteDeviceByPublicSigningKey", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            ShimUtils.clearSDKInitialized();
+            expect(() => UserSDK.deleteDeviceByPublicSigningKey("signingKey")).toThrow();
+        });
+
+        it("sends delete by signing key request to frame", (done) => {
+            ShimUtils.setSDKInitialized();
+            UserSDK.deleteDeviceByPublicSigningKey("signingKey")
+                .then((result: any) => {
+                    expect(result).toEqual(10);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DELETE_DEVICE_BY_SIGNING_KEY",
+                        message: "signingKey",
+                    });
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+    });
 });

@@ -423,6 +423,74 @@ describe("frame index", () => {
             });
         });
 
+        it("DELETE_DEVICE_BY_SIGNING_KEY", (done) => {
+            jest.spyOn(UserApi, "deleteDeviceBySigningKey").mockReturnValue(Future.of<any>(11));
+            const payload: MT.DeleteDeviceBySigningKey = {
+                type: "DELETE_DEVICE_BY_SIGNING_KEY",
+                message: "signingKey",
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "DELETE_DEVICE_RESPONSE",
+                    message: 11,
+                });
+                expect(UserApi.deleteDeviceBySigningKey).toHaveBeenCalledWith("signingKey");
+                done();
+            });
+        });
+
+        it("DELETE_DEVICE_BY_SIGNING_KEY_JWT", (done) => {
+            jest.spyOn(UserApi, "deleteDeviceBySigningKeyWithJwt").mockReturnValue(Future.of<any>(12));
+            const payload: MT.DeleteDeviceBySigningKeyJwt = {
+                type: "DELETE_DEVICE_BY_SIGNING_KEY_JWT",
+                message: {jwtToken: "jwt", publicSigningKey: "signingKey"},
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "DELETE_DEVICE_RESPONSE",
+                    message: 12,
+                });
+                expect(UserApi.deleteDeviceBySigningKeyWithJwt).toHaveBeenCalledWith("jwt", "signingKey");
+                done();
+            });
+        });
+
+        it("DISABLE_USER_SELF", (done) => {
+            jest.spyOn(UserApi, "disableSelf").mockReturnValue(Future.of<any>("disabledUser"));
+            const payload: MT.DisableUserSelf = {
+                type: "DISABLE_USER_SELF",
+                message: null,
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "UPDATE_USER_STATUS_RESPONSE",
+                    message: "disabledUser",
+                });
+                expect(UserApi.disableSelf).toHaveBeenCalledWith();
+                done();
+            });
+        });
+
+        it("UPDATE_USER_STATUS_JWT", (done) => {
+            jest.spyOn(UserApi, "updateUserStatusWithJwt").mockReturnValue(Future.of<any>("updatedUser"));
+            const payload: MT.UpdateUserStatusJwt = {
+                type: "UPDATE_USER_STATUS_JWT",
+                message: {jwtToken: "jwt", status: 3},
+            };
+
+            messenger.onMessageCallback(payload, (result: any) => {
+                expect(result).toEqual({
+                    type: "UPDATE_USER_STATUS_RESPONSE",
+                    message: "updatedUser",
+                });
+                expect(UserApi.updateUserStatusWithJwt).toHaveBeenCalledWith("jwt", 3);
+                done();
+            });
+        });
+
         it("CHANGE_USER_PASSCODE", (done) => {
             jest.spyOn(UserApi, "changeUsersPasscode").mockReturnValue(Future.of<any>("changeUsersPasscode"));
 
