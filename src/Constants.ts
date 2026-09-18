@@ -1,5 +1,4 @@
 declare const SDK_NPM_VERSION_PLACEHOLDER: string;
-declare const _ICL_FRAME_DOMAIN_REPLACEMENT_: string;
 
 /**
  * Number which is prepended onto encrypted documents to denote which classification of encrypted data
@@ -92,23 +91,6 @@ export enum ErrorCodes {
     SEARCH_TOKENIZE_DATA_FAILURE = 702,
     SEARCH_TOKENIZE_QUERY_FAILURE = 703,
 }
-
-/*
- * Constants around frame communication
- */
-const Frame = {
-    //By default we point to production. We modify this via webpack at runtime for local development to allow us to
-    //point to dev/stage.
-    FRAME_DOMAIN: "https://api.ironcorelabs.com",
-    FRAME_PATH: "/ironweb-frame",
-};
-//Support the ability to switch out the domain to point to different environments. This should only ever
-//be used internally for local development and the Google Integration. Clients should always hit production.
-if (typeof _ICL_FRAME_DOMAIN_REPLACEMENT_ === "string" && _ICL_FRAME_DOMAIN_REPLACEMENT_.length) {
-    Frame.FRAME_DOMAIN = _ICL_FRAME_DOMAIN_REPLACEMENT_;
-}
-
-export {Frame};
 
 export const GroupPermissions = {
     ADMIN: "admin",
