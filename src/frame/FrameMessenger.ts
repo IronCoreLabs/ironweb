@@ -19,10 +19,11 @@ export default class FrameMessenger {
 
     /**
      * Check if we got a message port event from the parent frame. If so, unsubscribe from global frame message events and store off
-     * the MessagePort we got. Then setup a listener on the port for incoming messages.
+     * the MessagePort we got. Then setup a listener on the port for incoming messages. Any window holding a handle to this frame
+     * (an opener, a grandparent) can post here, not only the parent.
      */
     setupMessagePort = (event: MessageEvent) => {
-        if (event.data === "MESSAGE_PORT_INIT" && event.ports && event.ports.length === 1) {
+        if (event.source === window.parent && event.data === "MESSAGE_PORT_INIT" && event.ports && event.ports.length === 1) {
             window.removeEventListener("message", this.setupMessagePort);
             event.ports[0].start();
             event.ports[0].addEventListener("message", this.processMessageIntoFrame);
