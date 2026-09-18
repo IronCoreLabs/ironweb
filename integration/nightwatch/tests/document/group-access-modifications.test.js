@@ -26,7 +26,7 @@ module.exports = {
 
             documentCreate.setTodoListName(`Grant access to group ${groupID}`).submitDocument();
 
-            demoApp.assertOnHostedDocumentViewPage();
+            demoApp.assertOnLocalDocumentViewPage();
 
             documentView
                 .waitForElementVisible("@documentViewDetails")

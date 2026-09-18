@@ -1,6 +1,6 @@
 import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import {fromByteArray, toByteArray} from "base64-js";
-import {DocumentGetResponseType, DocumentMetaGetResponseType} from "../frame/endpoints/DocumentApiEndpoints";
+import {DocumentMetaGetResponseType} from "../frame/endpoints/DocumentApiEndpoints";
 import {generateDocumentHeaderBytes} from "../frame/FrameUtils";
 import {concatArrayBuffers} from "../lib/Utils";
 
@@ -85,13 +85,6 @@ export function getEncryptedDocumentMetaResponse(): DocumentMetaGetResponseType 
         },
         created: "2018-11-28T00:20:16.617Z",
         updated: "2018-12-04T15:50:01.837Z",
-    };
-}
-
-export function getEncryptedDocumentResponse(): DocumentGetResponseType {
-    return {
-        ...getEncryptedDocumentMetaResponse(),
-        data: {content: "AcWcpFrbKJ6h5+HpBsMcjVJdXTWKX84YycFJs2z7pbvjC3qRKfwbj/z8WA=="},
     };
 }
 

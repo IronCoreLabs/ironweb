@@ -2,7 +2,6 @@ import Future from "futurejs";
 import * as TestUtils from "../../../tests/TestUtils";
 import * as ApiRequest from "../../ApiRequest";
 import ApiState from "../../ApiState";
-import {encryptedDocumentToBase64} from "../../FrameUtils";
 import DocumentApiEndpoints from "../DocumentApiEndpoints";
 
 describe("DocumentApiEndpoints", () => {
@@ -31,8 +30,7 @@ describe("DocumentApiEndpoints", () => {
     });
 
     describe("callDocumentCreateApi", () => {
-        it("sends new document to API and maps response to data result", () => {
-            const document = TestUtils.getEncryptedDocument();
+        it("sends document ID, name, and access keys and maps response to data result", () => {
             const symKey = TestUtils.getEncryptedSymmetricKey();
             const userKeyList = [
                 {
@@ -42,7 +40,7 @@ describe("DocumentApiEndpoints", () => {
                 },
             ];
 
-            DocumentApiEndpoints.callDocumentCreateApi("docID", encryptedDocumentToBase64("docID", 353, document), userKeyList, [], "doc name").engage(
+            DocumentApiEndpoints.callDocumentCreateApi("docID", userKeyList, [], "doc name").engage(
                 () => {
                     throw new Error("Doc create should not reject");
                 },
@@ -54,9 +52,6 @@ describe("DocumentApiEndpoints", () => {
                     expect(JSON.parse(request.body)).toEqual({
                         id: "docID",
                         value: {
-                            data: {
-                                content: "AgAdeyJfZGlkXyI6ImRvY0lEIiwiX3NpZF8iOjM1M31ub25jZWJhc2U=",
-                            },
                             name: "doc name",
                             fromUserId: "user-10",
                             sharedWith: [
@@ -103,7 +98,7 @@ describe("DocumentApiEndpoints", () => {
                 },
             ];
 
-            DocumentApiEndpoints.callDocumentCreateApi("", null, userKeyList, groupKeyList).engage(
+            DocumentApiEndpoints.callDocumentCreateApi("", userKeyList, groupKeyList).engage(
                 () => {
                     throw new Error("Doc create should not reject");
                 },
@@ -136,7 +131,7 @@ describe("DocumentApiEndpoints", () => {
             );
         });
 
-        it("optionally stores document data and IV", () => {
+        it("omits the name when not provided", () => {
             const symKey = TestUtils.getEncryptedSymmetricKey();
             const userKeyList = [
                 {
@@ -146,7 +141,7 @@ describe("DocumentApiEndpoints", () => {
                 },
             ];
 
-            DocumentApiEndpoints.callDocumentCreateApi("docKey", null, userKeyList, []).engage(
+            DocumentApiEndpoints.callDocumentCreateApi("docKey", userKeyList, []).engage(
                 () => {
                     throw new Error("Doc create should not reject");
                 },
@@ -176,25 +171,6 @@ describe("DocumentApiEndpoints", () => {
         });
     });
 
-    describe("callDocumentGetApi", () => {
-        it("gets document from api and maps result", () => {
-            DocumentApiEndpoints.callDocumentGetApi("docKey").engage(
-                () => {
-                    throw new Error("doc get API should not reject");
-                },
-                (document: any) => {
-                    expect(document).toEqual({foo: "bar"});
-
-                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith(
-                        "documents/docKey?includeData=true",
-                        expect.any(Number),
-                        expect.any(Object)
-                    );
-                }
-            );
-        });
-    });
-
     describe("callDocumentMetadataGetApi", () => {
         it("gets metadata for document and maps result", () => {
             DocumentApiEndpoints.callDocumentMetadataGetApi("docID").engage(
@@ -210,29 +186,8 @@ describe("DocumentApiEndpoints", () => {
     });
 
     describe("callDocumentUpdateApi", () => {
-        it("updates existing document and returns mapped API response", () => {
-            const document = TestUtils.getEncryptedDocument();
-
-            DocumentApiEndpoints.callDocumentUpdateApi("docKey", encryptedDocumentToBase64("docID", 353, document)).engage(
-                () => {
-                    throw new Error("Doc update should not reject");
-                },
-                (documentResult: any) => {
-                    expect(documentResult).toEqual({foo: "bar"});
-                    expect(ApiRequest.makeAuthorizedApiRequest).toHaveBeenCalledWith("documents/docKey", expect.any(Number), expect.any(Object));
-
-                    const request = (ApiRequest.makeAuthorizedApiRequest as unknown as jest.SpyInstance).mock.calls[0][2];
-                    expect(JSON.parse(request.body)).toEqual({
-                        data: {
-                            content: "AgAdeyJfZGlkXyI6ImRvY0lEIiwiX3NpZF8iOjM1M31ub25jZWJhc2U=",
-                        },
-                    });
-                }
-            );
-        });
-
-        it("includes document name and omits data if not provided", () => {
-            DocumentApiEndpoints.callDocumentUpdateApi("docKey", undefined, "new name").engage(
+        it("sends the new document name", () => {
+            DocumentApiEndpoints.callDocumentUpdateApi("docKey", "new name").engage(
                 () => {
                     throw new Error("Doc update should not reject");
                 },
@@ -248,7 +203,7 @@ describe("DocumentApiEndpoints", () => {
         });
 
         it("sets name to null if passed in as such", () => {
-            DocumentApiEndpoints.callDocumentUpdateApi("docKey", undefined, null).engage(
+            DocumentApiEndpoints.callDocumentUpdateApi("docKey", null).engage(
                 () => {
                     throw new Error("Doc update should not reject");
                 },

@@ -2,9 +2,6 @@
  * Actions for document create page view
  */
 const documentCreateActions = {
-    toggleStorage(){
-        return this.click('@storageToggle');
-    },
     submitDocument(){
         return this.click('@createNewDocumentButton').waitForElementNotPresent('@createNewDocumentButton');
     },
@@ -28,7 +25,6 @@ const documentCreateActions = {
 }
 
 const documentCreateElements = {
-    storageToggle: '.storage-toggle',
     todoListIDInput: '#todo-id-input',
     todoListNameInput: '#todo-name-input',
     todoItemInput: '#todo-item-input-0',
