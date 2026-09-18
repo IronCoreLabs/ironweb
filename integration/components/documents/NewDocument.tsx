@@ -9,13 +9,8 @@ import Checkbox from "material-ui/Checkbox";
 import {logAction} from "../../Logger";
 import {List, ListItem} from "material-ui/List";
 import FloatingActionButton from "material-ui/FloatingActionButton";
-import Chip from "material-ui/Chip";
-import Avatar from "material-ui/Avatar";
-import Cloud from "material-ui/svg-icons/file/cloud";
-import Local from "material-ui/svg-icons/file/cloud-off";
 import Upload from "material-ui/svg-icons/file/file-upload";
 import ArrowBack from "material-ui/svg-icons/navigation/arrow-back";
-import {lightGreen200, lightGreen400, orange200, orange400} from "material-ui/styles/colors";
 
 type GrantList = {id: string}[];
 
@@ -25,7 +20,6 @@ interface NewDocumentProps {
 }
 
 interface NewDocumentState {
-    storeLocal: boolean;
     availableGroups: GroupMetaResponse[];
     selectedGroups: string[];
     todoItems: {
@@ -44,7 +38,6 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
             availableGroups: [],
             selectedGroups: [],
             todoItems: {0: ""},
-            storeLocal: false,
         };
     }
 
@@ -64,11 +57,7 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
             const userShareList = this.userGrantList.getValue();
             const users = userShareList.split("\n").map((userID) => ({id: userID}));
             const groups = this.state.selectedGroups.map((groupID) => ({id: groupID}));
-            if (this.state.storeLocal) {
-                this.createLocalList(listName, todoList, users, groups);
-            } else {
-                this.createHostedList(listName, todoList, users, groups);
-            }
+            this.createLocalList(listName, todoList, users, groups);
         }
     };
 
@@ -93,33 +82,6 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
             .catch((error: IronWeb.SDKError) => {
                 logAction(`Document create error: ${error.message}. Error Code: ${error.code}`, "error");
             });
-    };
-
-    createHostedList = (listName: string, listItems: string[], users: GrantList, groups: GrantList) => {
-        const newDocID = this.newListID.getValue();
-        const document = {
-            type: "list",
-            content: listItems,
-        };
-        logAction(`Creating hosted document with ID '${newDocID}' and name '${listName}'`);
-        const documentOptions = {
-            documentID: newDocID,
-            documentName: listName,
-            accessList: {users, groups},
-        };
-        IronWeb.document
-            .encryptToStore(IronWeb.codec.utf8.toBytes(JSON.stringify(document)), documentOptions)
-            .then((encryptedDocument) => {
-                logAction(`New document successfully created.`, "success");
-                this.props.onListSelect(encryptedDocument);
-            })
-            .catch((error: IronWeb.SDKError) => {
-                logAction(`Document create error: ${error.message}. Error Code: ${error.code}`, "error");
-            });
-    };
-
-    toggleStorage = () => {
-        this.setState({storeLocal: !this.state.storeLocal});
     };
 
     setListIDRef = (input: TextField) => {
@@ -174,22 +136,10 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
                     content: IronWeb.codec.base64.fromBytes(new Uint8Array(reader.result as ArrayBuffer)),
                 })
             );
-            this.state.storeLocal ? this.createLocalFile(file.name, documentWrapper) : this.createHostedFile(file.name, documentWrapper);
+            this.createLocalFile(file.name, documentWrapper);
         };
         reader.readAsArrayBuffer(files[0]);
     };
-
-    createHostedFile(documentName: string, documentContent: Uint8Array) {
-        IronWeb.document
-            .encryptToStore(documentContent, {documentName})
-            .then((document) => {
-                logAction(`New document successfully created.`, "success");
-                this.props.onListSelect(document);
-            })
-            .catch((error: IronWeb.SDKError) => {
-                logAction(`Document create error: ${error.message}. Error Code: ${error.code}`, "error");
-            });
-    }
 
     createLocalFile(documentName: string, documentContent: Uint8Array) {
         IronWeb.document
@@ -241,31 +191,6 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
         );
     }
 
-    getStorateTypeMarkup() {
-        let color, text, avatarIcon, avatarColor;
-        if (this.state.storeLocal) {
-            color = orange200;
-            text = "Local";
-            avatarIcon = <Local />;
-            avatarColor = orange400;
-        } else {
-            color = lightGreen200;
-            text = "Hosted";
-            avatarIcon = <Cloud />;
-            avatarColor = lightGreen400;
-        }
-        return (
-            <Chip
-                className="storage-toggle"
-                labelStyle={{padding: "0 5px", fontSize: "12px", width: "45px", textAlign: "center"}}
-                onClick={this.toggleStorage}
-                backgroundColor={color}>
-                <Avatar icon={avatarIcon} backgroundColor={avatarColor} />
-                {text}
-            </Chip>
-        );
-    }
-
     getTodoInputs() {
         const inputs = Object.keys(this.state.todoItems).map((inputKey) => {
             return (
@@ -303,7 +228,6 @@ export default class NewDocument extends React.Component<NewDocumentProps, NewDo
                 </div>
                 <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", margin: "10px 0 25px 0"}}>
                     <h1>New Document</h1>
-                    {this.getStorateTypeMarkup()}
                 </div>
                 <Tabs>
                     <Tab label="Todo List">

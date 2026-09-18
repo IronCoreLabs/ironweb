@@ -177,14 +177,6 @@ export function combineDocumentParts(documentID: string, segmentID: number, docu
 }
 
 /**
- * Convert an encrypted document package (version, IV, data) from bytes into a single base64 string with the bytes in the
- * expected order.
- */
-export function encryptedDocumentToBase64(documentID: string, segmentID: number, document: EncryptedDocument) {
-    return fromByteArray(combineDocumentParts(documentID, segmentID, document));
-}
-
-/**
  * Encode the provided bytes as hex
  */
 export const encodeBytesAsHex = (byteSource: Uint8Array): string => Array.from(byteSource, (byte) => `00${byte.toString(16)}`.slice(-2)).join("");

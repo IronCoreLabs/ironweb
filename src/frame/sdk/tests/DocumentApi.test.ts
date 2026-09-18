@@ -85,35 +85,6 @@ describe("DocumentApi", () => {
         });
     });
 
-    describe("decryptHostedDoc", () => {
-        it("returns raw bytes if provided as option", (done) => {
-            const existingDocument = TestUtils.getEncryptedDocumentResponse();
-
-            jest.spyOn(DocumentApiEndpoints, "callDocumentGetApi").mockReturnValue(Future.of<any>(existingDocument));
-            jest.spyOn(DocumentOperations, "decryptDocument").mockReturnValue(Future.of<any>(new Uint8Array([36, 89, 72])));
-
-            DocumentApi.decryptHostedDoc("doc key").engage(
-                (e) => done(e),
-                ({data, documentID, documentName, visibleTo, association}) => {
-                    expect(documentID).toEqual("docID");
-                    expect(documentName).toEqual("my doc");
-                    expect(association).toEqual("owner");
-                    expect(visibleTo).toEqual({
-                        users: [{id: "user-11"}, {id: "user-33"}],
-                        groups: [{id: "group-34", name: "ICL"}],
-                    });
-                    expect(data.length).toEqual(3);
-                    expect(data[0]).toEqual(36);
-                    expect(data[1]).toEqual(89);
-                    expect(data[2]).toEqual(72);
-
-                    expect(DocumentApiEndpoints.callDocumentGetApi).toHaveBeenCalledWith("doc key");
-                    done();
-                }
-            );
-        });
-    });
-
     describe("decryptLocalDoc", () => {
         it("rejects if provided encrypted document is not a supported version", () => {
             const doc = new Uint8Array([8, 23, 235, 2]);
@@ -154,159 +125,6 @@ describe("DocumentApi", () => {
         });
     });
 
-    describe("encryptToStore", () => {
-        it("encrypts document and saves it to store for the current user", (done) => {
-            const encryptedDocument = TestUtils.getEncryptedDocument();
-            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
-
-            jest.spyOn(DocumentOperations, "encryptNewDocumentToList").mockReturnValue(
-                Future.of<any>({
-                    userAccessKeys: [{id: "user-10", key: encryptedSymKey}],
-                    groupAccessKeys: [],
-                    encryptedDocument,
-                })
-            );
-            jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar", name: "my doc", created: "1", updated: "2"}));
-
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", [], [], true).engage(
-                (e) => {
-                    throw new Error(e.message);
-                },
-                (data: any) => {
-                    expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
-                    const currentUserRecord = {
-                        id: "user-10",
-                        masterPublicKey: {
-                            x: TestUtils.userPublicXString,
-                            y: TestUtils.userPublicYString,
-                        },
-                    };
-                    expect(DocumentOperations.encryptNewDocumentToList).toHaveBeenCalledWith(
-                        new Uint8Array([88, 73, 92]),
-                        [currentUserRecord],
-                        [],
-                        ApiState.signingKeys()
-                    );
-                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
-                        "doc key",
-                        "AgAdeyJfZGlkXyI6ImRvYyBrZXkiLCJfc2lkXyI6MX1ub25jZWJhc2U=",
-                        [{id: "user-10", key: encryptedSymKey}],
-                        [],
-                        ""
-                    );
-                    done();
-                }
-            );
-        });
-
-        it("uses provided name in create options", (done) => {
-            const docName = "my doc";
-            const encryptedDocument = TestUtils.getEncryptedDocument();
-            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
-
-            jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar", name: docName, created: "1", updated: "2"}));
-            jest.spyOn(DocumentOperations, "encryptNewDocumentToList").mockReturnValue(
-                Future.of<any>({
-                    userAccessKeys: [{id: "user-10", key: encryptedSymKey}],
-                    groupAccessKeys: [],
-                    encryptedDocument,
-                })
-            );
-
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), docName, [], [], true).engage(
-                (e) => done(e),
-                (data: any) => {
-                    expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
-                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
-                        "doc key",
-                        "AgAdeyJfZGlkXyI6ImRvYyBrZXkiLCJfc2lkXyI6MX1ub25jZWJhc2U=",
-                        [{id: "user-10", key: encryptedSymKey}],
-                        [],
-                        "my doc"
-                    );
-                    done();
-                }
-            );
-        });
-
-        it("encrypts to list of users and groups provided one", (done) => {
-            const encryptedDocument = TestUtils.getEncryptedDocument();
-            const encryptedSymKey = TestUtils.getEncryptedSymmetricKey();
-
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(
-                Future.of<any>({
-                    result: [
-                        {id: "user-55", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                        {id: "user-33", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                    ],
-                })
-            );
-            jest.spyOn(GroupApiEndpoints, "callGroupKeyListApi").mockReturnValue(
-                Future.of<any>({
-                    result: [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
-                })
-            );
-            jest.spyOn(DocumentOperations, "encryptNewDocumentToList").mockReturnValue(
-                Future.of<any>({
-                    userAccessKeys: [{id: "user-10", key: encryptedSymKey}],
-                    groupAccessKeys: [],
-                    encryptedDocument,
-                })
-            );
-            jest.spyOn(DocumentApiEndpoints, "callDocumentCreateApi").mockReturnValue(Future.of<any>({id: "bar", name: "my doc", created: "1", updated: "2"}));
-
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["user-33"], true).engage(
-                (e) => done(e),
-                (data: any) => {
-                    expect(data).toEqual({documentID: "bar", documentName: "my doc", created: "1", updated: "2"});
-                    const userKeyList = [
-                        {id: "user-55", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                        {id: "user-33", masterPublicKey: TestUtils.getEmptyPublicKeyString()},
-                        {id: "user-10", masterPublicKey: {x: TestUtils.userPublicXString, y: TestUtils.userPublicYString}},
-                    ];
-                    const groupKeyList = [{id: "group-20", masterPublicKey: TestUtils.getEmptyPublicKeyString()}];
-
-                    expect(DocumentOperations.encryptNewDocumentToList).toHaveBeenCalledWith(
-                        new Uint8Array([88, 73, 92]),
-                        userKeyList,
-                        groupKeyList,
-                        ApiState.signingKeys()
-                    );
-                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
-                        "doc key",
-                        "AgAdeyJfZGlkXyI6ImRvYyBrZXkiLCJfc2lkXyI6MX1ub25jZWJhc2U=",
-                        [{id: "user-10", key: encryptedSymKey}],
-                        [],
-                        ""
-                    );
-                    done();
-                }
-            );
-        });
-
-        it("fails if any users or groups cannot be found", (done) => {
-            jest.spyOn(UserApiEndpoints, "callUserKeyListApi").mockReturnValue(
-                Future.of<any>({
-                    result: [{id: "user-33", userMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
-                })
-            );
-            jest.spyOn(GroupApiEndpoints, "callGroupKeyListApi").mockReturnValue(
-                Future.of<any>({
-                    result: [{id: "group-20", groupMasterPublicKey: TestUtils.getEmptyPublicKeyString()}],
-                })
-            );
-
-            DocumentApi.encryptToStore("doc key", new Uint8Array([88, 73, 92]), "", ["user-55", "user-33"], ["group-20"], true).engage(
-                (e) => {
-                    expect(e.message).toEqual(expect.stringContaining(""));
-                    expect(e.message).toContain("[user-55]");
-                    done();
-                },
-                () => done("Create should not succeed if not all users or groups can be found")
-            );
-        });
-    });
-
     describe("encryptLocalDocument", () => {
         it("encrypts document to current user and returns expected document package", () => {
             const encryptedDocument = TestUtils.getEncryptedDocument();
@@ -343,7 +161,7 @@ describe("DocumentApi", () => {
                         [],
                         ApiState.signingKeys()
                     );
-                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith("mydocID", null, [{id: "user-10", key: encryptedSymKey}], [], "");
+                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith("mydocID", [{id: "user-10", key: encryptedSymKey}], [], "");
                 }
             );
         });
@@ -421,7 +239,7 @@ describe("DocumentApi", () => {
                         groupKeyList,
                         ApiState.signingKeys()
                     );
-                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith("doc key", null, [{id: "user-10", key: encryptedSymKey}], [], "");
+                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith("doc key", [{id: "user-10", key: encryptedSymKey}], [], "");
                     done();
                 }
             );
@@ -468,7 +286,6 @@ describe("DocumentApi", () => {
                     );
                     expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
                         "doc key",
-                        null,
                         [{id: "user-33", key: encryptedSymKey}],
                         [{id: "group-20", key: encryptedSymKey}],
                         ""
@@ -519,7 +336,6 @@ describe("DocumentApi", () => {
                     );
                     expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith(
                         "doc key",
-                        null,
                         [{id: "user-33", key: encryptedSymKey}],
                         [{id: "group-20", key: encryptedSymKey}],
                         ""
@@ -604,41 +420,10 @@ describe("DocumentApi", () => {
         });
     });
 
-    describe("updateToStore", () => {
-        it("gets current document and encrypts new data before saving", (done) => {
-            const newDocument = TestUtils.getEncryptedDocument();
-            const existingDocument = TestUtils.getEncryptedDocumentResponse();
-
-            jest.spyOn(DocumentOperations, "reEncryptDocument").mockReturnValue(Future.of<any>(newDocument));
-            jest.spyOn(DocumentApiEndpoints, "callDocumentMetadataGetApi").mockReturnValue(Future.of<any>(existingDocument));
-            jest.spyOn(DocumentApiEndpoints, "callDocumentUpdateApi").mockReturnValue(
-                Future.of<any>({id: "bar", name: "updated doc", created: "1", updated: "2"})
-            );
-
-            DocumentApi.updateToStore("doc key", new Uint8Array([88, 73, 92])).engage(
-                (e) => done(e),
-                (data: any) => {
-                    expect(data).toEqual({documentID: "bar", documentName: "updated doc", created: "1", updated: "2"});
-                    expect(DocumentOperations.reEncryptDocument).toHaveBeenCalledWith(
-                        new Uint8Array([88, 73, 92]),
-                        existingDocument.encryptedSymmetricKey,
-                        expect.any(Uint8Array)
-                    );
-                    expect(DocumentApiEndpoints.callDocumentMetadataGetApi).toHaveBeenCalledWith("doc key");
-                    expect(DocumentApiEndpoints.callDocumentUpdateApi).toHaveBeenCalledWith(
-                        "doc key",
-                        "AgAdeyJfZGlkXyI6ImRvYyBrZXkiLCJfc2lkXyI6MX1ub25jZWJhc2U="
-                    );
-                    done();
-                }
-            );
-        });
-    });
-
     describe("updateLocalDocument", () => {
         it("encrypts new document and returns package", () => {
             const newDocument = TestUtils.getEncryptedDocument();
-            const existingDocument = TestUtils.getEncryptedDocumentResponse();
+            const existingDocument = TestUtils.getEncryptedDocumentMetaResponse();
 
             jest.spyOn(DocumentOperations, "reEncryptDocument").mockReturnValue(Future.of<any>(newDocument));
             jest.spyOn(DocumentApiEndpoints, "callDocumentMetadataGetApi").mockReturnValue(Future.of<any>(existingDocument));
@@ -680,7 +465,7 @@ describe("DocumentApi", () => {
                         created: "1",
                         updated: "2",
                     });
-                    expect(DocumentApiEndpoints.callDocumentUpdateApi).toHaveBeenCalledWith("doc-10", undefined, "new name");
+                    expect(DocumentApiEndpoints.callDocumentUpdateApi).toHaveBeenCalledWith("doc-10", "new name");
                 }
             );
         });
@@ -1068,7 +853,7 @@ describe("DocumentApi", () => {
                 (result) => {
                     expect(result).toEqual({documentID: "docID", documentName: "docName", created: "c", updated: "u"});
                     expect(DocumentOperations.encryptDocumentStream).toHaveBeenCalled();
-                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith("docID", null, [], [], "docName");
+                    expect(DocumentApiEndpoints.callDocumentCreateApi).toHaveBeenCalledWith("docID", [], [], "docName");
                     done();
                 }
             );

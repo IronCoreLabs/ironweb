@@ -217,12 +217,9 @@ export interface Document {
     getDocumentIDFromBytes(encryptedDocument: Uint8Array): Promise<string | null>;
     decrypt(documentID: string, encryptedDocument: Uint8Array): Promise<DecryptedDocumentResponse>;
     decryptStream(documentID: string, encryptedStream: ReadableStream<Uint8Array>): Promise<StreamDecryptResponse>;
-    decryptFromStore(documentID: string): Promise<DecryptedDocumentResponse>;
     encrypt(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<EncryptedDocumentResponse>;
     encryptStream(plaintextStream: ReadableStream<Uint8Array>, options?: DocumentCreateOptions): Promise<StreamEncryptResponse>;
-    encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions): Promise<DocumentIDNameResponse>;
     updateEncryptedData(documentID: string, newDocumentData: Uint8Array): Promise<EncryptedDocumentResponse>;
-    updateEncryptedDataInStore(documentID: string, newDocumentData: Uint8Array): Promise<DocumentIDNameResponse>;
     updateName(documentID: string, name: string | null): Promise<DocumentIDNameResponse>;
     grantAccess(documentID: string, grantList: DocumentAccessList): Promise<DocumentAccessResponse>;
     revokeAccess(documentID: string, revokeList: DocumentAccessList): Promise<DocumentAccessResponse>;

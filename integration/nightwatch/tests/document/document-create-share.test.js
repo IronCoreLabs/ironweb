@@ -21,7 +21,7 @@ module.exports = {
 
             documentCreate.setTodoListName(`Grant access to ${firstUserID}`).enterUserIDToGrantAccess(firstUserID).submitDocument();
 
-            demoApp.assertOnHostedDocumentViewPage();
+            demoApp.assertOnLocalDocumentViewPage();
 
             documentView.waitForElementVisible("@documentViewDetails").assertUserVisibleToSize(2).assertUserVisibleIDAtPosition(0, firstUserID);
 
@@ -49,7 +49,7 @@ module.exports = {
 
             documentCreate.setTodoListName(`Grant access to group ${groupID}`).clickOnGroupGrantAccessCheckbox(groupID).submitDocument();
 
-            demoApp.assertOnHostedDocumentViewPage();
+            demoApp.assertOnLocalDocumentViewPage();
 
             documentView.waitForElementVisible("@documentViewDetails").assertUserVisibleToSize(1).assertGroupVisibleToSize(1).clickRevokeAccessButton();
 

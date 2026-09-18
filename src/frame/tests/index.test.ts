@@ -144,31 +144,6 @@ describe("frame index", () => {
             });
         });
 
-        it("DOCUMENT_STORE_DECRYPT", (done) => {
-            const documentData = new Uint8Array(3);
-            jest.spyOn(DocumentApi, "decryptHostedDoc").mockReturnValue(
-                Future.of<any>({
-                    data: documentData,
-                })
-            );
-            const payload: MT.DocumentStoreDecryptRequest = {
-                type: "DOCUMENT_STORE_DECRYPT",
-                message: {
-                    documentID: "my doc",
-                },
-            };
-
-            messenger.onMessageCallback(payload, (result: any, transferList: any) => {
-                expect(result).toEqual({
-                    type: "DOCUMENT_STORE_DECRYPT_RESPONSE",
-                    message: {data: documentData},
-                });
-                expect(transferList).toEqual([documentData]);
-                expect(DocumentApi.decryptHostedDoc).toHaveBeenCalledWith("my doc");
-                done();
-            });
-        });
-
         it("DOCUMENT_DECRYPT", (done) => {
             const documentData = new Uint8Array(3);
             jest.spyOn(DocumentApi, "decryptLocalDoc").mockReturnValue(
@@ -216,94 +191,6 @@ describe("frame index", () => {
                     message: "umanagedDecrypt",
                 });
                 expect(DocumentAdvancedApi.decryptUnmanaged).toHaveBeenCalledWith(new Uint8Array([35, 88, 37]), "edeks");
-                done();
-            });
-        });
-
-        it("DOCUMENT_STORE_ENCRYPT", (done) => {
-            jest.spyOn(DocumentApi, "encryptToStore").mockReturnValue(Future.of<any>("encryptToStore"));
-            const payload: any = {
-                type: "DOCUMENT_STORE_ENCRYPT",
-                message: {
-                    documentID: "my doc",
-                    documentName: "fooey",
-                    documentData: new Uint8Array([92, 99, 103]),
-                    userGrants: "list of user ids",
-                    groupGrants: "list of group ids",
-                    grantToAuthor: true,
-                    policy: {category: "foo"},
-                },
-            };
-
-            messenger.onMessageCallback(payload, (result: any) => {
-                expect(result).toEqual({
-                    type: "DOCUMENT_STORE_ENCRYPT_RESPONSE",
-                    message: "encryptToStore",
-                });
-                expect(DocumentApi.encryptToStore).toHaveBeenCalledWith(
-                    "my doc",
-                    new Uint8Array([92, 99, 103]),
-                    "fooey",
-                    "list of user ids",
-                    "list of group ids",
-                    true,
-                    {category: "foo"}
-                );
-                done();
-            });
-        });
-
-        it("DOCUMENT_STORE_ENCRYPT grantToAuthor missing", (done) => {
-            jest.spyOn(DocumentApi, "encryptToStore").mockReturnValue(Future.of<any>("encryptToStore"));
-            const payload: any = {
-                type: "DOCUMENT_STORE_ENCRYPT",
-                message: {
-                    documentID: "my doc",
-                    documentName: "fooey",
-                    documentData: new Uint8Array([92, 99, 103]),
-                    userGrants: "list of user ids",
-                    groupGrants: "list of group ids",
-                },
-            };
-
-            messenger.onMessageCallback(payload, () => {
-                expect(DocumentApi.encryptToStore).toHaveBeenCalledWith(
-                    "my doc",
-                    new Uint8Array([92, 99, 103]),
-                    "fooey",
-                    "list of user ids",
-                    "list of group ids",
-                    true,
-                    undefined
-                );
-                done();
-            });
-        });
-
-        it("DOCUMENT_STORE_ENCRYPT grantToAuthor false", (done) => {
-            jest.spyOn(DocumentApi, "encryptToStore").mockReturnValue(Future.of<any>("encryptToStore"));
-            const payload: any = {
-                type: "DOCUMENT_STORE_ENCRYPT",
-                message: {
-                    documentID: "my doc",
-                    documentName: "fooey",
-                    documentData: new Uint8Array([92, 99, 103]),
-                    userGrants: "list of user ids",
-                    groupGrants: "list of group ids",
-                    grantToAuthor: false,
-                },
-            };
-
-            messenger.onMessageCallback(payload, () => {
-                expect(DocumentApi.encryptToStore).toHaveBeenCalledWith(
-                    "my doc",
-                    new Uint8Array([92, 99, 103]),
-                    "fooey",
-                    "list of user ids",
-                    "list of group ids",
-                    false,
-                    undefined
-                );
                 done();
             });
         });
@@ -423,26 +310,6 @@ describe("frame index", () => {
                     true,
                     {}
                 );
-                done();
-            });
-        });
-
-        it("DOCUMENT_STORE_UPDATE_DATA", (done) => {
-            jest.spyOn(DocumentApi, "updateToStore").mockReturnValue(Future.of<any>("updateToStore"));
-            const payload: any = {
-                type: "DOCUMENT_STORE_UPDATE_DATA",
-                message: {
-                    documentID: "my doc",
-                    documentData: new Uint8Array([37, 98, 35]),
-                },
-            };
-
-            messenger.onMessageCallback(payload, (result: any) => {
-                expect(result).toEqual({
-                    type: "DOCUMENT_STORE_UPDATE_DATA_RESPONSE",
-                    message: "updateToStore",
-                });
-                expect(DocumentApi.updateToStore).toHaveBeenCalledWith("my doc", new Uint8Array([37, 98, 35]));
                 done();
             });
         });
@@ -1083,11 +950,12 @@ describe("frame index", () => {
 
     describe("error message handling", () => {
         it("returns error response with formatted code and message", (done) => {
-            jest.spyOn(DocumentApi, "decryptHostedDoc").mockReturnValue(Future.reject(new SDKError(new Error("invalid"), 34)));
-            const payload: MT.DocumentStoreDecryptRequest = {
-                type: "DOCUMENT_STORE_DECRYPT",
+            jest.spyOn(DocumentApi, "decryptLocalDoc").mockReturnValue(Future.reject(new SDKError(new Error("invalid"), 34)));
+            const payload: MT.DocumentDecryptRequest = {
+                type: "DOCUMENT_DECRYPT",
                 message: {
                     documentID: "my doc",
+                    documentData: new Uint8Array([1, 2, 3]),
                 },
             };
 

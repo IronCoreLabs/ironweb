@@ -8,6 +8,7 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 - Raised TypeScript compile target from ES5 to ES6. 
 - Removed `IronWeb.user.deauthorizeDevice()`, deprecated since v4.1.1. Call `IronWeb.user.deleteDevice()` with no argument instead; it resolves with the deleted device's ID (`-1` when the server delete failed but local keys were cleared) rather than `{transformKeyDeleted}`.
+- Removed `IronWeb.document.encryptToStore()`, `decryptFromStore()`, and `updateEncryptedDataInStore()`, deprecated since v4.0.19. Use `encrypt()`, `decrypt()`, and `updateEncryptedData()` and store the returned ciphertext yourself. Documents already held in the IronCore document store must be pulled out with `decryptFromStore()` on 4.x before upgrading; 5.x has no code path that reads or writes stored document content.
 
 ## v4.4.0
 

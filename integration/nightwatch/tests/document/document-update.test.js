@@ -16,7 +16,7 @@ module.exports = {
 
         documentCreate.setTodoListName(originalDocName).submitDocument();
 
-        demoApp.assertOnHostedDocumentViewPage();
+        demoApp.assertOnLocalDocumentViewPage();
 
         documentView.waitForElementVisible("@documentViewDetails").assertDocumentName(originalDocName).changeDocumentName(updatedDocName).backToDocumentList();
 
@@ -39,7 +39,7 @@ module.exports = {
 
         documentCreate.setTodoListName(docName).setTodoListItem(firstTodoItem).submitDocument();
 
-        demoApp.assertOnHostedDocumentViewPage();
+        demoApp.assertOnLocalDocumentViewPage();
 
         /**
          * Assert we're on the right todo list and that we have the expected one item. Then add a new
