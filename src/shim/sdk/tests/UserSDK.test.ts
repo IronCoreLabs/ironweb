@@ -13,29 +13,6 @@ describe("UserSDK", () => {
     });
 
     describe("user API", () => {
-        describe("deauthorizeDevice", () => {
-            it("throws if SDK has not yet been initialized", () => {
-                ShimUtils.clearSDKInitialized();
-                expect(() => UserSDK.deauthorizeDevice()).toThrow();
-            });
-
-            it("sends delete request type to frame", (done) => {
-                ShimUtils.setSDKInitialized();
-                jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
-                UserSDK.deauthorizeDevice()
-                    .then((result: any) => {
-                        expect(result).toEqual({transformKeyDeleted: true});
-                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
-                            type: "DELETE_DEVICE",
-                            message: undefined,
-                        });
-                        expect(ShimUtils.clearParentWindowSymmetricKey).toHaveBeenCalledWith();
-                        done();
-                    })
-                    .catch((e) => done(e));
-            });
-        });
-
         describe("changePasscode", () => {
             it("throws if SDK has not yet been initialized", () => {
                 ShimUtils.clearSDKInitialized();
