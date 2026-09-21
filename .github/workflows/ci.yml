@@ -56,3 +56,13 @@ jobs:
           CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
           CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
         run: yarn nightwatch
+      # The chromedriver logs are the only record of why a session failed to start.
+      - name: upload nightwatch logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: nightwatch-logs
+          path: |
+            logs/
+            bin/nightwatch/
+          if-no-files-found: ignore
