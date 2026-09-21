@@ -14,7 +14,8 @@ module.exports = {
     webdriver: {
         start_process: true,
         server_path: chromedriverPath,
-        port: 9515,
+        // null, not omitted: nightwatch replaces an undefined port with chromedriver's default 9515; null makes selenium pick a free port per suite.
+        port: null,
     },
 
     test_settings: {
