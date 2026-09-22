@@ -2,9 +2,8 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 //A `require` keeps the build module out of the tsc program, which would otherwise re-root the shim emit under dist/shim/*/src.
-const {shimDependencies, assertShimDependencies} = require("../../.github/scripts/shimDependencies");
+const {shimDependencies} = require("../../.github/scripts/shimDependencies");
 
-const REPO_ROOT = path.join(__dirname, "..", "..");
 const ROOT_DEPENDENCIES = {"@ironcorelabs/recrypt-wasm-binding": "0.7.1", "@stablelib/utf8": "1.0.1", "base64-js": "1.5.1", futurejs: "2.2.1"};
 
 let buildOutput: string;
@@ -94,43 +93,5 @@ describe("shimDependencies", () => {
         emit("shim/index.js", 'require("./Missing");');
 
         expect(() => shimDependencies(entryPoint(), ROOT_DEPENDENCIES)).toThrow(/does not exist in the build output/);
-    });
-});
-
-describe("assertShimDependencies", () => {
-    beforeEach(() => {
-        emit("shim/index.js", 'require("futurejs");');
-    });
-
-    it("accepts a declaration matching what the build requires", () => {
-        expect(() => assertShimDependencies(entryPoint(), {futurejs: "^2.2.1"}, ROOT_DEPENDENCIES)).not.toThrow();
-    });
-
-    it("rejects a package the shim requires but does not declare", () => {
-        expect(() => assertShimDependencies(entryPoint(), {}, ROOT_DEPENDENCIES)).toThrow(/futurejs must be declared as "\^2\.2\.1"/);
-    });
-
-    it("rejects a shim package.json with no dependencies block at all", () => {
-        expect(() => assertShimDependencies(entryPoint(), undefined, ROOT_DEPENDENCIES)).toThrow(/futurejs must be declared as "\^2\.2\.1"/);
-    });
-
-    it("rejects a declared package the shim does not require", () => {
-        const declared = {futurejs: "^2.2.1", "base64-js": "^1.5.1"};
-
-        expect(() => assertShimDependencies(entryPoint(), declared, ROOT_DEPENDENCIES)).toThrow(/base64-js is declared but the shim does not require it/);
-    });
-
-    it("rejects a declared range that has drifted off the root pin", () => {
-        expect(() => assertShimDependencies(entryPoint(), {futurejs: "^1.0.0"}, ROOT_DEPENDENCIES)).toThrow(/futurejs must be declared as "\^2\.2\.1"/);
-    });
-});
-
-describe("shim package.json", () => {
-    it("declares every dependency as a caret range on the root package.json pin", () => {
-        const {dependencies} = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "src", "shim", "package.json"), "utf8"));
-        const rootDependencies = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, "package.json"), "utf8")).dependencies;
-
-        expect(Object.keys(dependencies).length).toBeGreaterThan(0);
-        expect(dependencies).toEqual(Object.fromEntries(Object.keys(dependencies).map((name) => [name, `^${rootDependencies[name]}`])));
     });
 });

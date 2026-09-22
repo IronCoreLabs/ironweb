@@ -7,10 +7,5 @@
     "main": "commonjs/shim/index.js",
     "module": "es/shim/index.js",
     "jsnext:main": "es/shim/index.js",
-    "types": "ironweb.d.ts",
-    "dependencies": {
-        "@stablelib/utf8": "^1.0.1",
-        "base64-js": "^1.5.1",
-        "futurejs": "^2.2.1"
-    }
+    "types": "ironweb.d.ts"
 }

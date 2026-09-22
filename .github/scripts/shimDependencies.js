@@ -100,30 +100,4 @@ function shimDependencies(entryFile, rootDependencies) {
     return Object.fromEntries(Object.entries(dependencies).sort(([a], [b]) => a.localeCompare(b)));
 }
 
-/**
- * Throws unless the shim's declared `dependencies` are exactly what it requires at runtime.
- *
- * Declaring them and checking beats generating them: a package entering or leaving the shim's runtime surface then
- * has to show up as a reviewable line in src/shim/package.json instead of only in whatever the release builds.
- * @param {string} entryFile
- * @param {Record<string, string> | undefined} declared
- * @param {Record<string, string>} rootDependencies
- * @returns {void}
- */
-function assertShimDependencies(entryFile, declared, rootDependencies) {
-    const required = shimDependencies(entryFile, rootDependencies);
-    const declaredRanges = declared || {};
-    const drift = [
-        ...Object.entries(required)
-            .filter(([name, range]) => declaredRanges[name] !== range)
-            .map(([name, range]) => `${name} must be declared as "${range}"`),
-        ...Object.keys(declaredRanges)
-            .filter((name) => required[name] === undefined)
-            .map((name) => `${name} is declared but the shim does not require it`),
-    ];
-    if (drift.length > 0) {
-        throw new Error(`src/shim/package.json dependencies do not match what the built shim requires: ${drift.join("; ")}`);
-    }
-}
-
-module.exports = {shimDependencies, assertShimDependencies};
+module.exports = {shimDependencies};

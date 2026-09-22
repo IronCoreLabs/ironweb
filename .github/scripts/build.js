@@ -42,7 +42,7 @@ const shell = require("shelljs");
 const mainPackage = require("../../package.json");
 const shimPackage = require("../../src/shim/package.json");
 const framePackage = require("../../src/frame/package.json");
-const {assertShimDependencies} = require("./shimDependencies");
+const {shimDependencies} = require("./shimDependencies");
 
 //Fail this script if any of these commands fail
 shell.set("-e");
@@ -90,8 +90,8 @@ framePackage.dependencies = mainPackage.dependencies;
 framePackage.version = newReleaseVersion;
 fs.writeFileSync("./dist/frame/package.json", JSON.stringify(framePackage, null, 4));
 
-//Copy the version and Readme into the shim package, having checked its declared deps against what the build requires
-assertShimDependencies("./dist/shim/commonjs/shim/index.js", shimPackage.dependencies, mainPackage.dependencies);
+//Copy the version and Readme into the shim package and derive its dependencies from what the built shim requires
+shimPackage.dependencies = shimDependencies("./dist/shim/commonjs/shim/index.js", mainPackage.dependencies);
 shimPackage.version = newReleaseVersion;
 fs.writeFileSync("./dist/shim/package.json", JSON.stringify(shimPackage, null, 4));
 shell.cp("./src/shim/ShimReadme.md", "./dist/shim/README.md");
