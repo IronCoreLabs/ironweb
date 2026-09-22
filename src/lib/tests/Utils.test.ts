@@ -87,22 +87,4 @@ describe("Utils", () => {
             expect(Utils.concatArrayBuffers(ab1, ab2)).toEqual(new Uint8Array([93, 97]));
         });
     });
-
-    describe("sliceArrayBuffer", () => {
-        it("slices expected amount of array buffer", () => {
-            const ab = new Uint8Array([1, 2, 3, 4, 5, 6]);
-
-            const slicedAB = Utils.sliceArrayBuffer(ab, 4);
-            expect(slicedAB.length).toEqual(2);
-            expect(slicedAB).toEqual(new Uint8Array([5, 6]));
-        });
-
-        it("supports an end parameter", () => {
-            const ab = new Uint8Array([1, 2, 3, 4, 5, 6]);
-
-            const slicedAB = Utils.sliceArrayBuffer(ab, 2, 4);
-            expect(slicedAB.length).toEqual(2);
-            expect(slicedAB).toEqual(new Uint8Array([3, 4]));
-        });
-    });
 });

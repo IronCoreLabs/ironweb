@@ -1,6 +1,5 @@
 import {CryptoConstants} from "../../../../Constants";
 const {IV_LENGTH, AES_SYMMETRIC_KEY_LENGTH, NATIVE_DECRYPT_FAILURE_ERROR} = CryptoConstants;
-import {sliceArrayBuffer} from "../../../../lib/Utils";
 import Future from "futurejs";
 import * as NativeAes from "./NativeAes";
 import {generateRandomBytes} from "../CryptoUtils";
@@ -51,9 +50,9 @@ export function decryptDocument(encryptedDocument: Uint8Array, documentSymmetric
  */
 export function generateKeyAndIvs(): Future<Error, {symmetricKey: Uint8Array; deviceIv: Uint8Array; signingIv: Uint8Array}> {
     return generateRandomBytes(IV_LENGTH * 2 + AES_SYMMETRIC_KEY_LENGTH).map((bytes) => ({
-        symmetricKey: sliceArrayBuffer(bytes, 0, AES_SYMMETRIC_KEY_LENGTH),
-        deviceIv: sliceArrayBuffer(bytes, AES_SYMMETRIC_KEY_LENGTH, AES_SYMMETRIC_KEY_LENGTH + IV_LENGTH),
-        signingIv: sliceArrayBuffer(bytes, AES_SYMMETRIC_KEY_LENGTH + IV_LENGTH),
+        symmetricKey: bytes.slice(0, AES_SYMMETRIC_KEY_LENGTH),
+        deviceIv: bytes.slice(AES_SYMMETRIC_KEY_LENGTH, AES_SYMMETRIC_KEY_LENGTH + IV_LENGTH),
+        signingIv: bytes.slice(AES_SYMMETRIC_KEY_LENGTH + IV_LENGTH),
     }));
 }
 
@@ -101,8 +100,8 @@ export function reEncryptDeviceAndSigningKeys(
 ): Future<Error, EncryptedLocalKeys> {
     return generateRandomBytes(IV_LENGTH * 2)
         .map((bytes) => ({
-            deviceIv: sliceArrayBuffer(bytes, 0, IV_LENGTH),
-            signingIv: sliceArrayBuffer(bytes, IV_LENGTH),
+            deviceIv: bytes.slice(0, IV_LENGTH),
+            signingIv: bytes.slice(IV_LENGTH),
         }))
         .flatMap(({deviceIv, signingIv}) => NativeAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, deviceIv, signingIv));
 }

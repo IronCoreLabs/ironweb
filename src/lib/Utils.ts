@@ -75,16 +75,6 @@ export function toTransferables(items: (Uint8Array | Transferable)[]): Transfera
     return items.map((item) => (item instanceof Uint8Array ? item.buffer : item)) as Transferable[];
 }
 
-/**
- * Polyfill since some environments (notably Phantom) don't support ArrayBuffer.slice
- */
-export function sliceArrayBuffer(buffer: Uint8Array, start: number, end?: number): Uint8Array {
-    if (typeof buffer.slice === "function") {
-        return buffer.slice(start, end);
-    }
-    return new Uint8Array(Array.prototype.slice.call(buffer, start, end));
-}
-
 export interface ParsedDocumentHeader {
     documentID: string | null;
     iv: Uint8Array;

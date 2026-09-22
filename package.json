@@ -20,13 +20,7 @@
         "@stablelib/ed25519": "2.1.0",
         "@stablelib/utf8": "1.0.1",
         "base64-js": "1.5.1",
-        "fast-text-encoding": "1.0.4",
         "futurejs": "2.2.1"
-    },
-    "peerDependencies": {
-        "@stablelib/utf8": "^0.10",
-        "base64-js": "^1.2",
-        "futurejs": "^2"
     },
     "devDependencies": {
         "@types/base64-js": "^1.2.5",

@@ -5,7 +5,6 @@ import * as WMT from "../../WorkerMessageTypes";
 import * as WorkerMediator from "../WorkerMediator";
 import {CryptoConstants, ErrorCodes} from "../../Constants";
 import {getDeviceAndSigningKeys} from "../FrameUtils";
-import {sliceArrayBuffer} from "../../lib/Utils";
 import SDKError from "../../lib/SDKError";
 
 interface CreateUserAndDeviceResult {
@@ -62,7 +61,7 @@ export function generateDeviceAndSigningKeys(jwtToken: string, passcode: string,
             jwtToken,
             encryptedPrivateUserKey,
             publicUserKey,
-            keySalt: sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH),
+            keySalt: encryptedPrivateUserKey.slice(0, CryptoConstants.SALT_LENGTH),
         },
     };
 

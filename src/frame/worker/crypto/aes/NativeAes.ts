@@ -1,5 +1,5 @@
 import Future from "futurejs";
-import {concatArrayBuffers, sliceArrayBuffer} from "../../../../lib/Utils";
+import {concatArrayBuffers} from "../../../../lib/Utils";
 import {CryptoConstants} from "../../../../Constants";
 const {IV_LENGTH, SALT_LENGTH} = CryptoConstants;
 import {getCryptoSubtleApi} from "../CryptoUtils";
@@ -71,8 +71,8 @@ export function encryptUserKey(userPrivateKey: Uint8Array, derivedKey: CryptoKey
  * @param {Function} derivedKey     Users passcode-derived key
  */
 export function decryptUserKey(userPrivateKey: Uint8Array, derivedKey: CryptoKey) {
-    const userKeyIV = sliceArrayBuffer(userPrivateKey, SALT_LENGTH, IV_LENGTH + SALT_LENGTH);
-    const userPrivateKeyBytes = sliceArrayBuffer(userPrivateKey, SALT_LENGTH + IV_LENGTH);
+    const userKeyIV = userPrivateKey.slice(SALT_LENGTH, IV_LENGTH + SALT_LENGTH);
+    const userPrivateKeyBytes = userPrivateKey.slice(SALT_LENGTH + IV_LENGTH);
 
     return aesDecrypt(userPrivateKeyBytes, derivedKey, userKeyIV).map((decryptedPrivateKey) => new Uint8Array(decryptedPrivateKey));
 }
