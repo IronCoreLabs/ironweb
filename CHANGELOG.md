@@ -4,7 +4,7 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
-## v5.0.1
+## v5.0.2
 
 - Raised TypeScript compile target from ES5 to ES6. 
 - Security: removed the `_ICL_FRAME_DOMAIN_REPLACEMENT_` runtime override. The frame origin is now a literal in `shim/FrameLocation`. To point the SDK at another environment, replace that module in your bundler with one exporting the same `Frame` shape. The SDK imports it as `./FrameLocation`, so match on the resolved path: webpack `NormalModuleReplacementPlugin` (see `integration/clientHost.webpack.js` and `integration/FrameLocation.ts`); Vite a `resolveId` plugin, with `@ironcorelabs/ironweb` in `optimizeDeps.exclude` so dev prebundling goes through it.
