@@ -71,6 +71,8 @@ shell.rm("-rf", "./publish");
 shell.mkdir("-p", "./publish/node_modules");
 
 https.get(PRODUCTION_FRAME_FILE_URL, (response) => {
+    //Only the status code matters; drain the body so the socket closes and the process can exit
+    response.resume();
     //If we couldn't find the associated version of the frame published in production, fail the publish script.
     if (response.statusCode !== 200) {
         shell.echo(
