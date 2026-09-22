@@ -97,10 +97,6 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             return DocumentApi.getDocumentMeta(data.message.documentID).engage(errorHandler, (meta) =>
                 callback({type: "DOCUMENT_META_GET_RESPONSE", message: meta})
             );
-        case "DOCUMENT_STORE_DECRYPT":
-            return DocumentApi.decryptHostedDoc(data.message.documentID).engage(errorHandler, (documentData) =>
-                callback({type: "DOCUMENT_STORE_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
-            );
         case "DOCUMENT_DECRYPT":
             return DocumentApi.decryptLocalDoc(data.message.documentID, data.message.documentData).engage(errorHandler, (documentData) =>
                 callback({type: "DOCUMENT_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
@@ -109,19 +105,6 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
             return DocumentAdvancedApi.decryptUnmanaged(data.message.documentData, data.message.edeks).engage(errorHandler, (documentData) =>
                 callback({type: "DOCUMENT_UNMANAGED_DECRYPT_RESPONSE", message: documentData}, [documentData.data])
             );
-        case "DOCUMENT_STORE_ENCRYPT":
-            return DocumentApi.encryptToStore(
-                data.message.documentID,
-                data.message.documentData,
-                data.message.documentName,
-                data.message.userGrants,
-                data.message.groupGrants,
-                //Explcitly check against false because earlier versions of the shim won't pass this argument to updated
-                //versions of the frame. We want to coerce all falsey values to make this option true and only set this
-                //to false when directly passed false.
-                data.message.grantToAuthor !== false,
-                data.message.policy
-            ).engage(errorHandler, (documentMeta) => callback({type: "DOCUMENT_STORE_ENCRYPT_RESPONSE", message: documentMeta}));
         case "DOCUMENT_ENCRYPT":
             return DocumentApi.encryptLocalDocument(
                 data.message.documentID,
@@ -144,10 +127,6 @@ function onParentPortMessage(data: RequestMessage, callback: (message: ResponseM
                 data.message.grantToAuthor,
                 data.message.policy
             ).engage(errorHandler, (encryptedDoc) => callback({type: "DOCUMENT_UNMANAGED_ENCRYPT_RESPONSE", message: encryptedDoc}, [encryptedDoc.document]));
-        case "DOCUMENT_STORE_UPDATE_DATA":
-            return DocumentApi.updateToStore(data.message.documentID, data.message.documentData).engage(errorHandler, (documentMeta) =>
-                callback({type: "DOCUMENT_STORE_UPDATE_DATA_RESPONSE", message: documentMeta})
-            );
         case "DOCUMENT_UPDATE_DATA":
             return DocumentApi.updateLocalDocument(data.message.documentID, data.message.documentData).engage(errorHandler, (encryptedDoc) =>
                 callback({type: "DOCUMENT_UPDATE_DATA_RESPONSE", message: encryptedDoc}, [encryptedDoc.document])

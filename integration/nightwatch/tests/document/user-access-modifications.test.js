@@ -21,7 +21,7 @@ module.exports = {
 
             documentCreate.setTodoListName(`Grant access to ${firstUserID}`).submitDocument();
 
-            demoApp.assertOnHostedDocumentViewPage();
+            demoApp.assertOnLocalDocumentViewPage();
 
             documentView
                 .waitForElementVisible("@documentViewDetails")
@@ -50,7 +50,7 @@ module.exports = {
 
             documentCreate.setTodoListName(`Grant access to ${firstUserID}`).submitDocument();
 
-            demoApp.assertOnHostedDocumentViewPage();
+            demoApp.assertOnLocalDocumentViewPage();
 
             documentView
                 .waitForElementVisible("@documentViewDetails")

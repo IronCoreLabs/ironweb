@@ -1,12 +1,12 @@
 module.exports = {
-    "@tags": ["localDocCreate"],
+    "@tags": ["docCreate"],
     beforeEach(browser) {
         browser.url(browser.launchUrl);
         const {initializeUser} = browser.page.demoApp().section;
         initializeUser.initializeAndSyncUser();
     },
 
-    "Can add new local todo list with name and takes user to detail page when finished"(browser) {
+    "Can add new todo list with name and takes user to detail page when finished"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView} = demoApp.section;
 
@@ -15,7 +15,7 @@ module.exports = {
 
         documentList.clickAddNewDocument();
 
-        documentCreate.toggleStorage().setTodoListName(docName).setTodoListItem(todoItem).submitDocument();
+        documentCreate.setTodoListName(docName).setTodoListItem(todoItem).submitDocument();
 
         demoApp.assertOnLocalDocumentViewPage();
 
@@ -29,7 +29,7 @@ module.exports = {
         browser.end();
     },
 
-    "Can add local todo list with own provided ID"(browser) {
+    "Can add todo list with own provided ID"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView} = demoApp.section;
 
@@ -39,7 +39,7 @@ module.exports = {
 
         documentList.clickAddNewDocument();
 
-        documentCreate.toggleStorage().setTodoListID(docID).setTodoListName(docName).setTodoListItem(todoItem).submitDocument();
+        documentCreate.setTodoListID(docID).setTodoListName(docName).setTodoListItem(todoItem).submitDocument();
 
         demoApp.assertOnLocalDocumentViewPage();
 
@@ -54,7 +54,7 @@ module.exports = {
         browser.end();
     },
 
-    "Can add local todo list and it shows up on document list page"(browser) {
+    "Can add todo list and it shows up on document list page"(browser) {
         const demoApp = browser.page.demoApp();
         const {documentList, documentCreate, documentView} = demoApp.section;
 
@@ -62,14 +62,14 @@ module.exports = {
 
         documentList.clickAddNewDocument();
 
-        documentCreate.toggleStorage().setTodoListName(docName).submitDocument();
+        documentCreate.setTodoListName(docName).submitDocument();
 
         demoApp.assertOnLocalDocumentViewPage();
         documentView.waitForElementVisible("@documentViewDetails").assertDocumentName(docName).backToDocumentList();
 
         demoApp.assertOnDocumentListPage();
 
-        documentList.expectCountOfTodoLists(1).expectTodoListNameAtPosition(0, docName).expectTodoListLocalAtPosition(0).clickOnNthTodoList(0);
+        documentList.expectCountOfTodoLists(1).expectTodoListNameAtPosition(0, docName).clickOnNthTodoList(0);
 
         demoApp.assertOnLocalDocumentViewPage();
 

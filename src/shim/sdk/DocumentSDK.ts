@@ -15,8 +15,6 @@ import {concatArrayBuffers, parseDocumentHeader} from "../../lib/Utils";
 import * as FrameMediator from "../FrameMediator";
 import * as ShimUtils from "../ShimUtils";
 
-const MAX_DOCUMENT_SIZE = 1024 * 2 * 1000; //2MB
-
 /**
  * Takes the document encrypt options object and normalizes it to a complete object with proper default values.
  * @param  {DocumentCreateOptions} options Options user passed in for document create operation
@@ -82,26 +80,6 @@ export function getDocumentIDFromBytes(documentData: Uint8Array): Promise<string
 }
 
 /**
- * @deprecated Use `decrypt` instead.
- * Retrieve and decrypt a document from the document store. Returns a Promise which will be resolved once the document has been retrieved and decrypted.
- * @param {string} documentID ID of the document to retrieve
- */
-export function decryptFromStore(documentID: string) {
-    console.warn("decryptFromStore is deprecated. Use decrypt instead.");
-    ShimUtils.checkSDKInitialized();
-    ShimUtils.validateID(documentID);
-    const payload: MT.DocumentStoreDecryptRequest = {
-        type: "DOCUMENT_STORE_DECRYPT",
-        message: {
-            documentID,
-        },
-    };
-    return FrameMediator.sendMessage<MT.DocumentStoreDecryptResponse>(payload)
-        .map(({message}) => message)
-        .toPromise();
-}
-
-/**
  * Decrypt the provided document given the ID of the document and its data. Returns a Promise which will be resolved once the document has been successfully decrypted.
  * @param {string}      documentID   Unique ID of document to decrypt
  * @param {Uint8Array}  documentData Document data to decrypt
@@ -118,53 +96,6 @@ export function decrypt(documentID: string, documentData: Uint8Array) {
         },
     };
     return FrameMediator.sendMessage<MT.DocumentDecryptResponse>(payload, [payload.message.documentData])
-        .map(({message}) => message)
-        .toPromise();
-}
-
-/**
- * @deprecated Use `encrypt` instead and manage storage of the result yourself.
- * Creates a new encrypted document within the store. Returns a Promise which will be resolved once the data has been fully encrypted and saved.
- * @param {Uint8Array}            documentData Data to save for document
- * @param {DocumentCreateOptions} options      Document create options. Includes:
- *                                               documentID: string - Optional ID to use for the document. Document ID will be stored unencrypted and must be unique per segment
- *                                               documentName: string - Optional name to provide to document. Document name will be stored unencrypted.
- *                                               accessList: object - Optional object which allows document to be shared with others upon creation. There is no need to add the
- *                                               document creators ID to this list as that will happen automatically. Contains the following keys:
- *                                                   users: Array - List of user IDs to share document with. Each value in the array should be in the form {id: string}.
- *                                                   groups: Array - List of group IDs to share document with. Each value in the array should be in the form {id: string}.
- *                                                   grantToAuthor: boolean - Should the create grant access to the logged in user. Defaults to true.
- */
-export function encryptToStore(documentData: Uint8Array, options?: DocumentCreateOptions) {
-    console.warn("encryptToStore is deprecated. Use encrypt instead and manage storage of the result yourself.");
-    ShimUtils.checkSDKInitialized();
-    ShimUtils.validateDocumentData(documentData);
-    if (documentData.length > MAX_DOCUMENT_SIZE) {
-        return Promise.reject(
-            new SDKError(
-                new Error(`Document of length ${documentData.length} exceeds maximum allowed byte size of ${MAX_DOCUMENT_SIZE}`),
-                ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED
-            )
-        );
-    }
-    const encryptOptions = calculateDocumentCreateOptionsDefault(options);
-    if (encryptOptions.documentID) {
-        ShimUtils.validateID(encryptOptions.documentID);
-    }
-    const [userGrants, groupGrants] = ShimUtils.dedupeAccessLists(encryptOptions.accessList);
-    const payload: MT.DocumentStoreEncryptRequest = {
-        type: "DOCUMENT_STORE_ENCRYPT",
-        message: {
-            documentID: encryptOptions.documentID,
-            documentData: documentData.slice(),
-            documentName: encryptOptions.documentName,
-            userGrants,
-            groupGrants,
-            grantToAuthor: encryptOptions.accessList.grantToAuthor,
-            policy: encryptOptions.policy,
-        },
-    };
-    return FrameMediator.sendMessage<MT.DocumentStoreEncryptResponse>(payload, [payload.message.documentData])
         .map(({message}) => message)
         .toPromise();
 }
@@ -203,38 +134,6 @@ export function encrypt(documentData: Uint8Array, options?: DocumentCreateOption
         },
     };
     return FrameMediator.sendMessage<MT.DocumentEncryptResponse>(payload, [payload.message.documentData])
-        .map(({message}) => message)
-        .toPromise();
-}
-
-/**
- * Update an existing documents data in the store. Returns a Promise which will be resolved once the document has been successfully updated in the store.
- * @deprecated Use `updateEncryptedData` instead and manage storage of the result yourself.
- * @param {string}     documentID      ID of document to update. Promise will reject if document does not exist
- * @param {Uint8Array} newDocumentData New content to encrypt and save for document
- */
-export function updateEncryptedDataInStore(documentID: string, newDocumentData: Uint8Array) {
-    ShimUtils.checkSDKInitialized();
-    ShimUtils.validateID(documentID);
-    ShimUtils.validateDocumentData(newDocumentData);
-
-    if (newDocumentData.length > MAX_DOCUMENT_SIZE) {
-        return Promise.reject(
-            new SDKError(
-                new Error(`Document of length ${newDocumentData.length} exceeds maximum allowed byte size of ${MAX_DOCUMENT_SIZE}`),
-                ErrorCodes.DOCUMENT_MAX_SIZE_EXCEEDED
-            )
-        );
-    }
-
-    const payload: MT.DocumentStoreUpdateDataRequest = {
-        type: "DOCUMENT_STORE_UPDATE_DATA",
-        message: {
-            documentID,
-            documentData: newDocumentData.slice(),
-        },
-    };
-    return FrameMediator.sendMessage<MT.DocumentStoreUpdateDataResponse>(payload, [payload.message.documentData])
         .map(({message}) => message)
         .toPromise();
 }

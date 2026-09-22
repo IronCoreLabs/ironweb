@@ -36,13 +36,6 @@ export function rotateMasterKey(passcode: string) {
 }
 
 /**
- * @deprecated Use deleteDevice with no arguments to get the same behavior.
- * Clears local device keys from the current browser instance. This will require the user to enter their passcode the next time they want to use this browser on this machine.
- * This method should usually be called whenever the current user logs out of your application.
- */
-export const deauthorizeDevice = () => deleteDevice().then((deletedDevice) => ({transformKeyDeleted: deletedDevice > 0}));
-
-/**
  * Deletes a device. If deleting the current device, the user will have to enter their passcode the next time they want to use this browser on this machine.
  * This method should usually be called whenever the current user logs out of your application or you're aware a device of their's shouldn't have access.
  * @param {number | undefined} deviceId The device id to delete. If undefined, the current device will be deleted and local storage will be cleared.

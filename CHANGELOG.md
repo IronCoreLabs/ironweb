@@ -4,10 +4,12 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
-## v5.0.0 (unreleased)
+## v5.0.1
 
 - Raised TypeScript compile target from ES5 to ES6. 
 - Security: removed the `_ICL_FRAME_DOMAIN_REPLACEMENT_` runtime override. The frame origin is now a literal in `shim/FrameLocation`. To point the SDK at another environment, replace that module in your bundler with one exporting the same `Frame` shape. The SDK imports it as `./FrameLocation`, so match on the resolved path: webpack `NormalModuleReplacementPlugin` (see `integration/clientHost.webpack.js` and `integration/FrameLocation.ts`); Vite a `resolveId` plugin, with `@ironcorelabs/ironweb` in `optimizeDeps.exclude` so dev prebundling goes through it.
+- Removed `IronWeb.user.deauthorizeDevice()`, deprecated since v4.1.1. Call `IronWeb.user.deleteDevice()` with no argument instead; it resolves with the deleted device's ID (`-1` when the server delete failed but local keys were cleared) rather than `{transformKeyDeleted}`.
+- Removed `IronWeb.document.encryptToStore()`, `decryptFromStore()`, and `updateEncryptedDataInStore()`, deprecated since v4.0.19. Use `encrypt()`, `decrypt()`, and `updateEncryptedData()` and store the returned ciphertext yourself. Documents already held in the IronCore document store must be pulled out with `decryptFromStore()` on 4.x before upgrading; 5.x has no code path that reads or writes stored document content.
 
 ## v4.4.0
 

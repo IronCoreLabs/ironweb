@@ -97,18 +97,6 @@ export interface DocumentMetaGetResponse {
     message: DocumentMetaResponse;
 }
 
-export interface DocumentStoreDecryptRequest {
-    type: "DOCUMENT_STORE_DECRYPT";
-    message: {
-        documentID: string;
-    };
-}
-
-export interface DocumentStoreDecryptResponse {
-    type: "DOCUMENT_STORE_DECRYPT_RESPONSE";
-    message: DecryptedDocumentResponse;
-}
-
 export interface DocumentDecryptRequest {
     type: "DOCUMENT_DECRYPT";
     message: {
@@ -138,23 +126,6 @@ export interface DocumentUnmanagedDecryptResponse {
 }
 
 /* Create/Encrypt */
-export interface DocumentStoreEncryptRequest {
-    type: "DOCUMENT_STORE_ENCRYPT";
-    message: {
-        documentID: string;
-        documentData: Uint8Array;
-        documentName: string;
-        userGrants: string[];
-        groupGrants: string[];
-        grantToAuthor: boolean;
-        policy?: Policy;
-    };
-}
-export interface DocumentStoreEncryptResponse {
-    type: "DOCUMENT_STORE_ENCRYPT_RESPONSE";
-    message: DocumentIDNameResponse;
-}
-
 export interface DocumentEncryptRequest {
     type: "DOCUMENT_ENCRYPT";
     message: {
@@ -191,19 +162,6 @@ export interface DocumentUnmanagedEncryptRequest {
 export interface DocumentUnmanagedEncryptResponse {
     type: "DOCUMENT_UNMANAGED_ENCRYPT_RESPONSE";
     message: EncryptedUnmanagedDocumentResponse;
-}
-
-/* Update/reencrypt */
-export interface DocumentStoreUpdateDataRequest {
-    type: "DOCUMENT_STORE_UPDATE_DATA";
-    message: {
-        documentID: string;
-        documentData: Uint8Array;
-    };
-}
-export interface DocumentStoreUpdateDataResponse {
-    type: "DOCUMENT_STORE_UPDATE_DATA_RESPONSE";
-    message: DocumentIDNameResponse;
 }
 
 export interface DocumentUpdateDataRequest {
@@ -615,11 +573,8 @@ export type RequestMessage =
     | CreateDetachedUserDeviceRequest
     | DocumentListRequest
     | DocumentMetaGetRequest
-    | DocumentStoreDecryptRequest
     | DocumentDecryptRequest
-    | DocumentStoreEncryptRequest
     | DocumentEncryptRequest
-    | DocumentStoreUpdateDataRequest
     | DocumentStreamDecryptRequest
     | DocumentUnmanagedStreamDecryptRequest
     | DocumentStreamEncryptRequest
@@ -661,11 +616,8 @@ export type ResponseMessage =
     | InitApiSdkResponse
     | DocumentListResponse
     | DocumentMetaGetResponse
-    | DocumentStoreDecryptResponse
     | DocumentDecryptResponse
-    | DocumentStoreEncryptResponse
     | DocumentEncryptResponse
-    | DocumentStoreUpdateDataResponse
     | DocumentStreamDecryptResponse
     | DocumentUnmanagedStreamDecryptResponse
     | DocumentStreamEncryptResponse

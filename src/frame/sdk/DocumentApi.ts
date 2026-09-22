@@ -2,7 +2,6 @@ import Future from "futurejs";
 import {
     DecryptedDocumentResponse,
     DocumentAccessResponse,
-    DocumentIDNameResponse,
     DocumentListResponse,
     DocumentMetaResponse,
     Policy,
@@ -16,7 +15,7 @@ import DocumentApiEndpoints, {DocumentAccessResponseType, DocumentMetaGetRespons
 import GroupApiEndpoints, {GroupPublicKeyObject} from "../endpoints/GroupApiEndpoints";
 import PolicyEndpoints, {UserOrGroupWithKey} from "../endpoints/PolicyApiEndpoints";
 import UserApiEndpoints, {UserKeyListResponseType} from "../endpoints/UserApiEndpoints";
-import {combineDocumentParts, documentToByteParts, encryptedDocumentToBase64, generateDocumentHeaderBytes} from "../FrameUtils";
+import {combineDocumentParts, documentToByteParts, generateDocumentHeaderBytes} from "../FrameUtils";
 import {concatArrayBuffers} from "../../lib/Utils";
 import * as DocumentOperations from "./DocumentOperations";
 
@@ -243,18 +242,6 @@ export function getDocumentMeta(documentID: string): Future<SDKError, DocumentMe
 }
 
 /**
- * Retrieve a document from the IronCore document store with the provided ID. Decrypt the data using the current users key and return formatted doc structure
- * @param {string} documentID Unique lookup key of document to retrieve
- */
-export function decryptHostedDoc(documentID: string): Future<SDKError, DecryptedDocumentResponse> {
-    return DocumentApiEndpoints.callDocumentGetApi(documentID).flatMap((documentResponse) =>
-        documentToByteParts(documentResponse.data.content).flatMap((documentParts) =>
-            decryptAndFormatDocument(documentParts, documentResponse)
-        )
-    );
-}
-
-/**
  * Streaming decrypt: retrieve document metadata, then pipe the encrypted stream through the Worker for decryption.
  * The caller provides the IV (parsed from the document header) and a ReadableStream of the ciphertext (post-header).
  * Plaintext is written to plaintextStream. On auth tag failure, plaintextStream is aborted.
@@ -320,7 +307,7 @@ export function encryptLocalDocStream(
 ) {
     return startStreamEncrypt(documentID, plaintextStream, ciphertextStream, userGrants, groupGrants, grantToAuthor, policy)
         .flatMap(({userAccessKeys, groupAccessKeys}) =>
-            DocumentApiEndpoints.callDocumentCreateApi(documentID, null, userAccessKeys, groupAccessKeys, documentName)
+            DocumentApiEndpoints.callDocumentCreateApi(documentID, userAccessKeys, groupAccessKeys, documentName)
         )
         .map((createdDocument) => ({
             documentID: createdDocument.id,
@@ -341,39 +328,6 @@ export function decryptLocalDoc(documentID: string, encryptedDocument: Uint8Arra
             decryptAndFormatDocument(documentParts, documentResponse)
         )
     );
-}
-
-/**
- * Encrypt the provided document to the current user with the provided ID and store it within IronCores document store
- * @param {string}     documentID    Unique lookup key to use for document
- * @param {Uint8Array} document      Document data to store
- * @param {string}     documentName  Optional name of the document
- * @param {string[]}   userGrants    List of user IDs to grant access
- * @param {string[]}   groupGrants   List of group IDs to grant access
- * @param {boolean}    grantToAuthor If the document should be encrypted to the current user or not.
- * @param {Policy}     policy        An optional policy which will be used to resolve the groups and users that should be shared with in addition to the userGrants and groupGrants.
- */
-export function encryptToStore(
-    documentID: string,
-    document: Uint8Array,
-    documentName: string,
-    userGrants: string[],
-    groupGrants: string[],
-    grantToAuthor: boolean,
-    policy?: Policy
-): Future<SDKError, DocumentIDNameResponse> {
-    return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy)
-        .flatMap(({userKeys, groupKeys}) => DocumentOperations.encryptNewDocumentToList(document, userKeys, groupKeys, ApiState.signingKeys()))
-        .flatMap(({userAccessKeys, groupAccessKeys, encryptedDocument}) => {
-            return DocumentApiEndpoints.callDocumentCreateApi(
-                documentID,
-                encryptedDocumentToBase64(documentID, ApiState.user().segmentId, encryptedDocument),
-                userAccessKeys,
-                groupAccessKeys,
-                documentName
-            );
-        })
-        .map(({id, name, updated, created}) => ({documentID: id, documentName: name, updated, created}));
 }
 
 /**
@@ -398,7 +352,7 @@ export function encryptLocalDocument(
     return getKeyListsForUsersAndGroups(userGrants, groupGrants, grantToAuthor, policy)
         .flatMap(({userKeys, groupKeys}) => DocumentOperations.encryptNewDocumentToList(document, userKeys, groupKeys, ApiState.signingKeys()))
         .flatMap(({userAccessKeys, groupAccessKeys, encryptedDocument}) => {
-            return DocumentApiEndpoints.callDocumentCreateApi(documentID, null, userAccessKeys, groupAccessKeys, documentName).map((createdDocument) => ({
+            return DocumentApiEndpoints.callDocumentCreateApi(documentID, userAccessKeys, groupAccessKeys, documentName).map((createdDocument) => ({
                 createdDocument,
                 encryptedDocument,
             }));
@@ -410,22 +364,6 @@ export function encryptLocalDocument(
             created: createdDocument.created,
             updated: createdDocument.updated,
         }));
-}
-
-/**
- * Updates an existing document in the store. Looks up the current document in order to get nonce/symmetric key information, and then encrypts the new data
- * and submits it to the store.
- * @param {string}     documentID      User provided document key
- * @param {Uint8Array} newDocumentData Content of document
- */
-export function updateToStore(documentID: string, newDocumentData: Uint8Array): Future<SDKError, DocumentIDNameResponse> {
-    const {privateKey} = ApiState.deviceKeys();
-    return DocumentApiEndpoints.callDocumentMetadataGetApi(documentID)
-        .flatMap((documentResponse) => DocumentOperations.reEncryptDocument(newDocumentData, documentResponse.encryptedSymmetricKey, privateKey))
-        .flatMap((newlyEncryptDocument) =>
-            DocumentApiEndpoints.callDocumentUpdateApi(documentID, encryptedDocumentToBase64(documentID, ApiState.user().segmentId, newlyEncryptDocument))
-        )
-        .map(({id, name, created, updated}) => ({documentID: id, documentName: name, created, updated}));
 }
 
 /**
@@ -457,7 +395,7 @@ export function updateLocalDocument(documentID: string, newDocumentData: Uint8Ar
  * @param {string|null} name       Value with which to update document name field
  */
 export function updateName(documentID: string, name: string | null) {
-    return DocumentApiEndpoints.callDocumentUpdateApi(documentID, undefined, name).map((updatedDocument) => ({
+    return DocumentApiEndpoints.callDocumentUpdateApi(documentID, name).map((updatedDocument) => ({
         documentID: updatedDocument.id,
         documentName: updatedDocument.name,
         created: updatedDocument.created,

@@ -8,9 +8,6 @@ const pageAssertionCommands = {
     assertOnDocumentCreatePage(){
         return this.expect.element('@browserCreatePage').to.be.visible;
     },
-    assertOnHostedDocumentViewPage(){
-        return this.expect.element('@hostedDocumentView').to.be.visible;
-    },
     assertOnLocalDocumentViewPage(){
         return this.expect.element('@localDocumentView').to.be.visible;
     },
@@ -42,7 +39,6 @@ const pageAssertionCommands = {
 const pageElements = {
     browserListPage: {selector: '.document-list'},
     browserCreatePage: {selector: '.new-document'},
-    hostedDocumentView: {selector: '.hosted-document'},
     localDocumentView: {selector: '.local-document'},
     groupList: {selector: '.group-list'},
     groupCreatePage: {selector: '.new-group'},

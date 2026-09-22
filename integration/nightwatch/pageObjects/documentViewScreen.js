@@ -1,5 +1,5 @@
 /**
- * Actions and assertions for document detail page, for both hosted and local documents
+ * Actions and assertions for document detail page
  */
 const documentViewActions = {
     assertDocumentID(id) {

@@ -13,29 +13,6 @@ describe("UserSDK", () => {
     });
 
     describe("user API", () => {
-        describe("deauthorizeDevice", () => {
-            it("throws if SDK has not yet been initialized", () => {
-                ShimUtils.clearSDKInitialized();
-                expect(() => UserSDK.deauthorizeDevice()).toThrow();
-            });
-
-            it("sends delete request type to frame", (done) => {
-                ShimUtils.setSDKInitialized();
-                jest.spyOn(ShimUtils, "clearParentWindowSymmetricKey");
-                UserSDK.deauthorizeDevice()
-                    .then((result: any) => {
-                        expect(result).toEqual({transformKeyDeleted: true});
-                        expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
-                            type: "DELETE_DEVICE",
-                            message: undefined,
-                        });
-                        expect(ShimUtils.clearParentWindowSymmetricKey).toHaveBeenCalledWith();
-                        done();
-                    })
-                    .catch((e) => done(e));
-            });
-        });
-
         describe("changePasscode", () => {
             it("throws if SDK has not yet been initialized", () => {
                 ShimUtils.clearSDKInitialized();
@@ -207,6 +184,27 @@ describe("UserSDK", () => {
                         message: 10,
                     });
                     expect(ShimUtils.clearParentWindowSymmetricKey).not.toHaveBeenCalled();
+                    done();
+                })
+                .catch((e) => done(e));
+        });
+    });
+
+    describe("deleteDeviceByPublicSigningKey", () => {
+        it("throws if SDK has not yet been initialized", () => {
+            ShimUtils.clearSDKInitialized();
+            expect(() => UserSDK.deleteDeviceByPublicSigningKey("signingKey")).toThrow();
+        });
+
+        it("sends delete by signing key request to frame", (done) => {
+            ShimUtils.setSDKInitialized();
+            UserSDK.deleteDeviceByPublicSigningKey("signingKey")
+                .then((result: any) => {
+                    expect(result).toEqual(10);
+                    expect(FrameMediator.sendMessage).toHaveBeenCalledWith({
+                        type: "DELETE_DEVICE_BY_SIGNING_KEY",
+                        message: "signingKey",
+                    });
                     done();
                 })
                 .catch((e) => done(e));
