@@ -24,25 +24,19 @@ export interface DocumentMetaGetResponseType extends DocumentMetaApiResponse {
     };
     encryptedSymmetricKey: TransformedEncryptedMessage;
 }
-export interface DocumentGetResponseType extends DocumentMetaGetResponseType {
-    data: {
-        content: Base64String;
-    };
-}
 export interface DocumentCreateResponseType {
     id: string;
     name: string;
     created: string;
     updated: string;
 }
-export type DocumentUpdateResponseType = DocumentGetResponseType;
+export type DocumentUpdateResponseType = DocumentMetaGetResponseType;
 export interface DocumentAccessResponseType {
     succeededIds: {userOrGroup: UserOrGroup}[];
     failedIds: {userOrGroup: UserOrGroup; errorMessage: string}[];
 }
 
 interface DocumentCreatePayload {
-    document?: Base64String;
     userAccessKeys: EncryptedAccessKey[];
     groupAccessKeys: EncryptedAccessKey[];
     documentName?: string;
@@ -80,14 +74,11 @@ function documentList() {
 }
 
 /**
- * Get a specific document by ID
- * @param {MessageSignature} sign           Signature for request validation
- * @param {string}           documentID     ID of document
- * @param {boolean}          includeData    Whether to get content of document. If false only meta data of document will be returned.
+ * Get a document's metadata
  */
-function documentGet(documentID: string, includeData = false) {
+function documentGet(documentID: string) {
     return {
-        url: `documents/${encodeURIComponent(documentID)}${includeData ? "?includeData=true" : ""}`,
+        url: `documents/${encodeURIComponent(documentID)}`,
         options: {
             method: "GET",
         },
@@ -96,15 +87,9 @@ function documentGet(documentID: string, includeData = false) {
 }
 
 /**
- * Create a new document
- * @param {string}                        documentID    ID to use for document
- * @param {EncryptedDocument<Uint8Array>} document      Encrypted document to save
- * @param {EncryptedSymmetricKey}         symmetricKey  Encrypted symmetric key to save with document
- * @param {string|undefined}              documentName  Optional name of document to save
- * @param {Uint8Array}                    userPublicKey Public key to use as document author
+ * Create a new document record
  */
 function documentCreate(documentID: string, payload: DocumentCreatePayload) {
-    const documentContent = payload.document ? {content: payload.document} : undefined;
     const userGrantList = accessKeyToApiFormat(payload.userAccessKeys, UserAndGroupTypes.USER);
     const groupGrantList = accessKeyToApiFormat(payload.groupAccessKeys, UserAndGroupTypes.GROUP);
     return {
@@ -117,7 +102,6 @@ function documentCreate(documentID: string, payload: DocumentCreatePayload) {
             body: JSON.stringify({
                 id: documentID || undefined,
                 value: {
-                    data: documentContent,
                     name: payload.documentName || undefined,
                     fromUserId: payload.userID,
                     sharedWith: userGrantList.concat(groupGrantList),
@@ -129,12 +113,9 @@ function documentCreate(documentID: string, payload: DocumentCreatePayload) {
 }
 
 /**
- * Update an existing document. Update either the document data or the name, or both.
- * @param {string}            documentID  ID of document to update
- * @param {EncryptedDocument} document    Encrypted document content
- * @param {string}            name        Optional name to update in document
+ * Update an existing document's name. Pass null to clear it.
  */
-function documentUpdate(documentID: string, document?: Base64String, name?: string | null) {
+function documentUpdate(documentID: string, name: string | null) {
     return {
         url: `documents/${encodeURIComponent(documentID)}`,
         options: {
@@ -142,10 +123,7 @@ function documentUpdate(documentID: string, document?: Base64String, name?: stri
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                data: document ? {content: document} : undefined,
-                name,
-            }),
+            body: JSON.stringify({name}),
         },
         errorCode: ErrorCodes.DOCUMENT_UPDATE_REQUEST_FAILURE,
     };
@@ -211,23 +189,14 @@ export default {
 
     /**
      * Invokes the document create API
-     * @param {string}               documentID        Unique ID of document to store
-     * @param {Base64String}         encryptedDocument Encrypted document. Optional as data does not have to be stored within ICL store
-     * @param {PreEncryptedMessage}  userAccessKeys    Symmetric key to store with doc, encrypted to current user
-     * @param {EncryptedAccessKey[]} userAccessKeys    List of users that are getting access to the newly created document
-     * @param {EncryptedAccessKey[]} groupAccessKeys   List of groups that are getting access to the newly created document
-     * @param {string}               documentName      Unencrypted name to store with document
+     * @param {string}               documentID      Unique ID of document to store
+     * @param {EncryptedAccessKey[]} userAccessKeys  List of users that are getting access to the newly created document
+     * @param {EncryptedAccessKey[]} groupAccessKeys List of groups that are getting access to the newly created document
+     * @param {string}               documentName    Unencrypted name to store with document
      */
-    callDocumentCreateApi(
-        documentID: string,
-        encryptedDocument: Base64String | null,
-        userAccessKeys: EncryptedAccessKey[],
-        groupAccessKeys: EncryptedAccessKey[],
-        documentName?: string
-    ) {
+    callDocumentCreateApi(documentID: string, userAccessKeys: EncryptedAccessKey[], groupAccessKeys: EncryptedAccessKey[], documentName?: string) {
         const {id} = ApiState.user();
         const {url, options, errorCode} = documentCreate(documentID, {
-            document: encryptedDocument || undefined,
             userAccessKeys,
             groupAccessKeys,
             documentName,
@@ -235,15 +204,6 @@ export default {
             userPublicKey: ApiState.userPublicKey(),
         });
         return makeAuthorizedApiRequest<DocumentCreateResponseType>(url, errorCode, options);
-    },
-
-    /**
-     * Call document get API given the various components that make up the document key
-     * @param {string} documentID User provided key of the document
-     */
-    callDocumentGetApi(documentID: string) {
-        const {url, options, errorCode} = documentGet(documentID, true);
-        return makeAuthorizedApiRequest<DocumentGetResponseType>(url, errorCode, options);
     },
 
     /**
@@ -256,14 +216,10 @@ export default {
     },
 
     /**
-     * Call document update API to update either the document data and/or name. If data is sent we only send the data and IV as we don't update who the
-     * document is encrypted to as part of this request. The document name field can also be set as null which will cause the name field to be cleared.
-     * @param {string}       documentID        User provided key of the document
-     * @param {Base64String} encryptedDocument Optional base64 encoded bytes of the encrypted document
-     * @param {string}       name              Optional document name to update
+     * Call document update API to change the document name. Null clears the name field.
      */
-    callDocumentUpdateApi(documentID: string, encryptedDocument?: Base64String, name?: string | null) {
-        const {url, options, errorCode} = documentUpdate(documentID, encryptedDocument, name);
+    callDocumentUpdateApi(documentID: string, name: string | null) {
+        const {url, options, errorCode} = documentUpdate(documentID, name);
         return makeAuthorizedApiRequest<DocumentUpdateResponseType>(url, errorCode, options);
     },
 

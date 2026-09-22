@@ -32,6 +32,11 @@ export default class LocalList extends React.Component<LocalDocumentProps, Local
     }
 
     loadDocument = () => {
+        if (!DocumentDB.isLocalDocument(this.props.document.documentID)) {
+            logAction(`Document ${this.props.document.documentID} has no encrypted content in this browser's local storage.`, "error");
+            this.props.backToDocumentList();
+            return;
+        }
         logAction(`Retrieving local document ${this.props.document.documentName}...`);
         const encryptedDoc = DocumentDB.getDoc(this.props.document.documentID);
         IronWeb.document

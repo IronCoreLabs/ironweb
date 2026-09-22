@@ -2,10 +2,6 @@
  * Actions and assertions for document list page view
  */
 const documentListActions = {
-    expectTodoListStorageType(selector, position){
-        browser.element.findAll(this.elements.listItems.selector).nth(position).find(selector).assert.present(`Expected storage chip "${selector}" at document position ${position}`);
-        return this;
-    },
     refreshList(){
         return this.click('@refreshDocumentList');
     },
@@ -22,12 +18,6 @@ const documentListActions = {
             this.assert.equal(result.value.includes(name), true, `Todo list content, expected roughly "${name}", found "${result.value}"`);
         });
         return this;
-    },
-    expectTodoListHostedAtPosition(position){
-        return this.expectTodoListStorageType(this.elements.hostedStorageChip.selector, position);
-    },
-    expectTodoListLocalAtPosition(position){
-        return this.expectTodoListStorageType(this.elements.localStorageChip.selector, position);
     },
     clickTestUnmanaged(){
         return this.click('@testUnmanagedButton');
@@ -48,8 +38,6 @@ const documentListElements = {
     pageTitle: {selector: '.page-title'},
     listItems: {selector: '.document-list-item'},
     newDocumentButton: {selector: '.new-document'},
-    hostedStorageChip: {selector: '.storage-type-hosted'},
-    localStorageChip: {selector: '.storage-type-local'},
     refreshDocumentList: {selector: '.refresh-document-list'},
     testUnmanagedButton: {selector: '.test-unmanaged'},
     unmanagedTestSuccess: {selector: '.unmanaged-test-success'},

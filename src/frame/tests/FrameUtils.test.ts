@@ -285,17 +285,6 @@ describe("FrameUtils", () => {
         });
     });
 
-    describe("encryptedDocumentToBase64", () => {
-        it("converts documents byte parts to single base64 string", () => {
-            const doc = {
-                iv: new Uint8Array([30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140]),
-                content: new Uint8Array([92, 103]),
-            };
-
-            expect(FrameUtils.encryptedDocumentToBase64("docID", 321, doc)).toEqual("AgAdeyJfZGlkXyI6ImRvY0lEIiwiX3NpZF8iOjMyMX0eKDI8RlBaZG54goxcZw==");
-        });
-    });
-
     describe("generateDocumentHeaderBytes", () => {
         it("generates expected header bytes", () => {
             const headerBytes = FrameUtils.generateDocumentHeaderBytes("docIDValue", 31);

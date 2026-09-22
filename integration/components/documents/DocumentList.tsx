@@ -3,20 +3,16 @@ import Chip from "material-ui/Chip";
 import Divider from "material-ui/Divider";
 import FloatingActionButton from "material-ui/FloatingActionButton";
 import {List, ListItem} from "material-ui/List";
-import {brown200, brown400, cyan500, lightGreen200, lightGreen400, lightGreenA700, orange200, orange400} from "material-ui/styles/colors";
+import {brown200, brown400, cyan500, lightGreenA700, orange400} from "material-ui/styles/colors";
 import Assignment from "material-ui/svg-icons/action/assignment";
 import Add from "material-ui/svg-icons/content/add";
-import Cloud from "material-ui/svg-icons/file/cloud";
-import Local from "material-ui/svg-icons/file/cloud-off";
 import Refresh from "material-ui/svg-icons/navigation/refresh";
 import Group from "material-ui/svg-icons/social/group-add";
 import Person from "material-ui/svg-icons/social/person-add";
 import * as React from "react";
 import {DocumentAssociation, DocumentAssociationResponse, DocumentIDNameResponse} from "../../../ironweb";
 import * as IronWeb from "../../../src/shim";
-import {isLocalDocument} from "../../DocumentDB";
 import {logAction} from "../../Logger";
-import AddDocumentData from "./AddDocumentData";
 import LockIcon from "material-ui/svg-icons/action/lock";
 import SwapIcon from "material-ui/svg-icons/action/swap-horiz";
 
@@ -25,9 +21,7 @@ interface DocumentListProps {
 }
 
 interface DocumentListState {
-    storeLocal: boolean;
     lists: DocumentAssociationResponse[];
-    documentDataAdd: DocumentAssociationResponse | null;
     unmanagedTestResult: "success" | "error" | null;
     streamingTestResult: "success" | "error" | null;
     unmanagedStreamingTestResult: "success" | "error" | null;
@@ -37,9 +31,7 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
     constructor(props: DocumentListProps) {
         super(props);
         this.state = {
-            storeLocal: false,
             lists: [],
-            documentDataAdd: null,
             unmanagedTestResult: null,
             streamingTestResult: null,
             unmanagedStreamingTestResult: null,
@@ -216,42 +208,8 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
         );
     }
 
-    openManualDataInput = (event: React.MouseEvent<Chip>, document: DocumentAssociationResponse, isLocal: boolean) => {
-        event.stopPropagation();
-        if (isLocal) {
-            return;
-        }
-        this.setState({documentDataAdd: document});
-    };
-
     getListChipContent(document: DocumentAssociationResponse) {
-        let icon, text, color, avatarColor;
-        const isLocal = isLocalDocument(document.documentID);
-        if (isLocal) {
-            icon = <Local />;
-            text = "Local";
-            color = orange200;
-            avatarColor = orange400;
-        } else {
-            icon = <Cloud />;
-            text = "Hosted";
-            color = lightGreen200;
-            avatarColor = lightGreen400;
-        }
-
-        return (
-            <div style={{display: "flex", float: "right"}}>
-                <Chip
-                    className={`storage-type-${text.toLowerCase()}`}
-                    labelStyle={{padding: "0 5px", fontSize: 12, width: 45, textAlign: "center"}}
-                    backgroundColor={color}
-                    onClick={(e) => this.openManualDataInput(e, document, isLocal)}>
-                    <Avatar icon={icon} backgroundColor={avatarColor} />
-                    {text}
-                </Chip>
-                {this.getAssociationChip(document.association)}
-            </div>
-        );
+        return <div style={{display: "flex", float: "right"}}>{this.getAssociationChip(document.association)}</div>;
     }
 
     getDocumentsMarkup(documents: DocumentAssociationResponse[]) {
@@ -328,7 +286,6 @@ export default class DocumentList extends React.Component<DocumentListProps, Doc
                         {this.state.unmanagedStreamingTestResult === "success" ? "Unmanaged streaming round-trip OK" : "Unmanaged streaming round-trip FAILED"}
                     </div>
                 )}
-                <AddDocumentData document={this.state.documentDataAdd} onClose={() => this.setState({documentDataAdd: null})} />
             </div>
         );
     }
