@@ -1,7 +1,6 @@
 import Future from "futurejs";
 import {CryptoConstants, ErrorCodes} from "../../Constants";
 import SDKError from "../../lib/SDKError";
-import {sliceArrayBuffer} from "../../lib/Utils";
 import * as AES from "./crypto/aes";
 import * as Recrypt from "./crypto/recrypt";
 
@@ -54,7 +53,7 @@ export function rotatePrivateKey(
     passcode: string,
     encryptedPrivateUserKey: Uint8Array
 ): Future<SDKError, {newEncryptedPrivateUserKey: Uint8Array; augmentationFactor: Uint8Array}> {
-    const derivedKeySalt = sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH);
+    const derivedKeySalt = encryptedPrivateUserKey.slice(0, CryptoConstants.SALT_LENGTH);
     return decryptUserMasterPrivateKey(passcode, derivedKeySalt, encryptedPrivateUserKey)
         .flatMap(({userPrivateKey, derivedKey}) =>
             Recrypt.rotateUsersPrivateKeyWithRetry(userPrivateKey)
@@ -188,7 +187,7 @@ export function decryptDeviceAndSigningKeys(
  * @param {Uint8Array} encryptedPrivateUserKey Users encrypted master private key
  */
 export function changeUsersPasscode(currentPasscode: string, newPasscode: string, encryptedPrivateUserKey: Uint8Array) {
-    const derivedKeySalt = sliceArrayBuffer(encryptedPrivateUserKey, 0, CryptoConstants.SALT_LENGTH);
+    const derivedKeySalt = encryptedPrivateUserKey.slice(0, CryptoConstants.SALT_LENGTH);
     return decryptUserMasterPrivateKey(currentPasscode, derivedKeySalt, encryptedPrivateUserKey)
         .flatMap(({userPrivateKey}) =>
             Recrypt.generatePasswordDerivedKey(newPasscode)

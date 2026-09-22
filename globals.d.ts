@@ -29,14 +29,13 @@ type SigningPublicKey<T> = T;
 type AugmentationFactor = Uint8Array;
 type JWTCallbackToPromise = () => Promise<string>;
 type PasscodeCallbackToPromise = (userExists: boolean) => Promise<string>;
-type DerivedKey = CryptoKey | Uint8Array;
 
 interface PublicKey<T> {
     x: T;
     y: T;
 }
 interface DerivedKeyResults {
-    key: DerivedKey;
+    key: CryptoKey;
     salt: Uint8Array;
 }
 interface MessageSignature {

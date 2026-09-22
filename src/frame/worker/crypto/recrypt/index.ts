@@ -1,7 +1,6 @@
 import * as Recrypt from "@ironcorelabs/recrypt-wasm-binding";
 import {encode} from "@stablelib/utf8";
 import {fromByteArray, toByteArray} from "base64-js";
-import "fast-text-encoding";
 import Future from "futurejs";
 import {CryptoConstants} from "../../../../Constants";
 import {concatArrayBuffers, publicKeyToBase64, publicKeyToBytes, utf8StringToArrayBuffer} from "../../../../lib/Utils";

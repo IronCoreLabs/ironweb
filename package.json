@@ -20,14 +20,7 @@
         "@stablelib/ed25519": "2.1.0",
         "@stablelib/utf8": "1.0.1",
         "base64-js": "1.5.1",
-        "fast-text-encoding": "1.0.4",
-        "futurejs": "2.2.1",
-        "sjcl": "1.0.9"
-    },
-    "peerDependencies": {
-        "@stablelib/utf8": "^0.10",
-        "base64-js": "^1.2",
-        "futurejs": "^2"
+        "futurejs": "2.2.1"
     },
     "devDependencies": {
         "@types/base64-js": "^1.2.5",
@@ -37,7 +30,6 @@
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "@types/react-tap-event-plugin": "^0.0.30",
-        "@types/sjcl": "^1.0.28",
         "@types/webpack-env": "^1.16.0",
         "@typescript-eslint/eslint-plugin": "^5.33.0",
         "@typescript-eslint/parser": "^5.33.0",

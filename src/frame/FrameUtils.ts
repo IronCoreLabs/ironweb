@@ -3,7 +3,7 @@ import {fromByteArray, toByteArray} from "base64-js";
 import Future from "futurejs";
 import {DOCUMENT_ENCRYPTION_DETAILS_VERSION_NUMBER, HEADER_META_LENGTH_LENGTH} from "../Constants";
 import SDKError from "../lib/SDKError";
-import {concatArrayBuffers, parseDocumentHeader, sliceArrayBuffer} from "../lib/Utils";
+import {concatArrayBuffers, parseDocumentHeader} from "../lib/Utils";
 
 const ENCRYPTED_DEVICE_KEY_LOCAL_STORAGE_VERSION = "1";
 
@@ -141,7 +141,7 @@ export function documentToByteParts(document: Uint8Array | string): Future<SDKEr
     const encryptedDocumentBytes = document instanceof Uint8Array ? document : toByteArray(document);
     return parseDocumentHeader(encryptedDocumentBytes).map(({iv, contentOffset}) => ({
         iv,
-        content: sliceArrayBuffer(encryptedDocumentBytes, contentOffset),
+        content: encryptedDocumentBytes.slice(contentOffset),
     }));
 }
 

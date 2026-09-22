@@ -1,5 +1,5 @@
 import * as UTF8 from "@stablelib/utf8";
-import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
+import type {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import {fromByteArray, toByteArray} from "base64-js";
 import Future from "futurejs";
 import {CryptoConstants, ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../Constants";
@@ -73,16 +73,6 @@ export function concatArrayBuffers(...buffers: Uint8Array[]): Uint8Array {
  */
 export function toTransferables(items: (Uint8Array | Transferable)[]): Transferable[] {
     return items.map((item) => (item instanceof Uint8Array ? item.buffer : item)) as Transferable[];
-}
-
-/**
- * Polyfill since some environments (notably Phantom) don't support ArrayBuffer.slice
- */
-export function sliceArrayBuffer(buffer: Uint8Array, start: number, end?: number): Uint8Array {
-    if (typeof buffer.slice === "function") {
-        return buffer.slice(start, end);
-    }
-    return new Uint8Array(Array.prototype.slice.call(buffer, start, end));
 }
 
 export interface ParsedDocumentHeader {
