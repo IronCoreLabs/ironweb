@@ -4,7 +4,7 @@ The IronWeb SDK NPM releases follow standard [Semantic Versioning](https://semve
 
 **Note:** The patch versions of the IronWeb SDK will not be sequential and might jump by multiple numbers between sequential releases.
 
-## v5.0.0 (unreleased)
+## v5.0.1
 
 - Raised TypeScript compile target from ES5 to ES6. 
 - Removed `IronWeb.user.deauthorizeDevice()`, deprecated since v4.1.1. Call `IronWeb.user.deleteDevice()` with no argument instead; it resolves with the deleted device's ID (`-1` when the server delete failed but local keys were cleared) rather than `{transformKeyDeleted}`.
