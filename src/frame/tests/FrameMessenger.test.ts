@@ -16,11 +16,35 @@ describe("FrameMessenger", () => {
 
             const messenger = new FrameMessenger(() => null);
 
-            messenger.setupMessagePort({data: "otherMessage"} as any);
-            messenger.setupMessagePort({data: "MESSAGE_PORT_INIT"} as any);
-            messenger.setupMessagePort({data: "MESSAGE_PORT_INIT", ports: ["port1", "port2"]} as any);
+            messenger.setupMessagePort({source: window.parent, data: "otherMessage"} as any);
+            messenger.setupMessagePort({source: window.parent, data: "MESSAGE_PORT_INIT"} as any);
+            messenger.setupMessagePort({source: window.parent, data: "MESSAGE_PORT_INIT", ports: ["port1", "port2"]} as any);
 
             expect(window.removeEventListener).not.toHaveBeenCalled();
+        });
+
+        it("ignores a port from a window other than the parent and keeps listening", () => {
+            jest.spyOn(window, "removeEventListener");
+            const foreignPort = {
+                start: jest.fn(),
+                addEventListener: jest.fn(),
+            };
+            const parentPort = {
+                start: jest.fn(),
+                addEventListener: jest.fn(),
+            };
+            const messenger = new FrameMessenger(() => null);
+
+            messenger.setupMessagePort({source: {} as Window, data: "MESSAGE_PORT_INIT", ports: [foreignPort]} as any);
+
+            expect(foreignPort.start).not.toHaveBeenCalled();
+            expect(window.removeEventListener).not.toHaveBeenCalled();
+            expect(messenger.messagePort).toBeUndefined();
+
+            messenger.setupMessagePort({source: window.parent, data: "MESSAGE_PORT_INIT", ports: [parentPort]} as any);
+
+            expect(parentPort.start).toHaveBeenCalledWith();
+            expect(messenger.messagePort).toBe(parentPort);
         });
 
         it("gets port, starts it up and clears window message event", () => {
@@ -31,7 +55,7 @@ describe("FrameMessenger", () => {
             };
             const messenger = new FrameMessenger(() => null);
 
-            messenger.setupMessagePort({data: "MESSAGE_PORT_INIT", ports: [fauxPort]} as any);
+            messenger.setupMessagePort({source: window.parent, data: "MESSAGE_PORT_INIT", ports: [fauxPort]} as any);
 
             expect(window.removeEventListener).toHaveBeenCalledWith("message", expect.any(Function));
             expect(fauxPort.start).toHaveBeenCalledWith();

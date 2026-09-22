@@ -134,6 +134,7 @@ module.exports = {
             SDK_NPM_VERSION_PLACEHOLDER: JSON.stringify(process.env.HOSTED_VERSION || "SDK_NPM_VERSION_PLACEHOLDER"),
             _ICL_FRAME_DOMAIN_REPLACEMENT_: JSON.stringify(getFrameDomain()),
         }),
+        new webpack.NormalModuleReplacementPlugin(/src[\/\\]shim[\/\\]FrameLocation(\.ts)?$/, path.join(__dirname, "FrameLocation.ts")),
     ],
     experiments: {
         asyncWebAssembly: true,

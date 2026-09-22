@@ -1,5 +1,6 @@
 import Future from "futurejs";
-import {ErrorCodes, Frame, Versions} from "../Constants";
+import {ErrorCodes, Versions} from "../Constants";
+import {Frame} from "./FrameLocation";
 import {ErrorResponse, RequestMessage, ResponseMessage} from "../FrameMessageTypes";
 import SDKError from "../lib/SDKError";
 import {toTransferables} from "../lib/Utils";

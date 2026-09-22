@@ -1,6 +1,6 @@
 import Future from "futurejs";
 import {sendMessage, messenger, ShimMessenger} from "../FrameMediator";
-import {Frame} from "../../Constants";
+import {Frame} from "../FrameLocation";
 
 describe("FrameMediator", () => {
     describe("ShimMessenger", () => {
