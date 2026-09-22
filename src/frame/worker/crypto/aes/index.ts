@@ -3,7 +3,6 @@ const {IV_LENGTH, AES_SYMMETRIC_KEY_LENGTH, NATIVE_DECRYPT_FAILURE_ERROR} = Cryp
 import {sliceArrayBuffer} from "../../../../lib/Utils";
 import Future from "futurejs";
 import * as NativeAes from "./NativeAes";
-import * as PolyfillAes from "./PolyfillAes";
 import {generateRandomBytes} from "../CryptoUtils";
 
 /**
@@ -13,9 +12,6 @@ import {generateRandomBytes} from "../CryptoUtils";
  * @param {DerivedKeyResults} derivedKey                 Derived key content from passcode. Contains derived key and salt that was used during derivation
  */
 export function decryptUserKey(encryptedPrivateUserKey: Uint8Array, derivedKey: DerivedKeyResults) {
-    if (derivedKey.key instanceof Uint8Array) {
-        return PolyfillAes.decryptUserKey(encryptedPrivateUserKey, derivedKey.key);
-    }
     return NativeAes.decryptUserKey(encryptedPrivateUserKey, derivedKey.key);
 }
 
@@ -26,12 +22,7 @@ export function decryptUserKey(encryptedPrivateUserKey: Uint8Array, derivedKey: 
  * @param {DerivedKeyResults} derivedKey                Passcode-derived key
  */
 export function encryptUserKey(decryptedPrivateUserKey: Uint8Array, derivedKey: DerivedKeyResults) {
-    return generateRandomBytes(IV_LENGTH).flatMap((iv) => {
-        if (derivedKey.key instanceof Uint8Array) {
-            return PolyfillAes.encryptUserKey(decryptedPrivateUserKey, derivedKey.key, derivedKey.salt, iv);
-        }
-        return NativeAes.encryptUserKey(decryptedPrivateUserKey, derivedKey.key, derivedKey.salt, iv);
-    });
+    return generateRandomBytes(IV_LENGTH).flatMap((iv) => NativeAes.encryptUserKey(decryptedPrivateUserKey, derivedKey.key, derivedKey.salt, iv));
 }
 
 /**
@@ -40,11 +31,7 @@ export function encryptUserKey(decryptedPrivateUserKey: Uint8Array, derivedKey: 
  * @param {Uint8Array} documentSymmetricKey Symmetric key to use for encryption
  */
 export function encryptDocument(decryptedDocument: Uint8Array, documentSymmetricKey: Uint8Array): Future<Error, EncryptedDocument> {
-    return generateRandomBytes(IV_LENGTH).flatMap((iv) => {
-        return NativeAes.encryptDocument(decryptedDocument, documentSymmetricKey, iv).handleWith(() =>
-            PolyfillAes.encryptDocument(decryptedDocument, documentSymmetricKey, iv)
-        );
-    });
+    return generateRandomBytes(IV_LENGTH).flatMap((iv) => NativeAes.encryptDocument(decryptedDocument, documentSymmetricKey, iv));
 }
 
 /**
@@ -54,15 +41,9 @@ export function encryptDocument(decryptedDocument: Uint8Array, documentSymmetric
  * @param {Uint8Array} dataNonce            Nonce/IV to use to decrypt
  */
 export function decryptDocument(encryptedDocument: Uint8Array, documentSymmetricKey: Uint8Array, dataNonce: Uint8Array) {
-    return NativeAes.decryptDocument(encryptedDocument, documentSymmetricKey, dataNonce).handleWith((error) => {
-        //Don't attempt to invoke polyfill if decryption failed because the key was wrong. In that case the polyfill
-        //will obviously fail as well and we'll just waste cycles trying to decrypt.
-        if (error.name === NATIVE_DECRYPT_FAILURE_ERROR) {
-            //We have to cast to any because handleWith says we should be able to handle this, but in this case, we don't want to
-            return Future.reject(new Error("Decryption of document content failed.")) as any;
-        }
-        return PolyfillAes.decryptDocument(encryptedDocument, documentSymmetricKey, dataNonce);
-    });
+    return NativeAes.decryptDocument(encryptedDocument, documentSymmetricKey, dataNonce).errorMap((error) =>
+        error.name === NATIVE_DECRYPT_FAILURE_ERROR ? new Error("Decryption of document content failed.") : error
+    );
 }
 
 /**
@@ -83,11 +64,9 @@ export function generateKeyAndIvs(): Future<Error, {symmetricKey: Uint8Array; de
  * @param {Uint8Array} signingPrivateKey Users signing private key
  */
 export function encryptDeviceAndSigningKeys(devicePrivateKey: Uint8Array, signingPrivateKey: Uint8Array): Future<Error, EncryptedLocalKeys> {
-    return generateKeyAndIvs().flatMap(({symmetricKey, deviceIv, signingIv}) => {
-            return NativeAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, deviceIv, signingIv).handleWith(() =>
-                PolyfillAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, deviceIv, signingIv)
-            );
-        });
+    return generateKeyAndIvs().flatMap(({symmetricKey, deviceIv, signingIv}) =>
+        NativeAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, deviceIv, signingIv)
+    );
 }
 
 /**
@@ -105,9 +84,7 @@ export function decryptDeviceAndSigningKeys(
     deviceIv: Uint8Array,
     signingIv: Uint8Array
 ) {
-    return NativeAes.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symmetricKey, deviceIv, signingIv).handleWith(() =>
-        PolyfillAes.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symmetricKey, deviceIv, signingIv)
-    );
+    return NativeAes.decryptDeviceAndSigningKeys(encryptedDeviceKey, encryptedSigningKey, symmetricKey, deviceIv, signingIv);
 }
 
 /**
@@ -127,9 +104,5 @@ export function reEncryptDeviceAndSigningKeys(
             deviceIv: sliceArrayBuffer(bytes, 0, IV_LENGTH),
             signingIv: sliceArrayBuffer(bytes, IV_LENGTH),
         }))
-        .flatMap(({deviceIv, signingIv}) => {
-            return NativeAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, deviceIv, signingIv).handleWith(() =>
-                PolyfillAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, deviceIv, signingIv)
-            );
-        });
+        .flatMap(({deviceIv, signingIv}) => NativeAes.encryptDeviceAndSigningKeys(devicePrivateKey, signingPrivateKey, symmetricKey, deviceIv, signingIv));
 }

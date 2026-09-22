@@ -1621,11 +1621,6 @@
     "@types/node" "*"
     "@types/send" "<1"
 
-"@types/sjcl@^1.0.28":
-  version "1.0.30"
-  resolved "https://registry.npmjs.org/@types/sjcl/-/sjcl-1.0.30.tgz"
-  integrity sha512-4ebBtj1rx3Kh3To5RnPua+U4JzVwH2MxUmHQvAlxWpzmfmupBRyyXAIEQceon+e5tW9aBeOApTYA6EXfBysRyQ==
-
 "@types/sockjs@^0.3.36":
   version "0.3.36"
   resolved "https://registry.npmjs.org/@types/sockjs/-/sockjs-0.3.36.tgz"
@@ -6788,11 +6783,6 @@ sisteransi@^1.0.5:
   version "1.0.5"
   resolved "https://registry.npmjs.org/sisteransi/-/sisteransi-1.0.5.tgz"
   integrity sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==
-
-sjcl@1.0.9:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/sjcl/-/sjcl-1.0.9.tgz#650560f04c0d6d5adfa3aa8c63190a138913bb40"
-  integrity sha512-dWM71tkSHxe7zEZj0/COjtJdmErIxp7UMp8a6D4xx8dTTtJLc4lFL+HAX8s6lvASyQQ2iYMHwa7rhhQq7MT5MA==
 
 slash@^3.0.0:
   version "3.0.0"
