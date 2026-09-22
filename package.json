@@ -22,11 +22,6 @@
         "base64-js": "1.5.1",
         "futurejs": "2.2.1"
     },
-    "peerDependencies": {
-        "@stablelib/utf8": "^1.0.1",
-        "base64-js": "^1.5.1",
-        "futurejs": "^2.2.1"
-    },
     "devDependencies": {
         "@types/base64-js": "^1.2.5",
         "@types/jest": "^28.1.6",
