@@ -1,5 +1,5 @@
 import Future from "futurejs";
-import {DeviceKeys, SDKInitializationResult, UserCreateResponse, UserStatus, UserUpdateResponse} from "ironweb";
+import type {DeviceKeys, SDKInitializationResult, UserCreateResponse, UserStatus, UserUpdateResponse} from "ironweb";
 import {ErrorCodes} from "../Constants";
 import {
     CreateDetachedUserDeviceRequest,

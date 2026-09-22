@@ -1,5 +1,5 @@
 import * as UTF8 from "@stablelib/utf8";
-import {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
+import type {TransformKey} from "@ironcorelabs/recrypt-wasm-binding";
 import {fromByteArray, toByteArray} from "base64-js";
 import Future from "futurejs";
 import {CryptoConstants, ErrorCodes, VERSION_HEADER_LENGTH, HEADER_META_LENGTH_LENGTH} from "../Constants";

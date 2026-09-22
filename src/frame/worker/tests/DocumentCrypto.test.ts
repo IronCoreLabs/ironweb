@@ -4,6 +4,7 @@ import * as TestUtils from "../../../tests/TestUtils";
 import * as AES from "../crypto/aes";
 import * as Recrypt from "../crypto/recrypt";
 import {ErrorCodes} from "../../../Constants";
+import SDKError from "../../../lib/SDKError";
 
 describe("DocumentCrypto", () => {
     describe("decryptDocument", () => {
@@ -40,6 +41,28 @@ describe("DocumentCrypto", () => {
                     throw new Error("success handler should not be invoked when operation fails");
                 }
             );
+        });
+
+        //WebCrypto rejects with DOMExceptions, which carry an unrelated legacy numeric `code`. Only OperationError
+        //is normalized to a plain Error by AES.decryptDocument; the rest arrive here as-is.
+        it("maps a DOMException failure to the document error code", () => {
+            jest.spyOn(Recrypt, "decryptPlaintext").mockReturnValue(Future.of<any>([new Uint8Array(384), new Uint8Array(22)]));
+            jest.spyOn(AES, "decryptDocument").mockReturnValue(Future.reject(new DOMException("", "DataError")) as any);
+
+            //Asserting outside the handler: futurejs catches throws from within `engage` and re-invokes the handler,
+            //so a failed expectation in there is swallowed.
+            let failure: SDKError | undefined;
+            DocumentCrypto.decryptDocument(TestUtils.getEncryptedDocument(), TestUtils.getTransformedSymmetricKey(), new Uint8Array(32)).engage(
+                (error) => {
+                    failure = error;
+                },
+                () => {
+                    throw new Error("success handler should not be invoked when operation fails");
+                }
+            );
+
+            expect(failure).toBeInstanceOf(SDKError);
+            expect(failure!.code).toEqual(ErrorCodes.DOCUMENT_DECRYPT_FAILURE);
         });
     });
 
