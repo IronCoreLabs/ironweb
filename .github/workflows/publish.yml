@@ -21,12 +21,6 @@ jobs:
         with:
           node-version: 24.x
           registry-url: "https://registry.npmjs.org"
-      # Need newer npm to use Trusted Publishing
-      - name: Use newer npm version
-        run: |
-          sudo npm install -g npm@11.6.2
-          # Necessary to overwrite the previous global version
-          echo "/usr/local/bin" >> $GITHUB_PATH
       - name: Publish release to @ironcorelabs/ironweb
         run: yarn && node ./.github/scripts/publish.js --version ${{ inputs.version }} --publish
         env:

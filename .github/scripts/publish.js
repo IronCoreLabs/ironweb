@@ -71,6 +71,8 @@ shell.rm("-rf", "./publish");
 shell.mkdir("-p", "./publish/node_modules");
 
 https.get(PRODUCTION_FRAME_FILE_URL, (response) => {
+    //Only the status code matters; drain the body so the socket closes and the process can exit
+    response.resume();
     //If we couldn't find the associated version of the frame published in production, fail the publish script.
     if (response.statusCode !== 200) {
         shell.echo(
@@ -81,8 +83,8 @@ https.get(PRODUCTION_FRAME_FILE_URL, (response) => {
     shell.pushd("./publish");
     //Pull down the private internal ironweb content from NPM and move things around so we can republish it under the public name
     shell.exec(`npm install @ironcorelabs/ironweb-internal@${PUBLISH_VERSION} --no-save --omit=dev`);
-    // We use Trusted Publishing to publish, so we can't have this env var set anymore
-    shell.exec("unset NODE_AUTH_TOKEN");
+    //Publish authenticates via Trusted Publishing; the token was only needed for the install above
+    delete process.env.NODE_AUTH_TOKEN;
     shell.mv("./node_modules/@ironcorelabs/ironweb-internal/*", "./");
     shell.rm("-rf", "./node_modules");
 
